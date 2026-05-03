@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   History, 
   BarChart3, 
-  Settings, 
+  Settings as SettingsIcon, 
   Wallet,
   Home as HomeIcon,
   Search
@@ -10,25 +10,72 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import Home from './components/Home';
 import Stats from './components/Stats';
+import HistoryView from './components/History';
+import SettingsView from './components/Settings';
+import MasrofLogo from './components/Logo';
+import AddTransactionModal from './components/AddTransactionModal';
 
 interface Transaction {
   id: string;
   label: string;
   amount: number;
   type: 'INCOME' | 'EXPENSE';
+  category?: string;
   date: string;
 }
 
 type Tab = 'home' | 'history' | 'stats' | 'settings';
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('home');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<'INCOME' | 'EXPENSE'>('EXPENSE');
+  const [widgetMode, setWidgetMode] = useState<'balance' | 'spending'>('balance');
+  const [aiNotifications, setAiNotifications] = useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setShowSplash(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
   const [balance, setBalance] = useState(1450.50);
   const [transactions, setTransactions] = useState<Transaction[]>([
     { id: '1', label: 'Tirage Banque', amount: 2000, type: 'INCOME', date: '03/05 18:23' },
-    { id: '2', label: 'Achat Market', amount: 840, type: 'EXPENSE', date: '03/05 12:45' },
-    { id: '3', label: 'Café', amount: 30, type: 'EXPENSE', date: '02/05 09:15' },
+    { id: '2', label: 'Achat Market', amount: 840, type: 'EXPENSE', category: 'Shopping', date: '03/05 12:45' },
+    { id: '3', label: 'Café & Snack', amount: 45, type: 'EXPENSE', category: 'Nourriture', date: '03/05 09:15' },
+    { id: '4', label: 'Carburant', amount: 300, type: 'EXPENSE', category: 'Transport', date: '02/05 15:30' },
+    { id: '5', label: 'Dîner Restaurant', amount: 250, type: 'EXPENSE', category: 'Nourriture', date: '02/05 21:00' },
+    { id: '6', label: 'Virement Reçu', amount: 5000, type: 'INCOME', date: '01/05 10:00' },
+    { id: '7', label: 'Loyer', amount: 3500, type: 'EXPENSE', category: 'Autres', date: '01/05 08:00' },
   ]);
+
+  const addTransaction = (label: string, amount: number, type: 'INCOME' | 'EXPENSE', category?: string) => {
+    const newTx: Transaction = {
+      id: Date.now().toString(),
+      label,
+      amount,
+      type,
+      category,
+      date: new Date().toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', '')
+    };
+
+    setTransactions(prev => [newTx, ...prev]);
+    if (type === 'INCOME') {
+      setBalance(prev => prev + amount);
+    } else {
+      setBalance(prev => prev - amount);
+    }
+  };
+
+  const resetTransactions = () => {
+    setTransactions([]);
+    setBalance(0);
+  };
+
+  const openModal = (type: 'INCOME' | 'EXPENSE') => {
+    setModalType(type);
+    setIsModalOpen(true);
+  };
 
   const weeklyAchat = transactions
     .filter(t => t.type === 'EXPENSE')
@@ -41,40 +88,88 @@ export default function App() {
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
-        return <Home balance={balance} transactions={transactions} weeklyAchat={weeklyAchat} weeklyBank={weeklyBank} />;
+        return (
+          <Home 
+            balance={balance} 
+            transactions={transactions.slice(0, 3)} 
+            weeklyAchat={weeklyAchat} 
+            weeklyBank={weeklyBank} 
+            onAddClick={openModal}
+            onViewAll={() => setActiveTab('history')}
+            widgetMode={widgetMode}
+          />
+        );
       case 'stats':
         return <Stats />;
       case 'history':
-        return (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 text-center text-slate-400 mt-20">
-            <History size={48} className="mx-auto mb-4 opacity-20" />
-            <p>Historique des transactions en cours de développement...</p>
-          </motion.div>
-        );
+        return <HistoryView transactions={transactions} />;
       case 'settings':
         return (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 text-center text-slate-400 mt-20">
-            <Settings size={48} className="mx-auto mb-4 opacity-20" />
-            <p>Paramètres de l'application bientôt disponibles...</p>
-          </motion.div>
+          <SettingsView 
+            widgetMode={widgetMode} 
+            onWidgetModeChange={setWidgetMode} 
+            onResetTransactions={resetTransactions} 
+            aiNotifications={aiNotifications}
+            onAiNotificationsChange={setAiNotifications}
+          />
         );
       default:
-        return <Home balance={balance} transactions={transactions} weeklyAchat={weeklyAchat} weeklyBank={weeklyBank} />;
+        return (
+          <Home 
+            balance={balance} 
+            transactions={transactions} 
+            weeklyAchat={weeklyAchat} 
+            weeklyBank={weeklyBank} 
+            onAddClick={openModal}
+            onViewAll={() => setActiveTab('history')}
+            widgetMode={widgetMode}
+          />
+        );
     }
   };
 
   return (
     <div className="min-h-screen bg-[#F0F7F8] flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden font-sans">
+      <AnimatePresence>
+        {showSplash && (
+          <motion.div 
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-teal-light flex flex-col items-center justify-center max-w-md mx-auto"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="w-40 h-40 bg-white rounded-full shadow-2xl border-4 border-teal-brand/20 flex items-center justify-center mb-6"
+            >
+              <MasrofLogo className="w-32 h-32" />
+            </motion.div>
+            <motion.h1 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-4xl font-black text-teal-brand tracking-tighter"
+            >
+              MasroF
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              transition={{ delay: 0.6 }}
+              className="text-slate-500 font-medium mt-2"
+            >
+              Votre trésorerie, simplifiée
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <header className="p-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 shadow-sm rounded-xl overflow-hidden bg-white flex items-center justify-center p-1 border border-teal-brand/10">
-            <img 
-              src="/image_12.png" 
-              alt="MasroF Logo" 
-              className="w-full h-full object-contain"
-              referrerPolicy="no-referrer"
-            />
+          <div className="w-10 h-10 shadow-sm rounded-xl overflow-hidden bg-white flex items-center justify-center border border-teal-brand/10">
+            <MasrofLogo className="w-8 h-8" />
           </div>
           <h1 className="text-2xl font-black text-teal-brand tracking-tight">MasroF</h1>
         </div>
@@ -113,10 +208,17 @@ export default function App() {
         <TabButton 
           active={activeTab === 'settings'} 
           onClick={() => setActiveTab('settings')} 
-          icon={<Settings size={22} />} 
+          icon={<SettingsIcon size={22} />} 
           label="Options" 
         />
       </nav>
+
+      <AddTransactionModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAdd={addTransaction}
+        initialType={modalType}
+      />
     </div>
   );
 }

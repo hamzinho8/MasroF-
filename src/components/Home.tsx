@@ -21,9 +21,12 @@ interface HomeProps {
   transactions: Transaction[];
   weeklyAchat: number;
   weeklyBank: number;
+  onAddClick: (type: 'INCOME' | 'EXPENSE') => void;
+  onViewAll: () => void;
+  widgetMode: 'balance' | 'spending';
 }
 
-export default function Home({ balance, transactions, weeklyAchat, weeklyBank }: HomeProps) {
+export default function Home({ balance, transactions, weeklyAchat, weeklyBank, onAddClick, onViewAll, widgetMode }: HomeProps) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -32,22 +35,29 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank }:
     >
       <p className="text-lg font-medium text-slate-600 mb-5">Bonjour, Hamza !</p>
 
-      {/* Balance Card */}
+      {/* Main Widget Card */}
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+        key={widgetMode}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative h-40 rounded-[24px] overflow-hidden p-6 shadow-lg mb-8 transition-transform hover:scale-[1.02]"
-        style={{ background: 'linear-gradient(90deg, #AED8D3 0%, #FAD8A0 100%)' }}
+        className="relative h-44 rounded-[24px] overflow-hidden p-6 shadow-lg mb-8 transition-all hover:scale-[1.01]"
+        style={{ background: widgetMode === 'balance' ? 'linear-gradient(90deg, #AED8D3 0%, #FAD8A0 100%)' : 'linear-gradient(90deg, #F9B29B 0%, #C8E6C9 100%)' }}
       >
         <div className="relative z-10">
-          <h2 className="text-slate-800 font-bold mb-1">Dans ma Poche</h2>
-          <div className="text-3xl font-black text-liquid-green mb-1">
-            {balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} DH
+          <h2 className="text-slate-800 font-bold mb-1">
+            {widgetMode === 'balance' ? 'Dans ma Poche' : 'Dépenses Hebdo'}
+          </h2>
+          <div className="text-3xl font-black text-slate-900 mb-1">
+            {widgetMode === 'balance' 
+              ? `${balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} DH`
+              : `${weeklyAchat.toLocaleString('fr-FR')} DH`}
           </div>
-          <p className="text-xs text-slate-700 opacity-80">Argent liquide disponible</p>
+          <p className="text-xs text-slate-700 font-medium opacity-80">
+            {widgetMode === 'balance' ? 'Argent liquide disponible' : 'Cumul de vos achats cette semaine'}
+          </p>
         </div>
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-20 transform scale-150 text-teal-brand">
-          <ShoppingCart size={80} />
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-20 transform scale-150 text-slate-900">
+          {widgetMode === 'balance' ? <Wallet size={80} /> : <TrendingDown size={80} />}
         </div>
       </motion.div>
 
@@ -74,11 +84,17 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank }:
 
       {/* Quick Actions */}
       <div className="grid grid-cols-2 gap-3 mb-8">
-        <button className="flex items-center justify-center gap-2 h-14 bg-red-100 text-danger-red rounded-2xl font-bold text-sm hover:bg-red-200 transition-colors shadow-sm">
+        <button 
+          onClick={() => onAddClick('EXPENSE')}
+          className="flex items-center justify-center gap-2 h-14 bg-red-100 text-danger-red rounded-2xl font-bold text-sm hover:bg-red-200 transition-colors shadow-sm active:scale-95 transform"
+        >
           <Plus size={18} />
           <span>Ajouter Achat</span>
         </button>
-        <button className="flex items-center justify-center gap-2 h-14 bg-blue-100 text-bank-blue rounded-2xl font-bold text-sm hover:bg-blue-200 transition-colors shadow-sm">
+        <button 
+          onClick={() => onAddClick('INCOME')}
+          className="flex items-center justify-center gap-2 h-14 bg-blue-100 text-bank-blue rounded-2xl font-bold text-sm hover:bg-blue-200 transition-colors shadow-sm active:scale-95 transform"
+        >
           <Plus size={18} />
           <span>Ajouter Retrait</span>
         </button>
@@ -115,7 +131,12 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank }:
       <div>
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-slate-900 font-bold">Grand Livre</h3>
-          <button className="text-xs font-bold text-rose-600 hover:underline">Voir tout</button>
+          <button 
+            onClick={onViewAll}
+            className="text-xs font-bold text-rose-600 hover:underline"
+          >
+            Voir tout
+          </button>
         </div>
         <div className="space-y-3">
           {transactions.map(tx => (
