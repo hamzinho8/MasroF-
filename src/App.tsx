@@ -24,6 +24,15 @@ interface Transaction {
   date: string;
 }
 
+export interface Reminder {
+  id: string;
+  title: string;
+  time: string;
+  date?: string;
+  enabled: boolean;
+  type: 'ACHAT' | 'RETRAIT' | 'AUTRE';
+}
+
 type Tab = 'home' | 'history' | 'stats' | 'settings';
 
 export default function App() {
@@ -33,6 +42,45 @@ export default function App() {
   const [modalType, setModalType] = useState<'INCOME' | 'EXPENSE'>('EXPENSE');
   const [widgetMode, setWidgetMode] = useState<'balance' | 'spending'>('balance');
   const [aiNotifications, setAiNotifications] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [currency, setCurrency] = useState('DH');
+  const [language, setLanguage] = useState<'Français' | 'العربية' | 'English'>('Français');
+
+  const translations = {
+    'Français': {
+      accueil: 'Accueil',
+      historique: 'Historique',
+      stats: 'Stats',
+      options: 'Options',
+      trésorerie: 'Votre trésorerie, simplifiée',
+    },
+    'العربية': {
+      accueil: 'الرئيسية',
+      historique: 'السجل',
+      stats: 'الإحصائيات',
+      options: 'الإعدادات',
+      trésorerie: 'خزينتك، بكل بساطة',
+    },
+    'English': {
+      accueil: 'Home',
+      historique: 'History',
+      stats: 'Stats',
+      options: 'Settings',
+      trésorerie: 'Your treasury, simplified',
+    }
+  };
+
+  const t = translations[language as keyof typeof translations] || translations['Français'];
+  const isRtl = language === 'العربية';
+  const [userProfile, setUserProfile] = useState({
+    name: 'Hamza Houam',
+    email: 'houamhamza8@gmail.com',
+    avatar: ''
+  });
+  const [reminders, setReminders] = useState<Reminder[]>([
+    { id: 'rem-1', title: 'Saisir mes achats', time: '22:00', enabled: true, type: 'ACHAT' },
+    { id: 'rem-2', title: 'Retrait d\'argent', time: '07:45', enabled: false, type: 'RETRAIT' }
+  ]);
 
   React.useEffect(() => {
     const timer = setTimeout(() => setShowSplash(false), 2000);
@@ -97,12 +145,13 @@ export default function App() {
             onAddClick={openModal}
             onViewAll={() => setActiveTab('history')}
             widgetMode={widgetMode}
+            language={language}
           />
         );
       case 'stats':
-        return <Stats />;
+        return <Stats language={language} />;
       case 'history':
-        return <HistoryView transactions={transactions} />;
+        return <HistoryView transactions={transactions} language={language} />;
       case 'settings':
         return (
           <SettingsView 
@@ -111,6 +160,17 @@ export default function App() {
             onResetTransactions={resetTransactions} 
             aiNotifications={aiNotifications}
             onAiNotificationsChange={setAiNotifications}
+            isDarkMode={isDarkMode}
+            onDarkModeChange={setIsDarkMode}
+            currency={currency}
+            onCurrencyChange={setCurrency}
+            language={language}
+            onLanguageChange={setLanguage}
+            userProfile={userProfile}
+            onProfileUpdate={setUserProfile}
+            reminders={reminders}
+            onRemindersChange={setReminders}
+            transactions={transactions}
           />
         );
       default:
@@ -123,19 +183,23 @@ export default function App() {
             onAddClick={openModal}
             onViewAll={() => setActiveTab('history')}
             widgetMode={widgetMode}
+            language={language}
           />
         );
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F0F7F8] flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden font-sans">
+    <div 
+      dir={isRtl ? 'rtl' : 'ltr'}
+      className={`min-h-screen ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F0F7F8]'} flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden font-sans transition-colors duration-500`}
+    >
       <AnimatePresence>
         {showSplash && (
           <motion.div 
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-teal-light flex flex-col items-center justify-center max-w-md mx-auto"
+            className={`fixed inset-0 z-[100] ${isDarkMode ? 'bg-[#1A1A1A]' : 'bg-teal-light'} flex flex-col items-center justify-center max-w-md mx-auto`}
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
@@ -159,57 +223,61 @@ export default function App() {
               transition={{ delay: 0.6 }}
               className="text-slate-500 font-medium mt-2"
             >
-              Votre trésorerie, simplifiée
+              {t.trésorerie}
             </motion.p>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Header */}
-      <header className="p-6 flex items-center justify-between">
+      <header className={`p-6 flex items-center justify-between transition-colors ${isDarkMode ? 'bg-[#1A1A1A]' : ''}`}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 shadow-sm rounded-xl overflow-hidden bg-white flex items-center justify-center border border-teal-brand/10">
+          <div className={`w-10 h-10 shadow-sm rounded-xl overflow-hidden flex items-center justify-center border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-teal-brand/10'}`}>
             <MasrofLogo className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-black text-teal-brand tracking-tight">MasroF</h1>
+          <h1 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-teal-brand'} tracking-tight`}>MasroF</h1>
         </div>
-        <button className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 shadow-sm border border-slate-100">
+        <button className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm border transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-100 text-slate-400'}`}>
           <Search size={20} />
         </button>
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 bg-white rounded-t-[32px] p-6 shadow-even pb-28 overflow-y-auto">
+      <main className={`flex-1 rounded-t-[32px] p-6 shadow-even pb-28 overflow-y-auto transition-colors ${isDarkMode ? 'bg-slate-900 shadow-none' : 'bg-white'}`}>
         <AnimatePresence mode="wait">
           {renderContent()}
         </AnimatePresence>
       </main>
 
       {/* Bottom Nav */}
-      <nav className="absolute bottom-0 left-0 right-0 h-20 bg-white/80 backdrop-blur-md border-t border-slate-100 flex items-center justify-around px-2 z-20">
+      <nav className={`absolute bottom-0 left-0 right-0 h-20 backdrop-blur-md border-t flex items-center justify-around px-2 z-20 transition-colors ${isDarkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-100'}`}>
         <TabButton 
           active={activeTab === 'home'} 
           onClick={() => setActiveTab('home')} 
           icon={<HomeIcon size={22} />} 
-          label="Accueil" 
+          label={t.accueil} 
+          isDarkMode={isDarkMode}
         />
         <TabButton 
           active={activeTab === 'history'} 
           onClick={() => setActiveTab('history')} 
           icon={<History size={22} />} 
-          label="Historique" 
+          label={t.historique} 
+          isDarkMode={isDarkMode}
         />
         <TabButton 
           active={activeTab === 'stats'} 
           onClick={() => setActiveTab('stats')} 
           icon={<BarChart3 size={22} />} 
-          label="Stats" 
+          label={t.stats} 
+          isDarkMode={isDarkMode}
         />
         <TabButton 
           active={activeTab === 'settings'} 
           onClick={() => setActiveTab('settings')} 
           icon={<SettingsIcon size={22} />} 
-          label="Options" 
+          label={t.options} 
+          isDarkMode={isDarkMode}
         />
       </nav>
 
@@ -223,11 +291,11 @@ export default function App() {
   );
 }
 
-function TabButton({ active, onClick, icon, label }: { active: boolean, onClick: () => void, icon: React.ReactNode, label: string }) {
+function TabButton({ active, onClick, icon, label, isDarkMode }: { active: boolean, onClick: () => void, icon: React.ReactNode, label: string, isDarkMode: boolean }) {
   return (
     <button 
       onClick={onClick}
-      className={`flex flex-col items-center gap-1 transition-all duration-300 relative ${active ? 'text-teal-brand' : 'text-slate-400'}`}
+      className={`flex flex-col items-center gap-1 transition-all duration-300 relative ${active ? 'text-teal-brand' : (isDarkMode ? 'text-slate-500' : 'text-slate-400')}`}
     >
       {active && (
         <motion.div 

@@ -22,22 +22,95 @@ interface Transaction {
   date: string;
 }
 
-const CATEGORIES = ['Tous', 'Nourriture', 'Shopping', 'Transport', 'Loisirs', 'Autres'];
+
 
 interface HistoryProps {
   transactions: Transaction[];
+  language: string;
 }
 
 type FilterType = 'ALL' | 'INCOME' | 'EXPENSE';
 type SortType = 'DATE_DESC' | 'DATE_ASC' | 'AMOUNT_DESC' | 'AMOUNT_ASC';
 
-export default function History({ transactions }: HistoryProps) {
+export default function History({ transactions, language }: HistoryProps) {
+  const translations = {
+    'Français': {
+      title: 'Grand Livre',
+      subtitle: 'Historique détaillé de vos transactions',
+      searchPlaceholder: 'Rechercher une transaction...',
+      tous: 'Tous',
+      achats: 'Achats',
+      retraits: 'Retraits',
+      sortBy: 'Trier par',
+      important: 'Important',
+      noResult: 'Aucune transaction ne correspond à vos critères.',
+      resetFilters: 'Réinitialiser les filtres',
+      exportData: 'Exporter les données (PDF)',
+      dateRecent: 'Date (Récents)',
+      dateAncien: 'Date (Anciens)',
+      montantMax: 'Montant (Max)',
+      montantMin: 'Montant (Min)',
+      nourriture: 'Nourriture',
+      shopping: 'Shopping',
+      transport: 'Transport',
+      loisirs: 'Loisirs',
+      autres: 'Autres',
+    },
+    'العربية': {
+      title: 'السجل العام',
+      subtitle: 'تاريخ مفصل لمعاملاتك',
+      searchPlaceholder: 'البحث عن معاملة...',
+      tous: 'الكل',
+      achats: 'المشتريات',
+      retraits: 'السحوبات',
+      sortBy: 'ترتيب حسب',
+      important: 'مهم',
+      noResult: 'لا توجد معاملات تطابق معاييرك.',
+      resetFilters: 'إعادة ضبط الفلاتر',
+      exportData: 'تصدير البيانات (PDF)',
+      dateRecent: 'التاريخ (الأحدث)',
+      dateAncien: 'التاريخ (الأقدم)',
+      montantMax: 'المبلغ (الأقصى)',
+      montantMin: 'المبلغ (الأدنى)',
+      nourriture: 'طعام',
+      shopping: 'تسوق',
+      transport: 'نقل',
+      loisirs: 'ترفيه',
+      autres: 'أخرى',
+    },
+    'English': {
+      title: 'General Ledger',
+      subtitle: 'Detailed history of your transactions',
+      searchPlaceholder: 'Search a transaction...',
+      tous: 'All',
+      achats: 'Purchases',
+      retraits: 'Withdrawals',
+      sortBy: 'Sort by',
+      important: 'Important',
+      noResult: 'No transactions match your criteria.',
+      resetFilters: 'Reset filters',
+      exportData: 'Export data (PDF)',
+      dateRecent: 'Date (Newest)',
+      dateAncien: 'Date (Oldest)',
+      montantMax: 'Amount (Max)',
+      montantMin: 'Amount (Min)',
+      nourriture: 'Food',
+      shopping: 'Shopping',
+      transport: 'Transport',
+      loisirs: 'Leisure',
+      autres: 'Others',
+    }
+  };
+
+  const t = translations[language as keyof typeof translations] || translations['Français'];
+  const CATEGORIES = [t.tous, t.nourriture, t.shopping, t.transport, t.loisirs, t.autres];
+
   const [filter, setFilter] = useState<FilterType>('ALL');
   const [sortBy, setSortBy] = useState<SortType>('DATE_DESC');
   const [searchQuery, setSearchQuery] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('Tous');
+  const [selectedCategory, setSelectedCategory] = useState<string>(t.tous);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const parseTxDate = (dateStr: string) => {
@@ -94,8 +167,8 @@ export default function History({ transactions }: HistoryProps) {
       className="space-y-6"
     >
       <div>
-        <h2 className="text-2xl font-black text-slate-800 mb-2">Grand Livre</h2>
-        <p className="text-sm text-slate-500 font-medium">Historique détaillé de vos transactions</p>
+        <h2 className="text-2xl font-black text-slate-800 mb-2">{t.title}</h2>
+        <p className="text-sm text-slate-500 font-medium">{t.subtitle}</p>
       </div>
 
       {/* Search & Filter Bar */}
@@ -104,7 +177,7 @@ export default function History({ transactions }: HistoryProps) {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input 
             type="text" 
-            placeholder="Rechercher une transaction..." 
+            placeholder={t.searchPlaceholder} 
             className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-teal-brand/20 transition-all font-medium"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -113,9 +186,9 @@ export default function History({ transactions }: HistoryProps) {
 
         <div className="flex gap-2 items-center">
           <div className="flex-1 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            <FilterTab active={filter === 'ALL'} onClick={() => { setFilter('ALL'); setSelectedCategory('Tous'); }} label="Tous" />
-            <FilterTab active={filter === 'EXPENSE'} onClick={() => setFilter('EXPENSE')} label="Achats" color="text-danger-red" bg="bg-red-50" />
-            <FilterTab active={filter === 'INCOME'} onClick={() => { setFilter('INCOME'); setSelectedCategory('Tous'); }} label="Retraits" color="text-bank-blue" bg="bg-blue-50" />
+            <FilterTab active={filter === 'ALL'} onClick={() => { setFilter('ALL'); setSelectedCategory(t.tous); }} label={t.tous} />
+            <FilterTab active={filter === 'EXPENSE'} onClick={() => setFilter('EXPENSE')} label={t.achats} color="text-danger-red" bg="bg-red-50" />
+            <FilterTab active={filter === 'INCOME'} onClick={() => { setFilter('INCOME'); setSelectedCategory(t.tous); }} label={t.retraits} color="text-bank-blue" bg="bg-blue-50" />
           </div>
           
           <button 
@@ -190,17 +263,17 @@ export default function History({ transactions }: HistoryProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wider">
           <ArrowUpDown size={14} />
-          <span>Trier par</span>
+          <span>{t.sortBy}</span>
         </div>
         <select 
           className="text-xs font-bold text-teal-brand bg-teal-brand/5 px-3 py-1.5 rounded-lg focus:outline-none border-none transition-colors"
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortType)}
         >
-          <option value="DATE_DESC">Date (Récents)</option>
-          <option value="DATE_ASC">Date (Anciens)</option>
-          <option value="AMOUNT_DESC">Montant (Max)</option>
-          <option value="AMOUNT_ASC">Montant (Min)</option>
+          <option value="DATE_DESC">{t.dateRecent}</option>
+          <option value="DATE_ASC">{t.dateAncien}</option>
+          <option value="AMOUNT_DESC">{t.montantMax}</option>
+          <option value="AMOUNT_ASC">{t.montantMin}</option>
         </select>
       </div>
 
@@ -224,9 +297,9 @@ export default function History({ transactions }: HistoryProps) {
                 <div className="flex items-center gap-2 mb-0.5">
                   <p className="font-bold text-slate-800 text-sm truncate">{tx.label}</p>
                   {tx.amount > 1000 && (
-                    <span className="px-1.5 py-0.5 rounded-md bg-gold-soft/10 text-gold-deep text-[8px] font-black uppercase">Important</span>
+                    <span className="px-1.5 py-0.5 rounded-md bg-gold-soft/10 text-gold-deep text-[8px] font-black uppercase">{t.important}</span>
                   )}
-                </div>
+</div>
                 <div className="flex items-center gap-3 text-slate-400">
                   <span className="text-[10px] flex items-center gap-1 font-medium italic">
                     <Calendar size={10} />
@@ -254,12 +327,12 @@ export default function History({ transactions }: HistoryProps) {
              <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-200">
                 <Filter size={32} />
              </div>
-              <p className="text-slate-400 font-medium text-sm">Aucune transaction ne correspond à vos critères.</p>
+              <p className="text-slate-400 font-medium text-sm">{t.noResult}</p>
               <button 
-                onClick={() => {setFilter('ALL'); setSearchQuery(''); setSelectedCategory('Tous'); clearDateRange();}}
+                onClick={() => {setFilter('ALL'); setSearchQuery(''); setSelectedCategory(t.tous); clearDateRange();}}
                 className="text-xs font-black text-teal-brand uppercase tracking-widest hover:underline"
               >
-                Réinitialiser les filtres
+                {t.resetFilters}
               </button>
           </div>
         )}
@@ -269,7 +342,7 @@ export default function History({ transactions }: HistoryProps) {
       <div className="pt-4">
         <button className="w-full h-14 border-2 border-dashed border-slate-200 rounded-3xl flex items-center justify-center gap-3 text-slate-400 font-bold text-sm hover:border-teal-brand hover:text-teal-brand transition-all">
           <Download size={18} />
-          <span>Exporter les données (PDF/CSV)</span>
+          <span>{t.exportData}</span>
         </button>
       </div>
     </motion.div>

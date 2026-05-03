@@ -24,16 +24,73 @@ interface HomeProps {
   onAddClick: (type: 'INCOME' | 'EXPENSE') => void;
   onViewAll: () => void;
   widgetMode: 'balance' | 'spending';
+  language: string;
 }
 
-export default function Home({ balance, transactions, weeklyAchat, weeklyBank, onAddClick, onViewAll, widgetMode }: HomeProps) {
+export default function Home({ balance, transactions, weeklyAchat, weeklyBank, onAddClick, onViewAll, widgetMode, language }: HomeProps) {
+  const translations = {
+    'Français': {
+      bonjour: 'Bonjour',
+      dansMaPoche: 'Dans ma Poche',
+      depensesHebdo: 'Dépenses Hebdo',
+      argentDispo: 'Argent liquide disponible',
+      cumulAchats: 'Cumul de vos achats cette semaine',
+      sommaire: 'Sommaire cette Semaine',
+      achatTotal: 'Achat Total',
+      tirageBanque: 'Tirage Banque',
+      ajouterAchat: 'Ajouter Achat',
+      ajouterRetrait: 'Ajouter Retrait',
+      analyses: 'Analyses de Trésorerie',
+      grandLivre: 'Grand Livre',
+      voirTout: 'Voir tout',
+      retraits: 'Retraits',
+      depenses: 'Dépenses',
+    },
+    'العربية': {
+      bonjour: 'مرحباً',
+      dansMaPoche: 'في جيبي',
+      depensesHebdo: 'المصاريف الأسبوعية',
+      argentDispo: 'المبلغ المتوفر حالياً',
+      cumulAchats: 'مجموع مشترياتك هذا الأسبوع',
+      sommaire: 'ملخص الأسبوع',
+      achatTotal: 'مجموع المشتريات',
+      tirageBanque: 'سحب بنكي',
+      ajouterAchat: 'إضافة شراء',
+      ajouterRetrait: 'إضافة سحب',
+      analyses: 'تحليلات الخزينة',
+      grandLivre: 'السجل العام',
+      voirTout: 'عرض الكل',
+      retraits: 'السحوبات',
+      depenses: 'المصاريف',
+    },
+    'English': {
+      bonjour: 'Hello',
+      dansMaPoche: 'In my Pocket',
+      depensesHebdo: 'Weekly Spending',
+      argentDispo: 'Cash available',
+      cumulAchats: 'Your total purchases this week',
+      sommaire: 'Weekly Summary',
+      achatTotal: 'Total Purchase',
+      tirageBanque: 'Bank Withdrawal',
+      ajouterAchat: 'Add Purchase',
+      ajouterRetrait: 'Add Withdrawal',
+      analyses: 'Treasury Analytics',
+      grandLivre: 'General Ledger',
+      voirTout: 'View all',
+      retraits: 'Withdrawals',
+      depenses: 'Expenses',
+    }
+  };
+
+  const t = translations[language as keyof typeof translations] || translations['Français'];
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
     >
-      <p className="text-lg font-medium text-slate-600 mb-5">Bonjour, Hamza !</p>
+      <p className="text-lg font-medium text-slate-600 mb-5">{t.bonjour}, Hamza !</p>
 
       {/* Main Widget Card */}
       <motion.div 
@@ -45,7 +102,7 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
       >
         <div className="relative z-10">
           <h2 className="text-slate-800 font-bold mb-1">
-            {widgetMode === 'balance' ? 'Dans ma Poche' : 'Dépenses Hebdo'}
+            {widgetMode === 'balance' ? t.dansMaPoche : t.depensesHebdo}
           </h2>
           <div className="text-3xl font-black text-slate-900 mb-1">
             {widgetMode === 'balance' 
@@ -53,7 +110,7 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
               : `${weeklyAchat.toLocaleString('fr-FR')} DH`}
           </div>
           <p className="text-xs text-slate-700 font-medium opacity-80">
-            {widgetMode === 'balance' ? 'Argent liquide disponible' : 'Cumul de vos achats cette semaine'}
+            {widgetMode === 'balance' ? t.argentDispo : t.cumulAchats}
           </p>
         </div>
         <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-20 transform scale-150 text-slate-900">
@@ -63,18 +120,18 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
 
       {/* Weekly Summary */}
       <div className="mb-8">
-        <h3 className="text-slate-900 font-bold mb-3">Sommaire cette Semaine</h3>
+        <h3 className="text-slate-900 font-bold mb-3">{t.sommaire}</h3>
         <div className="grid grid-cols-2 gap-3">
           <div className="p-4 rounded-2xl border-2 border-danger-red/20 bg-danger-red/5 relative overflow-hidden group hover:border-danger-red/40 transition-all">
             <div className="relative z-10">
-              <p className="text-xs text-slate-500 mb-1 font-medium">Achat Total</p>
+              <p className="text-xs text-slate-500 mb-1 font-medium">{t.achatTotal}</p>
               <p className="text-xl font-black text-danger-red leading-none">{weeklyAchat} DH</p>
             </div>
             <ShoppingCart className="absolute -right-2 -bottom-2 text-danger-red/10 rotate-12 group-hover:scale-110 transition-transform" size={48} />
           </div>
           <div className="p-4 rounded-2xl border-2 border-bank-blue/20 bg-bank-blue/5 relative overflow-hidden group hover:border-bank-blue/40 transition-all">
             <div className="relative z-10">
-              <p className="text-xs text-slate-500 mb-1 font-medium">Tirage Banque</p>
+              <p className="text-xs text-slate-500 mb-1 font-medium">{t.tirageBanque}</p>
               <p className="text-xl font-black text-bank-blue leading-none">{weeklyBank} DH</p>
             </div>
             <Plus className="absolute -right-2 -bottom-2 text-bank-blue/10 rotate-12 group-hover:scale-110 transition-transform" size={48} />
@@ -89,23 +146,23 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
           className="flex items-center justify-center gap-2 h-14 bg-red-100 text-danger-red rounded-2xl font-bold text-sm hover:bg-red-200 transition-colors shadow-sm active:scale-95 transform"
         >
           <Plus size={18} />
-          <span>Ajouter Achat</span>
+          <span>{t.ajouterAchat}</span>
         </button>
         <button 
           onClick={() => onAddClick('INCOME')}
           className="flex items-center justify-center gap-2 h-14 bg-blue-100 text-bank-blue rounded-2xl font-bold text-sm hover:bg-blue-200 transition-colors shadow-sm active:scale-95 transform"
         >
           <Plus size={18} />
-          <span>Ajouter Retrait</span>
+          <span>{t.ajouterRetrait}</span>
         </button>
       </div>
 
       {/* Stats Quick View */}
       <div className="mb-8">
-        <h3 className="text-slate-900 font-bold mb-3">Analyses de Trésorerie</h3>
+        <h3 className="text-slate-900 font-bold mb-3">{t.analyses}</h3>
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-2 px-2">
           <div className="min-w-[160px] p-4 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
-            <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">Retraits</p>
+            <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">{t.retraits}</p>
             <p className="text-lg font-black text-slate-800">8 500 DH</p>
             <div className="h-10 mt-2 flex items-end gap-1 px-1">
               <div className="flex-1 bg-teal-brand/20 h-4 rounded-full" />
@@ -115,7 +172,7 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
             </div>
           </div>
           <div className="min-w-[160px] p-4 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
-            <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">Dépenses</p>
+            <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">{t.depenses}</p>
             <p className="text-lg font-black text-slate-800">3 200 DH</p>
             <div className="h-10 mt-2 flex items-end gap-1 px-1">
               <div className="flex-1 bg-rose-400/20 h-8 rounded-full" />
@@ -130,12 +187,12 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
       {/* Recent Activity */}
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-slate-900 font-bold">Grand Livre</h3>
+          <h3 className="text-slate-900 font-bold">{t.grandLivre}</h3>
           <button 
             onClick={onViewAll}
             className="text-xs font-bold text-rose-600 hover:underline"
           >
-            Voir tout
+            {t.voirTout}
           </button>
         </div>
         <div className="space-y-3">
