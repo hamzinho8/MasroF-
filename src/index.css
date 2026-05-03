@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-teal-brand: #107B86;
+  --color-teal-light: #F0F7F8;
+  --color-gold-soft: #E5C366;
+  --color-gold-deep: #B8860B;
+  --color-liquid-green: #145050;
+  --color-danger-red: #B22222;
+  --color-bank-blue: #1E90FF;
+}
+
+body {
+  @apply bg-teal-light text-slate-900;
+  font-family: 'Inter', sans-serif;
+}
