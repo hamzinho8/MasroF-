@@ -6,6 +6,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
@@ -62,7 +64,7 @@ class MainActivity : AppCompatActivity() {
             showTransactionDialog(TransactionType.EXPENSE) 
         }
         
-        bottomNav.setOnItemSelectedListener { item ->
+        bottomNav.setOnItemSelectedListener { item: MenuItem ->
             when(item.itemId) {
                 R.id.nav_home -> true
                 R.id.nav_history -> { 
@@ -131,12 +133,12 @@ class MainActivity : AppCompatActivity() {
         val inputAmount = dialogView.findViewById<EditText>(R.id.inputAmount)
         val chipGroup = dialogView.findViewById<ChipGroup>(R.id.chipGroupCategory)
         val lblCategory = dialogView.findViewById<TextView>(R.id.lblCategory)
-        val categoryScroll = dialogView.findViewById<android.view.View>(R.id.categoryScroll)
+        val categoryScroll = dialogView.findViewById<View>(R.id.categoryScroll)
 
         // Hide category selection for INCOME (transfers from bank don't usually need categories like food/shopping)
         if (type == TransactionType.INCOME) {
-            lblCategory.visibility = android.view.View.GONE
-            categoryScroll.visibility = android.view.View.GONE
+            lblCategory.visibility = View.GONE
+            categoryScroll.visibility = View.GONE
         }
 
         AlertDialog.Builder(this)
