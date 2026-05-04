@@ -1,26 +1,31 @@
 package com.hamza.masrof
 
-import android.content.Context
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.widget.*
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.work.*
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.work.Data
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
+// Expert Corrected Version
 enum class TransactionType { INCOME, EXPENSE }
 
 data class Transaction(
@@ -89,11 +94,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupExpertNotifications() {
         val workManager = WorkManager.getInstance(this)
-
-        // Notification Matin 7:45
         scheduleNotification(workManager, "MORNING", 7, 45)
-        
-        // Notification Soir 22:00
         scheduleNotification(workManager, "EVENING", 22, 0)
     }
 
@@ -109,7 +110,6 @@ class MainActivity : AppCompatActivity() {
         }
         
         val delay = calendar.timeInMillis - now
-        
         val data = Data.Builder().putString("type", type).build()
         
         val request = PeriodicWorkRequestBuilder<NotificationWorker>(24, TimeUnit.HOURS)
