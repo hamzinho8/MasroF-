@@ -29,33 +29,46 @@ import java.util.Calendar
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import com.hamza.masrof.R
-import com.hamza.masrof.databinding.ActivityMainBinding
 
-// Expert Refined Main Activity
+// Expert Refined Main Activity - Robust Version with Explicit Types
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMainBinding
     private var currentBalance = 0.0
     private var transactions = mutableListOf<Transaction>()
     
+    // Explicitly declaring types
+    private lateinit var balanceText: TextView
+    private lateinit var weeklyAchat: TextView
+    private lateinit var weeklyBank: TextView
+    private lateinit var monthlyBank: TextView
+    private lateinit var monthlyStats: TextView
+    private lateinit var bottomNav: BottomNavigationView
+
     private val gson: Gson = Gson()
     private val PREFS_NAME = "Masrof_Expert_Prefs"
     private val KEY_DATA = "expert_transactions"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_main)
 
-        // Button Click Listeners
-        binding.cardBank.setOnClickListener { 
+        // Binding - Explicit generic types <T> are mandatory for some strict compilers
+        balanceText = findViewById<TextView>(R.id.balanceText)
+        weeklyAchat = findViewById<TextView>(R.id.weeklyAchat)
+        weeklyBank = findViewById<TextView>(R.id.weeklyBank)
+        monthlyBank = findViewById<TextView>(R.id.monthlyBank)
+        monthlyStats = findViewById<TextView>(R.id.monthlyStats)
+        bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
+
+        // Button Click Listeners with explicit View types to fix inference errors
+        findViewById<MaterialCardView>(R.id.cardBank).setOnClickListener { 
             showTransactionDialog(TransactionType.INCOME) 
         }
-        binding.cardPurchase.setOnClickListener { 
+        findViewById<MaterialCardView>(R.id.cardPurchase).setOnClickListener { 
             showTransactionDialog(TransactionType.EXPENSE) 
         }
         
-        binding.bottomNav.setOnItemSelectedListener { item: MenuItem ->
+        bottomNav.setOnItemSelectedListener { item: MenuItem ->
             when(item.itemId) {
                 R.id.nav_home -> true
                 R.id.nav_history -> { 
@@ -90,9 +103,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupExpertNotifications() {
-        val workManager = WorkManager.getInstance(this)
-        scheduleNotification(workManager, "MORNING", 7, 45)
-        scheduleNotification(workManager, "EVENING", 22, 0)
+        try {
+            val workManager = WorkManager.getInstance(applicationContext)
+            scheduleNotification(workManager, "MORNING", 7, 45)
+            scheduleNotification(workManager, "EVENING", 22, 0)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun scheduleNotification(workManager: WorkManager, type: String, hour: Int, minute: Int) {
@@ -118,27 +135,34 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showTransactionDialog(type: TransactionType) {
-        val dialogBinding = com.hamza.masrof.databinding.DialogTransactionBinding.inflate(layoutInflater)
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_transaction, null)
         val title = if (type == TransactionType.INCOME) "Rentrée d'Argent" else "Sortie de Caisse"
+        
+        val inputName = dialogView.findViewById<EditText>(R.id.inputName)
+        val inputAmount = dialogView.findViewById<EditText>(R.id.inputAmount)
+        val chipGroup = dialogView.findViewById<ChipGroup>(R.id.chipGroupCategory)
+        val lblCategory = dialogView.findViewById<TextView>(R.id.lblCategory)
+        val categoryScroll = dialogView.findViewById<View>(R.id.categoryScroll)
 
         // Hide category selection for INCOME
         if (type == TransactionType.INCOME) {
-            dialogBinding.lblCategory.visibility = View.GONE
-            dialogBinding.categoryScroll.visibility = View.GONE
+            lblCategory.visibility = View.GONE
+            categoryScroll.visibility = View.GONE
         }
 
         AlertDialog.Builder(this)
             .setTitle(title)
-            .setView(dialogBinding.root)
+            .setView(dialogView)
             .setPositiveButton("Valider") { _, _ ->
-                val name = dialogBinding.inputName.text.toString().ifEmpty { 
+                val name = inputName.text.toString().ifEmpty { 
                     if (type == TransactionType.INCOME) "Revenu" else "Dépense" 
                 }
-                val amount = dialogBinding.inputAmount.text.toString().toDoubleOrNull() ?: 0.0
+                val amountStr = inputAmount.text.toString()
+                val amount = amountStr.toDoubleOrNull() ?: 0.0
                 
                 val category = if (type == TransactionType.INCOME) "Banque" else {
-                    val checkedChipId = dialogBinding.chipGroupCategory.checkedChipId
-                    val chip = dialogBinding.chipGroupCategory.findViewById<Chip>(checkedChipId)
+                    val checkedChipId = chipGroup.checkedChipId
+                    val chip = dialogView.findViewById<Chip>(checkedChipId)
                     chip?.text?.toString() ?: "Autres"
                 }
 
@@ -165,7 +189,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateUI() {
-        binding.balanceText.text = String.format("%.2f DH", currentBalance)
+        balanceText.text = String.format("%.2f DH", currentBalance)
         
         val calendar = Calendar.getInstance()
         val now = calendar.timeInMillis
@@ -187,11 +211,11 @@ class MainActivity : AppCompatActivity() {
         val monthlyExp = transactions.filter { it.type == TransactionType.EXPENSE && it.timestamp >= startOfMonth }.sumOf { it.amount }
         val monthlyInc = transactions.filter { it.type == TransactionType.INCOME && it.timestamp >= startOfMonth }.sumOf { it.amount }
 
-        binding.weeklyAchat.text = String.format("%.0f DH", weeklyExp)
-        binding.weeklyBank.text = String.format("%.0f DH", weeklyInc)
+        weeklyAchat.text = String.format("%.0f DH", weeklyExp)
+        weeklyBank.text = String.format("%.0f DH", weeklyInc)
         
-        binding.monthlyBank.text = String.format("%.0f DH", monthlyInc)
-        binding.monthlyStats.text = String.format("%.0f DH", monthlyExp)
+        monthlyBank.text = String.format("%.0f DH", monthlyInc)
+        monthlyStats.text = String.format("%.0f DH", monthlyExp)
     }
 
     private fun confirmReset() {
@@ -217,8 +241,8 @@ class MainActivity : AppCompatActivity() {
     private fun loadData() {
         val json = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getString(KEY_DATA, null)
         if (json != null) {
-            val type = object : TypeToken<MutableList<Transaction>>() {}.type
-            transactions = gson.fromJson(json, type)
+            val listType = object : TypeToken<MutableList<Transaction>>() {}.type
+            transactions = gson.fromJson(json, listType)
             calculateBalance()
         }
     }
