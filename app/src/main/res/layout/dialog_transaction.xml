@@ -36,4 +36,72 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <TextView
+        android:id="@+id/lblCategory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Catégorie"
+        android:fontFamily="sans-serif-bold"
+        android:textSize="14sp"
+        android:textColor="@color/slate_900" />
+
+    <HorizontalScrollView
+        android:id="@+id/categoryScroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:scrollbars="none">
+        
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupCategory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleSelection="true"
+            app:selectionRequired="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipAlim"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Alimentation"
+                app:chipIcon="@drawable/ic_cart" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipTransp"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Transport"
+                app:chipIcon="@drawable/ic_transaction" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipLoisirs"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Loisirs"
+                app:chipIcon="@drawable/ic_transaction" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipShopping"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Shopping"
+                app:chipIcon="@drawable/ic_cart" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipAutres"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Autres"
+                android:checked="true"
+                app:chipIcon="@drawable/ic_plus" />
+
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
 </LinearLayout>

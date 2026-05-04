@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Binding - Using explicit casts to solve type inference issues
+        // Binding - Using card IDs for the new modern design
         balanceText = findViewById(R.id.balanceText) as TextView
         weeklyAchat = findViewById(R.id.weeklyAchat) as TextView
         weeklyBank = findViewById(R.id.weeklyBank) as TextView
@@ -54,8 +54,8 @@ class MainActivity : AppCompatActivity() {
         monthlyStats = findViewById(R.id.monthlyStats) as TextView
         bottomNav = findViewById(R.id.bottomNav) as com.google.android.material.bottomnavigation.BottomNavigationView
 
-        findViewById<MaterialButton>(R.id.btnBank).setOnClickListener { showTransactionDialog(TransactionType.INCOME) }
-        findViewById<MaterialButton>(R.id.btnPurchase).setOnClickListener { showTransactionDialog(TransactionType.EXPENSE) }
+        findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardBank).setOnClickListener { showTransactionDialog(TransactionType.INCOME) }
+        findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardPurchase).setOnClickListener { showTransactionDialog(TransactionType.EXPENSE) }
         
         bottomNav.setOnItemSelectedListener { item: android.view.MenuItem ->
             when(item.itemId) {
@@ -115,6 +115,15 @@ class MainActivity : AppCompatActivity() {
         val title = if (type == TransactionType.INCOME) "Rentrée d'Argent" else "Sortie de Caisse"
         val inputName = dialogView.findViewById<EditText>(R.id.inputName)
         val inputAmount = dialogView.findViewById<EditText>(R.id.inputAmount)
+        val chipGroup = dialogView.findViewById<com.google.android.material.chip.ChipGroup>(R.id.chipGroupCategory)
+        val lblCategory = dialogView.findViewById<TextView>(R.id.lblCategory)
+        val categoryScroll = dialogView.findViewById<android.view.View>(R.id.categoryScroll)
+
+        // Hide category selection for INCOME (transfers from bank don't usually need categories like food/shopping)
+        if (type == TransactionType.INCOME) {
+            lblCategory.visibility = android.view.View.GONE
+            categoryScroll.visibility = android.view.View.GONE
+        }
 
         AlertDialog.Builder(this)
             .setTitle(title)
@@ -122,16 +131,23 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("Valider") { _, _ ->
                 val name = inputName.text.toString().ifEmpty { if (type == TransactionType.INCOME) "Revenu" else "Dépense" }
                 val amount = inputAmount.text.toString().toDoubleOrNull() ?: 0.0
+                
+                val category = if (type == TransactionType.INCOME) "Banque" else {
+                    val checkedChipId = chipGroup.checkedChipId
+                    val chip = dialogView.findViewById<com.google.android.material.chip.Chip>(checkedChipId)
+                    chip?.text?.toString() ?: "Autres"
+                }
+
                 if (amount > 0) {
-                    addTransaction(name, amount, type)
+                    addTransaction(name, amount, type, category)
                 }
             }
             .setNegativeButton("Fermer", null)
             .show()
     }
 
-    private fun addTransaction(label: String, amount: Double, type: TransactionType) {
-        transactions.add(0, Transaction(label = label, amount = amount, type = type))
+    private fun addTransaction(label: String, amount: Double, type: TransactionType, category: String) {
+        transactions.add(0, Transaction(label = label, amount = amount, type = type, category = category))
         calculateBalance()
         saveData()
         updateUI()
