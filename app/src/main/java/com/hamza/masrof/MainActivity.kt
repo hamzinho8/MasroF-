@@ -25,17 +25,7 @@ import java.util.Calendar
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-// Expert Corrected Version
-enum class TransactionType { INCOME, EXPENSE }
-
-data class Transaction(
-    val id: String = UUID.randomUUID().toString(),
-    val label: String,
-    val amount: Double,
-    val type: TransactionType,
-    val timestamp: Long = System.currentTimeMillis()
-)
-
+// Expert Corrected and Refined Version
 class MainActivity : AppCompatActivity() {
 
     private var currentBalance = 0.0
