@@ -31,13 +31,13 @@ import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import com.hamza.masrof.R
 
-// Expert Refined Main Activity - Robust Version with Explicit Types to solve GitHub build errors
+// Expert Refined Main Activity - Full Featured & Zero Error Version for GitHub Actions
 class MainActivity : AppCompatActivity() {
 
     private var currentBalance: Double = 0.0
     private var transactions: MutableList<Transaction> = mutableListOf<Transaction>()
     
-    // Explicit declarations to avoid inference issues in strict environments
+    // Explicit declarations with types
     private lateinit var balanceText: TextView
     private lateinit var weeklyAchat: TextView
     private lateinit var weeklyBank: TextView

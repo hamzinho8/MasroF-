@@ -49,11 +49,11 @@ class HistoryActivity : AppCompatActivity() {
     private fun setupCategories() {
         categories = mutableListOf(
             Category("Toutes", R.drawable.ic_all, true),
-            Category("Banque", R.drawable.ic_plus),
+            Category("Banque", R.drawable.ic_bank),
             Category("Alimentation", R.drawable.ic_cart),
             Category("Transport", R.drawable.ic_transport),
-            Category("Loisirs", R.drawable.ic_transaction),
-            Category("Shopping", R.drawable.ic_cart),
+            Category("Shopping", R.drawable.ic_shopping),
+            Category("Loisirs", R.drawable.ic_fun),
             Category("Autres", R.drawable.ic_verified)
         )
     }
@@ -84,8 +84,9 @@ class HistoryActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerViews() {
-        // Categories
-        rvCategories.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        // Categories - Using a 2-row horizontal Grid Layout as requested
+        val gridLayoutManager = androidx.recyclerview.widget.GridLayoutManager(this, 2, androidx.recyclerview.widget.GridLayoutManager.HORIZONTAL, false)
+        rvCategories.layoutManager = gridLayoutManager
         rvCategories.adapter = CategoryAdapter(categories) { category ->
             onCategorySelected(category)
         }
@@ -197,10 +198,13 @@ class HistoryActivity : AppCompatActivity() {
                 if (item.type == TransactionType.INCOME) R.color.liquid_green else R.color.danger_red
             )
 
-            holder.icon.setImageResource(if (item.type == TransactionType.INCOME) R.drawable.ic_plus else R.drawable.ic_cart)
-            holder.icon.setTint(ContextCompat.getColor(
+            // Show the specific category icon
+            val catIcon = categories.find { it.name == item.category }?.iconRes ?: R.drawable.ic_verified
+            holder.icon.setImageResource(catIcon)
+            
+            holder.icon.setColorFilter(ContextCompat.getColor(
                 holder.itemView.context,
-                if (item.type == TransactionType.INCOME) R.color.bank_blue else R.color.rose_600
+                if (item.type == TransactionType.INCOME) R.color.teal_brand else R.color.rose_600
             ))
 
             // Show important indicator
