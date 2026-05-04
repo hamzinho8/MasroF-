@@ -138,7 +138,7 @@ class MainActivity : AppCompatActivity() {
                 
                 val category = if (type == TransactionType.INCOME) "Banque" else {
                     val checkedChipId = dialogBinding.chipGroupCategory.checkedChipId
-                    val chip = dialogBinding.root.findViewById<Chip>(checkedChipId)
+                    val chip = dialogBinding.chipGroupCategory.findViewById<Chip>(checkedChipId)
                     chip?.text?.toString() ?: "Autres"
                 }
 
