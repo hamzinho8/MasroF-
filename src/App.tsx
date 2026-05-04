@@ -234,13 +234,15 @@ export default function App() {
 
       {/* Header */}
       <header className={`p-6 flex items-center justify-between transition-colors ${isDarkMode ? 'bg-[#1A1A1A]' : ''}`}>
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 shadow-sm rounded-xl overflow-hidden flex items-center justify-center border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-teal-brand/10'}`}>
-            <MasrofLogo className="w-8 h-8" currency={currency} />
+        <div className="flex items-center gap-4">
+          <div className={`w-12 h-12 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.1)] rounded-2xl overflow-hidden flex items-center justify-center border-2 transition-transform active:scale-95 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-white'}`}>
+            <MasrofLogo className="w-9 h-9" currency={currency} />
           </div>
-          <h1 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-teal-brand'} tracking-tight`}>MasroF</h1>
+          <h1 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-800'} tracking-tight`}>
+            Masro<span className="text-teal-brand">F</span>
+          </h1>
         </div>
-        <button className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm border transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-100 text-slate-400'}`}>
+        <button className={`w-12 h-12 rounded-[20px] flex items-center justify-center shadow-sm border-2 transition-all active:scale-90 ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-50 text-slate-400 hover:border-teal-brand/10 hover:text-teal-brand hover:shadow-lg hover:shadow-teal-brand/5'}`}>
           <Search size={20} />
         </button>
       </header>

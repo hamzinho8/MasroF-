@@ -168,47 +168,72 @@ export default function History({ transactions, language, currency }: HistoryPro
       animate={{ opacity: 1, scale: 1 }}
       className="space-y-6"
     >
-      <div>
-        <h2 className="text-2xl font-black text-slate-800 mb-2">{t.title}</h2>
-        <p className="text-sm text-slate-500 font-medium">{t.subtitle}</p>
+      <div className="flex items-center justify-between">
+        <div className="space-y-0.5">
+          <h2 className="text-3xl font-black text-slate-900 tracking-tighter">{t.title}</h2>
+          <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">{t.subtitle}</p>
+        </div>
+        <div className="flex gap-2">
+          <button className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 active:scale-95 transition-all">
+            <Download size={18} />
+          </button>
+        </div>
       </div>
 
-      {/* Search & Filter Bar */}
-      <div className="space-y-3">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+      {/* Modern Search & Filters Container */}
+      <div className="bg-slate-50/50 rounded-[40px] p-6 space-y-6">
+        <div className="relative group">
+          <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+            <Search className="text-slate-300 group-focus-within:text-teal-brand transition-all duration-300" size={18} />
+          </div>
           <input 
-            type="text" 
-            placeholder={t.searchPlaceholder} 
-            className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-teal-brand/20 transition-all font-medium"
+            type="text"
+            placeholder={t.searchPlaceholder}
+            className="w-full bg-white border-none rounded-[24px] py-4 pl-14 pr-6 text-sm font-bold text-slate-800 placeholder:text-slate-300 placeholder:font-medium focus:ring-4 focus:ring-teal-brand/5 shadow-sm transition-all outline-none"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
-        <div className="flex gap-2 items-center">
-          <div className="flex-1 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            <FilterTab active={filter === 'ALL'} onClick={() => { setFilter('ALL'); setSelectedCategory(t.tous); }} label={t.tous} />
-            <FilterTab active={filter === 'EXPENSE'} onClick={() => setFilter('EXPENSE')} label={t.achats} color="text-danger-red" bg="bg-red-50" />
-            <FilterTab active={filter === 'INCOME'} onClick={() => { setFilter('INCOME'); setSelectedCategory(t.tous); }} label={t.retraits} color="text-bank-blue" bg="bg-blue-50" />
+        <div className="flex items-center gap-3">
+          <div className="flex-1 bg-white p-1 rounded-[22px] flex items-center relative shadow-sm">
+            {(['ALL', 'EXPENSE', 'INCOME'] as const).map((type) => (
+              <button 
+                key={type}
+                onClick={() => {
+                  setFilter(type);
+                  if (type === 'INCOME') setSelectedCategory(t.tous);
+                }}
+                className={`relative z-10 flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all duration-500 active:scale-95 ${filter === type ? 'text-white' : 'text-slate-400'}`}
+              >
+                {type === 'ALL' ? t.tous : type === 'EXPENSE' ? t.achats : t.retraits}
+                {filter === type && (
+                  <motion.div 
+                    layoutId="activeFilterTab"
+                    className="absolute inset-0 bg-slate-800 rounded-[18px] -z-10"
+                    transition={{ type: "spring", bounce: 0.1, duration: 0.5 }}
+                  />
+                )}
+              </button>
+            ))}
           </div>
           
           <button 
             onClick={() => setShowDatePicker(!showDatePicker)}
-            className={`p-2.5 rounded-2xl border transition-all ${showDatePicker || startDate || endDate ? 'bg-teal-brand text-white border-teal-brand shadow-md' : 'bg-white text-slate-400 border-slate-100 shadow-sm'}`}
+            className={`w-12 h-12 rounded-[20px] flex items-center justify-center transition-all active:scale-90 shadow-sm ${showDatePicker || startDate || endDate ? 'bg-teal-brand text-white' : 'bg-white text-slate-400'}`}
           >
             <Calendar size={18} />
           </button>
         </div>
 
-        {/* Category Filter - Only shows for Achats or All */}
+        {/* Category Scrollbar */}
         {filter !== 'INCOME' && (
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
             {CATEGORIES.map(cat => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-tight transition-all whitespace-nowrap ${selectedCategory === cat ? 'bg-slate-800 text-white shadow-sm' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
+                className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${selectedCategory === cat ? 'bg-teal-brand/10 border-teal-brand/20 text-teal-brand' : 'bg-white border-transparent text-slate-400'}`}
               >
                 {cat}
               </button>
@@ -223,33 +248,33 @@ export default function History({ transactions, language, currency }: HistoryPro
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden bg-slate-50 rounded-2xl border border-slate-100"
+              className="overflow-hidden bg-white rounded-[32px] border-2 border-slate-50 shadow-xl shadow-slate-200/50"
             >
-              <div className="p-4 space-y-4">
-                <div className="flex justify-between items-center mb-1">
+              <div className="p-6 space-y-5">
+                <div className="flex justify-between items-center">
                   <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Période personnalisé</span>
                   {(startDate || endDate) && (
-                    <button onClick={clearDateRange} className="text-[10px] font-black uppercase text-rose-500 hover:underline flex items-center gap-1">
-                      <X size={10} />
+                    <button onClick={clearDateRange} className="px-3 py-1.5 rounded-lg bg-rose-50 text-[10px] font-black uppercase text-rose-500 flex items-center gap-2 transition-all hover:bg-rose-100">
+                      <X size={12} />
                       Effacer
                     </button>
                   )}
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[8px] font-bold text-slate-500 ml-1">DEPUIS</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black uppercase text-slate-400 tracking-tighter ml-2">DEPUIS</label>
                     <input 
                       type="date" 
-                      className="w-full h-10 bg-white border border-slate-200 rounded-xl px-3 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-brand/20"
+                      className="w-full bg-slate-50 border-none rounded-2xl p-3 text-xs font-bold text-slate-700 outline-none transition-all focus:bg-slate-100"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                     />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[8px] font-bold text-slate-500 ml-1">JUSQU'À</label>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black uppercase text-slate-400 tracking-tighter ml-2">JUSQU'À</label>
                     <input 
                       type="date" 
-                      className="w-full h-10 bg-white border border-slate-200 rounded-xl px-3 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-brand/20"
+                      className="w-full bg-slate-50 border-none rounded-2xl p-3 text-xs font-bold text-slate-700 outline-none transition-all focus:bg-slate-100"
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
                     />
@@ -262,19 +287,19 @@ export default function History({ transactions, language, currency }: HistoryPro
       </div>
 
       {/* Sorting Controls */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wider">
-          <ArrowUpDown size={14} />
+      <div className="flex items-center justify-between bg-white/50 px-4 py-3 rounded-2xl border border-slate-50">
+        <div className="flex items-center gap-2 text-slate-300 text-[10px] font-black uppercase tracking-widest">
+          <ArrowUpDown size={12} />
           <span>{t.sortBy}</span>
         </div>
         <button 
           onClick={() => setShowSortModal(true)}
-          className="text-xs font-black text-teal-brand bg-teal-brand/10 px-4 py-2 rounded-xl flex items-center gap-2 transition-all active:scale-95"
+          className="text-[10px] font-black text-slate-800 flex items-center gap-2 transition-all active:scale-95 px-3 py-1.5 rounded-lg hover:bg-slate-50"
         >
           {sortBy === 'DATE_DESC' ? t.dateRecent : 
            sortBy === 'DATE_ASC' ? t.dateAncien : 
            sortBy === 'AMOUNT_DESC' ? t.montantMax : t.montantMin}
-          <ChevronDown size={14} />
+          <ChevronDown size={14} className="text-teal-brand" />
         </button>
       </div>
 

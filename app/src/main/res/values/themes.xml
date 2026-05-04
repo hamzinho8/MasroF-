@@ -1,9 +1,9 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.MasroF" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/indigo_600</item>
-        <item name="android:statusBarColor">@color/slate_50</item>
+        <item name="android:statusBarColor">@color/white</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowBackground">@color/slate_50</item>
+        <item name="android:windowBackground">@color/indigo_50</item>
     </style>
 
     <style name="Theme.MasroF.Dialog" parent="Theme.Material3.DayNight.Dialog">
