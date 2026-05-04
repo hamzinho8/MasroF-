@@ -19,6 +19,9 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.util.Calendar
@@ -52,10 +55,10 @@ class MainActivity : AppCompatActivity() {
         weeklyBank = findViewById(R.id.weeklyBank) as TextView
         monthlyBank = findViewById(R.id.monthlyBank) as TextView
         monthlyStats = findViewById(R.id.monthlyStats) as TextView
-        bottomNav = findViewById(R.id.bottomNav) as com.google.android.material.bottomnavigation.BottomNavigationView
+        bottomNav = findViewById(R.id.bottomNav)
 
-        findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardBank).setOnClickListener { showTransactionDialog(TransactionType.INCOME) }
-        findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardPurchase).setOnClickListener { showTransactionDialog(TransactionType.EXPENSE) }
+        findViewById<MaterialCardView>(R.id.cardBank).setOnClickListener { showTransactionDialog(TransactionType.INCOME) }
+        findViewById<MaterialCardView>(R.id.cardPurchase).setOnClickListener { showTransactionDialog(TransactionType.EXPENSE) }
         
         bottomNav.setOnItemSelectedListener { item: android.view.MenuItem ->
             when(item.itemId) {
@@ -115,7 +118,7 @@ class MainActivity : AppCompatActivity() {
         val title = if (type == TransactionType.INCOME) "Rentrée d'Argent" else "Sortie de Caisse"
         val inputName = dialogView.findViewById<EditText>(R.id.inputName)
         val inputAmount = dialogView.findViewById<EditText>(R.id.inputAmount)
-        val chipGroup = dialogView.findViewById<com.google.android.material.chip.ChipGroup>(R.id.chipGroupCategory)
+        val chipGroup = dialogView.findViewById<ChipGroup>(R.id.chipGroupCategory)
         val lblCategory = dialogView.findViewById<TextView>(R.id.lblCategory)
         val categoryScroll = dialogView.findViewById<android.view.View>(R.id.categoryScroll)
 
@@ -134,7 +137,7 @@ class MainActivity : AppCompatActivity() {
                 
                 val category = if (type == TransactionType.INCOME) "Banque" else {
                     val checkedChipId = chipGroup.checkedChipId
-                    val chip = dialogView.findViewById<com.google.android.material.chip.Chip>(checkedChipId)
+                    val chip = dialogView.findViewById<Chip>(checkedChipId)
                     chip?.text?.toString() ?: "Autres"
                 }
 
