@@ -303,6 +303,14 @@ export default function Settings({
                         <span className={`text-[10px] font-black uppercase tracking-tighter transition-colors ${reminder.enabled ? 'text-teal-brand' : 'text-slate-300'}`}>
                           {reminder.time}
                         </span>
+                        {reminder.frequency && reminder.frequency !== 'ONCE' && (
+                          <>
+                            <span className="text-slate-200">|</span>
+                            <span className="text-[10px] font-bold text-teal-brand/70 uppercase tracking-tighter">
+                              {reminder.frequency === 'DAILY' ? 'Chaque jour' : reminder.frequency === 'WEEKLY' ? 'Chaque semaine' : 'Chaque mois'}
+                            </span>
+                          </>
+                        )}
                         {reminder.date && (
                           <>
                             <span className="text-slate-200">|</span>
@@ -594,12 +602,13 @@ function ReminderForm({ onClose, onSave }: { onClose: () => void, onSave: (remin
   const [title, setTitle] = useState('');
   const [time, setTime] = useState('08:00');
   const [date, setDate] = useState('');
+  const [frequency, setFrequency] = useState<'ONCE' | 'DAILY' | 'WEEKLY' | 'MONTHLY'>('ONCE');
   const [type, setType] = useState<'ACHAT' | 'RETRAIT' | 'AUTRE'>('AUTRE');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title) return;
-    onSave({ title, time, date, type, enabled: true });
+    onSave({ title, time, date, type, frequency, enabled: true });
   };
 
   return (
@@ -649,6 +658,21 @@ function ReminderForm({ onClose, onSave }: { onClose: () => void, onSave: (remin
               className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-5 font-bold text-slate-800"
               required
             />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Fréquence</label>
+            <div className="grid grid-cols-2 gap-3">
+              {(['ONCE', 'DAILY', 'WEEKLY', 'MONTHLY'] as const).map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setFrequency(f)}
+                  className={`p-3 rounded-2xl border text-[10px] font-black uppercase tracking-wider transition-all ${frequency === f ? 'border-teal-brand bg-teal-brand/5 text-teal-brand' : 'border-slate-100 text-slate-400'}`}
+                >
+                  {f === 'ONCE' ? 'Une fois' : f === 'DAILY' ? 'Quotidien' : f === 'WEEKLY' ? 'Hebdo' : 'Mensuel'}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">

@@ -29,6 +29,7 @@ export interface Reminder {
   title: string;
   time: string;
   date?: string;
+  frequency?: 'ONCE' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
   enabled: boolean;
   type: 'ACHAT' | 'RETRAIT' | 'AUTRE';
 }
