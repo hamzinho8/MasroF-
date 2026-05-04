@@ -52,12 +52,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         // Binding
-        balanceText = findViewById(R.id.balanceText)
-        weeklyAchat = findViewById(R.id.weeklyAchat)
-        weeklyBank = findViewById(R.id.weeklyBank)
-        monthlyBank = findViewById(R.id.monthlyBank)
-        monthlyStats = findViewById(R.id.monthlyStats)
-        bottomNav = findViewById(R.id.bottomNav)
+        balanceText = findViewById<TextView>(R.id.balanceText)
+        weeklyAchat = findViewById<TextView>(R.id.weeklyAchat)
+        weeklyBank = findViewById<TextView>(R.id.weeklyBank)
+        monthlyBank = findViewById<TextView>(R.id.monthlyBank)
+        monthlyStats = findViewById<TextView>(R.id.monthlyStats)
+        bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
 
         findViewById<MaterialButton>(R.id.btnBank).setOnClickListener { showTransactionDialog(TransactionType.INCOME) }
         findViewById<MaterialButton>(R.id.btnPurchase).setOnClickListener { showTransactionDialog(TransactionType.EXPENSE) }
