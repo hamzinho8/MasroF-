@@ -26,8 +26,7 @@ jobs:
           gradle-version: 8.2
 
       - name: Build with Gradle
-        # On force l'exécution sur le module :app
-        run: gradle :app:assembleDebug --stacktrace
+        run: chmod +x gradlew && ./gradlew :app:assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
