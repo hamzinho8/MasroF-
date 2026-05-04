@@ -182,21 +182,8 @@ export default function History({ transactions, language, currency }: HistoryPro
 
       {/* Modern Search & Filters Container */}
       <div className="bg-slate-50/50 rounded-[40px] p-6 space-y-6">
-        <div className="relative group">
-          <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
-            <Search className="text-slate-300 group-focus-within:text-teal-brand transition-all duration-300" size={18} />
-          </div>
-          <input 
-            type="text"
-            placeholder={t.searchPlaceholder}
-            className="w-full bg-white border-none rounded-[24px] py-4 pl-14 pr-6 text-sm font-bold text-slate-800 placeholder:text-slate-300 placeholder:font-medium focus:ring-4 focus:ring-teal-brand/5 shadow-sm transition-all outline-none"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-
         <div className="flex items-center gap-3">
-          <div className="flex-1 bg-white p-1 rounded-[22px] flex items-center relative shadow-sm">
+          <div className="flex-1 bg-white p-1 rounded-[22px] flex items-center relative shadow-sm border border-slate-100">
             {(['ALL', 'EXPENSE', 'INCOME'] as const).map((type) => (
               <button 
                 key={type}
@@ -204,9 +191,10 @@ export default function History({ transactions, language, currency }: HistoryPro
                   setFilter(type);
                   if (type === 'INCOME') setSelectedCategory(t.tous);
                 }}
-                className={`relative z-10 flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all duration-500 active:scale-95 ${filter === type ? 'text-white' : 'text-slate-400'}`}
+                className={`relative z-10 flex-1 py-3 flex flex-col items-center justify-center gap-1 transition-all duration-500 active:scale-95 ${filter === type ? 'text-white' : 'text-slate-400'}`}
               >
-                {type === 'ALL' ? t.tous : type === 'EXPENSE' ? t.achats : t.retraits}
+                {type === 'ALL' ? <LayoutGrid size={18} /> : type === 'EXPENSE' ? <ShoppingBag size={18} /> : <ArrowDownToLine size={18} />}
+                <span className="text-[7px] font-black uppercase tracking-widest">{type === 'ALL' ? t.tous : type === 'EXPENSE' ? t.achats : t.retraits}</span>
                 {filter === type && (
                   <motion.div 
                     layoutId="activeFilterTab"
@@ -220,26 +208,40 @@ export default function History({ transactions, language, currency }: HistoryPro
           
           <button 
             onClick={() => setShowDatePicker(!showDatePicker)}
-            className={`w-12 h-12 rounded-[20px] flex items-center justify-center transition-all active:scale-90 shadow-sm ${showDatePicker || startDate || endDate ? 'bg-teal-brand text-white' : 'bg-white text-slate-400'}`}
+            className={`w-14 h-14 rounded-[22px] flex items-center justify-center transition-all active:scale-90 shadow-sm ${showDatePicker || startDate || endDate ? 'bg-teal-brand text-white' : 'bg-white text-slate-400 border border-slate-100'}`}
           >
-            <Calendar size={18} />
+            <Calendar size={20} />
           </button>
+        </div>
+
+        <div className="relative group">
+          <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+            <Search className="text-slate-300 group-focus-within:text-teal-brand transition-all duration-300" size={18} />
+          </div>
+          <input 
+            type="text"
+            placeholder={t.searchPlaceholder}
+            className="w-full bg-white border-none rounded-[24px] py-4 pl-14 pr-6 text-sm font-bold text-slate-800 placeholder:text-slate-300 placeholder:font-medium focus:ring-4 focus:ring-teal-brand/5 shadow-sm transition-all outline-none"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
 
         {/* Category Scrollbar */}
         {filter !== 'INCOME' && (
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide -mx-2 px-2">
             {CATEGORIES.map(cat => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${selectedCategory === cat ? 'bg-teal-brand/10 border-teal-brand/20 text-teal-brand' : 'bg-white border-transparent text-slate-400'}`}
+                className={`px-5 py-2.5 rounded-2xl text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all border active:scale-95 ${selectedCategory === cat ? 'bg-teal-brand/10 border-teal-brand/20 text-teal-brand' : 'bg-white border-transparent text-slate-400 shadow-sm'}`}
               >
                 {cat}
               </button>
             ))}
           </div>
         )}
+      </div>
 
         {/* Date Range Picker */}
         <AnimatePresence>
@@ -284,7 +286,6 @@ export default function History({ transactions, language, currency }: HistoryPro
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
 
       {/* Sorting Controls */}
       <div className="flex items-center justify-between bg-white/50 px-4 py-3 rounded-2xl border border-slate-50">
