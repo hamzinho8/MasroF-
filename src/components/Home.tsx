@@ -6,7 +6,7 @@ import {
   TrendingUp,
   Wallet
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface Transaction {
   id: string;
@@ -94,30 +94,37 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
       <p className="text-lg font-medium text-slate-600 mb-5">{t.bonjour}, Hamza !</p>
 
       {/* Main Widget Card */}
-      <motion.div 
-        key={widgetMode}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative h-44 rounded-[24px] overflow-hidden p-6 shadow-lg mb-8 transition-all hover:scale-[1.01]"
+      <div 
+        className="relative h-44 rounded-[24px] overflow-hidden shadow-lg mb-8 transition-all hover:scale-[1.01] cursor-pointer"
         style={{ background: widgetMode === 'balance' ? 'linear-gradient(90deg, #AED8D3 0%, #FAD8A0 100%)' : 'linear-gradient(90deg, #F9B29B 0%, #C8E6C9 100%)' }}
       >
-        <div className="relative z-10">
-          <h2 className="text-slate-800 font-bold mb-1">
-            {widgetMode === 'balance' ? t.dansMaPoche : t.depensesHebdo}
-          </h2>
-          <div className="text-3xl font-black text-slate-900 mb-1">
-            {widgetMode === 'balance' 
-              ? `${balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} ${currency}`
-              : `${weeklyAchat.toLocaleString('fr-FR')} ${currency}`}
-          </div>
-          <p className="text-xs text-slate-700 font-medium opacity-80">
-            {widgetMode === 'balance' ? t.argentDispo : t.cumulAchats}
-          </p>
-        </div>
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-20 transform scale-150 text-slate-900">
-          {widgetMode === 'balance' ? <Wallet size={80} /> : <TrendingDown size={80} />}
-        </div>
-      </motion.div>
+        <AnimatePresence mode="wait">
+          <motion.div 
+            key={widgetMode}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 10 }}
+            transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+            className="relative z-10 p-6 h-full w-full flex flex-col justify-center"
+          >
+            <h2 className="text-slate-800 font-bold mb-1">
+              {widgetMode === 'balance' ? t.dansMaPoche : t.depensesHebdo}
+            </h2>
+            <div className="text-3xl font-black text-slate-900 mb-1">
+              {widgetMode === 'balance' 
+                ? `${balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} ${currency}`
+                : `${weeklyAchat.toLocaleString('fr-FR')} ${currency}`}
+            </div>
+            <p className="text-xs text-slate-700 font-medium opacity-80">
+              {widgetMode === 'balance' ? t.argentDispo : t.cumulAchats}
+            </p>
+            
+            <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-20 transform scale-150 text-slate-900 pointer-events-none">
+              {widgetMode === 'balance' ? <Wallet size={80} /> : <TrendingDown size={80} />}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
       {/* Weekly Summary */}
       <div className="mb-8">

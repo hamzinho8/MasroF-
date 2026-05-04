@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var weeklyBank: TextView
     private lateinit var monthlyBank: TextView
     private lateinit var monthlyStats: TextView
-    private lateinit var bottomNav: BottomNavigationView
+    private lateinit var bottomNav: com.google.android.material.bottomnavigation.BottomNavigationView
 
     private val gson = Gson()
     private val PREFS_NAME = "Masrof_Expert_Prefs"
@@ -46,18 +46,18 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Binding
-        balanceText = findViewById<TextView>(R.id.balanceText)
-        weeklyAchat = findViewById<TextView>(R.id.weeklyAchat)
-        weeklyBank = findViewById<TextView>(R.id.weeklyBank)
-        monthlyBank = findViewById<TextView>(R.id.monthlyBank)
-        monthlyStats = findViewById<TextView>(R.id.monthlyStats)
-        bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
+        // Binding - Using explicit casts to solve type inference issues
+        balanceText = findViewById(R.id.balanceText) as TextView
+        weeklyAchat = findViewById(R.id.weeklyAchat) as TextView
+        weeklyBank = findViewById(R.id.weeklyBank) as TextView
+        monthlyBank = findViewById(R.id.monthlyBank) as TextView
+        monthlyStats = findViewById(R.id.monthlyStats) as TextView
+        bottomNav = findViewById(R.id.bottomNav) as com.google.android.material.bottomnavigation.BottomNavigationView
 
         findViewById<MaterialButton>(R.id.btnBank).setOnClickListener { showTransactionDialog(TransactionType.INCOME) }
         findViewById<MaterialButton>(R.id.btnPurchase).setOnClickListener { showTransactionDialog(TransactionType.EXPENSE) }
         
-        bottomNav.setOnItemSelectedListener { item ->
+        bottomNav.setOnItemSelectedListener { item: android.view.MenuItem ->
             when(item.itemId) {
                 R.id.nav_home -> { true }
                 R.id.nav_history -> { Toast.makeText(this, "Historique à venir", Toast.LENGTH_SHORT).show(); true }
