@@ -19,12 +19,14 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.4
 
       - name: Build with Gradle
-        # On utilise 'gradle' directement car le runner ubuntu l'a pré-installé
-        # Cela évite les erreurs de permission ou d'absence du wrapper (gradlew)
-        run: gradle assembleDebug --stacktrace
+        run: gradle :app:assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
