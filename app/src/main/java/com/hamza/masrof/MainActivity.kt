@@ -12,6 +12,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -30,7 +31,7 @@ import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import com.hamza.masrof.R
 
-// Expert Refined Main Activity - Robust Version with Explicit Types to solve build errors
+// Expert Refined Main Activity - Robust Version with Explicit Types to solve GitHub build errors
 class MainActivity : AppCompatActivity() {
 
     private var currentBalance: Double = 0.0
@@ -52,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Binding with explicit types as requested
+        // Binding with MANDATORY generic types <T> for GitHub Actions compatibility
         balanceText = findViewById<TextView>(R.id.balanceText)
         weeklyAchat = findViewById<TextView>(R.id.weeklyAchat)
         weeklyBank = findViewById<TextView>(R.id.weeklyBank)
@@ -60,7 +61,7 @@ class MainActivity : AppCompatActivity() {
         monthlyStats = findViewById<TextView>(R.id.monthlyStats)
         bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
 
-        // Click listeners with explicit View types
+        // Click listeners with explicit generic types on findViewById
         findViewById<MaterialCardView>(R.id.cardBank).setOnClickListener { 
             showTransactionDialog(TransactionType.INCOME) 
         }
@@ -68,6 +69,7 @@ class MainActivity : AppCompatActivity() {
             showTransactionDialog(TransactionType.EXPENSE) 
         }
         
+        // Explicit lambda parameter type (MenuItem) to solve inference errors
         bottomNav.setOnItemSelectedListener { item: MenuItem ->
             when(item.itemId) {
                 R.id.nav_home -> true

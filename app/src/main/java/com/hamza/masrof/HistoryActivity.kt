@@ -33,8 +33,8 @@ class HistoryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_history)
 
-        rvHistory = findViewById(R.id.rvHistory)
-        rvCategories = findViewById(R.id.rvCategories)
+        rvHistory = findViewById<RecyclerView>(R.id.rvHistory)
+        rvCategories = findViewById<RecyclerView>(R.id.rvCategories)
         
         val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbarHistory)
         setSupportActionBar(toolbar)
@@ -126,9 +126,9 @@ class HistoryActivity : AppCompatActivity() {
     ) : RecyclerView.Adapter<CategoryAdapter.ViewHolder>() {
 
         class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            val card: com.google.android.material.card.MaterialCardView = view.findViewById(R.id.categoryCard)
-            val icon: ImageView = view.findViewById(R.id.categoryIcon)
-            val name: TextView = view.findViewById(R.id.categoryName)
+            val card: com.google.android.material.card.MaterialCardView = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.categoryCard)
+            val icon: ImageView = view.findViewById<ImageView>(R.id.categoryIcon)
+            val name: TextView = view.findViewById<TextView>(R.id.categoryName)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -171,12 +171,12 @@ class HistoryActivity : AppCompatActivity() {
     ) : RecyclerView.Adapter<HistoryAdapter.ViewHolder>() {
 
         class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            val label: TextView = view.findViewById(R.id.itemLabel)
-            val date: TextView = view.findViewById(R.id.itemDate)
-            val amount: TextView = view.findViewById(R.id.itemAmount)
-            val icon: ImageView = view.findViewById(R.id.itemIcon)
-            val imgImportant: ImageView = view.findViewById(R.id.imgImportant)
-            val container: View = view.findViewById(android.R.id.content) ?: view // fallback
+            val label: TextView = view.findViewById<TextView>(R.id.itemLabel)
+            val date: TextView = view.findViewById<TextView>(R.id.itemDate)
+            val amount: TextView = view.findViewById<TextView>(R.id.itemAmount)
+            val icon: ImageView = view.findViewById<ImageView>(R.id.itemIcon)
+            val imgImportant: ImageView = view.findViewById<ImageView>(R.id.imgImportant)
+            val container: View = view.findViewById<View>(android.R.id.content) ?: view // fallback
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
