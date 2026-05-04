@@ -15,7 +15,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.work.*
+import androidx.work.Data
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
@@ -25,6 +28,7 @@ import com.google.gson.reflect.TypeToken
 import java.util.Calendar
 import java.util.UUID
 import java.util.concurrent.TimeUnit
+import com.hamza.masrof.R
 
 // Expert Refined Main Activity
 class MainActivity : AppCompatActivity() {
@@ -38,29 +42,29 @@ class MainActivity : AppCompatActivity() {
     private lateinit var weeklyBank: TextView
     private lateinit var monthlyBank: TextView
     private lateinit var monthlyStats: TextView
-    private lateinit var bottomNav: com.google.android.material.bottomnavigation.BottomNavigationView
+    private lateinit var bottomNav: BottomNavigationView
 
-    private val gson = com.google.gson.Gson()
+    private val gson: Gson = Gson()
     private val PREFS_NAME = "Masrof_Expert_Prefs"
     private val KEY_DATA = "expert_transactions"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(com.hamza.masrof.R.layout.activity_main)
+        setContentView(R.layout.activity_main)
 
-        // Binding - Explicit generic types <T> are mandatory for strict compilers
+        // Binding - Explicitly typed
         balanceText = findViewById<TextView>(R.id.balanceText)
         weeklyAchat = findViewById<TextView>(R.id.weeklyAchat)
         weeklyBank = findViewById<TextView>(R.id.weeklyBank)
         monthlyBank = findViewById<TextView>(R.id.monthlyBank)
         monthlyStats = findViewById<TextView>(R.id.monthlyStats)
-        bottomNav = findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNav)
+        bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
 
-        // Button Click Listeners with explicit View types
-        findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardBank).setOnClickListener { 
+        // Button Click Listeners
+        findViewById<MaterialCardView>(R.id.cardBank).setOnClickListener { 
             showTransactionDialog(TransactionType.INCOME) 
         }
-        findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardPurchase).setOnClickListener { 
+        findViewById<MaterialCardView>(R.id.cardPurchase).setOnClickListener { 
             showTransactionDialog(TransactionType.EXPENSE) 
         }
         
