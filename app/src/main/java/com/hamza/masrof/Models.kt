@@ -10,5 +10,6 @@ data class Transaction(
     val amount: Double,
     val type: TransactionType,
     val category: String = "Autres",
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val isImportant: Boolean = false
 )

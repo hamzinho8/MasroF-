@@ -21,6 +21,8 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".HistoryActivity" />
+
         <receiver android:name=".MasrofWidgetProvider"
             android:exported="false">
             <intent-filter>
