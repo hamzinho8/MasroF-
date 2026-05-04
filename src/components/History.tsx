@@ -9,7 +9,14 @@ import {
   Calendar,
   Tag,
   X,
-  ChevronDown
+  ChevronDown,
+  LayoutGrid,
+  ShoppingBag,
+  ArrowDownToLine,
+  Utensils,
+  Car,
+  Gamepad2,
+  MoreHorizontal
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -104,7 +111,15 @@ export default function History({ transactions, language, currency }: HistoryPro
   };
 
   const t = translations[language as keyof typeof translations] || translations['Français'];
-  const CATEGORIES = [t.tous, t.nourriture, t.shopping, t.transport, t.loisirs, t.autres];
+  
+  const CATEGORY_MAP = [
+    { label: t.tous, icon: <LayoutGrid size={18} /> },
+    { label: t.nourriture, icon: <Utensils size={18} /> },
+    { label: t.shopping, icon: <ShoppingBag size={18} /> },
+    { label: t.transport, icon: <Car size={18} /> },
+    { label: t.loisirs, icon: <Gamepad2 size={18} /> },
+    { label: t.autres, icon: <MoreHorizontal size={18} /> },
+  ];
 
   const [filter, setFilter] = useState<FilterType>('ALL');
   const [sortBy, setSortBy] = useState<SortType>('DATE_DESC');
@@ -126,7 +141,7 @@ export default function History({ transactions, language, currency }: HistoryPro
     .filter(tx => {
       const matchesFilter = filter === 'ALL' || tx.type === filter;
       const matchesSearch = tx.label.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = selectedCategory === 'Tous' || tx.category === selectedCategory;
+      const matchesCategory = selectedCategory === t.tous || tx.category === selectedCategory;
       
       let matchesRange = true;
       if (startDate || endDate) {
@@ -227,16 +242,31 @@ export default function History({ transactions, language, currency }: HistoryPro
           />
         </div>
 
-        {/* Category Scrollbar */}
+        {/* Modern Category Grid (No Scroll) */}
         {filter !== 'INCOME' && (
-          <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide -mx-2 px-2">
-            {CATEGORIES.map(cat => (
+          <div className="grid grid-cols-3 gap-3">
+            {CATEGORY_MAP.map(cat => (
               <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-5 py-2.5 rounded-2xl text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all border active:scale-95 ${selectedCategory === cat ? 'bg-teal-brand/10 border-teal-brand/20 text-teal-brand' : 'bg-white border-transparent text-slate-400 shadow-sm'}`}
+                key={cat.label}
+                onClick={() => setSelectedCategory(cat.label)}
+                className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all active:scale-95 border-2 ${
+                  selectedCategory === cat.label 
+                    ? 'bg-teal-brand/5 border-teal-brand shadow-sm' 
+                    : 'bg-white border-slate-100/50 text-slate-400'
+                }`}
               >
-                {cat}
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                  selectedCategory === cat.label 
+                    ? 'bg-teal-brand text-white' 
+                    : 'bg-slate-50 text-slate-400'
+                }`}>
+                  {cat.icon}
+                </div>
+                <span className={`text-[8px] font-black uppercase tracking-widest transition-colors ${
+                  selectedCategory === cat.label ? 'text-teal-brand' : 'text-slate-400'
+                }`}>
+                  {cat.label}
+                </span>
               </button>
             ))}
           </div>

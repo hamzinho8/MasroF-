@@ -4,7 +4,9 @@ import {
   ShoppingCart, 
   TrendingDown,
   TrendingUp,
-  Wallet
+  Wallet,
+  ShoppingBag,
+  ArrowDownToLine
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -147,21 +149,29 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3 mb-8">
+      {/* Quick Actions - Modern Redesign */}
+      <div className="grid grid-cols-2 gap-4 mb-8">
         <button 
           onClick={() => onAddClick('EXPENSE')}
-          className="flex items-center justify-center gap-2 h-14 bg-red-100 text-danger-red rounded-2xl font-bold text-sm hover:bg-red-200 transition-colors shadow-sm active:scale-95 transform"
+          className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-rose-100 hover:bg-rose-50/30 active:scale-95 shadow-sm"
         >
-          <Plus size={18} />
-          <span>{t.ajouterAchat}</span>
+          <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+            <ShoppingBag size={24} strokeWidth={2.5} />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-rose-600 transition-colors">
+            {t.ajouterAchat}
+          </span>
         </button>
         <button 
           onClick={() => onAddClick('INCOME')}
-          className="flex items-center justify-center gap-2 h-14 bg-blue-100 text-bank-blue rounded-2xl font-bold text-sm hover:bg-blue-200 transition-colors shadow-sm active:scale-95 transform"
+          className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-teal-100 hover:bg-teal-50/30 active:scale-95 shadow-sm"
         >
-          <Plus size={18} />
-          <span>{t.ajouterRetrait}</span>
+          <div className="w-12 h-12 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+            <ArrowDownToLine size={24} strokeWidth={2.5} />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-teal-600 transition-colors">
+            {t.ajouterRetrait}
+          </span>
         </button>
       </div>
 
