@@ -13,12 +13,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.work.Data
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
+import androidx.work.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
@@ -28,12 +24,13 @@ import java.util.Calendar
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-// Expert Corrected and Refined Version
+// Expert Refined Main Activity
 class MainActivity : AppCompatActivity() {
 
     private var currentBalance = 0.0
     private var transactions = mutableListOf<Transaction>()
     
+    // Explicitly declaring types for UI elements
     private lateinit var balanceText: TextView
     private lateinit var weeklyAchat: TextView
     private lateinit var weeklyBank: TextView
@@ -49,7 +46,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Binding - Using explicit typing to solve inference issues
+        // Binding - Explicit generic types <T> are mandatory for strict compilers
         balanceText = findViewById<TextView>(R.id.balanceText)
         weeklyAchat = findViewById<TextView>(R.id.weeklyAchat)
         weeklyBank = findViewById<TextView>(R.id.weeklyBank)
@@ -57,15 +54,29 @@ class MainActivity : AppCompatActivity() {
         monthlyStats = findViewById<TextView>(R.id.monthlyStats)
         bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
 
-        findViewById<MaterialCardView>(R.id.cardBank).setOnClickListener { showTransactionDialog(TransactionType.INCOME) }
-        findViewById<MaterialCardView>(R.id.cardPurchase).setOnClickListener { showTransactionDialog(TransactionType.EXPENSE) }
+        // Button Click Listeners with explicit View types
+        findViewById<MaterialCardView>(R.id.cardBank).setOnClickListener { 
+            showTransactionDialog(TransactionType.INCOME) 
+        }
+        findViewById<MaterialCardView>(R.id.cardPurchase).setOnClickListener { 
+            showTransactionDialog(TransactionType.EXPENSE) 
+        }
         
-        bottomNav.setOnItemSelectedListener { item: android.view.MenuItem ->
+        bottomNav.setOnItemSelectedListener { item ->
             when(item.itemId) {
-                R.id.nav_home -> { true }
-                R.id.nav_history -> { Toast.makeText(this, "Historique à venir", Toast.LENGTH_SHORT).show(); true }
-                R.id.nav_stats -> { Toast.makeText(this, "Analyses à venir", Toast.LENGTH_SHORT).show(); true }
-                R.id.nav_settings -> { confirmReset(); true }
+                R.id.nav_home -> true
+                R.id.nav_history -> { 
+                    Toast.makeText(this, "Historique à venir", Toast.LENGTH_SHORT).show()
+                    true 
+                }
+                R.id.nav_stats -> { 
+                    Toast.makeText(this, "Analyses à venir", Toast.LENGTH_SHORT).show()
+                    true 
+                }
+                R.id.nav_settings -> { 
+                    confirmReset()
+                    true 
+                }
                 else -> false
             }
         }
