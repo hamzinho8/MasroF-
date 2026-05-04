@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var weeklyBank: TextView
     private lateinit var monthlyBank: TextView
     private lateinit var monthlyStats: TextView
-    private lateinit var bottomNav: com.google.android.material.bottomnavigation.BottomNavigationView
+    private lateinit var bottomNav: BottomNavigationView
 
     private val gson = Gson()
     private val PREFS_NAME = "Masrof_Expert_Prefs"
@@ -49,13 +49,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Binding - Using card IDs for the new modern design
-        balanceText = findViewById(R.id.balanceText) as TextView
-        weeklyAchat = findViewById(R.id.weeklyAchat) as TextView
-        weeklyBank = findViewById(R.id.weeklyBank) as TextView
-        monthlyBank = findViewById(R.id.monthlyBank) as TextView
-        monthlyStats = findViewById(R.id.monthlyStats) as TextView
-        bottomNav = findViewById(R.id.bottomNav)
+        // Binding - Using explicit typing to solve inference issues
+        balanceText = findViewById<TextView>(R.id.balanceText)
+        weeklyAchat = findViewById<TextView>(R.id.weeklyAchat)
+        weeklyBank = findViewById<TextView>(R.id.weeklyBank)
+        monthlyBank = findViewById<TextView>(R.id.monthlyBank)
+        monthlyStats = findViewById<TextView>(R.id.monthlyStats)
+        bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
 
         findViewById<MaterialCardView>(R.id.cardBank).setOnClickListener { showTransactionDialog(TransactionType.INCOME) }
         findViewById<MaterialCardView>(R.id.cardPurchase).setOnClickListener { showTransactionDialog(TransactionType.EXPENSE) }
