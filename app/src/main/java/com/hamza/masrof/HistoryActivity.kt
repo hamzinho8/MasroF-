@@ -19,7 +19,12 @@ import java.util.Locale
 class HistoryActivity : AppCompatActivity() {
 
     private lateinit var rvHistory: RecyclerView
-    private var transactions = mutableListOf<Transaction>()
+    private lateinit var rvCategories: RecyclerView
+    private var allTransactions = mutableListOf<Transaction>()
+    private var filteredTransactions = mutableListOf<Transaction>()
+    private var categories = mutableListOf<Category>()
+    private var selectedCategoryName: String = "Toutes"
+
     private val gson = Gson()
     private val PREFS_NAME = "Masrof_Expert_Prefs"
     private val KEY_DATA = "expert_transactions"
@@ -29,45 +34,136 @@ class HistoryActivity : AppCompatActivity() {
         setContentView(R.layout.activity_history)
 
         rvHistory = findViewById(R.id.rvHistory)
+        rvCategories = findViewById(R.id.rvCategories)
+        
         val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbarHistory)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         toolbar.setNavigationOnClickListener { finish() }
 
+        setupCategories()
         loadData()
-        setupRecyclerView()
+        setupRecyclerViews()
+    }
+
+    private fun setupCategories() {
+        categories = mutableListOf(
+            Category("Toutes", R.drawable.ic_all, true),
+            Category("Banque", R.drawable.ic_plus),
+            Category("Alimentation", R.drawable.ic_cart),
+            Category("Transport", R.drawable.ic_transport),
+            Category("Loisirs", R.drawable.ic_transaction),
+            Category("Shopping", R.drawable.ic_cart),
+            Category("Autres", R.drawable.ic_verified)
+        )
     }
 
     private fun loadData() {
         val json = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getString(KEY_DATA, null)
         if (json != null) {
             val listType = object : TypeToken<MutableList<Transaction>>() {}.type
-            transactions = gson.fromJson(json, listType)
+            allTransactions = gson.fromJson(json, listType)
+            applyFilter()
         }
     }
 
+    private fun applyFilter() {
+        filteredTransactions.clear()
+        if (selectedCategoryName == "Toutes") {
+            filteredTransactions.addAll(allTransactions)
+        } else {
+            filteredTransactions.addAll(allTransactions.filter { it.category == selectedCategoryName })
+        }
+        rvHistory.adapter?.notifyDataSetChanged()
+    }
+
     private fun saveData() {
-        val json = gson.toJson(transactions)
+        val json = gson.toJson(allTransactions)
         getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit().putString(KEY_DATA, json).apply()
         MasrofWidgetProvider.triggerUpdate(this)
     }
 
-    private fun setupRecyclerView() {
+    private fun setupRecyclerViews() {
+        // Categories
+        rvCategories.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        rvCategories.adapter = CategoryAdapter(categories) { category ->
+            onCategorySelected(category)
+        }
+
+        // Transactions
         rvHistory.layoutManager = LinearLayoutManager(this)
-        rvHistory.adapter = HistoryAdapter(transactions) { transaction ->
+        rvHistory.adapter = HistoryAdapter(filteredTransactions) { transaction ->
             toggleImportant(transaction)
         }
     }
 
+    private fun onCategorySelected(category: Category) {
+        categories.forEach { it.isSelected = (it.name == category.name) }
+        selectedCategoryName = category.name
+        rvCategories.adapter?.notifyDataSetChanged()
+        applyFilter()
+    }
+
     private fun toggleImportant(transaction: Transaction) {
-        val index = transactions.indexOfFirst { it.id == transaction.id }
-        if (index != -1) {
-            val updated = transactions[index].copy(isImportant = !transactions[index].isImportant)
-            transactions[index] = updated
+        val indexInAll = allTransactions.indexOfFirst { it.id == transaction.id }
+        if (indexInAll != -1) {
+            val updated = allTransactions[indexInAll].copy(isImportant = !allTransactions[indexInAll].isImportant)
+            allTransactions[indexInAll] = updated
             saveData()
-            rvHistory.adapter?.notifyItemChanged(index)
+            
+            val indexInFiltered = filteredTransactions.indexOfFirst { it.id == transaction.id }
+            if (indexInFiltered != -1) {
+                filteredTransactions[indexInFiltered] = updated
+                rvHistory.adapter?.notifyItemChanged(indexInFiltered)
+            }
         }
     }
+
+    // Category Adapter
+    inner class CategoryAdapter(
+        private val items: List<Category>,
+        private val onClick: (Category) -> Unit
+    ) : RecyclerView.Adapter<CategoryAdapter.ViewHolder>() {
+
+        class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            val card: com.google.android.material.card.MaterialCardView = view.findViewById(R.id.categoryCard)
+            val icon: ImageView = view.findViewById(R.id.categoryIcon)
+            val name: TextView = view.findViewById(R.id.categoryName)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_category, parent, false)
+            return ViewHolder(view)
+        }
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val item = items[position]
+            holder.name.text = item.name
+            holder.icon.setImageResource(item.iconRes)
+
+            val colorBrand = ContextCompat.getColor(holder.itemView.context, R.color.teal_brand)
+            val colorSlate = ContextCompat.getColor(holder.itemView.context, R.color.slate_500)
+            val colorWhite = ContextCompat.getColor(holder.itemView.context, R.color.white)
+
+            if (item.isSelected) {
+                holder.card.strokeColor = colorBrand
+                holder.card.setCardBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.teal_light))
+                holder.name.setTextColor(colorBrand)
+                holder.icon.setColorFilter(colorBrand)
+            } else {
+                holder.card.strokeColor = ContextCompat.getColor(holder.itemView.context, R.color.slate_200)
+                holder.card.setCardBackgroundColor(colorWhite)
+                holder.name.setTextColor(colorSlate)
+                holder.icon.setColorFilter(colorSlate)
+            }
+
+            holder.itemView.setOnClickListener { onClick(item) }
+        }
+
+        override fun getItemCount() = items.size
+    }
+
+    data class Category(val name: String, val iconRes: Int, var isSelected: Boolean = false)
 
     inner class HistoryAdapter(
         private val items: List<Transaction>,

@@ -8,6 +8,7 @@
     <color name="rose_600">#E11D48</color>
     <color name="slate_200">#E2E8F0</color>
     <color name="slate_500">#64748B</color>
+    <color name="slate_900">#0F172A</color>
 
     <!-- Project Colors -->
     <color name="teal_brand">#14B8A6</color>
