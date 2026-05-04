@@ -113,6 +113,7 @@ export default function History({ transactions, language, currency }: HistoryPro
   const [endDate, setEndDate] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>(t.tous);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showSortModal, setShowSortModal] = useState(false);
 
   const parseTxDate = (dateStr: string) => {
     const [dayMonth] = dateStr.split(' ');
@@ -266,17 +267,76 @@ export default function History({ transactions, language, currency }: HistoryPro
           <ArrowUpDown size={14} />
           <span>{t.sortBy}</span>
         </div>
-        <select 
-          className="text-xs font-bold text-teal-brand bg-teal-brand/5 px-3 py-1.5 rounded-lg focus:outline-none border-none transition-colors"
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as SortType)}
+        <button 
+          onClick={() => setShowSortModal(true)}
+          className="text-xs font-black text-teal-brand bg-teal-brand/10 px-4 py-2 rounded-xl flex items-center gap-2 transition-all active:scale-95"
         >
-          <option value="DATE_DESC">{t.dateRecent}</option>
-          <option value="DATE_ASC">{t.dateAncien}</option>
-          <option value="AMOUNT_DESC">{t.montantMax}</option>
-          <option value="AMOUNT_ASC">{t.montantMin}</option>
-        </select>
+          {sortBy === 'DATE_DESC' ? t.dateRecent : 
+           sortBy === 'DATE_ASC' ? t.dateAncien : 
+           sortBy === 'AMOUNT_DESC' ? t.montantMax : t.montantMin}
+          <ChevronDown size={14} />
+        </button>
       </div>
+
+      {/* Premium Sort Modal (Bottom Sheet) */}
+      <AnimatePresence>
+        {showSortModal && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowSortModal(false)}
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[100]"
+            />
+            <motion.div 
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[40px] z-[101] p-8 shadow-2xl"
+            >
+              <div className="w-12 h-1.5 bg-slate-100 rounded-full mx-auto mb-8" />
+              
+              <h3 className="text-xl font-black text-slate-800 mb-6 text-center">{t.sortBy}</h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <SortOption 
+                  label={t.dateRecent} 
+                  active={sortBy === 'DATE_DESC'} 
+                  onClick={() => { setSortBy('DATE_DESC'); setShowSortModal(false); }} 
+                  icon={<Calendar size={20} />}
+                />
+                <SortOption 
+                  label={t.dateAncien} 
+                  active={sortBy === 'DATE_ASC'} 
+                  onClick={() => { setSortBy('DATE_ASC'); setShowSortModal(false); }} 
+                  icon={<Calendar size={20} className="opacity-50" />}
+                />
+                <SortOption 
+                  label={t.montantMax} 
+                  active={sortBy === 'AMOUNT_DESC'} 
+                  onClick={() => { setSortBy('AMOUNT_DESC'); setShowSortModal(false); }} 
+                  icon={<TrendingUp size={20} />}
+                />
+                <SortOption 
+                  label={t.montantMin} 
+                  active={sortBy === 'AMOUNT_ASC'} 
+                  onClick={() => { setSortBy('AMOUNT_ASC'); setShowSortModal(false); }} 
+                  icon={<TrendingDown size={20} />}
+                />
+              </div>
+
+              <button 
+                onClick={() => setShowSortModal(false)}
+                className="w-full mt-8 py-4 text-sm font-black text-slate-400 uppercase tracking-widest"
+              >
+                Fermer
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* List */}
       <div className="space-y-3 pb-8">
@@ -357,6 +417,26 @@ function FilterTab({ active, onClick, label, color = "text-slate-500", bg = "bg-
       className={`px-6 py-2.5 rounded-2xl text-xs font-black transition-all whitespace-nowrap shadow-sm ${active ? `${bg} ${color}` : 'bg-white text-slate-400 border border-slate-100'}`}
     >
       {label}
+    </button>
+  );
+}
+
+function SortOption({ label, active, onClick, icon }: { label: string, active: boolean, onClick: () => void, icon: React.ReactNode }) {
+  return (
+    <button 
+      onClick={onClick}
+      className={`flex flex-col items-center justify-center gap-3 p-6 rounded-[32px] border-2 transition-all active:scale-95 ${active ? 'border-teal-brand bg-teal-brand/5 text-teal-brand' : 'border-slate-50 bg-slate-50 text-slate-400'}`}
+    >
+      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${active ? 'bg-teal-brand text-white' : 'bg-white shadow-sm'}`}>
+        {icon}
+      </div>
+      <span className="text-[10px] font-black uppercase tracking-tight">{label}</span>
+      {active && (
+        <motion.div 
+          layoutId="activeSort"
+          className="w-1.5 h-1.5 bg-teal-brand rounded-full mt-1"
+        />
+      )}
     </button>
   );
 }
