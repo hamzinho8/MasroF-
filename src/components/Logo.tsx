@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function MasrofLogo({ className = "w-10 h-10" }: { className?: string }) {
+export default function MasrofLogo({ className = "w-10 h-10", currency = "DH" }: { className?: string, currency?: string }) {
   return (
     <div className={`relative ${className} flex items-center justify-center`}>
       <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
@@ -49,9 +49,9 @@ export default function MasrofLogo({ className = "w-10 h-10" }: { className?: st
           <circle cx="61" cy="56" r="2.5" fill="#333" />
           <rect x="60.25" y="57" width="1.5" height="3" fill="#333" />
           
-          {/* Coin with DH */}
+          {/* Coin with Dynamic Currency */}
           <circle cx="52" cy="70" r="10" fill="#FAD8A0" stroke="#B8860B" strokeWidth="1.5" />
-          <text x="52" y="73.5" fontSize="7" fontWeight="900" fill="#B8860B" textAnchor="middle" fontFamily="sans-serif">DH</text>
+          <text x="52" y="73.5" fontSize={currency.length > 2 ? "5" : "7"} fontWeight="900" fill="#B8860B" textAnchor="middle" fontFamily="sans-serif">{currency}</text>
           
           {/* Receipt/Tag */}
           <g transform="rotate(25, 75, 45)">

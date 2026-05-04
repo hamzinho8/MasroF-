@@ -27,12 +27,13 @@ interface Transaction {
 interface HistoryProps {
   transactions: Transaction[];
   language: string;
+  currency: string;
 }
 
 type FilterType = 'ALL' | 'INCOME' | 'EXPENSE';
 type SortType = 'DATE_DESC' | 'DATE_ASC' | 'AMOUNT_DESC' | 'AMOUNT_ASC';
 
-export default function History({ transactions, language }: HistoryProps) {
+export default function History({ transactions, language, currency }: HistoryProps) {
   const translations = {
     'Français': {
       title: 'Grand Livre',
@@ -315,7 +316,7 @@ export default function History({ transactions, language }: HistoryProps) {
               <div className="text-right">
                 <p className={`font-black tracking-tight text-base ${tx.type === 'INCOME' ? 'text-emerald-600' : 'text-rose-600'}`}>
                   {tx.type === 'INCOME' ? '+' : '-'}{tx.amount.toLocaleString('fr-FR')} 
-                  <span className="text-[10px] ml-0.5">DH</span>
+                  <span className="text-[10px] ml-0.5">{currency}</span>
                 </p>
               </div>
             </motion.div>

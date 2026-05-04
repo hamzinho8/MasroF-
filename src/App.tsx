@@ -146,12 +146,13 @@ export default function App() {
             onViewAll={() => setActiveTab('history')}
             widgetMode={widgetMode}
             language={language}
+            currency={currency}
           />
         );
       case 'stats':
-        return <Stats language={language} />;
+        return <Stats language={language} currency={currency} />;
       case 'history':
-        return <HistoryView transactions={transactions} language={language} />;
+        return <HistoryView transactions={transactions} language={language} currency={currency} />;
       case 'settings':
         return (
           <SettingsView 
@@ -184,10 +185,11 @@ export default function App() {
             onViewAll={() => setActiveTab('history')}
             widgetMode={widgetMode}
             language={language}
+            currency={currency}
           />
         );
-    }
-  };
+      }
+    };
 
   return (
     <div 
@@ -207,7 +209,7 @@ export default function App() {
               transition={{ duration: 0.5, ease: "easeOut" }}
               className="w-40 h-40 bg-white rounded-full shadow-2xl border-4 border-teal-brand/20 flex items-center justify-center mb-6"
             >
-              <MasrofLogo className="w-32 h-32" />
+              <MasrofLogo className="w-32 h-32" currency={currency} />
             </motion.div>
             <motion.h1 
               initial={{ y: 20, opacity: 0 }}
@@ -233,7 +235,7 @@ export default function App() {
       <header className={`p-6 flex items-center justify-between transition-colors ${isDarkMode ? 'bg-[#1A1A1A]' : ''}`}>
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 shadow-sm rounded-xl overflow-hidden flex items-center justify-center border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-teal-brand/10'}`}>
-            <MasrofLogo className="w-8 h-8" />
+            <MasrofLogo className="w-8 h-8" currency={currency} />
           </div>
           <h1 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-teal-brand'} tracking-tight`}>MasroF</h1>
         </div>
@@ -286,6 +288,7 @@ export default function App() {
         onClose={() => setIsModalOpen(false)}
         onAdd={addTransaction}
         initialType={modalType}
+        currency={currency}
       />
     </div>
   );

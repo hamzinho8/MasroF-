@@ -33,9 +33,10 @@ const trendData = [
 
 interface StatsProps {
   language: string;
+  currency: string;
 }
 
-export default function Stats({ language }: StatsProps) {
+export default function Stats({ language, currency }: StatsProps) {
   const translations = {
     'Français': {
       title: 'Analyses Avancées',
@@ -119,7 +120,7 @@ export default function Stats({ language }: StatsProps) {
              <TrendingUp size={20} />
           </div>
           <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">{t.maxIncome}</p>
-          <p className="text-lg font-black text-teal-brand">2 000 DH</p>
+          <p className="text-lg font-black text-teal-brand">2 000 {currency}</p>
         </div>
         <div className="bg-rose-500/5 p-4 rounded-3xl border border-rose-500/10">
           <div className="w-10 h-10 bg-rose-500/10 rounded-xl flex items-center justify-center text-rose-500 mb-3">

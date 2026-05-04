@@ -193,7 +193,7 @@ export default function Settings({
              {userProfile.avatar ? (
                <img src={userProfile.avatar} alt="Avatar" className="w-full h-full object-cover" />
              ) : (
-               <MasrofLogo className="w-12 h-12" />
+               <MasrofLogo className="w-12 h-12" currency={currency} />
              )}
           </div>
           <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-teal-brand rounded-full border-4 border-white flex items-center justify-center text-white scale-0 group-hover:scale-100 transition-transform">

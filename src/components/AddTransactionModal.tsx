@@ -31,9 +31,10 @@ interface AddTransactionModalProps {
   onClose: () => void;
   onAdd: (label: string, amount: number, type: 'INCOME' | 'EXPENSE', category?: string) => void;
   initialType: 'INCOME' | 'EXPENSE';
+  currency: string;
 }
 
-export default function AddTransactionModal({ isOpen, onClose, onAdd, initialType }: AddTransactionModalProps) {
+export default function AddTransactionModal({ isOpen, onClose, onAdd, initialType, currency }: AddTransactionModalProps) {
   const [label, setLabel] = useState('');
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>(initialType);
@@ -140,7 +141,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                 )}
 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Montant (DH)</label>
+                  <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Montant ({currency})</label>
                   <input
                     type="number"
                     step="0.1"

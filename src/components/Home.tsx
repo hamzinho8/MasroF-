@@ -25,9 +25,10 @@ interface HomeProps {
   onViewAll: () => void;
   widgetMode: 'balance' | 'spending';
   language: string;
+  currency: string;
 }
 
-export default function Home({ balance, transactions, weeklyAchat, weeklyBank, onAddClick, onViewAll, widgetMode, language }: HomeProps) {
+export default function Home({ balance, transactions, weeklyAchat, weeklyBank, onAddClick, onViewAll, widgetMode, language, currency }: HomeProps) {
   const translations = {
     'Français': {
       bonjour: 'Bonjour',
@@ -106,8 +107,8 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
           </h2>
           <div className="text-3xl font-black text-slate-900 mb-1">
             {widgetMode === 'balance' 
-              ? `${balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} DH`
-              : `${weeklyAchat.toLocaleString('fr-FR')} DH`}
+              ? `${balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} ${currency}`
+              : `${weeklyAchat.toLocaleString('fr-FR')} ${currency}`}
           </div>
           <p className="text-xs text-slate-700 font-medium opacity-80">
             {widgetMode === 'balance' ? t.argentDispo : t.cumulAchats}
@@ -125,14 +126,14 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
           <div className="p-4 rounded-2xl border-2 border-danger-red/20 bg-danger-red/5 relative overflow-hidden group hover:border-danger-red/40 transition-all">
             <div className="relative z-10">
               <p className="text-xs text-slate-500 mb-1 font-medium">{t.achatTotal}</p>
-              <p className="text-xl font-black text-danger-red leading-none">{weeklyAchat} DH</p>
+              <p className="text-xl font-black text-danger-red leading-none">{weeklyAchat.toLocaleString('fr-FR')} {currency}</p>
             </div>
             <ShoppingCart className="absolute -right-2 -bottom-2 text-danger-red/10 rotate-12 group-hover:scale-110 transition-transform" size={48} />
           </div>
           <div className="p-4 rounded-2xl border-2 border-bank-blue/20 bg-bank-blue/5 relative overflow-hidden group hover:border-bank-blue/40 transition-all">
             <div className="relative z-10">
               <p className="text-xs text-slate-500 mb-1 font-medium">{t.tirageBanque}</p>
-              <p className="text-xl font-black text-bank-blue leading-none">{weeklyBank} DH</p>
+              <p className="text-xl font-black text-bank-blue leading-none">{weeklyBank.toLocaleString('fr-FR')} {currency}</p>
             </div>
             <Plus className="absolute -right-2 -bottom-2 text-bank-blue/10 rotate-12 group-hover:scale-110 transition-transform" size={48} />
           </div>
@@ -163,7 +164,7 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-2 px-2">
           <div className="min-w-[160px] p-4 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
             <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">{t.retraits}</p>
-            <p className="text-lg font-black text-slate-800">8 500 DH</p>
+            <p className="text-lg font-black text-slate-800">8 500 {currency}</p>
             <div className="h-10 mt-2 flex items-end gap-1 px-1">
               <div className="flex-1 bg-teal-brand/20 h-4 rounded-full" />
               <div className="flex-1 bg-teal-brand/20 h-6 rounded-full" />
@@ -173,7 +174,7 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
           </div>
           <div className="min-w-[160px] p-4 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
             <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">{t.depenses}</p>
-            <p className="text-lg font-black text-slate-800">3 200 DH</p>
+            <p className="text-lg font-black text-slate-800">3 200 {currency}</p>
             <div className="h-10 mt-2 flex items-end gap-1 px-1">
               <div className="flex-1 bg-rose-400/20 h-8 rounded-full" />
               <div className="flex-1 bg-rose-400/40 h-6 rounded-full" />
@@ -206,7 +207,7 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
                 <p className="text-[10px] text-slate-400 font-medium">{tx.date}</p>
               </div>
               <p className={`font-black tracking-tight ${tx.type === 'INCOME' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                {tx.type === 'INCOME' ? '+' : '-'}{tx.amount.toLocaleString('fr-FR')} DH
+                {tx.type === 'INCOME' ? '+' : '-'}{tx.amount.toLocaleString('fr-FR')} {currency}
               </p>
             </div>
           ))}
