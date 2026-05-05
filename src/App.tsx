@@ -116,6 +116,34 @@ export default function App() {
     }
   };
 
+  const deleteTransaction = (id: string) => {
+    const tx = transactions.find(t => t.id === id);
+    if (!tx) return;
+
+    if (tx.type === 'INCOME') {
+      setBalance(prev => prev - tx.amount);
+    } else {
+      setBalance(prev => prev + tx.amount);
+    }
+    setTransactions(prev => prev.filter(t => t.id !== id));
+  };
+
+  const updateTransaction = (id: string, updatedTx: Partial<Transaction>) => {
+    setTransactions(prev => prev.map(tx => {
+      if (tx.id === id) {
+        const result = { ...tx, ...updatedTx };
+        // Simple balance adjustment (could be more complex if amount changed)
+        if (updatedTx.amount !== undefined) {
+          const diff = updatedTx.amount - tx.amount;
+          if (tx.type === 'INCOME') setBalance(b => b + diff);
+          else setBalance(b => b - diff);
+        }
+        return result;
+      }
+      return tx;
+    }));
+  };
+
   const resetTransactions = () => {
     setTransactions([]);
     setBalance(0);
@@ -153,7 +181,15 @@ export default function App() {
       case 'stats':
         return <Stats language={language} currency={currency} />;
       case 'history':
-        return <HistoryView transactions={transactions} language={language} currency={currency} />;
+        return (
+          <HistoryView 
+            transactions={transactions} 
+            language={language} 
+            currency={currency} 
+            onDelete={deleteTransaction}
+            onUpdate={updateTransaction}
+          />
+        );
       case 'settings':
         return (
           <SettingsView 

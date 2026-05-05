@@ -16,7 +16,10 @@ import {
   Utensils,
   Car,
   Gamepad2,
-  MoreHorizontal
+  MoreHorizontal,
+  MoreVertical,
+  Trash2,
+  Pencil
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -35,12 +38,14 @@ interface HistoryProps {
   transactions: Transaction[];
   language: string;
   currency: string;
+  onDelete: (id: string) => void;
+  onUpdate: (id: string, tx: Partial<Transaction>) => void;
 }
 
 type FilterType = 'ALL' | 'INCOME' | 'EXPENSE';
 type SortType = 'DATE_DESC' | 'DATE_ASC' | 'AMOUNT_DESC' | 'AMOUNT_ASC';
 
-export default function History({ transactions, language, currency }: HistoryProps) {
+export default function History({ transactions, language, currency, onDelete, onUpdate }: HistoryProps) {
   const translations = {
     'Français': {
       title: 'Grand Livre',
@@ -129,6 +134,21 @@ export default function History({ transactions, language, currency }: HistoryPro
   const [selectedCategory, setSelectedCategory] = useState<string>(t.tous);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showSortModal, setShowSortModal] = useState(false);
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [editingTx, setEditingTx] = useState<Transaction | null>(null);
+
+  const handleEdit = (tx: Transaction) => {
+    setActiveMenuId(null);
+    setEditingTx(tx);
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingTx) {
+      onUpdate(editingTx.id, { label: editingTx.label, amount: editingTx.amount });
+      setEditingTx(null);
+    }
+  };
 
   const parseTxDate = (dateStr: string) => {
     const [dayMonth] = dateStr.split(' ');
@@ -429,14 +449,116 @@ export default function History({ transactions, language, currency }: HistoryPro
                 </div>
               </div>
 
-              <div className="text-right">
+              <div className="text-right flex items-center gap-2">
                 <p className={`font-black tracking-tight text-base ${tx.type === 'INCOME' ? 'text-emerald-600' : 'text-rose-600'}`}>
                   {tx.type === 'INCOME' ? '+' : '-'}{tx.amount.toLocaleString('fr-FR')} 
                   <span className="text-[10px] ml-0.5">{currency}</span>
                 </p>
+                
+                <div className="relative">
+                  <button 
+                    onClick={() => setActiveMenuId(activeMenuId === tx.id ? null : tx.id)}
+                    className="p-1 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
+                  >
+                    <MoreVertical size={16} />
+                  </button>
+                  
+                  <AnimatePresence>
+                    {activeMenuId === tx.id && (
+                      <>
+                        <div 
+                          className="fixed inset-0 z-30" 
+                          onClick={() => setActiveMenuId(null)}
+                        />
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.9, x: -10 }}
+                          animate={{ opacity: 1, scale: 1, x: 0 }}
+                          exit={{ opacity: 0, scale: 0.9, x: -10 }}
+                          className="absolute right-0 top-8 bg-white border border-slate-100 shadow-xl rounded-xl py-2 w-32 z-40"
+                        >
+                          <button 
+                            onClick={() => handleEdit(tx)}
+                            className="w-full px-4 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                          >
+                            <Pencil size={14} className="text-teal-brand" />
+                            Modifier
+                          </button>
+                          <button 
+                            onClick={() => { onDelete(tx.id); setActiveMenuId(null); }}
+                            className="w-full px-4 py-2 text-left text-xs font-bold text-rose-500 hover:bg-rose-50 flex items-center gap-2"
+                          >
+                            <Trash2 size={14} />
+                            Supprimer
+                          </button>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </motion.div>
           ))}
+        </AnimatePresence>
+
+        {/* Inline Edit Modal */}
+        <AnimatePresence>
+          {editingTx && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm"
+            >
+              <motion.div 
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                className="bg-white rounded-[32px] w-full max-w-sm p-8 shadow-2xl"
+              >
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-black text-slate-800">Modifier l'achat</h3>
+                  <button onClick={() => setEditingTx(null)} className="p-2 bg-slate-50 rounded-full text-slate-400">
+                    <X size={20} />
+                  </button>
+                </div>
+                
+                <form onSubmit={handleSaveEdit} className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Libellé</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={editingTx.label}
+                      onChange={(e) => setEditingTx({...editingTx, label: e.target.value})}
+                      className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-teal-brand/20 transition-all"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Montant ({currency})</label>
+                    <input 
+                      type="number" 
+                      step="0.01"
+                      required
+                      value={isNaN(editingTx.amount) ? '' : editingTx.amount}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        setEditingTx({...editingTx, amount: isNaN(val) ? NaN : val});
+                      }}
+                      className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-teal-brand/20 transition-all font-mono"
+                    />
+                  </div>
+                  
+                  <button 
+                    type="submit"
+                    className="w-full py-5 bg-teal-brand text-white rounded-[24px] font-black uppercase tracking-widest shadow-lg shadow-teal-brand/20 active:scale-95 transition-all mt-4"
+                  >
+                    Enregistrer les modifications
+                  </button>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
         </AnimatePresence>
 
         {filteredTransactions.length === 0 && (
