@@ -9,4 +9,6 @@ coverage/
 
 # Force inclusion of Gradle Wrapper
 !android/gradle/wrapper/gradle-wrapper.jar
+!android/gradle/wrapper/gradle-wrapper.properties
 !gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
