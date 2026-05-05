@@ -50,6 +50,8 @@ jobs:
       - name: Expert Android Environment Repair
         run: |
           cd android
+          # Force regeneration of the wrapper if JAR is corrupt
+          rm -f gradle/wrapper/gradle-wrapper.jar
           # Inject ultimate stability properties for GitHub Actions
           cat > gradle.properties <<EOF
           org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8
