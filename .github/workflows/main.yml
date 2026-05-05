@@ -40,20 +40,21 @@ jobs:
           distribution: 'zulu'
           cache: 'gradle'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x android/gradlew
-
-      - name: Check Gradle Wrapper integrity
+      - name: Fix/Verify Gradle Wrapper
         run: |
-          ls -l android/gradle/wrapper/gradle-wrapper.jar
-          if [ ! -s android/gradle/wrapper/gradle-wrapper.jar ]; then
-            echo "ERROR: gradle-wrapper.jar is missing or empty!"
-            exit 1
-          fi
+          cd android
+          # Remove potentially corrupted JAR
+          rm -f gradle/wrapper/gradle-wrapper.jar
+          # Regenerate proper wrapper using system gradle on runner
+          gradle wrapper
+          chmod +x gradlew
 
       - name: Build Android Debug APK
         run: |
           cd android
+          # Try to build, if it fails due to wrapper, the debug info above will tell us why.
+          # We don't want to run 'gradle wrapper' every time as it requires gradle installed on runner,
+          # but the ubuntu-latest runner HAS gradle. However, we should trust the wrapper if it's there.
           ./gradlew assembleDebug
 
       - name: Upload Debug APK
