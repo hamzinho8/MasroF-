@@ -16,12 +16,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build web (React / Vite)
+      - name: Build web app
         run: npm run build
 
       - name: Setup Java (JDK 17)
@@ -30,7 +30,10 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Build Android APK
+      - name: Make Gradlew executable
+        run: chmod +x android/gradlew
+
+      - name: Build APK (FULL DEBUG)
         run: |
           cd android
           ./gradlew assembleRelease --stacktrace --info --debug
