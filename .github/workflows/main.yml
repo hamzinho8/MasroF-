@@ -43,26 +43,28 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          cache-overwrite-existing: true
+          cache-disabled: true # Disable cache to avoid 400 errors and ensure clean state
 
       - name: Expert Android Environment Repair
         run: |
           cd android
-          # Force regeneration of a CLEAN wrapper using system gradle (pre-installed on image)
-          # This bypasses any corrupted JARs in the repository
-          gradle wrapper --gradle-version 8.14.3
+          # Force regeneration of a CLEAN wrapper with a VALID stable version
+          gradle wrapper --gradle-version 8.2
           chmod +x gradlew
           sed -i 's/\r$//' gradlew
           
-          # Inject ultimate stability properties for GitHub Actions (Focus: Memory & AAPT2)
+          # Inject ultimate stability properties for GitHub Actions
+          # Focus: Memory conservation and error resilience
           cat > gradle.properties <<EOF
           org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8
           org.gradle.daemon=false
           org.gradle.parallel=false
-          org.gradle.configureondemand=false
           android.enableAapt2WorkerProcessResurrection=true
           android.useAndroidX=true
           android.enableJetifier=true
+          # Disable some features that consume memory in CI
+          org.gradle.vfs.watch=false
+          org.gradle.configureondemand=false
           EOF
 
       - name: Build Android Debug APK
