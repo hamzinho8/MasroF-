@@ -7,8 +7,8 @@ coverage/
 .env*
 !.env.example
 
-# Force inclusion of Gradle Wrapper
+# Force inclusion of Gradle Wrapper (CRITICAL)
 !android/gradle/wrapper/gradle-wrapper.jar
 !android/gradle/wrapper/gradle-wrapper.properties
-!gradle/wrapper/gradle-wrapper.jar
-!gradle/wrapper/gradle-wrapper.properties
+!android/gradlew
+!android/gradlew.bat
