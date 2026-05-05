@@ -5,36 +5,19 @@ import {
   Settings as SettingsIcon, 
   Wallet,
   Home as HomeIcon,
-  Search
+  Search,
+  Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Home from './components/Home';
-import Stats from './components/Stats';
+import Credits from './components/Credits';
 import HistoryView from './components/History';
 import SettingsView from './components/Settings';
 import MasrofLogo from './components/Logo';
 import AddTransactionModal from './components/AddTransactionModal';
+import { Transaction, Reminder, CreditEntry } from './types';
 
-interface Transaction {
-  id: string;
-  label: string;
-  amount: number;
-  type: 'INCOME' | 'EXPENSE';
-  category?: string;
-  date: string;
-}
-
-export interface Reminder {
-  id: string;
-  title: string;
-  time: string;
-  date?: string;
-  frequency?: 'ONCE' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
-  enabled: boolean;
-  type: 'ACHAT' | 'RETRAIT' | 'AUTRE';
-}
-
-type Tab = 'home' | 'history' | 'stats' | 'settings';
+type Tab = 'home' | 'history' | 'credits' | 'settings';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -51,25 +34,30 @@ export default function App() {
     'Français': {
       accueil: 'Accueil',
       historique: 'Historique',
-      stats: 'Stats',
+      credits: 'Crédits',
       options: 'Options',
       trésorerie: 'Votre trésorerie, simplifiée',
     },
     'العربية': {
       accueil: 'الرئيسية',
       historique: 'السجل',
-      stats: 'الإحصائيات',
+      credits: 'ديون',
       options: 'الإعدادات',
       trésorerie: 'خزينتك، بكل بساطة',
     },
     'English': {
       accueil: 'Home',
       historique: 'History',
-      stats: 'Stats',
+      credits: 'Credits',
       options: 'Settings',
       trésorerie: 'Your treasury, simplified',
     }
   };
+
+  const [creditEntries, setCreditEntries] = useState<CreditEntry[]>([
+    { id: '1', name: 'Ahmed', amount: 500, type: 'OWE_ME', date: '01/05/2024' },
+    { id: '2', name: 'Boutique Ali', amount: 120, type: 'I_OWE', date: '03/05/2024' },
+  ]);
 
   const t = translations[language as keyof typeof translations] || translations['Français'];
   const isRtl = language === 'العربية';
@@ -162,6 +150,23 @@ export default function App() {
     .filter(t => t.type === 'INCOME')
     .reduce((acc, t) => acc + t.amount, 0);
 
+  const handleCreditSettlement = (id: string) => {
+    const entry = creditEntries.find(e => e.id === id);
+    if (!entry) return;
+
+    // Add corresponding transaction
+    if (entry.type === 'OWE_ME') {
+      // Deleting "Owed to me" -> I received money back (Withdrawal/Retrait)
+      addTransaction(`${language === 'العربية' ? 'استعادة مبلغ' : 'Retrait (Remboursement)'} : ${entry.name}`, entry.amount, 'INCOME', 'Bank');
+    } else {
+      // Deleting "I owe" -> I paid back (Purchase/Achat)
+      addTransaction(`${language === 'العربية' ? 'دفع (شراء)' : 'Achat (Paiement)'} : ${entry.name}`, entry.amount, 'EXPENSE', 'Shopping');
+    }
+
+    // Remove credit entry
+    setCreditEntries(prev => prev.filter(e => e.id !== id));
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
@@ -176,10 +181,20 @@ export default function App() {
             widgetMode={widgetMode}
             language={language}
             currency={currency}
+            creditEntries={creditEntries}
+            onNavigateToCredits={() => setActiveTab('credits')}
           />
         );
-      case 'stats':
-        return <Stats language={language} currency={currency} />;
+      case 'credits':
+        return (
+          <Credits 
+            language={language} 
+            currency={currency} 
+            entries={creditEntries}
+            setEntries={setCreditEntries}
+            onSettle={handleCreditSettlement}
+          />
+        );
       case 'history':
         return (
           <HistoryView 
@@ -223,6 +238,8 @@ export default function App() {
             widgetMode={widgetMode}
             language={language}
             currency={currency}
+            creditEntries={creditEntries}
+            onNavigateToCredits={() => setActiveTab('credits')}
           />
         );
       }
@@ -269,17 +286,17 @@ export default function App() {
       </AnimatePresence>
 
       {/* Header */}
-      <header className={`p-6 flex items-center justify-between transition-colors ${isDarkMode ? 'bg-[#1A1A1A]' : ''}`}>
-        <div className="flex items-center gap-4">
-          <div className={`w-12 h-12 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.1)] rounded-2xl overflow-hidden flex items-center justify-center border-2 transition-transform active:scale-95 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-white'}`}>
+      <header className={`px-6 pt-8 pb-4 flex items-center justify-between transition-colors ${isDarkMode ? 'bg-[#1A1A1A]' : ''}`}>
+        <div className="flex items-center gap-3">
+          <div className={`w-14 h-14 shadow-lg rounded-full overflow-hidden flex items-center justify-center border-4 transition-transform active:scale-95 ${isDarkMode ? 'bg-slate-800 border-slate-700 font-bold' : 'bg-white border-white'}`}>
             <MasrofLogo className="w-9 h-9" currency={currency} />
           </div>
-          <h1 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-800'} tracking-tight`}>
-            Masro<span className="text-teal-brand">F</span>
+          <h1 className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-[#0B1E3F]'} tracking-tight`}>
+            Masro<span className="text-[#36A292]">F</span>
           </h1>
         </div>
-        <button className={`w-12 h-12 rounded-[20px] flex items-center justify-center shadow-sm border-2 transition-all active:scale-90 ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-50 text-slate-400 hover:border-teal-brand/10 hover:text-teal-brand hover:shadow-lg hover:shadow-teal-brand/5'}`}>
-          <Search size={20} />
+        <button className={`w-12 h-12 rounded-full flex items-center justify-center shadow-md borderTransition-all active:scale-90 ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-50 text-slate-400'}`}>
+          <Search size={22} strokeWidth={2.5} />
         </button>
       </header>
 
@@ -307,10 +324,10 @@ export default function App() {
           isDarkMode={isDarkMode}
         />
         <TabButton 
-          active={activeTab === 'stats'} 
-          onClick={() => setActiveTab('stats')} 
-          icon={<BarChart3 size={22} />} 
-          label={t.stats} 
+          active={activeTab === 'credits'} 
+          onClick={() => setActiveTab('credits')} 
+          icon={<Users size={22} />} 
+          label={t.credits} 
           isDarkMode={isDarkMode}
         />
         <TabButton 

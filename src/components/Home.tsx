@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Plus, 
   ShoppingCart, 
@@ -6,17 +6,14 @@ import {
   TrendingUp,
   Wallet,
   ShoppingBag,
-  ArrowDownToLine
+  ArrowDownToLine,
+  CalendarDays,
+  CalendarRange,
+  CalendarCheck,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-
-interface Transaction {
-  id: string;
-  label: string;
-  amount: number;
-  type: 'INCOME' | 'EXPENSE';
-  date: string;
-}
+import { Transaction, CreditEntry } from '../types';
+import { HandReceiveBackground, HandGiveBackground } from './Credits';
 
 interface HomeProps {
   balance: number;
@@ -28,9 +25,25 @@ interface HomeProps {
   widgetMode: 'balance' | 'spending';
   language: string;
   currency: string;
+  creditEntries: CreditEntry[];
+  onNavigateToCredits: () => void;
 }
 
-export default function Home({ balance, transactions, weeklyAchat, weeklyBank, onAddClick, onViewAll, widgetMode, language, currency }: HomeProps) {
+export default function Home({ 
+  balance, 
+  transactions, 
+  weeklyAchat, 
+  weeklyBank, 
+  onAddClick, 
+  onViewAll, 
+  widgetMode, 
+  language, 
+  currency,
+  creditEntries,
+  onNavigateToCredits
+}: HomeProps) {
+  const [timeframe, setTimeframe] = useState<'day' | 'week' | 'month'>('week');
+
   const translations = {
     'Français': {
       bonjour: 'Bonjour',
@@ -38,7 +51,10 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
       depensesHebdo: 'Dépenses Hebdo',
       argentDispo: 'Argent liquide disponible',
       cumulAchats: 'Cumul de vos achats cette semaine',
-      sommaire: 'Sommaire cette Semaine',
+      sommaireJour: 'Sommaire du Jour',
+      sommaireSemaine: 'Sommaire de la Semaine',
+      sommaireMois: 'Sommaire du Mois',
+      sommaire: 'Sommaire',
       achatTotal: 'Achat Total',
       tirageBanque: 'Tirage Banque',
       ajouterAchat: 'Ajouter Achat',
@@ -55,7 +71,10 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
       depensesHebdo: 'المصاريف الأسبوعية',
       argentDispo: 'المبلغ المتوفر حالياً',
       cumulAchats: 'مجموع مشترياتك هذا الأسبوع',
-      sommaire: 'ملخص الأسبوع',
+      sommaireJour: 'ملخص اليوم',
+      sommaireSemaine: 'ملخص الأسبوع',
+      sommaireMois: 'ملخص الشهر',
+      sommaire: 'ملخص',
       achatTotal: 'مجموع المشتريات',
       tirageBanque: 'سحب بنكي',
       ajouterAchat: 'إضافة شراء',
@@ -72,7 +91,10 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
       depensesHebdo: 'Weekly Spending',
       argentDispo: 'Cash available',
       cumulAchats: 'Your total purchases this week',
-      sommaire: 'Weekly Summary',
+      sommaireJour: 'Daily Summary',
+      sommaireSemaine: 'Weekly Summary',
+      sommaireMois: 'Monthly Summary',
+      sommaire: 'Summary',
       achatTotal: 'Total Purchase',
       tirageBanque: 'Bank Withdrawal',
       ajouterAchat: 'Add Purchase',
@@ -87,14 +109,33 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
 
   const t = translations[language as keyof typeof translations] || translations['Français'];
 
+  const getSummaryTitle = () => {
+    if (timeframe === 'day') return t.sommaireJour;
+    if (timeframe === 'month') return t.sommaireMois;
+    return t.sommaireSemaine;
+  };
+
+  const totalOweMe = creditEntries
+    .filter(e => e.type === 'OWE_ME')
+    .reduce((acc, e) => acc + e.amount, 0);
+
+  const totalIOwe = creditEntries
+    .filter(e => e.type === 'I_OWE')
+    .reduce((acc, e) => acc + e.amount, 0);
+
+  const creditTranslations = {
+    'Français': { oweMe: 'ON ME DOIT', iOwe: 'JE DOIS', resume: 'Résumé des crédits' },
+    'العربية': { oweMe: 'لي عند الآخرين', iOwe: 'علي للآخرين', resume: 'ملخص الديون' },
+    'English': { oweMe: 'OWED TO ME', iOwe: 'I OWE', resume: 'Credits Summary' }
+  };
+  const ct = creditTranslations[language as keyof typeof creditTranslations] || creditTranslations['Français'];
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
     >
-      <p className="text-lg font-medium text-slate-600 mb-5">{t.bonjour}, Hamza !</p>
-
       {/* Main Widget Card */}
       <div 
         className="relative h-44 rounded-[24px] overflow-hidden shadow-lg mb-8 transition-all hover:scale-[1.01] cursor-pointer"
@@ -128,9 +169,64 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
         </AnimatePresence>
       </div>
 
-      {/* Weekly Summary */}
-      <div className="mb-8">
-        <h3 className="text-slate-900 font-bold mb-3">{t.sommaire}</h3>
+      {/* Credits Buttons - Now below the main card, rectangular */}
+      <div className="grid grid-cols-2 gap-4 mb-8">
+        <div 
+          onClick={onNavigateToCredits}
+          className="flex flex-col h-30 p-5 rounded-[24px] text-white shadow-xl relative overflow-hidden text-center justify-center items-center cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <HandReceiveBackground className="absolute w-full h-full inset-0 pointer-events-none" />
+          <div className="relative z-10 flex flex-col items-center justify-center">
+            <p className="text-[10px] uppercase font-black tracking-[0.2em] text-white/90 mb-2">{ct.oweMe}</p>
+            <div className="flex flex-col items-center gap-1.5">
+              <span className="text-3xl font-black leading-none text-white">{totalOweMe}</span>
+              <span className="text-[11px] font-bold text-white opacity-80 uppercase">{currency}</span>
+            </div>
+          </div>
+        </div>
+
+        <div 
+          onClick={onNavigateToCredits}
+          className="flex flex-col h-30 p-5 rounded-[24px] text-white shadow-xl relative overflow-hidden text-center justify-center items-center cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <HandGiveBackground className="absolute w-full h-full inset-0 pointer-events-none" />
+          <div className="relative z-10 flex flex-col items-center justify-center">
+            <p className="text-[10px] uppercase font-black tracking-[0.2em] text-white/90 mb-2">{ct.iOwe}</p>
+            <div className="flex flex-col items-center gap-1.5">
+              <span className="text-3xl font-black leading-none text-white">{totalIOwe}</span>
+              <span className="text-[11px] font-bold text-white opacity-80 uppercase">{currency}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Summary Section */}
+      <div className="mb-8 space-y-4">
+        {/* Summary Title with Filter Icon */}
+        <div className="flex justify-between items-center px-1">
+          <h3 className="text-slate-900 font-bold">{getSummaryTitle()}</h3>
+          <div className="flex bg-slate-100 p-1 rounded-xl">
+            <button 
+              onClick={() => setTimeframe('day')}
+              className={`p-1.5 rounded-lg transition-all ${timeframe === 'day' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}
+            >
+              <CalendarCheck size={16} />
+            </button>
+            <button 
+              onClick={() => setTimeframe('week')}
+              className={`p-1.5 rounded-lg transition-all ${timeframe === 'week' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}
+            >
+              <CalendarRange size={16} />
+            </button>
+            <button 
+              onClick={() => setTimeframe('month')}
+              className={`p-1.5 rounded-lg transition-all ${timeframe === 'month' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}
+            >
+              <CalendarDays size={16} />
+            </button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
           <div className="p-4 rounded-2xl border-2 border-danger-red/20 bg-danger-red/5 relative overflow-hidden group hover:border-danger-red/40 transition-all">
             <div className="relative z-10">
@@ -173,33 +269,6 @@ export default function Home({ balance, transactions, weeklyAchat, weeklyBank, o
             {t.ajouterRetrait}
           </span>
         </button>
-      </div>
-
-      {/* Stats Quick View */}
-      <div className="mb-8">
-        <h3 className="text-slate-900 font-bold mb-3">{t.analyses}</h3>
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-2 px-2">
-          <div className="min-w-[160px] p-4 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
-            <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">{t.retraits}</p>
-            <p className="text-lg font-black text-slate-800">8 500 {currency}</p>
-            <div className="h-10 mt-2 flex items-end gap-1 px-1">
-              <div className="flex-1 bg-teal-brand/20 h-4 rounded-full" />
-              <div className="flex-1 bg-teal-brand/20 h-6 rounded-full" />
-              <div className="flex-1 bg-teal-brand/40 h-8 rounded-full" />
-              <div className="flex-1 bg-teal-brand h-10 rounded-full" />
-            </div>
-          </div>
-          <div className="min-w-[160px] p-4 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
-            <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">{t.depenses}</p>
-            <p className="text-lg font-black text-slate-800">3 200 {currency}</p>
-            <div className="h-10 mt-2 flex items-end gap-1 px-1">
-              <div className="flex-1 bg-rose-400/20 h-8 rounded-full" />
-              <div className="flex-1 bg-rose-400/40 h-6 rounded-full" />
-              <div className="flex-1 bg-rose-400 h-9 rounded-full" />
-              <div className="flex-1 bg-rose-400/30 h-4 rounded-full" />
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Recent Activity */}
