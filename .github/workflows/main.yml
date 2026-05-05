@@ -37,6 +37,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           cache-disabled: true
+          wrapper-validation-enabled: false
 
       - name: Sync Capacitor with Android
         run: |
@@ -44,7 +45,7 @@ jobs:
           cd android
           chmod +x gradlew
           sed -i 's/\r$//' gradlew
-          ./gradlew clean
+          ./gradlew clean --no-daemon
 
       - name: Expert Android Environment Repair
         run: |
