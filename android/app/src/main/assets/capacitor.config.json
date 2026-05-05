@@ -1,5 +1,8 @@
 {
 	"appId": "com.hamza.masrof",
 	"appName": "MasroF",
-	"webDir": "dist"
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https"
+	}
 }
