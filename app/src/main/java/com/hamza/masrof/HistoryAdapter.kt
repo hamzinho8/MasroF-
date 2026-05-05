@@ -13,7 +13,8 @@ import java.util.Locale
 
 class HistoryAdapter(
     private val items: List<Transaction>,
-    private val onImportantClick: (Transaction) -> Unit
+    private val onImportantClick: (Transaction) -> Unit,
+    private val onLongClick: (Transaction) -> Unit
 ) : RecyclerView.Adapter<HistoryAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -22,6 +23,7 @@ class HistoryAdapter(
         val amount: TextView = view.findViewById<TextView>(R.id.itemAmount)
         val icon: ImageView = view.findViewById<ImageView>(R.id.itemIcon)
         val imgImportant: ImageView = view.findViewById<ImageView>(R.id.imgImportant)
+        val root: View = view.findViewById<View>(R.id.transactionRoot) ?: view
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -55,6 +57,12 @@ class HistoryAdapter(
         holder.imgImportant.setColorFilter(ContextCompat.getColor(context, if (item.isImportant) R.color.teal_brand else R.color.slate_500))
 
         holder.imgImportant.setOnClickListener { onImportantClick(item) }
+
+        // Nouveau : Support du clic long pour modifier/supprimer
+        holder.itemView.setOnLongClickListener {
+            onLongClick(item)
+            true
+        }
     }
 
     private fun getIconForCategory(category: String): Int {

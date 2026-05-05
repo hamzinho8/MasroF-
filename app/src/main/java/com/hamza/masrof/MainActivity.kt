@@ -90,11 +90,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        loadData()
-        updateUI()
-        
         setupExpertNotifications()
         checkNotificationPermission()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadData()
+        updateUI()
     }
 
     private fun showImportantStats() {

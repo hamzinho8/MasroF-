@@ -6,6 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.EditText
+import android.widget.LinearLayout
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -93,9 +96,107 @@ class HistoryActivity : AppCompatActivity() {
 
         // Transactions
         rvHistory.layoutManager = LinearLayoutManager(this)
-        rvHistory.adapter = HistoryAdapter(filteredTransactions) { transaction ->
+        rvHistory.adapter = HistoryAdapter(filteredTransactions, { transaction ->
             toggleImportant(transaction)
+        }, { view, transaction ->
+            showPopupMenu(view, transaction)
+        })
+    }
+
+    private fun showPopupMenu(view: View, transaction: Transaction) {
+        val popup = androidx.appcompat.widget.PopupMenu(this, view)
+        popup.menuInflater.inflate(R.menu.transaction_menu, popup.menu)
+
+        // Show icons in PopupMenu (Reflection trick)
+        try {
+            val fields = popup.javaClass.declaredFields
+            for (field in fields) {
+                if ("mPopup" == field.name) {
+                    field.isAccessible = true
+                    val menuPopupHelper = field.get(popup)
+                    val classPopupHelper = Class.forName(menuPopupHelper.javaClass.name)
+                    val setForceIcons = classPopupHelper.getMethod("setForceShowIcon", Boolean::class.javaPrimitiveType)
+                    setForceIcons.invoke(menuPopupHelper, true)
+                    break
+                }
+            }
+        } catch (e: Exception) {
+            // Fallback: icons might not show but menu will work
         }
+
+        popup.menu.findItem(R.id.action_important).title = if (transaction.isImportant) "Enlever Important" else "Marquer Important"
+
+        popup.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_edit -> {
+                    showEditDialog(transaction)
+                    true
+                }
+                R.id.action_delete -> {
+                    showDeleteConfirmation(transaction)
+                    true
+                }
+                R.id.action_important -> {
+                    toggleImportant(transaction)
+                    true
+                }
+                else -> false
+            }
+        }
+        popup.show()
+    }
+
+    private fun showEditDialog(transaction: Transaction) {
+        val layout = LinearLayout(this)
+        layout.orientation = LinearLayout.VERTICAL
+        layout.setPadding(50, 40, 50, 10)
+
+        val editLabel = EditText(this)
+        editLabel.hint = "Libellé"
+        editLabel.setText(transaction.label)
+        layout.addView(editLabel)
+
+        val editAmount = EditText(this)
+        editAmount.hint = "Montant"
+        editAmount.inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+        editAmount.setText(transaction.amount.toString())
+        layout.addView(editAmount)
+
+        AlertDialog.Builder(this)
+            .setTitle("Modifier l'achat")
+            .setView(layout)
+            .setPositiveButton("Enregistrer") { _, _ ->
+                val newLabel = editLabel.text.toString()
+                val newAmount = editAmount.text.toString().toDoubleOrNull() ?: transaction.amount
+                
+                if (newLabel.isNotEmpty()) {
+                    updateTransaction(transaction, newLabel, newAmount)
+                }
+            }
+            .setNegativeButton("Annuler", null)
+            .show()
+    }
+
+    private fun updateTransaction(oldTransaction: Transaction, newLabel: String, newAmount: Double) {
+        val index = allTransactions.indexOfFirst { it.id == oldTransaction.id }
+        if (index != -1) {
+            allTransactions[index] = allTransactions[index].copy(label = newLabel, amount = newAmount)
+            saveData()
+            applyFilter()
+        }
+    }
+
+    private fun showDeleteConfirmation(transaction: Transaction) {
+        AlertDialog.Builder(this)
+            .setTitle("Supprimer ?")
+            .setMessage("Voulez-vous vraiment supprimer cet élément ?")
+            .setPositiveButton("Supprimer") { _, _ ->
+                allTransactions.removeAll { it.id == transaction.id }
+                saveData()
+                applyFilter()
+            }
+            .setNegativeButton("Annuler", null)
+            .show()
     }
 
     private fun onCategorySelected(category: Category) {
@@ -168,7 +269,8 @@ class HistoryActivity : AppCompatActivity() {
 
     inner class HistoryAdapter(
         private val items: List<Transaction>,
-        private val onLongClick: (Transaction) -> Unit
+        private val onImportantClick: (Transaction) -> Unit,
+        private val onMenuClick: (View, Transaction) -> Unit
     ) : RecyclerView.Adapter<HistoryAdapter.ViewHolder>() {
 
         class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -177,7 +279,7 @@ class HistoryActivity : AppCompatActivity() {
             val amount: TextView = view.findViewById<TextView>(R.id.itemAmount)
             val icon: ImageView = view.findViewById<ImageView>(R.id.itemIcon)
             val imgImportant: ImageView = view.findViewById<ImageView>(R.id.imgImportant)
-            val container: View = view.findViewById<View>(android.R.id.content) ?: view // fallback
+            val btnMore: ImageView = view.findViewById<ImageView>(R.id.btnMore)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -209,6 +311,7 @@ class HistoryActivity : AppCompatActivity() {
 
             // Show important indicator
             holder.imgImportant.visibility = if (item.isImportant) View.VISIBLE else View.GONE
+            holder.imgImportant.setOnClickListener { onImportantClick(item) }
             
             // Highlight important with background color if requested
             if (item.isImportant) {
@@ -217,9 +320,8 @@ class HistoryActivity : AppCompatActivity() {
                 holder.itemView.setBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.white))
             }
 
-            holder.itemView.setOnLongClickListener {
-                onLongClick(item)
-                true
+            holder.btnMore.setOnClickListener {
+                onMenuClick(it, item)
             }
         }
 
