@@ -23,7 +23,6 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Transaction, CreditEntry } from '../types';
-import { HandReceiveBackground, HandGiveBackground } from './Credits';
 
 interface HomeProps {
   balance: number;

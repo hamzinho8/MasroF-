@@ -118,11 +118,11 @@ export default function History({ transactions, language, currency, onDelete, on
   const t = translations[language as keyof typeof translations] || translations['Français'];
   
   const CATEGORY_MAP = [
-    { label: t.nourriture, icon: <Utensils size={24} />, color: 'amber', bg: 'bg-amber-100', text: 'text-amber-600', glow: 'bg-amber-400' },
-    { label: t.shopping, icon: <ShoppingBag size={24} />, color: 'rose', bg: 'bg-rose-100', text: 'text-rose-600', glow: 'bg-rose-400' },
-    { label: t.transport, icon: <Car size={24} />, color: 'sky', bg: 'bg-sky-100', text: 'text-sky-600', glow: 'bg-sky-400' },
-    { label: t.loisirs, icon: <Gamepad2 size={24} />, color: 'purple', bg: 'bg-purple-100', text: 'text-purple-600', glow: 'bg-purple-400' },
-    { label: t.autres, icon: <MoreHorizontal size={24} />, color: 'slate', bg: 'bg-slate-100', text: 'text-slate-600', glow: 'bg-slate-400' },
+    { label: t.nourriture, icon: <Utensils size={24} />, color: 'amber', bg: 'bg-amber-100', text: 'text-amber-600', glow: 'bg-amber-400', activeBg: 'bg-amber-500', activeText: 'text-white' },
+    { label: t.shopping, icon: <ShoppingBag size={24} />, color: 'rose', bg: 'bg-rose-100', text: 'text-rose-600', glow: 'bg-rose-400', activeBg: 'bg-rose-500', activeText: 'text-white' },
+    { label: t.transport, icon: <Car size={24} />, color: 'sky', bg: 'bg-sky-100', text: 'text-sky-600', glow: 'bg-sky-400', activeBg: 'bg-sky-500', activeText: 'text-white' },
+    { label: t.loisirs, icon: <Gamepad2 size={24} />, color: 'purple', bg: 'bg-purple-100', text: 'text-purple-600', glow: 'bg-purple-400', activeBg: 'bg-purple-500', activeText: 'text-white' },
+    { label: t.autres, icon: <MoreHorizontal size={24} />, color: 'slate', bg: 'bg-slate-100', text: 'text-slate-600', glow: 'bg-slate-400', activeBg: 'bg-slate-500', activeText: 'text-white' },
   ];
 
   const [filter, setFilter] = useState<FilterType>('ALL');

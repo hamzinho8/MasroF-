@@ -14,7 +14,8 @@ import {
   Calendar,
   TrendingUp,
   TrendingDown,
-  X
+  X,
+  HandCoins
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CreditEntry } from '../types';
@@ -161,53 +162,80 @@ export default function Credits({ language, currency, entries, setEntries, onSet
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="space-y-7 pb-12"
+      className="space-y-6 pb-12"
       onClick={() => setActiveMenuId(null)}
     >
-      {/* Counters Section - Matching summary card style exactly */}
-      <div className="grid grid-cols-2 gap-3 mb-8">
-        {/* On me doit - Receive */}
-        <div 
-          className="p-4 rounded-2xl border-2 border-indigo-500/20 bg-indigo-50/50 relative overflow-hidden group shadow-sm active:scale-95 transition-all"
-        >
-          <div className="relative z-10">
-            <p className="text-xs text-slate-500 mb-1 font-medium">{t.owedToMe}</p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl font-black text-indigo-600 leading-none">{totalOweMe}</span>
-              <span className="text-[10px] font-bold text-indigo-500 uppercase">{currency}</span>
-            </div>
-          </div>
-          <TrendingUp className="absolute -right-2 -bottom-2 text-indigo-500/10 rotate-12 group-hover:scale-110 transition-transform" size={48} />
+      {/* Premium Credits Artistic Card - Ma Poche Style with Custom Colors */}
+      <div 
+        className="relative h-48 rounded-[32px] overflow-hidden shadow-2xl shadow-indigo-500/10 mb-8 transition-all hover:scale-[1.01] border border-white/20 active:scale-95"
+        style={{ background: 'linear-gradient(90deg, #4F46E5 0%, #F59E0B 100%)' }}
+      >
+        {/* Decorative Background Elements (Artistic data-like lines) */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M0 80 Q 25 50, 50 80 T 100 80" fill="none" stroke="white" strokeWidth="0.5" />
+            <path d="M0 60 Q 30 90, 60 60 T 100 60" fill="none" stroke="white" strokeWidth="0.5" />
+          </svg>
         </div>
 
-        {/* Je dois - Give */}
-        <div 
-          className="p-4 rounded-2xl border-2 border-amber-500/20 bg-amber-50/50 relative overflow-hidden group shadow-sm active:scale-95 transition-all"
-        >
-          <div className="relative z-10">
-            <p className="text-xs text-slate-500 mb-1 font-medium">{t.owedByMe}</p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl font-black text-amber-600 leading-none">{totalIOwe}</span>
-              <span className="text-[10px] font-bold text-amber-500 uppercase">{currency}</span>
+        {/* Floating Icons for Artistic Touch - Matching Home.tsx style */}
+        <div className="absolute left-6 top-1/2 -translate-y-1/2 opacity-15 transform scale-150 text-white pointer-events-none">
+          <TrendingUp size={60} />
+        </div>
+        <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-15 transform scale-150 text-white pointer-events-none">
+          <TrendingDown size={60} />
+        </div>
+
+        {/* Central Plus Button - Now Transparent & Glassy */}
+        <div className="absolute inset-0 flex items-center justify-center z-30">
+          <motion.button 
+            whileHover={{ scale: 1.15, backgroundColor: "rgba(255, 255, 255, 0.2)" }}
+            whileTap={{ scale: 0.9 }}
+            onClick={(e) => { e.stopPropagation(); setIsAdding(true); }}
+            className="w-16 h-16 bg-white/10 backdrop-blur-lg text-white rounded-full flex items-center justify-center shadow-[0_15px_35px_rgba(0,0,0,0.2)] transition-all z-40 border-2 border-white/30"
+          >
+            <Plus size={38} strokeWidth={2.5} />
+          </motion.button>
+        </div>
+
+        <div className="relative z-10 p-7 h-full flex flex-col justify-between">
+          <div className="flex justify-between items-start">
+            {/* Owed to Me Section */}
+            <div className="bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/10">
+              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/80 mb-1 leading-none">
+                {t.owedToMe}
+              </p>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-black text-white tracking-tighter drop-shadow-sm">
+                  {totalOweMe.toLocaleString('fr-FR')}
+                </span>
+                <span className="text-[10px] font-bold text-indigo-100">{currency}</span>
+              </div>
+            </div>
+
+            {/* I Owe Section */}
+            <div className="bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/10 text-right">
+              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/80 mb-1 leading-none">
+                {t.owedByMe}
+              </p>
+              <div className="flex items-baseline justify-end gap-1">
+                <span className="text-2xl font-black text-white tracking-tighter drop-shadow-sm">
+                  {totalIOwe.toLocaleString('fr-FR')}
+                </span>
+                <span className="text-[10px] font-bold text-amber-100">{currency}</span>
+              </div>
             </div>
           </div>
-          <TrendingDown className="absolute -right-2 -bottom-2 text-amber-500/10 rotate-12 group-hover:scale-110 transition-transform" size={48} />
+
+          {/* Footer branding removed for a cleaner look as requested */}
+          <div className="flex justify-center opacity-0 pointer-events-none">
+            <div className="px-5 py-1.5 rounded-full bg-black/20 backdrop-blur-sm">
+              <p className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em]">
+                {language === 'Français' ? 'Portefeuille Crédit' : 'محفظة الائتمان'}
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div className="ps-1">
-        <h2 className="text-[28px] font-black text-[#0B1E3F] leading-tight mb-1">{t.title}</h2>
-        <p className="text-[14px] text-slate-400 font-medium">{t.subtitle}</p>
-      </div>
-
-      <div className="relative">
-        <button 
-          onClick={(e) => { e.stopPropagation(); setIsAdding(true); }}
-          className="w-full h-16 bg-[#0B1220] text-white rounded-[24px] flex items-center justify-center gap-3 font-black shadow-xl shadow-slate-900/20 active:scale-95 transition-all text-lg"
-        >
-          <UserPlus size={24} strokeWidth={2.5} />
-          {t.addEntry}
-        </button>
       </div>
 
       {/* Add Form Modal-like */}
