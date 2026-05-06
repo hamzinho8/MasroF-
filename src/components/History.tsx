@@ -68,6 +68,8 @@ export default function History({ transactions, language, currency, onDelete, on
       transport: 'Transport',
       loisirs: 'Loisirs',
       autres: 'Autres',
+      owedToMe: 'On me doit',
+      owedByMe: 'Je dois',
     },
     'العربية': {
       title: 'السجل العام',
@@ -90,6 +92,8 @@ export default function History({ transactions, language, currency, onDelete, on
       transport: 'نقل',
       loisirs: 'ترفيه',
       autres: 'أخرى',
+      owedToMe: 'مستحقات لي',
+      owedByMe: 'ديون علي',
     },
     'English': {
       title: 'General Ledger',
@@ -112,16 +116,20 @@ export default function History({ transactions, language, currency, onDelete, on
       transport: 'Transport',
       loisirs: 'Leisure',
       autres: 'Others',
+      owedToMe: 'On me doit',
+      owedByMe: 'Je dois',
     }
   };
 
   const t = translations[language as keyof typeof translations] || translations['Français'];
   
   const CATEGORY_MAP = [
-    { label: t.nourriture, icon: <Utensils size={24} />, color: 'amber', bg: 'bg-amber-100', text: 'text-amber-600', glow: 'bg-amber-400', activeBg: 'bg-amber-500', activeText: 'text-white' },
+    { label: t.nourriture, icon: <Utensils size={24} />, color: 'teal', bg: 'bg-teal-100', text: 'text-teal-600', glow: 'bg-teal-400', activeBg: 'bg-teal-500', activeText: 'text-white' },
     { label: t.shopping, icon: <ShoppingBag size={24} />, color: 'rose', bg: 'bg-rose-100', text: 'text-rose-600', glow: 'bg-rose-400', activeBg: 'bg-rose-500', activeText: 'text-white' },
     { label: t.transport, icon: <Car size={24} />, color: 'sky', bg: 'bg-sky-100', text: 'text-sky-600', glow: 'bg-sky-400', activeBg: 'bg-sky-500', activeText: 'text-white' },
     { label: t.loisirs, icon: <Gamepad2 size={24} />, color: 'purple', bg: 'bg-purple-100', text: 'text-purple-600', glow: 'bg-purple-400', activeBg: 'bg-purple-500', activeText: 'text-white' },
+    { label: t.owedToMe, icon: <TrendingUp size={24} />, color: 'indigo', bg: 'bg-indigo-100', text: 'text-indigo-600', glow: 'bg-indigo-400', activeBg: 'bg-indigo-500', activeText: 'text-white' },
+    { label: t.owedByMe, icon: <TrendingDown size={24} />, color: 'amber', bg: 'bg-amber-100', text: 'text-amber-600', glow: 'bg-amber-400', activeBg: 'bg-amber-500', activeText: 'text-white' },
     { label: t.autres, icon: <MoreHorizontal size={24} />, color: 'slate', bg: 'bg-slate-100', text: 'text-slate-600', glow: 'bg-slate-400', activeBg: 'bg-slate-500', activeText: 'text-white' },
   ];
 
@@ -427,16 +435,26 @@ export default function History({ transactions, language, currency, onDelete, on
         <AnimatePresence mode="popLayout">
           {filteredTransactions.map((tx, index) => {
             // Case-insensitive matching to handle "TRANSPORT" vs "Transport"
+            const isExpense = tx.type === 'EXPENSE';
+            const isCreditPlus = tx.category === t.owedToMe || tx.category === 'Crédit +';
+            const isCreditMinus = tx.category === t.owedByMe || tx.category === 'Crédit --';
+
             const categoryMatch = (CATEGORY_MAP || []).find(c => 
               c.label && c.label.toLowerCase() === (tx.category || '').toLowerCase()
             ) || {
-              icon: tx.type === 'EXPENSE' ? <ShoppingBag size={24} /> : <ArrowDownToLine size={24} />,
-              color: 'slate',
-              bg: 'bg-slate-100',
-              text: 'text-slate-600',
-              glow: 'bg-slate-400'
+              icon: isCreditPlus ? <TrendingUp size={24} /> : (isCreditMinus ? <TrendingDown size={24} /> : (tx.type === 'EXPENSE' ? <ShoppingBag size={24} /> : <ArrowDownToLine size={24} />)),
+              color: isCreditPlus ? 'indigo' : (isCreditMinus ? 'amber' : (isExpense ? 'slate' : 'emerald')),
+              bg: isCreditPlus ? 'bg-indigo-600' : (isCreditMinus ? 'bg-amber-500' : (isExpense ? 'bg-slate-100' : 'bg-emerald-500')),
+              text: isCreditPlus ? 'text-white' : (isCreditMinus ? 'text-white' : (isExpense ? 'text-slate-600' : 'text-white')),
+              glow: isCreditPlus ? 'bg-indigo-400' : (isCreditMinus ? 'bg-amber-400' : (isExpense ? 'bg-slate-400' : 'bg-emerald-400'))
             };
-            const isExpense = tx.type === 'EXPENSE';
+
+            const getCardStyle = () => {
+              if (isCreditPlus) return 'bg-indigo-50/30 border-indigo-100/50 hover:border-indigo-200';
+              if (isCreditMinus) return 'bg-amber-50/30 border-amber-100/50 hover:border-amber-200';
+              if (!isExpense) return 'bg-emerald-50/30 border-emerald-100/50 hover:border-emerald-200 hover:shadow-emerald-500/5';
+              return `bg-white border-slate-100 shadow-sm ${getHoverColor(categoryMatch.color)}`;
+            };
 
             const getHoverColor = (color: string) => {
               const colors: Record<string, string> = {
@@ -446,7 +464,8 @@ export default function History({ transactions, language, currency, onDelete, on
                 'purple': 'hover:border-purple-200 hover:shadow-purple-500/10',
                 'slate': 'hover:border-slate-200 hover:shadow-slate-500/10',
                 'indigo': 'hover:border-indigo-200 hover:shadow-indigo-500/10',
-                'emerald': 'hover:border-emerald-200 hover:shadow-emerald-500/10'
+                'emerald': 'hover:border-emerald-200 hover:shadow-emerald-500/10',
+                'teal': 'hover:border-teal-200 hover:shadow-teal-500/10'
               };
               return colors[color] || 'hover:border-slate-200';
             };
@@ -458,11 +477,7 @@ export default function History({ transactions, language, currency, onDelete, on
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: index * 0.03 }}
-                className={`flex items-center gap-5 p-5 rounded-[32px] border transition-all group relative backdrop-blur-sm shadow-sm ${
-                  isExpense 
-                    ? `bg-white ${getHoverColor(categoryMatch.color)}` 
-                    : 'bg-emerald-50/30 border-emerald-100/50 hover:border-emerald-200 hover:shadow-emerald-500/5'
-                } ${isExpense ? 'border-slate-100' : 'border-emerald-100/50'}`}
+                className={`flex items-center gap-5 p-5 rounded-[32px] border transition-all group relative backdrop-blur-sm shadow-sm ${getCardStyle()}`}
                 style={{ 
                   overflow: activeMenuId === tx.id ? 'visible' : 'hidden',
                   zIndex: activeMenuId === tx.id ? 50 : 1
@@ -474,11 +489,11 @@ export default function History({ transactions, language, currency, onDelete, on
                 )}
 
                 <div className={`w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${
-                  !isExpense 
+                  (!isExpense && !isCreditPlus && !isCreditMinus) 
                     ? 'bg-emerald-500 text-white shadow-emerald-500/20' 
                     : `${categoryMatch.bg} ${categoryMatch.text}`
                 }`}>
-                  {isExpense ? categoryMatch.icon : <ArrowDownToLine size={24} />}
+                  {(isExpense || isCreditPlus || isCreditMinus) ? categoryMatch.icon : <ArrowDownToLine size={24} />}
                 </div>
                 
                 <div className="flex-1 min-w-0">
@@ -488,25 +503,32 @@ export default function History({ transactions, language, currency, onDelete, on
                       <span className="px-2 py-0.5 rounded-full bg-indigo-500 text-white text-[7px] font-black uppercase tracking-widest">{t.important}</span>
                     )}
                   </div>
-                  <div className="flex items-center gap-4 text-slate-400">
-                    <span className="text-[10px] flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-400">
-                      <Calendar size={12} className="text-indigo-500" />
-                      {tx.date}
-                    </span>
-                    <span className={`text-[10px] flex items-center gap-1.5 font-black uppercase tracking-[0.1em] ${isExpense ? categoryMatch.text : 'text-emerald-600'}`}>
-                      <Tag size={12} />
-                      {tx.category ? tx.category : (isExpense ? t.autres : t.retraits)}
-                    </span>
+                    <div className="flex items-center gap-4 text-slate-400">
+                      <span className="text-[10px] flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-400">
+                        <Calendar size={12} className="text-indigo-500" />
+                        {tx.date}
+                      </span>
+                      {(!isCreditPlus && !isCreditMinus) && (
+                        <span className={`text-[10px] flex items-center gap-1.5 font-black uppercase tracking-[0.1em] ${isExpense ? categoryMatch.text : 'text-emerald-600'}`}>
+                          <Tag size={12} />
+                          {tx.category ? tx.category : (isExpense ? t.autres : t.retraits)}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <div className="text-right flex items-center gap-4">
-                  <div className="flex flex-col items-end">
-                    <p className={`font-black tracking-tighter text-lg leading-none ${!isExpense ? 'text-emerald-600' : 'text-slate-900'}`}>
-                      {!isExpense ? '+' : '-'}{tx.amount.toLocaleString('fr-FR')} 
-                      <span className="text-[11px] ml-1 font-bold uppercase text-slate-400">{currency}</span>
-                    </p>
-                  </div>
+                  <div className="text-right flex items-center gap-4">
+                    <div className="flex flex-col items-end">
+                      <p className={`font-black tracking-tighter text-lg leading-none ${!isExpense ? 'text-emerald-600' : (isCreditMinus ? 'text-amber-600' : (isCreditPlus ? 'text-indigo-600' : 'text-slate-900'))}`}>
+                        {!isExpense ? '+' : '-'}{tx.amount.toLocaleString('fr-FR')} 
+                        <span className="text-[11px] ml-1 font-bold uppercase text-slate-400">{currency}</span>
+                      </p>
+                      {(isCreditPlus || isCreditMinus) && (
+                        <span className={`text-[10px] font-black uppercase tracking-[0.1em] mt-1 ${isCreditPlus ? 'text-indigo-600' : 'text-amber-600'}`}>
+                          {tx.category}
+                        </span>
+                      )}
+                    </div>
                   
                   <div className="relative">
                     <button 

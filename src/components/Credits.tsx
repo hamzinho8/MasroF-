@@ -165,74 +165,67 @@ export default function Credits({ language, currency, entries, setEntries, onSet
       className="space-y-6 pb-12"
       onClick={() => setActiveMenuId(null)}
     >
-      {/* Premium Credits Artistic Card - Ma Poche Style with Custom Colors */}
+      {/* Artistic Credits Summary Card - Matched dimensions with Home.tsx */}
       <div 
-        className="relative h-48 rounded-[32px] overflow-hidden shadow-2xl shadow-indigo-500/10 mb-8 transition-all hover:scale-[1.01] border border-white/20 active:scale-95"
-        style={{ background: 'linear-gradient(90deg, #4F46E5 0%, #F59E0B 100%)' }}
+        className="relative h-44 rounded-[24px] overflow-hidden shadow-2xl shadow-indigo-500/15 mb-8 transition-all hover:scale-[1.01] border border-white/20 active:scale-95"
+        style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #F59E0B 100%)' }}
       >
-        {/* Decorative Background Elements (Artistic data-like lines) */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <path d="M0 80 Q 25 50, 50 80 T 100 80" fill="none" stroke="white" strokeWidth="0.5" />
-            <path d="M0 60 Q 30 90, 60 60 T 100 60" fill="none" stroke="white" strokeWidth="0.5" />
-          </svg>
+        {/* Artistic Background Elements - Restore arrows */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <TrendingUp 
+            size={120} 
+            className="absolute -left-8 -top-8 text-white/10 -rotate-12" 
+          />
+          <TrendingDown 
+            size={120} 
+            className="absolute -right-8 -bottom-8 text-white/10 rotate-12" 
+          />
         </div>
 
-        {/* Floating Icons for Artistic Touch - Matching Home.tsx style */}
-        <div className="absolute left-6 top-1/2 -translate-y-1/2 opacity-15 transform scale-150 text-white pointer-events-none">
-          <TrendingUp size={60} />
-        </div>
-        <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-15 transform scale-150 text-white pointer-events-none">
-          <TrendingDown size={60} />
-        </div>
-
-        {/* Central Plus Button - Now Transparent & Glassy */}
+        {/* Central Plus Button - Fully Transparent Background */}
         <div className="absolute inset-0 flex items-center justify-center z-30">
           <motion.button 
-            whileHover={{ scale: 1.15, backgroundColor: "rgba(255, 255, 255, 0.2)" }}
+            whileHover={{ scale: 1.2, rotate: 90 }}
             whileTap={{ scale: 0.9 }}
             onClick={(e) => { e.stopPropagation(); setIsAdding(true); }}
-            className="w-16 h-16 bg-white/10 backdrop-blur-lg text-white rounded-full flex items-center justify-center shadow-[0_15px_35px_rgba(0,0,0,0.2)] transition-all z-40 border-2 border-white/30"
+            className="w-20 h-20 bg-transparent text-white flex items-center justify-center transition-all z-40 outline-none"
           >
-            <Plus size={38} strokeWidth={2.5} />
+            <Plus size={52} strokeWidth={2.5} className="drop-shadow-lg opacity-80 hover:opacity-100 transition-opacity" />
           </motion.button>
         </div>
 
         <div className="relative z-10 p-7 h-full flex flex-col justify-between">
-          <div className="flex justify-between items-start">
-            {/* Owed to Me Section */}
-            <div className="bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/10">
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/80 mb-1 leading-none">
-                {t.owedToMe}
-              </p>
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-black text-white tracking-tighter drop-shadow-sm">
-                  {totalOweMe.toLocaleString('fr-FR')}
-                </span>
-                <span className="text-[10px] font-bold text-indigo-100">{currency}</span>
+          {/* TOP LEFT: On me doit - Bigger and Styled */}
+          <div className="flex flex-col items-start pt-1">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="bg-white/10 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/10">
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white leading-none">
+                  {t.owedToMe}
+                </p>
               </div>
             </div>
-
-            {/* I Owe Section */}
-            <div className="bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/10 text-right">
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/80 mb-1 leading-none">
-                {t.owedByMe}
-              </p>
-              <div className="flex items-baseline justify-end gap-1">
-                <span className="text-2xl font-black text-white tracking-tighter drop-shadow-sm">
-                  {totalIOwe.toLocaleString('fr-FR')}
-                </span>
-                <span className="text-[10px] font-bold text-amber-100">{currency}</span>
-              </div>
+            <div className="flex items-baseline gap-1.5 translate-x-1">
+              <span className="text-4xl font-black text-white tracking-tighter drop-shadow-lg leading-none">
+                {totalOweMe.toLocaleString('fr-FR')}
+              </span>
+              <span className="text-[10px] font-bold text-white/60 uppercase">{currency}</span>
             </div>
           </div>
 
-          {/* Footer branding removed for a cleaner look as requested */}
-          <div className="flex justify-center opacity-0 pointer-events-none">
-            <div className="px-5 py-1.5 rounded-full bg-black/20 backdrop-blur-sm">
-              <p className="text-[9px] font-black text-white/60 uppercase tracking-[0.3em]">
-                {language === 'Français' ? 'Portefeuille Crédit' : 'محفظة الائتمان'}
-              </p>
+          {/* BOTTOM RIGHT: Je dois - Bigger and Styled */}
+          <div className="flex flex-col items-end text-right pb-1">
+            <div className="flex items-baseline justify-end gap-1.5 translate-x-[-4px]">
+              <span className="text-4xl font-black text-white tracking-tighter drop-shadow-lg leading-none">
+                {totalIOwe.toLocaleString('fr-FR')}
+              </span>
+              <span className="text-[10px] font-bold text-white/60 uppercase">{currency}</span>
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+              <div className="bg-white/10 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/10">
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white leading-none">
+                  {t.owedByMe}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -436,14 +429,10 @@ export default function Credits({ language, currency, entries, setEntries, onSet
                               </button>
                               <div className="h-px bg-slate-50 mx-4 my-1" />
                               <button 
-                                onClick={() => {
-                                  if(window.confirm('Voulez-vous solder cette dette ?')) {
-                                    handleSettleEntry(entry.id);
-                                  }
-                                }}
+                                onClick={() => handleSettleEntry(entry.id)}
                                 className="w-full px-5 py-3.5 text-left text-xs font-black text-rose-500 hover:bg-rose-50 flex items-center gap-3 transition-colors uppercase tracking-widest whitespace-nowrap active:bg-rose-100"
                               >
-                                <Trash2 size={15} />
+                                <CircleDollarSign size={15} />
                                 {t.settle}
                               </button>
                             </motion.div>

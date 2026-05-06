@@ -40,6 +40,8 @@ export default function App() {
       credits: 'Crédits',
       options: 'Options',
       trésorerie: 'Votre trésorerie, simplifiée',
+      owedToMe: 'On me doit',
+      owedByMe: 'Je dois',
     },
     'العربية': {
       accueil: 'الرئيسية',
@@ -47,6 +49,8 @@ export default function App() {
       credits: 'ديون',
       options: 'الإعدادات',
       trésorerie: 'خزينتك، بكل بساطة',
+      owedToMe: 'مستحقات لي',
+      owedByMe: 'ديون علي',
     },
     'English': {
       accueil: 'Home',
@@ -54,6 +58,8 @@ export default function App() {
       credits: 'Credits',
       options: 'Settings',
       trésorerie: 'Your treasury, simplified',
+      owedToMe: 'Owed to me',
+      owedByMe: 'I owe',
     }
   };
 
@@ -151,11 +157,17 @@ export default function App() {
 
     // Add corresponding transaction
     if (entry.type === 'OWE_ME') {
-      // Deleting "Owed to me" -> I received money back (Withdrawal/Retrait)
-      addTransaction(`${language === 'العربية' ? 'استعادة مبلغ' : 'Retrait (Remboursement)'} : ${entry.name}`, entry.amount, 'INCOME', 'Bank');
+      // Someone paid me back (Income)
+      const label = language === 'العربية' 
+        ? `استرداد مستحق: ${entry.name}` 
+        : `Remboursement : ${entry.name}`;
+      addTransaction(label, entry.amount, 'INCOME', t.owedToMe);
     } else {
-      // Deleting "I owe" -> I paid back (Purchase/Achat)
-      addTransaction(`${language === 'العربية' ? 'دفع (شراء)' : 'Achat (Paiement)'} : ${entry.name}`, entry.amount, 'EXPENSE', 'Shopping');
+      // I paid someone back (Expense)
+      const label = language === 'العربية' 
+        ? `تسديد دين: ${entry.name}` 
+        : `Paiement dette : ${entry.name}`;
+      addTransaction(label, entry.amount, 'EXPENSE', t.owedByMe);
     }
 
     // Remove credit entry
@@ -305,7 +317,7 @@ export default function App() {
             onClick={() => setActiveTab('credits')} 
             icon={<HandCoins size={24} strokeWidth={3} />} 
             label={t.credits} 
-            color="rose"
+            color="credits"
             isDarkMode={isDarkMode}
           />
           <TabButton 
@@ -352,12 +364,19 @@ function TabButton({
   icon: React.ReactNode, 
   label: string, 
   isDarkMode: boolean,
-  color?: "teal" | "indigo" | "rose" | "slate"
+  color?: "teal" | "indigo" | "rose" | "slate" | "credits"
 }) {
   const getActiveColors = () => {
     switch(color) {
       case "indigo": return { text: "text-indigo-600", bg: "bg-indigo-500/10", dot: "bg-indigo-500", glow: "rgba(79,70,229,0.3)" };
       case "rose": return { text: "text-rose-600", bg: "bg-rose-500/10", dot: "bg-rose-500", glow: "rgba(225,29,72,0.3)" };
+      case "credits": return { 
+        text: "text-indigo-600", 
+        bg: "bg-indigo-500/5", 
+        dot: "bg-amber-500", 
+        glow: "rgba(79,70,229,0.2)",
+        iconColor: "#4F46E5"
+      };
       case "slate": return { text: "text-slate-700", bg: "bg-slate-500/10", dot: "bg-slate-500", glow: "rgba(107,114,128,0.3)" };
       default: return { text: "text-teal-600", bg: "bg-teal-500/10", dot: "bg-teal-500", glow: "rgba(54,162,146,0.3)" };
     }
@@ -379,7 +398,11 @@ function TabButton({
         />
       )}
       <div className={`transition-transform duration-300 group-hover:scale-110 ${active ? `scale-110 drop-shadow-[0_0_12px_${colors.glow}]` : ''}`}>
-        {icon}
+        {active && (colors as any).iconColor ? (
+          <div style={{ color: (colors as any).iconColor }}>
+            {icon}
+          </div>
+        ) : icon}
       </div>
       {label && (
         <span className={`text-[12px] font-black uppercase tracking-[0.1em] transition-all duration-300 mt-1 whitespace-nowrap leading-none ${active ? 'opacity-100 translate-y-0' : 'opacity-60'}`}>
