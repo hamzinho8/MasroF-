@@ -118,12 +118,11 @@ export default function History({ transactions, language, currency, onDelete, on
   const t = translations[language as keyof typeof translations] || translations['Français'];
   
   const CATEGORY_MAP = [
-    { label: t.tous, icon: <LayoutGrid size={18} /> },
-    { label: t.nourriture, icon: <Utensils size={18} /> },
-    { label: t.shopping, icon: <ShoppingBag size={18} /> },
-    { label: t.transport, icon: <Car size={18} /> },
-    { label: t.loisirs, icon: <Gamepad2 size={18} /> },
-    { label: t.autres, icon: <MoreHorizontal size={18} /> },
+    { label: t.nourriture, icon: <Utensils size={24} />, color: 'amber', bg: 'bg-amber-100', text: 'text-amber-600', glow: 'bg-amber-400' },
+    { label: t.shopping, icon: <ShoppingBag size={24} />, color: 'rose', bg: 'bg-rose-100', text: 'text-rose-600', glow: 'bg-rose-400' },
+    { label: t.transport, icon: <Car size={24} />, color: 'sky', bg: 'bg-sky-100', text: 'text-sky-600', glow: 'bg-sky-400' },
+    { label: t.loisirs, icon: <Gamepad2 size={24} />, color: 'purple', bg: 'bg-purple-100', text: 'text-purple-600', glow: 'bg-purple-400' },
+    { label: t.autres, icon: <MoreHorizontal size={24} />, color: 'slate', bg: 'bg-slate-100', text: 'text-slate-600', glow: 'bg-slate-400' },
   ];
 
   const [filter, setFilter] = useState<FilterType>('ALL');
@@ -199,26 +198,27 @@ export default function History({ transactions, language, currency, onDelete, on
 
   return (
     <motion.div 
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="space-y-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-6 pb-12"
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between ps-1">
         <div className="space-y-0.5">
           <h2 className="text-3xl font-black text-slate-900 tracking-tighter">{t.title}</h2>
           <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">{t.subtitle}</p>
         </div>
         <div className="flex gap-2">
-          <button className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 active:scale-95 transition-all">
+          <button className="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-400 active:scale-95 transition-all border border-slate-100">
             <Download size={18} />
           </button>
         </div>
       </div>
 
       {/* Modern Search & Filters Container */}
-      <div className="bg-slate-50/50 rounded-[40px] p-6 space-y-6">
+      <div className="bg-white/40 backdrop-blur-md rounded-[40px] p-5 space-y-5 border border-white/60 shadow-sm">
+        {/* Top bar with types and date picker */}
         <div className="flex items-center gap-3">
-          <div className="flex-1 bg-white p-1 rounded-[22px] flex items-center relative shadow-sm border border-slate-100">
+          <div className="flex-1 bg-slate-100/50 p-1 rounded-[24px] flex items-center relative border border-slate-200/50">
             {(['ALL', 'EXPENSE', 'INCOME'] as const).map((type) => (
               <button 
                 key={type}
@@ -226,15 +226,23 @@ export default function History({ transactions, language, currency, onDelete, on
                   setFilter(type);
                   if (type === 'INCOME') setSelectedCategory(t.tous);
                 }}
-                className={`relative z-10 flex-1 py-3 flex flex-col items-center justify-center gap-1 transition-all duration-500 active:scale-95 ${filter === type ? 'text-white' : 'text-slate-400'}`}
+                className={`relative z-10 flex-1 py-3 flex flex-col items-center justify-center gap-1 transition-all duration-300 active:scale-95 ${filter === type ? 'text-white' : 'text-slate-400'}`}
               >
-                {type === 'ALL' ? <LayoutGrid size={18} /> : type === 'EXPENSE' ? <ShoppingBag size={18} /> : <ArrowDownToLine size={18} />}
+                <div className="relative">
+                  {type === 'ALL' ? <LayoutGrid size={18} /> : type === 'EXPENSE' ? <ShoppingBag size={18} /> : <ArrowDownToLine size={18} />}
+                  {filter === type && (
+                    <motion.div 
+                      layoutId="tabDot"
+                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full"
+                    />
+                  )}
+                </div>
                 <span className="text-[7px] font-black uppercase tracking-widest">{type === 'ALL' ? t.tous : type === 'EXPENSE' ? t.achats : t.retraits}</span>
                 {filter === type && (
                   <motion.div 
                     layoutId="activeFilterTab"
-                    className="absolute inset-0 bg-slate-800 rounded-[18px] -z-10"
-                    transition={{ type: "spring", bounce: 0.1, duration: 0.5 }}
+                    className="absolute inset-0 bg-slate-900 rounded-[20px] -z-10"
+                    transition={{ type: "spring", bounce: 0.1, duration: 0.6 }}
                   />
                 )}
               </button>
@@ -243,50 +251,44 @@ export default function History({ transactions, language, currency, onDelete, on
           
           <button 
             onClick={() => setShowDatePicker(!showDatePicker)}
-            className={`w-14 h-14 rounded-[22px] flex items-center justify-center transition-all active:scale-90 shadow-sm ${showDatePicker || startDate || endDate ? 'bg-teal-brand text-white' : 'bg-white text-slate-400 border border-slate-100'}`}
+            className={`w-14 h-14 rounded-[24px] flex items-center justify-center transition-all active:scale-90 shadow-sm border ${showDatePicker || startDate || endDate ? 'bg-teal-brand border-teal-brand text-white' : 'bg-white border-slate-100 text-slate-400'}`}
           >
             <Calendar size={20} />
           </button>
         </div>
 
+        {/* Search Input Box */}
         <div className="relative group">
           <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
-            <Search className="text-slate-300 group-focus-within:text-teal-brand transition-all duration-300" size={18} />
+            <Search className="text-slate-300 group-focus-within:text-indigo-500 transition-all duration-300" size={18} />
           </div>
           <input 
             type="text"
             placeholder={t.searchPlaceholder}
-            className="w-full bg-white border-none rounded-[24px] py-4 pl-14 pr-6 text-sm font-bold text-slate-800 placeholder:text-slate-300 placeholder:font-medium focus:ring-4 focus:ring-teal-brand/5 shadow-sm transition-all outline-none"
+            className="w-full bg-white border border-slate-100 rounded-[24px] py-4 pl-14 pr-6 text-sm font-bold text-slate-800 placeholder:text-slate-300 placeholder:font-medium focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-200 shadow-sm transition-all outline-none"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
-        {/* Modern Category Grid (No Scroll) */}
+        {/* Artistic Category Icons Bar - NO TEXT */}
         {filter !== 'INCOME' && (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="flex items-center justify-between px-2 bg-slate-50/50 py-3 rounded-[28px] border border-slate-100/50">
             {CATEGORY_MAP.map(cat => (
               <button
                 key={cat.label}
                 onClick={() => setSelectedCategory(cat.label)}
-                className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all active:scale-95 border-2 ${
+                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 active:scale-75 relative group ${
                   selectedCategory === cat.label 
-                    ? 'bg-teal-brand/5 border-teal-brand shadow-sm' 
-                    : 'bg-white border-slate-100/50 text-slate-400'
+                    ? `${cat.activeBg} ${cat.activeText} shadow-md scale-110` 
+                    : `${cat.bg} ${cat.text} hover:scale-105 opacity-60 hover:opacity-100`
                 }`}
               >
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
-                  selectedCategory === cat.label 
-                    ? 'bg-teal-brand text-white' 
-                    : 'bg-slate-50 text-slate-400'
-                }`}>
-                  {cat.icon}
-                </div>
-                <span className={`text-[8px] font-black uppercase tracking-widest transition-colors ${
-                  selectedCategory === cat.label ? 'text-teal-brand' : 'text-slate-400'
-                }`}>
+                {cat.icon}
+                {/* Tooltip for accessibility/UX */}
+                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[8px] font-black uppercase px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">
                   {cat.label}
-                </span>
+                </div>
               </button>
             ))}
           </div>
@@ -338,19 +340,19 @@ export default function History({ transactions, language, currency, onDelete, on
         </AnimatePresence>
 
       {/* Sorting Controls */}
-      <div className="flex items-center justify-between bg-white/50 px-4 py-3 rounded-2xl border border-slate-50">
-        <div className="flex items-center gap-2 text-slate-300 text-[10px] font-black uppercase tracking-widest">
-          <ArrowUpDown size={12} />
+      <div className="flex items-center justify-between bg-slate-50/30 px-5 py-4 rounded-[24px] border border-slate-100/50">
+        <div className="flex items-center gap-3 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
+          <ArrowUpDown size={14} className="text-indigo-500" />
           <span>{t.sortBy}</span>
         </div>
         <button 
           onClick={() => setShowSortModal(true)}
-          className="text-[10px] font-black text-slate-800 flex items-center gap-2 transition-all active:scale-95 px-3 py-1.5 rounded-lg hover:bg-slate-50"
+          className="text-[11px] font-black text-slate-700 flex items-center gap-2 transition-all active:scale-95 bg-white py-2 px-4 rounded-xl shadow-sm border border-slate-100"
         >
           {sortBy === 'DATE_DESC' ? t.dateRecent : 
            sortBy === 'DATE_ASC' ? t.dateAncien : 
            sortBy === 'AMOUNT_DESC' ? t.montantMax : t.montantMin}
-          <ChevronDown size={14} className="text-teal-brand" />
+          <ChevronDown size={14} className="text-indigo-500" />
         </button>
       </div>
 
@@ -370,134 +372,201 @@ export default function History({ transactions, language, currency, onDelete, on
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[40px] z-[101] p-8 shadow-2xl"
+              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[40px] z-[101] p-10 shadow-2xl"
             >
-              <div className="w-12 h-1.5 bg-slate-100 rounded-full mx-auto mb-8" />
+              <div className="w-12 h-1.5 bg-slate-100 rounded-full mx-auto mb-10" />
               
-              <h3 className="text-xl font-black text-slate-800 mb-6 text-center">{t.sortBy}</h3>
+              <h3 className="text-2xl font-black text-slate-900 mb-8 text-center tracking-tight">{t.sortBy}</h3>
               
               <div className="grid grid-cols-2 gap-4">
                 <SortOption 
                   label={t.dateRecent} 
                   active={sortBy === 'DATE_DESC'} 
                   onClick={() => { setSortBy('DATE_DESC'); setShowSortModal(false); }} 
-                  icon={<Calendar size={20} />}
+                  icon={<Calendar size={22} />}
+                  color="indigo"
                 />
                 <SortOption 
                   label={t.dateAncien} 
                   active={sortBy === 'DATE_ASC'} 
                   onClick={() => { setSortBy('DATE_ASC'); setShowSortModal(false); }} 
-                  icon={<Calendar size={20} className="opacity-50" />}
+                  icon={<Calendar size={22} className="opacity-50" />}
+                  color="indigo"
                 />
                 <SortOption 
                   label={t.montantMax} 
                   active={sortBy === 'AMOUNT_DESC'} 
                   onClick={() => { setSortBy('AMOUNT_DESC'); setShowSortModal(false); }} 
-                  icon={<TrendingUp size={20} />}
+                  icon={<TrendingUp size={22} />}
+                  color="indigo"
                 />
                 <SortOption 
                   label={t.montantMin} 
                   active={sortBy === 'AMOUNT_ASC'} 
                   onClick={() => { setSortBy('AMOUNT_ASC'); setShowSortModal(false); }} 
-                  icon={<TrendingDown size={20} />}
+                  icon={<TrendingDown size={22} />}
+                  color="indigo"
                 />
               </div>
 
-              <button 
-                onClick={() => setShowSortModal(false)}
-                className="w-full mt-8 py-4 text-sm font-black text-slate-400 uppercase tracking-widest"
-              >
-                Fermer
-              </button>
+              <div className="mt-10 pt-6 border-t border-slate-50">
+                <button 
+                  onClick={() => setShowSortModal(false)}
+                  className="w-full py-4 text-xs font-black text-slate-400 uppercase tracking-[0.3em]"
+                >
+                  Fermer
+                </button>
+              </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
 
       {/* List */}
-      <div className="space-y-3 pb-8">
+      <div className="space-y-4 pb-8">
         <AnimatePresence mode="popLayout">
-          {filteredTransactions.map((tx, index) => (
-            <motion.div 
-              key={tx.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ delay: index * 0.05 }}
-              className="flex items-center gap-4 p-4 rounded-3xl border border-slate-100 bg-white hover:border-teal-brand/20 hover:shadow-md transition-all group"
-            >
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 ${tx.type === 'INCOME' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-                {tx.type === 'INCOME' ? <TrendingUp size={24} /> : <TrendingDown size={24} />}
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <p className="font-bold text-slate-800 text-sm truncate">{tx.label}</p>
-                  {tx.amount > 1000 && (
-                    <span className="px-1.5 py-0.5 rounded-md bg-gold-soft/10 text-gold-deep text-[8px] font-black uppercase">{t.important}</span>
-                  )}
-</div>
-                <div className="flex items-center gap-3 text-slate-400">
-                  <span className="text-[10px] flex items-center gap-1 font-medium italic">
-                    <Calendar size={10} />
-                    {tx.date}
-                  </span>
-                  <span className="text-[10px] flex items-center gap-1 font-medium italic">
-                    <Tag size={10} />
-                    {tx.category ? tx.category : (tx.type === 'INCOME' ? 'Banque' : 'Marché')}
-                  </span>
-                </div>
-              </div>
+          {filteredTransactions.map((tx, index) => {
+            // Case-insensitive matching to handle "TRANSPORT" vs "Transport"
+            const categoryMatch = (CATEGORY_MAP || []).find(c => 
+              c.label && c.label.toLowerCase() === (tx.category || '').toLowerCase()
+            ) || {
+              icon: tx.type === 'EXPENSE' ? <ShoppingBag size={24} /> : <ArrowDownToLine size={24} />,
+              color: 'slate',
+              bg: 'bg-slate-100',
+              text: 'text-slate-600',
+              glow: 'bg-slate-400'
+            };
+            const isExpense = tx.type === 'EXPENSE';
 
-              <div className="text-right flex items-center gap-2">
-                <p className={`font-black tracking-tight text-base ${tx.type === 'INCOME' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                  {tx.type === 'INCOME' ? '+' : '-'}{tx.amount.toLocaleString('fr-FR')} 
-                  <span className="text-[10px] ml-0.5">{currency}</span>
-                </p>
-                
-                <div className="relative">
-                  <button 
-                    onClick={() => setActiveMenuId(activeMenuId === tx.id ? null : tx.id)}
-                    className="p-1 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
-                  >
-                    <MoreVertical size={16} />
-                  </button>
-                  
-                  <AnimatePresence>
-                    {activeMenuId === tx.id && (
-                      <>
-                        <div 
-                          className="fixed inset-0 z-30" 
-                          onClick={() => setActiveMenuId(null)}
-                        />
-                        <motion.div 
-                          initial={{ opacity: 0, scale: 0.9, x: -10 }}
-                          animate={{ opacity: 1, scale: 1, x: 0 }}
-                          exit={{ opacity: 0, scale: 0.9, x: -10 }}
-                          className="absolute right-0 top-8 bg-white border border-slate-100 shadow-xl rounded-xl py-2 w-32 z-40"
-                        >
-                          <button 
-                            onClick={() => handleEdit(tx)}
-                            className="w-full px-4 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                          >
-                            <Pencil size={14} className="text-teal-brand" />
-                            Modifier
-                          </button>
-                          <button 
-                            onClick={() => { onDelete(tx.id); setActiveMenuId(null); }}
-                            className="w-full px-4 py-2 text-left text-xs font-bold text-rose-500 hover:bg-rose-50 flex items-center gap-2"
-                          >
-                            <Trash2 size={14} />
-                            Supprimer
-                          </button>
-                        </motion.div>
-                      </>
-                    )}
-                  </AnimatePresence>
+            const getHoverColor = (color: string) => {
+              const colors: Record<string, string> = {
+                'amber': 'hover:border-amber-200 hover:shadow-amber-500/10',
+                'rose': 'hover:border-rose-200 hover:shadow-rose-500/10',
+                'sky': 'hover:border-sky-200 hover:shadow-sky-500/10',
+                'purple': 'hover:border-purple-200 hover:shadow-purple-500/10',
+                'slate': 'hover:border-slate-200 hover:shadow-slate-500/10',
+                'indigo': 'hover:border-indigo-200 hover:shadow-indigo-500/10',
+                'emerald': 'hover:border-emerald-200 hover:shadow-emerald-500/10'
+              };
+              return colors[color] || 'hover:border-slate-200';
+            };
+
+            return (
+              <motion.div 
+                key={tx.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ delay: index * 0.03 }}
+                className={`flex items-center gap-5 p-5 rounded-[32px] border transition-all group relative backdrop-blur-sm shadow-sm ${
+                  isExpense 
+                    ? `bg-white ${getHoverColor(categoryMatch.color)}` 
+                    : 'bg-emerald-50/30 border-emerald-100/50 hover:border-emerald-200 hover:shadow-emerald-500/5'
+                } ${isExpense ? 'border-slate-100' : 'border-emerald-100/50'}`}
+                style={{ 
+                  overflow: activeMenuId === tx.id ? 'visible' : 'hidden',
+                  zIndex: activeMenuId === tx.id ? 50 : 1
+                }}
+              >
+                {/* Visual Category Ornament */}
+                {isExpense && (
+                  <div className={`absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 rounded-full blur-3xl opacity-0 group-hover:opacity-15 transition-opacity ${categoryMatch.glow} pointer-events-none`} />
+                )}
+
+                <div className={`w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${
+                  !isExpense 
+                    ? 'bg-emerald-500 text-white shadow-emerald-500/20' 
+                    : `${categoryMatch.bg} ${categoryMatch.text}`
+                }`}>
+                  {isExpense ? categoryMatch.icon : <ArrowDownToLine size={24} />}
                 </div>
-              </div>
-            </motion.div>
-          ))}
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="font-black text-slate-800 text-sm tracking-tight truncate">{tx.label}</p>
+                    {tx.amount > 1000 && (
+                      <span className="px-2 py-0.5 rounded-full bg-indigo-500 text-white text-[7px] font-black uppercase tracking-widest">{t.important}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4 text-slate-400">
+                    <span className="text-[10px] flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-400">
+                      <Calendar size={12} className="text-indigo-500" />
+                      {tx.date}
+                    </span>
+                    <span className={`text-[10px] flex items-center gap-1.5 font-black uppercase tracking-[0.1em] ${isExpense ? categoryMatch.text : 'text-emerald-600'}`}>
+                      <Tag size={12} />
+                      {tx.category ? tx.category : (isExpense ? t.autres : t.retraits)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-right flex items-center gap-4">
+                  <div className="flex flex-col items-end">
+                    <p className={`font-black tracking-tighter text-lg leading-none ${!isExpense ? 'text-emerald-600' : 'text-slate-900'}`}>
+                      {!isExpense ? '+' : '-'}{tx.amount.toLocaleString('fr-FR')} 
+                      <span className="text-[11px] ml-1 font-bold uppercase text-slate-400">{currency}</span>
+                    </p>
+                  </div>
+                  
+                  <div className="relative">
+                    <button 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setActiveMenuId(activeMenuId === tx.id ? null : tx.id);
+                      }}
+                      className="w-10 h-10 flex items-center justify-center hover:bg-slate-50 rounded-xl transition-colors text-slate-300 group-hover:text-slate-500 relative z-[60]"
+                    >
+                      <MoreVertical size={20} />
+                    </button>
+                    
+                    <AnimatePresence>
+                      {activeMenuId === tx.id && (
+                        <>
+                          <div 
+                            className="fixed inset-0 z-[80]" 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setActiveMenuId(null);
+                            }}
+                          />
+                          <motion.div 
+                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                            className="absolute right-0 top-12 bg-white border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-2xl py-2 w-48 z-[150] overflow-hidden"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <button 
+                              onClick={() => handleEdit(tx)}
+                              className="w-full px-5 py-3.5 text-left text-xs font-black text-slate-600 hover:bg-slate-50 hover:text-teal-600 flex items-center gap-3 transition-colors uppercase tracking-widest whitespace-nowrap active:bg-slate-100"
+                            >
+                              <Pencil size={15} />
+                              Modifier
+                            </button>
+                            <div className="h-px bg-slate-50 mx-4 my-1" />
+                            <button 
+                              onClick={() => { 
+                                if(window.confirm('Supprimer cette transaction ?')) {
+                                  onDelete(tx.id); 
+                                  setActiveMenuId(null); 
+                                }
+                              }}
+                              className="w-full px-5 py-3.5 text-left text-xs font-black text-rose-500 hover:bg-rose-50 flex items-center gap-3 transition-colors uppercase tracking-widest whitespace-nowrap active:bg-rose-100"
+                            >
+                              <Trash2 size={15} />
+                              Supprimer
+                            </button>
+                          </motion.div>
+                        </>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
 
         {/* Inline Edit Modal */}
@@ -599,20 +668,28 @@ function FilterTab({ active, onClick, label, color = "text-slate-500", bg = "bg-
   );
 }
 
-function SortOption({ label, active, onClick, icon }: { label: string, active: boolean, onClick: () => void, icon: React.ReactNode }) {
+function SortOption({ label, active, onClick, icon, color = "indigo" }: { label: string, active: boolean, onClick: () => void, icon: React.ReactNode, color?: string }) {
   return (
     <button 
       onClick={onClick}
-      className={`flex flex-col items-center justify-center gap-3 p-6 rounded-[32px] border-2 transition-all active:scale-95 ${active ? 'border-teal-brand bg-teal-brand/5 text-teal-brand' : 'border-slate-50 bg-slate-50 text-slate-400'}`}
+      className={`flex flex-col items-center justify-center gap-4 p-7 rounded-[38px] border-2 transition-all active:scale-95 ${
+        active 
+          ? `border-${color}-500 bg-${color}-50/50 text-${color}-600 shadow-xl shadow-${color}-500/10 scale-[1.02]` 
+          : 'border-slate-50 bg-slate-50 text-slate-400'
+      }`}
     >
-      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${active ? 'bg-teal-brand text-white' : 'bg-white shadow-sm'}`}>
+      <div className={`w-14 h-14 rounded-[22px] flex items-center justify-center transition-all ${
+        active 
+          ? `bg-${color}-500 text-white shadow-lg shadow-${color}-500/30` 
+          : 'bg-white shadow-sm'
+      }`}>
         {icon}
       </div>
-      <span className="text-[10px] font-black uppercase tracking-tight">{label}</span>
+      <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
       {active && (
         <motion.div 
           layoutId="activeSort"
-          className="w-1.5 h-1.5 bg-teal-brand rounded-full mt-1"
+          className={`w-1.5 h-1.5 bg-${color}-500 rounded-full mt-1`}
         />
       )}
     </button>

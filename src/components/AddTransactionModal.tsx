@@ -19,11 +19,11 @@ interface Category {
 }
 
 const CATEGORIES: Category[] = [
-  { id: 'Nourriture', label: 'Nourriture', icon: <Utensils size={18} />, color: 'text-teal-700', bgColor: 'bg-teal-50' },
-  { id: 'Shopping', label: 'Shopping', icon: <ShoppingBag size={18} />, color: 'text-blue-700', bgColor: 'bg-blue-50' },
-  { id: 'Transport', label: 'Transport', icon: <Car size={18} />, color: 'text-amber-700', bgColor: 'bg-amber-50' },
-  { id: 'Loisirs', label: 'Loisirs', icon: <Gamepad2 size={18} />, color: 'text-orange-700', bgColor: 'bg-orange-50' },
-  { id: 'Autres', label: 'Autres', icon: <MoreHorizontal size={18} />, color: 'text-rose-700', bgColor: 'bg-rose-50' },
+  { id: 'Nourriture', label: 'Nourriture', icon: <Utensils size={18} />, color: 'text-amber-600', bgColor: 'bg-amber-100' },
+  { id: 'Shopping', label: 'Shopping', icon: <ShoppingBag size={18} />, color: 'text-rose-600', bgColor: 'bg-rose-100' },
+  { id: 'Transport', label: 'Transport', icon: <Car size={18} />, color: 'text-sky-600', bgColor: 'bg-sky-100' },
+  { id: 'Loisirs', label: 'Loisirs', icon: <Gamepad2 size={18} />, color: 'text-purple-600', bgColor: 'bg-purple-100' },
+  { id: 'Autres', label: 'Autres', icon: <MoreHorizontal size={18} />, color: 'text-slate-600', bgColor: 'bg-slate-100' },
 ];
 
 interface AddTransactionModalProps {
@@ -114,12 +114,30 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                             key={cat.id}
                             type="button"
                             onClick={() => setSelectedCategory(cat.id)}
-                            className={`flex flex-col items-center gap-2 min-w-[70px] p-3 rounded-2xl border transition-all ${selectedCategory === cat.id ? `border-teal-brand bg-teal-brand/5 ring-2 ring-teal-brand/10` : 'border-slate-100 bg-slate-50'}`}
+                            className={`flex flex-col items-center gap-2 min-w-[70px] p-3 rounded-2xl border transition-all ${
+                              selectedCategory === cat.id 
+                                ? `bg-white shadow-md scale-105 border-transparent ring-2 ${
+                                    cat.id === 'Nourriture' ? 'ring-amber-500/20' : 
+                                    cat.id === 'Shopping' ? 'ring-rose-500/20' : 
+                                    cat.id === 'Transport' ? 'ring-sky-500/20' : 
+                                    cat.id === 'Loisirs' ? 'ring-purple-500/20' : 
+                                    'ring-slate-500/20'
+                                  }` 
+                                : 'border-slate-100 bg-slate-50 opacity-60'
+                            }`}
                           >
                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${cat.bgColor} ${cat.color} ${selectedCategory === cat.id ? 'scale-110' : ''} transition-transform`}>
                               {cat.icon}
                             </div>
-                            <span className={`text-[9px] font-black uppercase tracking-tight ${selectedCategory === cat.id ? 'text-teal-brand' : 'text-slate-400'}`}>
+                            <span className={`text-[9px] font-black uppercase tracking-tight ${
+                              selectedCategory === cat.id 
+                                ? (cat.id === 'Nourriture' ? 'text-amber-600' : 
+                                   cat.id === 'Shopping' ? 'text-rose-600' : 
+                                   cat.id === 'Transport' ? 'text-sky-600' : 
+                                   cat.id === 'Loisirs' ? 'text-purple-600' : 
+                                   'text-slate-600')
+                                : 'text-slate-400'
+                            }`}>
                               {cat.label}
                             </span>
                           </button>

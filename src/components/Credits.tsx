@@ -10,7 +10,11 @@ import {
   Wallet,
   MoreVertical,
   History,
-  Pencil
+  Pencil,
+  Calendar,
+  TrendingUp,
+  TrendingDown,
+  X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CreditEntry } from '../types';
@@ -23,30 +27,7 @@ interface CreditsProps {
   onSettle?: (id: string) => void;
 }
 
-// Expert decorative backgrounds - Pure "Claire" Clean Style (Background Only)
-export const HandReceiveBackground = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <defs>
-      <linearGradient id="bgGreenClaire" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#10B981" />
-        <stop offset="100%" stopColor="#059669" />
-      </linearGradient>
-    </defs>
-    <rect width="200" height="200" rx="40" fill="url(#bgGreenClaire)" />
-  </svg>
-);
-
-export const HandGiveBackground = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <defs>
-      <linearGradient id="bgRedClaire" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#F43F5E" />
-        <stop offset="100%" stopColor="#BE123C" />
-      </linearGradient>
-    </defs>
-    <rect width="200" height="200" rx="40" fill="url(#bgRedClaire)" />
-  </svg>
-);
+// decorative backgrounds removed
 
 export default function Credits({ language, currency, entries, setEntries, onSettle }: CreditsProps) {
   const [isAdding, setIsAdding] = useState(false);
@@ -183,34 +164,34 @@ export default function Credits({ language, currency, entries, setEntries, onSet
       className="space-y-7 pb-12"
       onClick={() => setActiveMenuId(null)}
     >
-      {/* Counters Section - Side-by-side Rectangular Style */}
-      <div className="grid grid-cols-2 gap-4 mb-8">
+      {/* Counters Section - Matching summary card style exactly */}
+      <div className="grid grid-cols-2 gap-3 mb-8">
         {/* On me doit - Receive */}
         <div 
-          className="flex flex-col h-30 p-5 rounded-[32px] text-white relative overflow-hidden text-center justify-center items-center shadow-xl active:scale-95 transition-transform"
+          className="p-4 rounded-2xl border-2 border-indigo-500/20 bg-indigo-50/50 relative overflow-hidden group shadow-sm active:scale-95 transition-all"
         >
-          <HandReceiveBackground className="absolute w-full h-full inset-0 pointer-events-none" />
-          <div className="relative z-10 flex flex-col items-center justify-center">
-            <p className="text-[10px] uppercase font-black tracking-[0.2em] text-white/90 mb-2">{t.owedToMe}</p>
-            <div className="flex flex-col items-center gap-1.5">
-              <span className="text-3xl font-black text-white leading-none">{totalOweMe}</span>
-              <span className="text-[11px] font-bold text-white opacity-90">{currency}</span>
+          <div className="relative z-10">
+            <p className="text-xs text-slate-500 mb-1 font-medium">{t.owedToMe}</p>
+            <div className="flex items-baseline gap-1">
+              <span className="text-xl font-black text-indigo-600 leading-none">{totalOweMe}</span>
+              <span className="text-[10px] font-bold text-indigo-500 uppercase">{currency}</span>
             </div>
           </div>
+          <TrendingUp className="absolute -right-2 -bottom-2 text-indigo-500/10 rotate-12 group-hover:scale-110 transition-transform" size={48} />
         </div>
 
         {/* Je dois - Give */}
         <div 
-          className="flex flex-col h-30 p-5 rounded-[32px] text-white relative overflow-hidden text-center justify-center items-center shadow-xl active:scale-95 transition-transform"
+          className="p-4 rounded-2xl border-2 border-amber-500/20 bg-amber-50/50 relative overflow-hidden group shadow-sm active:scale-95 transition-all"
         >
-          <HandGiveBackground className="absolute w-full h-full inset-0 pointer-events-none" />
-          <div className="relative z-10 flex flex-col items-center justify-center">
-            <p className="text-[10px] uppercase font-black tracking-[0.2em] text-white/90 mb-2">{t.owedByMe}</p>
-            <div className="flex flex-col items-center gap-1.5">
-              <span className="text-3xl font-black text-white leading-none">{totalIOwe}</span>
-              <span className="text-[11px] font-bold text-white opacity-90">{currency}</span>
+          <div className="relative z-10">
+            <p className="text-xs text-slate-500 mb-1 font-medium">{t.owedByMe}</p>
+            <div className="flex items-baseline gap-1">
+              <span className="text-xl font-black text-amber-600 leading-none">{totalIOwe}</span>
+              <span className="text-[10px] font-bold text-amber-500 uppercase">{currency}</span>
             </div>
           </div>
+          <TrendingDown className="absolute -right-2 -bottom-2 text-amber-500/10 rotate-12 group-hover:scale-110 transition-transform" size={48} />
         </div>
       </div>
 
@@ -239,8 +220,11 @@ export default function Credits({ language, currency, entries, setEntries, onSet
             className="p-6 bg-white rounded-[32px] border-2 border-slate-100 shadow-xl space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-black text-slate-800">{formTitle}</h3>
+            <div className="flex items-center justify-between mb-6">
+              <div className="space-y-1">
+                <h3 className="font-black text-xl text-slate-900 tracking-tight">{formTitle}</h3>
+                <div className="w-8 h-1 bg-indigo-500 rounded-full" />
+              </div>
               {editingId && (
                 <button 
                   onClick={() => {
@@ -249,52 +233,61 @@ export default function Credits({ language, currency, entries, setEntries, onSet
                     setNewName('');
                     setNewAmount('');
                   }}
-                  className="text-xs font-bold text-slate-400 hover:text-slate-600"
+                  className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"
                 >
-                  {t.cancel}
+                  <X size={20} />
                 </button>
               )}
             </div>
-            <div className="space-y-4">
-              <input 
-                type="text" 
-                placeholder={t.namePlaceholder}
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl bg-slate-50 border-2 border-slate-100 focus:border-teal-brand/30 outline-none font-medium text-slate-800 transition-all"
-              />
-              <div className="flex gap-4">
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Personne</label>
                 <input 
-                  type="number" 
-                  placeholder={t.amountPlaceholder}
-                  value={newAmount}
-                  onChange={(e) => setNewAmount(e.target.value)}
-                  className="flex-1 h-12 px-4 rounded-xl bg-slate-50 border-2 border-slate-100 focus:border-teal-brand/30 outline-none font-black text-slate-800 transition-all text-xl"
+                  type="text" 
+                  placeholder={t.namePlaceholder}
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  className="w-full h-14 px-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-bold text-slate-800 transition-all shadow-inner"
                 />
-                <div className={`h-12 flex items-center px-4 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold text-slate-400`}>
-                  {currency}
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Montant</label>
+                <div className="flex gap-4">
+                  <input 
+                    type="number" 
+                    placeholder={t.amountPlaceholder}
+                    value={newAmount}
+                    onChange={(e) => setNewAmount(e.target.value)}
+                    className="flex-1 h-14 px-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-900 transition-all text-2xl shadow-inner"
+                  />
+                  <div className="h-14 flex items-center px-5 bg-white border-2 border-slate-100 rounded-2xl font-black text-slate-400 shadow-sm">
+                    {currency}
+                  </div>
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-3">
-                <button 
-                  onClick={() => setNewType('OWE_ME')}
-                  className={`h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-sm transition-all border-2 ${newType === 'OWE_ME' ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-white border-slate-100 text-slate-400'}`}
-                >
-                  <Coins size={16} />
-                  {t.owedToMe}
-                </button>
-                <button 
-                  onClick={() => setNewType('I_OWE')}
-                  className={`h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-sm transition-all border-2 ${newType === 'I_OWE' ? 'bg-rose-50 border-rose-200 text-rose-600' : 'bg-white border-slate-100 text-slate-400'}`}
-                >
-                  <Wallet size={16} />
-                  {t.owedByMe}
-                </button>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Type de crédit</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button 
+                    onClick={() => setNewType('OWE_ME')}
+                    className={`h-14 rounded-2xl flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-widest transition-all border-2 ${newType === 'OWE_ME' ? 'bg-indigo-500 border-indigo-500 text-white shadow-lg shadow-indigo-500/30' : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-200'}`}
+                  >
+                    <Coins size={18} />
+                    {t.owedToMe}
+                  </button>
+                  <button 
+                    onClick={() => setNewType('I_OWE')}
+                    className={`h-14 rounded-2xl flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-widest transition-all border-2 ${newType === 'I_OWE' ? 'bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-500/30' : 'bg-white border-slate-100 text-slate-400 hover:border-amber-200'}`}
+                  >
+                    <Wallet size={18} />
+                    {t.owedByMe}
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-3 pt-4">
               <button 
                 onClick={() => {
                   setIsAdding(false);
@@ -302,13 +295,13 @@ export default function Credits({ language, currency, entries, setEntries, onSet
                   setNewName('');
                   setNewAmount('');
                 }}
-                className="flex-1 h-12 rounded-xl font-bold text-slate-400 hover:bg-slate-50 transition-all"
+                className="flex-1 h-16 rounded-[24px] font-black text-slate-400 hover:bg-slate-50 transition-all uppercase text-xs tracking-widest"
               >
                 {t.cancel}
               </button>
               <button 
                 onClick={handleAddEntry}
-                className="flex-1 h-12 rounded-xl bg-teal-brand text-white font-black shadow-lg shadow-teal-brand/20 active:scale-95 transition-all"
+                className="flex-1 h-16 rounded-[24px] bg-[#0B1E3F] text-white font-black shadow-xl shadow-slate-900/20 active:scale-95 transition-all text-sm uppercase tracking-widest"
               >
                 {t.confirm}
               </button>
@@ -329,68 +322,111 @@ export default function Credits({ language, currency, entries, setEntries, onSet
             {t.noEntries}
           </div>
         ) : (
-          <div className="space-y-3">
-            {entries.map(entry => (
-              <motion.div 
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                key={entry.id} 
-                className="group flex items-center gap-4 p-4 rounded-3xl border border-slate-100 bg-white hover:border-teal-brand/20 hover:shadow-md transition-all relative"
-              >
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${entry.type === 'OWE_ME' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-                  {entry.type === 'OWE_ME' ? <Coins size={22} strokeWidth={2.5} /> : <Wallet size={22} strokeWidth={2.5} />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-black text-slate-800 text-sm truncate">{entry.name}</p>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{entry.date}</p>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <p className={`font-black text-lg tracking-tight ${entry.type === 'OWE_ME' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                    {entry.amount.toLocaleString()} {currency}
-                  </p>
-                </div>
-                
-                {/* 3-dots menu for deleting/managing */}
-                <div className="relative">
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveMenuId(activeMenuId === entry.id ? null : entry.id);
-                    }}
-                    className={`p-3 -m-1 rounded-2xl transition-all ${activeMenuId === entry.id ? 'bg-slate-100 text-slate-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
-                  >
-                    <MoreVertical size={20} strokeWidth={2.5} />
-                  </button>
-                  <AnimatePresence>
-                    {activeMenuId === entry.id && (
-                      <motion.div 
-                        initial={{ opacity: 0, scale: 0.9, y: -10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                        className="absolute right-0 top-full mt-1 w-40 bg-white border border-slate-100 shadow-xl rounded-2xl p-2 z-20"
-                        onClick={(e) => e.stopPropagation()}
+          <div className="space-y-4">
+            {entries.map(entry => {
+              const isReceive = entry.type === 'OWE_ME';
+              return (
+                <motion.div 
+                  layout
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  key={entry.id} 
+                  className={`group flex items-center gap-4 p-5 rounded-[32px] border transition-all relative backdrop-blur-sm shadow-sm ${
+                    isReceive 
+                      ? 'bg-indigo-50/30 border-indigo-100/50 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10' 
+                      : 'bg-amber-50/30 border-amber-100/50 hover:border-amber-200 hover:shadow-xl hover:shadow-amber-500/10'
+                  }`}
+                  style={{ 
+                    overflow: activeMenuId === entry.id ? 'visible' : 'hidden',
+                    zIndex: activeMenuId === entry.id ? 50 : 1
+                  }}
+                >
+                  <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${
+                    isReceive ? 'bg-indigo-500 text-white shadow-indigo-500/20' : 'bg-amber-500 text-white shadow-amber-500/20'
+                  }`}>
+                    {isReceive ? <TrendingUp size={24} /> : <TrendingDown size={24} />}
+                  </div>
+                  
+                  <div className="flex-1 min-w-0 flex flex-col justify-center py-1">
+                    <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1 italic select-none">
+                      {entry.name}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                      <span className="text-[9px] flex items-center gap-1 font-bold uppercase tracking-wider text-slate-400 shrink-0">
+                        <Calendar size={10} className={isReceive ? 'text-indigo-500' : 'text-amber-600'} />
+                        {entry.date}
+                      </span>
+                      <span className={`text-[9px] font-black uppercase tracking-[0.1em] truncate max-w-[100px] ${isReceive ? 'text-indigo-600' : 'text-amber-700'}`}>
+                        {isReceive ? t.owedToMe : t.owedByMe}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 flex items-center gap-2 pl-2 border-l border-slate-100/50">
+                    <div className="flex flex-col items-end">
+                      <p className={`font-black tracking-tighter text-base leading-none ${isReceive ? 'text-indigo-600' : 'text-amber-600'}`}>
+                        {entry.amount.toLocaleString('fr-FR')} 
+                      </p>
+                      <span className="text-[9px] font-bold uppercase text-slate-400 mt-0.5">{currency}</span>
+                    </div>
+                    
+                    <div className="relative">
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setActiveMenuId(activeMenuId === entry.id ? null : entry.id);
+                        }}
+                        className="w-10 h-10 flex items-center justify-center hover:bg-white rounded-xl transition-colors text-slate-300 group-hover:text-slate-500 relative z-[60]"
                       >
-                        <button 
-                          onClick={() => handleEditClick(entry)}
-                          className="w-full flex items-center gap-2 p-2.5 text-[11px] font-black uppercase tracking-wider text-slate-600 hover:bg-slate-50 rounded-xl transition-colors"
-                        >
-                          <Pencil size={14} strokeWidth={2.5} />
-                          {t.edit}
-                        </button>
-                        <button 
-                          onClick={() => handleSettleEntry(entry.id)}
-                          className="w-full flex items-center gap-2 p-2.5 text-[11px] font-black uppercase tracking-wider text-rose-500 hover:bg-rose-50 rounded-xl transition-colors mt-1"
-                        >
-                          <Trash2 size={14} strokeWidth={2.5} />
-                          {t.settle}
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </motion.div>
-            ))}
+                        <MoreVertical size={20} />
+                      </button>
+                      <AnimatePresence>
+                        {activeMenuId === entry.id && (
+                          <>
+                            <div 
+                              className="fixed inset-0 z-[80]" 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setActiveMenuId(null);
+                              }} 
+                            />
+                            <motion.div 
+                              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                              className="absolute right-0 top-12 bg-white border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-2xl py-2 w-48 z-[150] overflow-hidden"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <button 
+                                onClick={() => handleEditClick(entry)}
+                                className="w-full px-5 py-3.5 text-left text-xs font-black text-slate-600 hover:bg-slate-50 hover:text-teal-600 flex items-center gap-3 transition-colors uppercase tracking-widest whitespace-nowrap active:bg-slate-100"
+                              >
+                                <Pencil size={15} />
+                                {t.edit}
+                              </button>
+                              <div className="h-px bg-slate-50 mx-4 my-1" />
+                              <button 
+                                onClick={() => {
+                                  if(window.confirm('Voulez-vous solder cette dette ?')) {
+                                    handleSettleEntry(entry.id);
+                                  }
+                                }}
+                                className="w-full px-5 py-3.5 text-left text-xs font-black text-rose-500 hover:bg-rose-50 flex items-center gap-3 transition-colors uppercase tracking-widest whitespace-nowrap active:bg-rose-100"
+                              >
+                                <Trash2 size={15} />
+                                {t.settle}
+                              </button>
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </div>

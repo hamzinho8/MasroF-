@@ -6,7 +6,10 @@ import {
   Wallet,
   Home as HomeIcon,
   Search,
-  Users
+  Users,
+  Activity,
+  HandCoins,
+  Settings2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Home from './components/Home';
@@ -142,14 +145,6 @@ export default function App() {
     setIsModalOpen(true);
   };
 
-  const weeklyAchat = transactions
-    .filter(t => t.type === 'EXPENSE')
-    .reduce((acc, t) => acc + t.amount, 0);
-  
-  const weeklyBank = transactions
-    .filter(t => t.type === 'INCOME')
-    .reduce((acc, t) => acc + t.amount, 0);
-
   const handleCreditSettlement = (id: string) => {
     const entry = creditEntries.find(e => e.id === id);
     if (!entry) return;
@@ -173,11 +168,11 @@ export default function App() {
         return (
           <Home 
             balance={balance} 
-            transactions={transactions.slice(0, 3)} 
-            weeklyAchat={weeklyAchat} 
-            weeklyBank={weeklyBank} 
+            transactions={transactions} 
             onAddClick={openModal}
             onViewAll={() => setActiveTab('history')}
+            onDelete={deleteTransaction}
+            onEdit={(tx) => updateTransaction(tx.id, tx)}
             widgetMode={widgetMode}
             language={language}
             currency={currency}
@@ -231,10 +226,10 @@ export default function App() {
           <Home 
             balance={balance} 
             transactions={transactions} 
-            weeklyAchat={weeklyAchat} 
-            weeklyBank={weeklyBank} 
             onAddClick={openModal}
             onViewAll={() => setActiveTab('history')}
+            onDelete={deleteTransaction}
+            onEdit={(tx) => updateTransaction(tx.id, tx)}
             widgetMode={widgetMode}
             language={language}
             currency={currency}
@@ -248,7 +243,7 @@ export default function App() {
   return (
     <div 
       dir={isRtl ? 'rtl' : 'ltr'}
-      className={`min-h-screen ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F0F7F8]'} flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden font-sans transition-colors duration-500`}
+      className={`h-screen ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F0F7F8]'} flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden font-sans transition-colors duration-500`}
     >
       <AnimatePresence>
         {showSplash && (
@@ -285,59 +280,53 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Header */}
-      <header className={`px-6 pt-8 pb-4 flex items-center justify-between transition-colors ${isDarkMode ? 'bg-[#1A1A1A]' : ''}`}>
-        <div className="flex items-center gap-3">
-          <div className={`w-14 h-14 shadow-lg rounded-full overflow-hidden flex items-center justify-center border-4 transition-transform active:scale-95 ${isDarkMode ? 'bg-slate-800 border-slate-700 font-bold' : 'bg-white border-white'}`}>
-            <MasrofLogo className="w-9 h-9" currency={currency} />
-          </div>
-          <h1 className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-[#0B1E3F]'} tracking-tight`}>
-            Masro<span className="text-[#36A292]">F</span>
-          </h1>
-        </div>
-        <button className={`w-12 h-12 rounded-full flex items-center justify-center shadow-md borderTransition-all active:scale-90 ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-50 text-slate-400'}`}>
-          <Search size={22} strokeWidth={2.5} />
-        </button>
+      {/* Header & Navigation */}
+      <header className={`sticky top-0 z-50 transition-all duration-300 ${isDarkMode ? 'bg-[#1A1A1A]/80' : 'bg-[#F0F7F8]/80'} backdrop-blur-xl border-b ${isDarkMode ? 'border-slate-800' : 'border-teal-brand/10'}`}>
+        {/* Global Navigation Tabs (Compact & Artistic) */}
+        <nav className="flex items-center justify-around px-2 pb-5 pt-3 max-w-full mx-auto gap-1">
+          <TabButton 
+            active={activeTab === 'home'} 
+            onClick={() => setActiveTab('home')} 
+            icon={<MasrofLogo className="w-12 h-12 mt-1" />} 
+            label="" 
+            color="teal"
+            isDarkMode={isDarkMode}
+          />
+          <TabButton 
+            active={activeTab === 'history'} 
+            onClick={() => setActiveTab('history')} 
+            icon={<Activity size={24} strokeWidth={3} />} 
+            label={t.historique} 
+            color="indigo"
+            isDarkMode={isDarkMode}
+          />
+          <TabButton 
+            active={activeTab === 'credits'} 
+            onClick={() => setActiveTab('credits')} 
+            icon={<HandCoins size={24} strokeWidth={3} />} 
+            label={t.credits} 
+            color="rose"
+            isDarkMode={isDarkMode}
+          />
+          <TabButton 
+            active={activeTab === 'settings'} 
+            onClick={() => setActiveTab('settings')} 
+            icon={<Settings2 size={24} strokeWidth={3} />} 
+            label={t.options} 
+            color="slate"
+            isDarkMode={isDarkMode}
+          />
+        </nav>
       </header>
 
       {/* Main Container */}
-      <main className={`flex-1 rounded-t-[32px] p-6 shadow-even pb-28 overflow-y-auto transition-colors ${isDarkMode ? 'bg-slate-900 shadow-none' : 'bg-white'}`}>
-        <AnimatePresence mode="wait">
-          {renderContent()}
-        </AnimatePresence>
+      <main className={`flex-1 rounded-t-[32px] p-6 shadow-even transition-colors relative z-10 overflow-y-auto ${isDarkMode ? 'bg-slate-900 shadow-none' : 'bg-white'}`}>
+        <div className="pb-32"> {/* Increased padding for the 3-dots menu space at the end of lists */}
+          <AnimatePresence mode="wait">
+            {renderContent()}
+          </AnimatePresence>
+        </div>
       </main>
-
-      {/* Bottom Nav */}
-      <nav className={`absolute bottom-0 left-0 right-0 h-20 backdrop-blur-md border-t flex items-center justify-around px-2 z-20 transition-colors ${isDarkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-100'}`}>
-        <TabButton 
-          active={activeTab === 'home'} 
-          onClick={() => setActiveTab('home')} 
-          icon={<HomeIcon size={22} />} 
-          label={t.accueil} 
-          isDarkMode={isDarkMode}
-        />
-        <TabButton 
-          active={activeTab === 'history'} 
-          onClick={() => setActiveTab('history')} 
-          icon={<History size={22} />} 
-          label={t.historique} 
-          isDarkMode={isDarkMode}
-        />
-        <TabButton 
-          active={activeTab === 'credits'} 
-          onClick={() => setActiveTab('credits')} 
-          icon={<Users size={22} />} 
-          label={t.credits} 
-          isDarkMode={isDarkMode}
-        />
-        <TabButton 
-          active={activeTab === 'settings'} 
-          onClick={() => setActiveTab('settings')} 
-          icon={<SettingsIcon size={22} />} 
-          label={t.options} 
-          isDarkMode={isDarkMode}
-        />
-      </nav>
 
       <AddTransactionModal 
         isOpen={isModalOpen}
@@ -350,22 +339,59 @@ export default function App() {
   );
 }
 
-function TabButton({ active, onClick, icon, label, isDarkMode }: { active: boolean, onClick: () => void, icon: React.ReactNode, label: string, isDarkMode: boolean }) {
+function TabButton({ 
+  active, 
+  onClick, 
+  icon, 
+  label, 
+  isDarkMode,
+  color = "teal"
+}: { 
+  active: boolean, 
+  onClick: () => void, 
+  icon: React.ReactNode, 
+  label: string, 
+  isDarkMode: boolean,
+  color?: "teal" | "indigo" | "rose" | "slate"
+}) {
+  const getActiveColors = () => {
+    switch(color) {
+      case "indigo": return { text: "text-indigo-600", bg: "bg-indigo-500/10", dot: "bg-indigo-500", glow: "rgba(79,70,229,0.3)" };
+      case "rose": return { text: "text-rose-600", bg: "bg-rose-500/10", dot: "bg-rose-500", glow: "rgba(225,29,72,0.3)" };
+      case "slate": return { text: "text-slate-700", bg: "bg-slate-500/10", dot: "bg-slate-500", glow: "rgba(107,114,128,0.3)" };
+      default: return { text: "text-teal-600", bg: "bg-teal-500/10", dot: "bg-teal-500", glow: "rgba(54,162,146,0.3)" };
+    }
+  };
+
+  const colors = getActiveColors();
+
   return (
     <button 
       onClick={onClick}
-      className={`flex flex-col items-center gap-1 transition-all duration-300 relative ${active ? 'text-teal-brand' : (isDarkMode ? 'text-slate-500' : 'text-slate-400')}`}
+      className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-3 transition-all duration-300 relative rounded-2xl group ${active ? colors.text + ' scale-105' : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600')}`}
     >
       {active && (
         <motion.div 
-          layoutId="activeTab"
-          className="absolute -top-1 w-8 h-1 bg-teal-brand rounded-full"
+          layoutId="activeTabBg"
+          className={`absolute inset-0 ${colors.bg} rounded-2xl -z-10 shadow-sm`}
+          initial={false}
+          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
         />
       )}
-      <div className={`p-2 rounded-xl transition-colors ${active ? 'bg-teal-brand/10' : 'bg-transparent'}`}>
+      <div className={`transition-transform duration-300 group-hover:scale-110 ${active ? `scale-110 drop-shadow-[0_0_12px_${colors.glow}]` : ''}`}>
         {icon}
       </div>
-      <span className={`text-[10px] font-bold ${active ? 'opacity-100' : 'opacity-0'}`}>{label}</span>
+      {label && (
+        <span className={`text-[12px] font-black uppercase tracking-[0.1em] transition-all duration-300 mt-1 whitespace-nowrap leading-none ${active ? 'opacity-100 translate-y-0' : 'opacity-60'}`}>
+          {label}
+        </span>
+      )}
+      {active && (
+        <motion.div 
+          layoutId="activeTabDot"
+          className={`w-1.5 h-1.5 ${colors.dot} rounded-full absolute -bottom-1 shadow-sm`}
+        />
+      )}
     </button>
   );
 }
