@@ -7,7 +7,7 @@ import {
   Home as HomeIcon,
   Search,
   Users,
-  Activity,
+  BookOpenText,
   HandCoins,
   Settings2
 } from 'lucide-react';
@@ -307,9 +307,9 @@ export default function App() {
           <TabButton 
             active={activeTab === 'history'} 
             onClick={() => setActiveTab('history')} 
-            icon={<Activity size={24} strokeWidth={3} />} 
+            icon={<BookOpenText size={24} strokeWidth={3} />} 
             label={t.historique} 
-            color="indigo"
+            color="rose"
             isDarkMode={isDarkMode}
           />
           <TabButton 
@@ -364,10 +364,11 @@ function TabButton({
   icon: React.ReactNode, 
   label: string, 
   isDarkMode: boolean,
-  color?: "teal" | "indigo" | "rose" | "slate" | "credits"
+  color?: "teal" | "indigo" | "rose" | "slate" | "credits" | "emerald"
 }) {
   const getActiveColors = () => {
     switch(color) {
+      case "emerald": return { text: "text-emerald-600", bg: "bg-emerald-500/10", dot: "bg-emerald-500", glow: "rgba(16,185,129,0.3)" };
       case "indigo": return { text: "text-indigo-600", bg: "bg-indigo-500/10", dot: "bg-indigo-500", glow: "rgba(79,70,229,0.3)" };
       case "rose": return { text: "text-rose-600", bg: "bg-rose-500/10", dot: "bg-rose-500", glow: "rgba(225,29,72,0.3)" };
       case "credits": return { 

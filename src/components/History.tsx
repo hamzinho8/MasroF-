@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { 
-  Search, 
+  CalendarCheck,
+  CalendarDays,
+  CalendarRange,
+  ShoppingCart,
+  Plus,
   Filter, 
   TrendingUp, 
   TrendingDown, 
@@ -19,7 +23,8 @@ import {
   MoreHorizontal,
   MoreVertical,
   Trash2,
-  Pencil
+  Pencil,
+  ListFilter
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -48,7 +53,7 @@ type SortType = 'DATE_DESC' | 'DATE_ASC' | 'AMOUNT_DESC' | 'AMOUNT_ASC';
 export default function History({ transactions, language, currency, onDelete, onUpdate }: HistoryProps) {
   const translations = {
     'Français': {
-      title: 'Grand Livre',
+      title: 'Historique',
       subtitle: 'Historique détaillé de vos transactions',
       searchPlaceholder: 'Rechercher une transaction...',
       tous: 'Tous',
@@ -133,6 +138,7 @@ export default function History({ transactions, language, currency, onDelete, on
     { label: t.autres, icon: <MoreHorizontal size={24} />, color: 'slate', bg: 'bg-slate-100', text: 'text-slate-600', glow: 'bg-slate-400', activeBg: 'bg-slate-500', activeText: 'text-white' },
   ];
 
+  const [timeframe, setTimeframe] = useState<'day' | 'week' | 'month'>('week');
   const [filter, setFilter] = useState<FilterType>('ALL');
   const [sortBy, setSortBy] = useState<SortType>('DATE_DESC');
   const [searchQuery, setSearchQuery] = useState('');
@@ -140,6 +146,7 @@ export default function History({ transactions, language, currency, onDelete, on
   const [endDate, setEndDate] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>(t.tous);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
   const [showSortModal, setShowSortModal] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
@@ -162,6 +169,61 @@ export default function History({ transactions, language, currency, onDelete, on
     const [day, month] = dayMonth.split('/').map(Number);
     const year = new Date().getFullYear();
     return new Date(year, month - 1, day);
+  };
+
+  const filteredTotals = React.useMemo(() => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    
+    let totalExpense = 0;
+    let totalIncome = 0;
+
+    transactions.forEach(tx => {
+      const dateStr = tx.date.split(' ')[0];
+      const [dayPart, monthPart] = dateStr.split('/');
+      
+      if (!dayPart || !monthPart) return;
+      
+      const day = parseInt(dayPart);
+      const month = parseInt(monthPart) - 1;
+      
+      const txDate = new Date(currentYear, month, day);
+      if (txDate > now) {
+        txDate.setFullYear(currentYear - 1);
+      }
+      
+      let include = false;
+      const hoursInDay = 1000 * 60 * 60 * 24;
+      
+      if (timeframe === 'day') {
+        include = day === now.getDate() && month === now.getMonth();
+      } else if (timeframe === 'week') {
+        const diffDays = (now.getTime() - txDate.getTime()) / hoursInDay;
+        include = diffDays >= 0 && diffDays < 7;
+      } else if (timeframe === 'month') {
+        include = month === now.getMonth();
+      }
+      
+      if (include) {
+        if (tx.type === 'EXPENSE') totalExpense += tx.amount;
+        else totalIncome += tx.amount;
+      }
+    });
+
+    return { totalExpense, totalIncome };
+  }, [transactions, timeframe]);
+
+  const getSummaryTitle = () => {
+    if (timeframe === 'day') return language === 'العربية' ? 'اليوم' : language === 'English' ? 'Day' : 'Jour';
+    if (timeframe === 'month') return language === 'العربية' ? 'الشهر' : language === 'English' ? 'Month' : 'Mois';
+    return language === 'العربية' ? 'الأسبوع' : language === 'English' ? 'Semaine' : 'Semaine';
+  };
+
+  const getTimeframeLabel = (tf: 'day' | 'week' | 'month') => {
+    if (tf === 'day') return language === 'العربية' ? 'اليوم' : language === 'English' ? 'Today' : 'Jour';
+    if (tf === 'week') return language === 'العربية' ? 'الأسبوع' : language === 'English' ? 'Week' : 'Semaine';
+    if (tf === 'month') return language === 'العربية' ? 'الشهر' : language === 'English' ? 'Month' : 'Mois';
+    return '';
   };
 
   const filteredTransactions = transactions
@@ -210,98 +272,153 @@ export default function History({ transactions, language, currency, onDelete, on
       animate={{ opacity: 1 }}
       className="space-y-6 pb-12"
     >
-      <div className="flex items-center justify-between ps-1">
-        <div className="space-y-0.5">
-          <h2 className="text-3xl font-black text-slate-900 tracking-tighter">{t.title}</h2>
-          <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">{t.subtitle}</p>
-        </div>
-        <div className="flex gap-2">
-          <button className="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-400 active:scale-95 transition-all border border-slate-100">
-            <Download size={18} />
-          </button>
+      {/* Premium Summary Card */}
+      <div className="relative overflow-hidden rounded-[38px] shadow-xl shadow-slate-200/40 border border-white">
+        {/* Background Gradient & Decorative Elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-rose-50 via-white to-emerald-50 z-0" />
+        <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-64 h-64 bg-rose-400/10 rounded-full blur-3xl" />
+        
+        <div className="relative z-10 p-5">
+          {/* Header with Full-Width Selector */}
+          <div className="flex bg-white/40 backdrop-blur-md p-1 rounded-3xl shadow-sm border border-white/50 mb-8">
+            <button 
+              onClick={() => setTimeframe('day')}
+              className={`flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 ${timeframe === 'day' ? 'bg-slate-900 text-white shadow-xl' : 'text-slate-500 hover:bg-white/40'}`}
+            >
+              <CalendarCheck size={18} strokeWidth={timeframe === 'day' ? 2.5 : 2} />
+              <span className="text-[10px] font-black uppercase tracking-wider">{getTimeframeLabel('day')}</span>
+            </button>
+            <button 
+              onClick={() => setTimeframe('week')}
+              className={`flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 ${timeframe === 'week' ? 'bg-slate-900 text-white shadow-xl' : 'text-slate-500 hover:bg-white/40'}`}
+            >
+              <CalendarRange size={18} strokeWidth={timeframe === 'week' ? 2.5 : 2} />
+              <span className="text-[10px] font-black uppercase tracking-wider">{getTimeframeLabel('week')}</span>
+            </button>
+            <button 
+              onClick={() => setTimeframe('month')}
+              className={`flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 ${timeframe === 'month' ? 'bg-slate-900 text-white shadow-xl' : 'text-slate-500 hover:bg-white/40'}`}
+            >
+              <CalendarDays size={18} strokeWidth={timeframe === 'month' ? 2.5 : 2} />
+              <span className="text-[10px] font-black uppercase tracking-wider">{getTimeframeLabel('month')}</span>
+            </button>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 gap-6 relative px-2 mb-2">
+            {/* Divider */}
+            <div className="absolute left-1/2 top-4 bottom-4 w-px bg-slate-200/50" />
+            
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500">
+                  <ShoppingCart size={16} strokeWidth={2.5} />
+                </div>
+                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{t.achats}</span>
+              </div>
+              <p className="text-2xl font-black text-rose-600 tracking-tighter">
+                {filteredTotals.totalExpense.toLocaleString('fr-FR')} 
+                <span className="text-xs ml-1 font-bold text-slate-400 uppercase">{currency}</span>
+              </p>
+            </div>
+
+            <div className="space-y-1 pl-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-500">
+                  <Plus size={16} strokeWidth={2.5} />
+                </div>
+                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{t.retraits}</span>
+              </div>
+              <p className="text-2xl font-black text-sky-600 tracking-tighter">
+                {filteredTotals.totalIncome.toLocaleString('fr-FR')} 
+                <span className="text-xs ml-1 font-bold text-slate-400 uppercase">{currency}</span>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Modern Search & Filters Container */}
-      <div className="bg-white/40 backdrop-blur-md rounded-[40px] p-5 space-y-5 border border-white/60 shadow-sm">
-        {/* Top bar with types and date picker */}
-        <div className="flex items-center gap-3">
-          <div className="flex-1 bg-slate-100/50 p-1 rounded-[24px] flex items-center relative border border-slate-200/50">
-            {(['ALL', 'EXPENSE', 'INCOME'] as const).map((type) => (
-              <button 
-                key={type}
-                onClick={() => {
-                  setFilter(type);
-                  if (type === 'INCOME') setSelectedCategory(t.tous);
-                }}
-                className={`relative z-10 flex-1 py-3 flex flex-col items-center justify-center gap-1 transition-all duration-300 active:scale-95 ${filter === type ? 'text-white' : 'text-slate-400'}`}
-              >
-                <div className="relative">
-                  {type === 'ALL' ? <LayoutGrid size={18} /> : type === 'EXPENSE' ? <ShoppingBag size={18} /> : <ArrowDownToLine size={18} />}
-                  {filter === type && (
-                    <motion.div 
-                      layoutId="tabDot"
-                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full"
-                    />
-                  )}
-                </div>
-                <span className="text-[7px] font-black uppercase tracking-widest">{type === 'ALL' ? t.tous : type === 'EXPENSE' ? t.achats : t.retraits}</span>
-                {filter === type && (
-                  <motion.div 
-                    layoutId="activeFilterTab"
-                    className="absolute inset-0 bg-slate-900 rounded-[20px] -z-10"
-                    transition={{ type: "spring", bounce: 0.1, duration: 0.6 }}
-                  />
-                )}
-              </button>
-            ))}
+      {/* New Professional Filter Pills Section */}
+      <div className="grid grid-cols-3 gap-2 px-1">
+        {/* Date Filter Pill */}
+        <button 
+          onClick={() => setShowDatePicker(!showDatePicker)}
+          className="flex items-center gap-3 px-3 py-2.5 bg-emerald-50/40 border border-emerald-100/50 rounded-[28px] transition-all active:scale-95 hover:bg-emerald-100/40 shadow-sm"
+        >
+          <div className="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-50">
+            <Calendar size={18} strokeWidth={2.5} />
           </div>
-          
+          <div className="flex flex-col items-start leading-tight min-w-0">
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter shrink-0">{language === 'العربية' ? 'التاريخ' : 'Date'}:</span>
+            <span className="text-xs font-black text-emerald-800 truncate w-full">
+              {startDate || endDate ? (language === 'العربية' ? 'مخصص' : 'Perso.') : (language === 'العربية' ? 'الشهر الماضي' : 'Mois dernier')}
+            </span>
+          </div>
+        </button>
+
+        {/* Type Filter Pill */}
+        <button 
+          onClick={() => setShowFilterModal(true)}
+          className="flex items-center gap-3 px-3 py-2.5 bg-indigo-50/40 border border-indigo-100/50 rounded-[28px] transition-all active:scale-95 hover:bg-indigo-100/40 shadow-sm"
+        >
+          <div className="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-indigo-600 shrink-0 border border-indigo-50">
+            <ListFilter size={18} strokeWidth={2.5} />
+          </div>
+          <div className="flex flex-col items-start leading-tight min-w-0">
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter shrink-0">{language === 'العربية' ? 'النوع' : 'Type'}:</span>
+            <span className="text-xs font-black text-indigo-800 truncate w-full">
+              {filter === 'ALL' ? t.tous : (filter === 'EXPENSE' ? t.achats : t.retraits)}
+            </span>
+          </div>
+        </button>
+
+        {/* Category Filter Pill */}
+        <button 
+          onClick={() => {
+            // If the category bar is hidden because filter is INCOME, we still want to show all/toutes
+            if (filter !== 'INCOME') {
+              // category bar is visible below, scrolling to it or just letting user see it
+            }
+          }}
+          className="flex items-center gap-3 px-3 py-2.5 bg-rose-50/40 border border-rose-100/50 rounded-[28px] transition-all active:scale-95 hover:bg-rose-100/40 shadow-sm"
+        >
+          <div className="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-rose-600 shrink-0 border border-rose-50">
+            <Tag size={18} strokeWidth={2.5} />
+          </div>
+          <div className="flex flex-col items-start leading-tight min-w-0">
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter shrink-0">{language === 'العربية' ? 'فيئة' : 'Catégorie'}:</span>
+            <span className="text-xs font-black text-rose-700 truncate w-full">
+              {selectedCategory === t.tous ? (language === 'العربية' ? 'الكل' : 'Toutes') : selectedCategory}
+            </span>
+          </div>
+        </button>
+      </div>
+
+      {/* Artistic Category Icons Bar - Only shown if expense filter is active */}
+      {filter !== 'INCOME' && (
+        <div className="flex items-center justify-between px-3 bg-white/40 backdrop-blur-md py-4 rounded-[32px] border border-white/60 shadow-sm mx-1">
           <button 
-            onClick={() => setShowDatePicker(!showDatePicker)}
-            className={`w-14 h-14 rounded-[24px] flex items-center justify-center transition-all active:scale-90 shadow-sm border ${showDatePicker || startDate || endDate ? 'bg-teal-brand border-teal-brand text-white' : 'bg-white border-slate-100 text-slate-400'}`}
+             onClick={() => setSelectedCategory(t.tous)}
+             className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${selectedCategory === t.tous ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400'}`}
           >
-            <Calendar size={20} />
+             <LayoutGrid size={20} />
           </button>
+          {CATEGORY_MAP.map(cat => (
+            <button
+              key={cat.label}
+              onClick={() => setSelectedCategory(cat.label)}
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 active:scale-75 relative group ${
+                selectedCategory === cat.label 
+                  ? `${cat.activeBg} ${cat.activeText} shadow-md scale-110` 
+                  : `${cat.bg} ${cat.text} opacity-60 hover:opacity-100`
+              }`}
+            >
+              {cat.icon}
+            </button>
+          ))}
         </div>
-
-        {/* Search Input Box */}
-        <div className="relative group">
-          <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
-            <Search className="text-slate-300 group-focus-within:text-indigo-500 transition-all duration-300" size={18} />
-          </div>
-          <input 
-            type="text"
-            placeholder={t.searchPlaceholder}
-            className="w-full bg-white border border-slate-100 rounded-[24px] py-4 pl-14 pr-6 text-sm font-bold text-slate-800 placeholder:text-slate-300 placeholder:font-medium focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-200 shadow-sm transition-all outline-none"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-
-        {/* Artistic Category Icons Bar - NO TEXT */}
-        {filter !== 'INCOME' && (
-          <div className="flex items-center justify-between px-2 bg-slate-50/50 py-3 rounded-[28px] border border-slate-100/50">
-            {CATEGORY_MAP.map(cat => (
-              <button
-                key={cat.label}
-                onClick={() => setSelectedCategory(cat.label)}
-                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 active:scale-75 relative group ${
-                  selectedCategory === cat.label 
-                    ? `${cat.activeBg} ${cat.activeText} shadow-md scale-110` 
-                    : `${cat.bg} ${cat.text} hover:scale-105 opacity-60 hover:opacity-100`
-                }`}
-              >
-                {cat.icon}
-                {/* Tooltip for accessibility/UX */}
-                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[8px] font-black uppercase px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">
-                  {cat.label}
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
 
         {/* Date Range Picker */}
         <AnimatePresence>
@@ -350,7 +467,7 @@ export default function History({ transactions, language, currency, onDelete, on
       {/* Sorting Controls */}
       <div className="flex items-center justify-between bg-slate-50/30 px-5 py-4 rounded-[24px] border border-slate-100/50">
         <div className="flex items-center gap-3 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
-          <ArrowUpDown size={14} className="text-indigo-500" />
+          <ArrowUpDown size={14} className="text-rose-500" />
           <span>{t.sortBy}</span>
         </div>
         <button 
@@ -360,9 +477,76 @@ export default function History({ transactions, language, currency, onDelete, on
           {sortBy === 'DATE_DESC' ? t.dateRecent : 
            sortBy === 'DATE_ASC' ? t.dateAncien : 
            sortBy === 'AMOUNT_DESC' ? t.montantMax : t.montantMin}
-          <ChevronDown size={14} className="text-indigo-500" />
+          <ChevronDown size={14} className="text-rose-500" />
         </button>
       </div>
+
+      {/* Premium Type Filter Modal (Bottom Sheet) */}
+      <AnimatePresence>
+        {showFilterModal && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowFilterModal(false)}
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[100]"
+            />
+            <motion.div 
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[40px] z-[101] p-10 shadow-2xl"
+            >
+              <div className="w-12 h-1.5 bg-slate-100 rounded-full mx-auto mb-10" />
+              
+              <h3 className="text-2xl font-black text-slate-900 mb-8 text-center tracking-tight">{language === 'العربية' ? 'نوع المعاملة' : 'Type de Transaction'}</h3>
+              
+              <div className="grid grid-cols-1 gap-4">
+                <button 
+                  onClick={() => { setFilter('ALL'); setShowFilterModal(false); }}
+                  className={`flex items-center gap-4 p-5 rounded-3xl border-2 transition-all ${filter === 'ALL' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-50 bg-slate-50 text-slate-500'}`}
+                >
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${filter === 'ALL' ? 'bg-indigo-500 text-white' : 'bg-white text-slate-400 shadow-sm'}`}>
+                    <LayoutGrid size={24} />
+                  </div>
+                  <span className="text-lg font-black uppercase tracking-tight">{t.tous}</span>
+                </button>
+                
+                <button 
+                  onClick={() => { setFilter('EXPENSE'); setShowFilterModal(false); }}
+                  className={`flex items-center gap-4 p-5 rounded-3xl border-2 transition-all ${filter === 'EXPENSE' ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-slate-50 bg-slate-50 text-slate-500'}`}
+                >
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${filter === 'EXPENSE' ? 'bg-rose-500 text-white' : 'bg-white text-slate-400 shadow-sm'}`}>
+                    <ShoppingBag size={24} />
+                  </div>
+                  <span className="text-lg font-black uppercase tracking-tight">{t.achats}</span>
+                </button>
+                
+                <button 
+                  onClick={() => { setFilter('INCOME'); setShowFilterModal(false); setSelectedCategory(t.tous); }}
+                  className={`flex items-center gap-4 p-5 rounded-3xl border-2 transition-all ${filter === 'INCOME' ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-50 bg-slate-50 text-slate-500'}`}
+                >
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${filter === 'INCOME' ? 'bg-sky-500 text-white' : 'bg-white text-slate-400 shadow-sm'}`}>
+                    <ArrowDownToLine size={24} />
+                  </div>
+                  <span className="text-lg font-black uppercase tracking-tight">{t.retraits}</span>
+                </button>
+              </div>
+
+              <div className="mt-10 pt-6 border-t border-slate-50">
+                <button 
+                  onClick={() => setShowFilterModal(false)}
+                  className="w-full py-4 text-xs font-black text-slate-400 uppercase tracking-[0.3em]"
+                >
+                  Fermer
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Premium Sort Modal (Bottom Sheet) */}
       <AnimatePresence>
@@ -392,28 +576,28 @@ export default function History({ transactions, language, currency, onDelete, on
                   active={sortBy === 'DATE_DESC'} 
                   onClick={() => { setSortBy('DATE_DESC'); setShowSortModal(false); }} 
                   icon={<Calendar size={22} />}
-                  color="indigo"
+                  color="rose"
                 />
                 <SortOption 
                   label={t.dateAncien} 
                   active={sortBy === 'DATE_ASC'} 
                   onClick={() => { setSortBy('DATE_ASC'); setShowSortModal(false); }} 
                   icon={<Calendar size={22} className="opacity-50" />}
-                  color="indigo"
+                  color="rose"
                 />
                 <SortOption 
                   label={t.montantMax} 
                   active={sortBy === 'AMOUNT_DESC'} 
                   onClick={() => { setSortBy('AMOUNT_DESC'); setShowSortModal(false); }} 
                   icon={<TrendingUp size={22} />}
-                  color="indigo"
+                  color="rose"
                 />
                 <SortOption 
                   label={t.montantMin} 
                   active={sortBy === 'AMOUNT_ASC'} 
                   onClick={() => { setSortBy('AMOUNT_ASC'); setShowSortModal(false); }} 
                   icon={<TrendingDown size={22} />}
-                  color="indigo"
+                  color="rose"
                 />
               </div>
 
@@ -477,17 +661,13 @@ export default function History({ transactions, language, currency, onDelete, on
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: index * 0.03 }}
-                className={`flex items-center gap-5 p-5 rounded-[32px] border transition-all group relative backdrop-blur-sm shadow-sm ${getCardStyle()}`}
+                className={`flex items-center gap-4 p-4 rounded-[32px] border transition-all group relative backdrop-blur-sm ${getCardStyle()}`}
                 style={{ 
                   overflow: activeMenuId === tx.id ? 'visible' : 'hidden',
                   zIndex: activeMenuId === tx.id ? 50 : 1
                 }}
               >
-                {/* Visual Category Ornament */}
-                {isExpense && (
-                  <div className={`absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 rounded-full blur-3xl opacity-0 group-hover:opacity-15 transition-opacity ${categoryMatch.glow} pointer-events-none`} />
-                )}
-
+                {/* Icon Container */}
                 <div className={`w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${
                   (!isExpense && !isCreditPlus && !isCreditMinus) 
                     ? 'bg-emerald-500 text-white shadow-emerald-500/20' 
@@ -496,39 +676,38 @@ export default function History({ transactions, language, currency, onDelete, on
                   {(isExpense || isCreditPlus || isCreditMinus) ? categoryMatch.icon : <ArrowDownToLine size={24} />}
                 </div>
                 
+                {/* Content middle */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="font-black text-slate-800 text-sm tracking-tight truncate">{tx.label}</p>
+                  <div className="flex flex-col gap-1">
                     {tx.amount > 1000 && (
-                      <span className="px-2 py-0.5 rounded-full bg-indigo-500 text-white text-[7px] font-black uppercase tracking-widest">{t.important}</span>
-                    )}
-                  </div>
-                    <div className="flex items-center gap-4 text-slate-400">
-                      <span className="text-[10px] flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-400">
-                        <Calendar size={12} className="text-indigo-500" />
-                        {tx.date}
+                      <span className="w-fit px-2 py-0.5 rounded-lg bg-indigo-500 text-white text-[7px] font-black uppercase tracking-widest mb-0.5">
+                        {t.important}
                       </span>
-                      {(!isCreditPlus && !isCreditMinus) && (
-                        <span className={`text-[10px] flex items-center gap-1.5 font-black uppercase tracking-[0.1em] ${isExpense ? categoryMatch.text : 'text-emerald-600'}`}>
-                          <Tag size={12} />
-                          {tx.category ? tx.category : (isExpense ? t.autres : t.retraits)}
-                        </span>
-                      )}
+                    )}
+                    <p className="font-black text-slate-800 text-sm tracking-tight truncate leading-tight">
+                      {tx.label}
+                    </p>
+                    <span className="text-[10px] flex items-center gap-1 font-bold text-slate-400">
+                      <Calendar size={10} className="text-slate-300" />
+                      {tx.date}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Amount and category right */}
+                <div className="text-right flex items-center gap-2">
+                  <div className="flex flex-col items-end gap-1">
+                    <p className={`font-black tracking-tighter text-lg leading-none ${!isExpense ? 'text-emerald-600' : (isCreditMinus ? 'text-amber-600' : (isCreditPlus ? 'text-indigo-600' : 'text-slate-900'))}`}>
+                      {!isExpense ? '+' : '-'}{tx.amount.toLocaleString('fr-FR')} 
+                      <span className="text-[11px] ml-1 font-bold uppercase text-slate-400">{currency}</span>
+                    </p>
+                    <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg bg-white/50 border border-slate-100/50">
+                       <Tag size={10} className={isExpense ? categoryMatch.text : 'text-emerald-600'} />
+                       <span className={`text-[9px] font-black uppercase tracking-wider ${isExpense ? categoryMatch.text : 'text-emerald-600'}`}>
+                         {(isCreditPlus || isCreditMinus) ? tx.category : (tx.category ? tx.category : (isExpense ? t.autres : t.retraits))}
+                       </span>
                     </div>
                   </div>
-
-                  <div className="text-right flex items-center gap-4">
-                    <div className="flex flex-col items-end">
-                      <p className={`font-black tracking-tighter text-lg leading-none ${!isExpense ? 'text-emerald-600' : (isCreditMinus ? 'text-amber-600' : (isCreditPlus ? 'text-indigo-600' : 'text-slate-900'))}`}>
-                        {!isExpense ? '+' : '-'}{tx.amount.toLocaleString('fr-FR')} 
-                        <span className="text-[11px] ml-1 font-bold uppercase text-slate-400">{currency}</span>
-                      </p>
-                      {(isCreditPlus || isCreditMinus) && (
-                        <span className={`text-[10px] font-black uppercase tracking-[0.1em] mt-1 ${isCreditPlus ? 'text-indigo-600' : 'text-amber-600'}`}>
-                          {tx.category}
-                        </span>
-                      )}
-                    </div>
                   
                   <div className="relative">
                     <button 
@@ -666,14 +845,6 @@ export default function History({ transactions, language, currency, onDelete, on
               </button>
           </div>
         )}
-      </div>
-
-      {/* Export Action */}
-      <div className="pt-4">
-        <button className="w-full h-14 border-2 border-dashed border-slate-200 rounded-3xl flex items-center justify-center gap-3 text-slate-400 font-bold text-sm hover:border-teal-brand hover:text-teal-brand transition-all">
-          <Download size={18} />
-          <span>{t.exportData}</span>
-        </button>
       </div>
     </motion.div>
   );
