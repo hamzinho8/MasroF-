@@ -71,7 +71,7 @@ export default function Home({
       ajouterAchat: 'Ajouter Achat',
       ajouterRetrait: 'Ajouter Retrait',
       analyses: 'Analyses de Trésorerie',
-      grandLivre: 'Grand Livre',
+      grandLivre: 'Historique',
       voirTout: 'Voir tout',
       retraits: 'Retraits',
       depenses: 'Dépenses',
@@ -99,7 +99,7 @@ export default function Home({
       ajouterAchat: 'إضافة شراء',
       ajouterRetrait: 'إضافة سحب',
       analyses: 'تحليلات الخزينة',
-      grandLivre: 'السجل العام',
+      grandLivre: 'سجل المعاملات',
       voirTout: 'عرض الكل',
       retraits: 'السحوبات',
       depenses: 'المصاريف',
@@ -127,7 +127,7 @@ export default function Home({
       ajouterAchat: 'Add Purchase',
       ajouterRetrait: 'Add Withdrawal',
       analyses: 'Treasury Analytics',
-      grandLivre: 'General Ledger',
+      grandLivre: 'History',
       voirTout: 'View all',
       retraits: 'Withdrawals',
       depenses: 'Expenses',
@@ -373,7 +373,7 @@ export default function Home({
           <h3 className="text-slate-900 font-black tracking-tight">{t.grandLivre}</h3>
           <button 
             onClick={onViewAll}
-            className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors"
+            className="text-[10px] font-black text-rose-600 uppercase tracking-widest bg-rose-50 px-3 py-1.5 rounded-lg hover:bg-rose-100 transition-colors"
           >
             {t.voirTout}
           </button>

@@ -8,12 +8,10 @@ import {
   Filter, 
   TrendingUp, 
   TrendingDown, 
-  ArrowUpDown,
   Download,
   Calendar,
   Tag,
   X,
-  ChevronDown,
   LayoutGrid,
   ShoppingBag,
   ArrowDownToLine,
@@ -145,9 +143,7 @@ export default function History({ transactions, language, currency, onDelete, on
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>(t.tous);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showFilterModal, setShowFilterModal] = useState(false);
-  const [showSortModal, setShowSortModal] = useState(false);
+  const [activeInlineMenu, setActiveInlineMenu] = useState<'DATE' | 'TYPE' | 'CATEGORY' | null>(null);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
 
@@ -343,31 +339,31 @@ export default function History({ transactions, language, currency, onDelete, on
       <div className="grid grid-cols-3 gap-2 px-1">
         {/* Date Filter Pill */}
         <button 
-          onClick={() => setShowDatePicker(!showDatePicker)}
-          className="flex items-center gap-3 px-3 py-2.5 bg-emerald-50/40 border border-emerald-100/50 rounded-[28px] transition-all active:scale-95 hover:bg-emerald-100/40 shadow-sm"
+          onClick={() => setActiveInlineMenu(activeInlineMenu === 'DATE' ? null : 'DATE')}
+          className={`flex items-center gap-2 px-2 py-2.5 rounded-[28px] transition-all active:scale-95 shadow-sm border ${activeInlineMenu === 'DATE' ? 'bg-emerald-900 border-emerald-900 text-white' : 'bg-emerald-50/40 border-emerald-100/50 hover:bg-emerald-100/40'}`}
         >
-          <div className="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-50">
-            <Calendar size={18} strokeWidth={2.5} />
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border transition-colors ${activeInlineMenu === 'DATE' ? 'bg-white/20 border-white/20 text-white' : 'bg-white border-emerald-50 text-emerald-600'}`}>
+            <Calendar size={16} strokeWidth={2.5} />
           </div>
-          <div className="flex flex-col items-start leading-tight min-w-0">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter shrink-0">{language === 'العربية' ? 'التاريخ' : 'Date'}:</span>
-            <span className="text-xs font-black text-emerald-800 truncate w-full">
-              {startDate || endDate ? (language === 'العربية' ? 'مخصص' : 'Perso.') : (language === 'العربية' ? 'الشهر الماضي' : 'Mois dernier')}
+          <div className="flex flex-col items-start leading-none min-w-0 text-left">
+            <span className={`text-[8px] font-bold uppercase tracking-tighter shrink-0 ${activeInlineMenu === 'DATE' ? 'text-emerald-100/60' : 'text-slate-400'}`}>{language === 'العربية' ? 'التاريخ' : 'Date'}</span>
+            <span className={`text-[10px] font-black truncate w-full ${activeInlineMenu === 'DATE' ? 'text-white' : 'text-emerald-800'}`}>
+              {startDate || endDate ? (language === 'العربية' ? 'مخصص' : 'Perso.') : (language === 'العربية' ? 'Aujourd\'hui' : 'Aujourd\'hui')}
             </span>
           </div>
         </button>
 
         {/* Type Filter Pill */}
         <button 
-          onClick={() => setShowFilterModal(true)}
-          className="flex items-center gap-3 px-3 py-2.5 bg-indigo-50/40 border border-indigo-100/50 rounded-[28px] transition-all active:scale-95 hover:bg-indigo-100/40 shadow-sm"
+          onClick={() => setActiveInlineMenu(activeInlineMenu === 'TYPE' ? null : 'TYPE')}
+          className={`flex items-center gap-2 px-2 py-2.5 rounded-[28px] transition-all active:scale-95 shadow-sm border ${activeInlineMenu === 'TYPE' ? 'bg-indigo-900 border-indigo-900 text-white' : 'bg-indigo-50/40 border-indigo-100/50 hover:bg-indigo-100/40'}`}
         >
-          <div className="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-indigo-600 shrink-0 border border-indigo-50">
-            <ListFilter size={18} strokeWidth={2.5} />
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border transition-colors ${activeInlineMenu === 'TYPE' ? 'bg-white/20 border-white/20 text-white' : 'bg-white border-indigo-50 text-indigo-600'}`}>
+            <ListFilter size={16} strokeWidth={2.5} />
           </div>
-          <div className="flex flex-col items-start leading-tight min-w-0">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter shrink-0">{language === 'العربية' ? 'النوع' : 'Type'}:</span>
-            <span className="text-xs font-black text-indigo-800 truncate w-full">
+          <div className="flex flex-col items-start leading-none min-w-0 text-left">
+            <span className={`text-[8px] font-bold uppercase tracking-tighter shrink-0 ${activeInlineMenu === 'TYPE' ? 'text-indigo-100/60' : 'text-slate-400'}`}>{language === 'العربية' ? 'النوع' : 'Type'}</span>
+            <span className={`text-[10px] font-black truncate w-full ${activeInlineMenu === 'TYPE' ? 'text-white' : 'text-indigo-800'}`}>
               {filter === 'ALL' ? t.tous : (filter === 'EXPENSE' ? t.achats : t.retraits)}
             </span>
           </div>
@@ -375,242 +371,118 @@ export default function History({ transactions, language, currency, onDelete, on
 
         {/* Category Filter Pill */}
         <button 
-          onClick={() => {
-            // If the category bar is hidden because filter is INCOME, we still want to show all/toutes
-            if (filter !== 'INCOME') {
-              // category bar is visible below, scrolling to it or just letting user see it
-            }
-          }}
-          className="flex items-center gap-3 px-3 py-2.5 bg-rose-50/40 border border-rose-100/50 rounded-[28px] transition-all active:scale-95 hover:bg-rose-100/40 shadow-sm"
+          onClick={() => setActiveInlineMenu(activeInlineMenu === 'CATEGORY' ? null : 'CATEGORY')}
+          className={`flex items-center gap-2 px-2 py-2.5 rounded-[28px] transition-all active:scale-95 shadow-sm border ${activeInlineMenu === 'CATEGORY' ? 'bg-rose-900 border-rose-900 text-white' : 'bg-rose-50/40 border-rose-100/50 hover:bg-rose-100/40'}`}
         >
-          <div className="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-rose-600 shrink-0 border border-rose-50">
-            <Tag size={18} strokeWidth={2.5} />
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border transition-colors ${activeInlineMenu === 'CATEGORY' ? 'bg-white/20 border-white/20 text-white' : 'bg-white border-rose-50 text-rose-600'}`}>
+            <Tag size={16} strokeWidth={2.5} />
           </div>
-          <div className="flex flex-col items-start leading-tight min-w-0">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter shrink-0">{language === 'العربية' ? 'فيئة' : 'Catégorie'}:</span>
-            <span className="text-xs font-black text-rose-700 truncate w-full">
+          <div className="flex flex-col items-start leading-none min-w-0 text-left">
+            <span className={`text-[8px] font-bold uppercase tracking-tighter shrink-0 ${activeInlineMenu === 'CATEGORY' ? 'text-rose-100/60' : 'text-slate-400'}`}>{language === 'العربية' ? 'فئة' : 'Catégorie'}</span>
+            <span className={`text-[10px] font-black truncate w-full ${activeInlineMenu === 'CATEGORY' ? 'text-white' : 'text-rose-700'}`}>
               {selectedCategory === t.tous ? (language === 'العربية' ? 'الكل' : 'Toutes') : selectedCategory}
             </span>
           </div>
         </button>
       </div>
 
-      {/* Artistic Category Icons Bar - Only shown if expense filter is active */}
-      {filter !== 'INCOME' && (
-        <div className="flex items-center justify-between px-3 bg-white/40 backdrop-blur-md py-4 rounded-[32px] border border-white/60 shadow-sm mx-1">
-          <button 
-             onClick={() => setSelectedCategory(t.tous)}
-             className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${selectedCategory === t.tous ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400'}`}
+      {/* Unified Inline Expansion Menu */}
+      <AnimatePresence mode="wait">
+        {activeInlineMenu && (
+          <motion.div
+            key={activeInlineMenu}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+            className="overflow-hidden bg-white/60 backdrop-blur-md rounded-[32px] border border-white/80 shadow-lg shadow-slate-200/40 mx-1"
           >
-             <LayoutGrid size={20} />
-          </button>
-          {CATEGORY_MAP.map(cat => (
-            <button
-              key={cat.label}
-              onClick={() => setSelectedCategory(cat.label)}
-              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 active:scale-75 relative group ${
-                selectedCategory === cat.label 
-                  ? `${cat.activeBg} ${cat.activeText} shadow-md scale-110` 
-                  : `${cat.bg} ${cat.text} opacity-60 hover:opacity-100`
-              }`}
-            >
-              {cat.icon}
-            </button>
-          ))}
-        </div>
-      )}
+            <div className="p-6">
+              {activeInlineMenu === 'DATE' && (
+                <div className="space-y-4 text-center">
+                  <div className="flex justify-between items-center px-1">
+                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{language === 'العربية' ? 'فلتر التاريخ' : 'Filtre Date'}</span>
+                    {(startDate || endDate) && (
+                      <button onClick={clearDateRange} className="px-3 py-1.5 rounded-lg bg-rose-50 text-[9px] font-black uppercase text-rose-500 flex items-center gap-2 transition-all hover:bg-rose-100">
+                        <X size={12} />
+                        Effacer
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5 text-left">
+                      <label className="text-[8px] font-black uppercase text-slate-400 tracking-tighter ml-2">DEP.</label>
+                      <input 
+                        type="date" 
+                        className="w-full bg-slate-50 border-none rounded-xl p-3 text-[10px] font-bold text-slate-700 outline-none transition-all focus:bg-slate-100"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5 text-left">
+                      <label className="text-[8px] font-black uppercase text-slate-400 tracking-tighter ml-2">JUSQ.</label>
+                      <input 
+                        type="date" 
+                        className="w-full bg-slate-50 border-none rounded-xl p-3 text-[10px] font-bold text-slate-700 outline-none transition-all focus:bg-slate-100"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
 
-        {/* Date Range Picker */}
-        <AnimatePresence>
-          {showDatePicker && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden bg-white rounded-[32px] border-2 border-slate-50 shadow-xl shadow-slate-200/50"
-            >
-              <div className="p-6 space-y-5">
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Période personnalisé</span>
-                  {(startDate || endDate) && (
-                    <button onClick={clearDateRange} className="px-3 py-1.5 rounded-lg bg-rose-50 text-[10px] font-black uppercase text-rose-500 flex items-center gap-2 transition-all hover:bg-rose-100">
-                      <X size={12} />
-                      Effacer
+              {activeInlineMenu === 'TYPE' && (
+                <div className="grid grid-cols-3 gap-2">
+                  <button 
+                    onClick={() => { setFilter('ALL'); setActiveInlineMenu(null); }}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all ${filter === 'ALL' ? 'border-indigo-600 bg-indigo-600 text-white shadow-md' : 'border-slate-50 bg-slate-50/50 text-slate-400'}`}
+                  >
+                    <LayoutGrid size={20} />
+                    <span className="text-[9px] font-black uppercase tracking-tight">{t.tous}</span>
+                  </button>
+                  <button 
+                    onClick={() => { setFilter('EXPENSE'); setActiveInlineMenu(null); }}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all ${filter === 'EXPENSE' ? 'border-rose-500 bg-rose-500 text-white shadow-md' : 'border-slate-50 bg-slate-50/50 text-slate-400'}`}
+                  >
+                    <ShoppingBag size={20} />
+                    <span className="text-[9px] font-black uppercase tracking-tight">{t.achats}</span>
+                  </button>
+                  <button 
+                    onClick={() => { setFilter('INCOME'); setActiveInlineMenu(null); setSelectedCategory(t.tous); }}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all ${filter === 'INCOME' ? 'border-sky-500 bg-sky-500 text-white shadow-md' : 'border-slate-50 bg-slate-50/50 text-slate-400'}`}
+                  >
+                    <ArrowDownToLine size={20} />
+                    <span className="text-[9px] font-black uppercase tracking-tight">{t.retraits}</span>
+                  </button>
+                </div>
+              )}
+
+              {activeInlineMenu === 'CATEGORY' && (
+                <div className="grid grid-cols-3 gap-2 max-h-[300px] overflow-y-auto px-1 py-1">
+                  <button 
+                    onClick={() => { setSelectedCategory(t.tous); setActiveInlineMenu(null); }}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all ${selectedCategory === t.tous ? 'border-slate-900 bg-slate-900 text-white shadow-md' : 'border-slate-50 bg-slate-50/50 text-slate-400'}`}
+                  >
+                    <LayoutGrid size={20} />
+                    <span className="text-[9px] font-black uppercase tracking-tight line-clamp-1">{t.tous}</span>
+                  </button>
+                  {CATEGORY_MAP.map(cat => (
+                    <button 
+                      key={cat.label}
+                      onClick={() => { setSelectedCategory(cat.label); setActiveInlineMenu(null); }}
+                      className={`flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all ${selectedCategory === cat.label ? `border-${cat.color}-600 bg-${cat.color}-600 text-white shadow-md` : 'border-slate-50 bg-slate-50/50 text-slate-400'}`}
+                    >
+                      <div className={selectedCategory === cat.label ? 'text-white' : cat.text}>
+                        {cat.icon}
+                      </div>
+                      <span className="text-[9px] font-black uppercase tracking-tight line-clamp-1 w-full text-center">{cat.label}</span>
                     </button>
-                  )}
+                  ))}
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase text-slate-400 tracking-tighter ml-2">DEPUIS</label>
-                    <input 
-                      type="date" 
-                      className="w-full bg-slate-50 border-none rounded-2xl p-3 text-xs font-bold text-slate-700 outline-none transition-all focus:bg-slate-100"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase text-slate-400 tracking-tighter ml-2">JUSQU'À</label>
-                    <input 
-                      type="date" 
-                      className="w-full bg-slate-50 border-none rounded-2xl p-3 text-xs font-bold text-slate-700 outline-none transition-all focus:bg-slate-100"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-      {/* Sorting Controls */}
-      <div className="flex items-center justify-between bg-slate-50/30 px-5 py-4 rounded-[24px] border border-slate-100/50">
-        <div className="flex items-center gap-3 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
-          <ArrowUpDown size={14} className="text-rose-500" />
-          <span>{t.sortBy}</span>
-        </div>
-        <button 
-          onClick={() => setShowSortModal(true)}
-          className="text-[11px] font-black text-slate-700 flex items-center gap-2 transition-all active:scale-95 bg-white py-2 px-4 rounded-xl shadow-sm border border-slate-100"
-        >
-          {sortBy === 'DATE_DESC' ? t.dateRecent : 
-           sortBy === 'DATE_ASC' ? t.dateAncien : 
-           sortBy === 'AMOUNT_DESC' ? t.montantMax : t.montantMin}
-          <ChevronDown size={14} className="text-rose-500" />
-        </button>
-      </div>
-
-      {/* Premium Type Filter Modal (Bottom Sheet) */}
-      <AnimatePresence>
-        {showFilterModal && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowFilterModal(false)}
-              className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[100]"
-            />
-            <motion.div 
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[40px] z-[101] p-10 shadow-2xl"
-            >
-              <div className="w-12 h-1.5 bg-slate-100 rounded-full mx-auto mb-10" />
-              
-              <h3 className="text-2xl font-black text-slate-900 mb-8 text-center tracking-tight">{language === 'العربية' ? 'نوع المعاملة' : 'Type de Transaction'}</h3>
-              
-              <div className="grid grid-cols-1 gap-4">
-                <button 
-                  onClick={() => { setFilter('ALL'); setShowFilterModal(false); }}
-                  className={`flex items-center gap-4 p-5 rounded-3xl border-2 transition-all ${filter === 'ALL' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-50 bg-slate-50 text-slate-500'}`}
-                >
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${filter === 'ALL' ? 'bg-indigo-500 text-white' : 'bg-white text-slate-400 shadow-sm'}`}>
-                    <LayoutGrid size={24} />
-                  </div>
-                  <span className="text-lg font-black uppercase tracking-tight">{t.tous}</span>
-                </button>
-                
-                <button 
-                  onClick={() => { setFilter('EXPENSE'); setShowFilterModal(false); }}
-                  className={`flex items-center gap-4 p-5 rounded-3xl border-2 transition-all ${filter === 'EXPENSE' ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-slate-50 bg-slate-50 text-slate-500'}`}
-                >
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${filter === 'EXPENSE' ? 'bg-rose-500 text-white' : 'bg-white text-slate-400 shadow-sm'}`}>
-                    <ShoppingBag size={24} />
-                  </div>
-                  <span className="text-lg font-black uppercase tracking-tight">{t.achats}</span>
-                </button>
-                
-                <button 
-                  onClick={() => { setFilter('INCOME'); setShowFilterModal(false); setSelectedCategory(t.tous); }}
-                  className={`flex items-center gap-4 p-5 rounded-3xl border-2 transition-all ${filter === 'INCOME' ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-50 bg-slate-50 text-slate-500'}`}
-                >
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${filter === 'INCOME' ? 'bg-sky-500 text-white' : 'bg-white text-slate-400 shadow-sm'}`}>
-                    <ArrowDownToLine size={24} />
-                  </div>
-                  <span className="text-lg font-black uppercase tracking-tight">{t.retraits}</span>
-                </button>
-              </div>
-
-              <div className="mt-10 pt-6 border-t border-slate-50">
-                <button 
-                  onClick={() => setShowFilterModal(false)}
-                  className="w-full py-4 text-xs font-black text-slate-400 uppercase tracking-[0.3em]"
-                >
-                  Fermer
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* Premium Sort Modal (Bottom Sheet) */}
-      <AnimatePresence>
-        {showSortModal && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowSortModal(false)}
-              className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[100]"
-            />
-            <motion.div 
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[40px] z-[101] p-10 shadow-2xl"
-            >
-              <div className="w-12 h-1.5 bg-slate-100 rounded-full mx-auto mb-10" />
-              
-              <h3 className="text-2xl font-black text-slate-900 mb-8 text-center tracking-tight">{t.sortBy}</h3>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <SortOption 
-                  label={t.dateRecent} 
-                  active={sortBy === 'DATE_DESC'} 
-                  onClick={() => { setSortBy('DATE_DESC'); setShowSortModal(false); }} 
-                  icon={<Calendar size={22} />}
-                  color="rose"
-                />
-                <SortOption 
-                  label={t.dateAncien} 
-                  active={sortBy === 'DATE_ASC'} 
-                  onClick={() => { setSortBy('DATE_ASC'); setShowSortModal(false); }} 
-                  icon={<Calendar size={22} className="opacity-50" />}
-                  color="rose"
-                />
-                <SortOption 
-                  label={t.montantMax} 
-                  active={sortBy === 'AMOUNT_DESC'} 
-                  onClick={() => { setSortBy('AMOUNT_DESC'); setShowSortModal(false); }} 
-                  icon={<TrendingUp size={22} />}
-                  color="rose"
-                />
-                <SortOption 
-                  label={t.montantMin} 
-                  active={sortBy === 'AMOUNT_ASC'} 
-                  onClick={() => { setSortBy('AMOUNT_ASC'); setShowSortModal(false); }} 
-                  icon={<TrendingDown size={22} />}
-                  color="rose"
-                />
-              </div>
-
-              <div className="mt-10 pt-6 border-t border-slate-50">
-                <button 
-                  onClick={() => setShowSortModal(false)}
-                  className="w-full py-4 text-xs font-black text-slate-400 uppercase tracking-[0.3em]"
-                >
-                  Fermer
-                </button>
-              </div>
-            </motion.div>
-          </>
+              )}
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -857,34 +729,6 @@ function FilterTab({ active, onClick, label, color = "text-slate-500", bg = "bg-
       className={`px-6 py-2.5 rounded-2xl text-xs font-black transition-all whitespace-nowrap shadow-sm ${active ? `${bg} ${color}` : 'bg-white text-slate-400 border border-slate-100'}`}
     >
       {label}
-    </button>
-  );
-}
-
-function SortOption({ label, active, onClick, icon, color = "indigo" }: { label: string, active: boolean, onClick: () => void, icon: React.ReactNode, color?: string }) {
-  return (
-    <button 
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center gap-4 p-7 rounded-[38px] border-2 transition-all active:scale-95 ${
-        active 
-          ? `border-${color}-500 bg-${color}-50/50 text-${color}-600 shadow-xl shadow-${color}-500/10 scale-[1.02]` 
-          : 'border-slate-50 bg-slate-50 text-slate-400'
-      }`}
-    >
-      <div className={`w-14 h-14 rounded-[22px] flex items-center justify-center transition-all ${
-        active 
-          ? `bg-${color}-500 text-white shadow-lg shadow-${color}-500/30` 
-          : 'bg-white shadow-sm'
-      }`}>
-        {icon}
-      </div>
-      <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
-      {active && (
-        <motion.div 
-          layoutId="activeSort"
-          className={`w-1.5 h-1.5 bg-${color}-500 rounded-full mt-1`}
-        />
-      )}
     </button>
   );
 }
