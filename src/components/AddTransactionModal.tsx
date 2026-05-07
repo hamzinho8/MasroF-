@@ -19,11 +19,11 @@ interface Category {
 }
 
 const CATEGORIES: Category[] = [
-  { id: 'Nourriture', label: 'Nourriture', icon: <Utensils size={18} />, color: 'text-amber-600', bgColor: 'bg-amber-100' },
+  { id: 'Nourriture', label: 'Nourriture', icon: <Utensils size={18} />, color: 'text-[#1B5E66]', bgColor: 'bg-[#2D8B96]/10' },
   { id: 'Shopping', label: 'Shopping', icon: <ShoppingBag size={18} />, color: 'text-rose-600', bgColor: 'bg-rose-100' },
   { id: 'Transport', label: 'Transport', icon: <Car size={18} />, color: 'text-sky-600', bgColor: 'bg-sky-100' },
   { id: 'Loisirs', label: 'Loisirs', icon: <Gamepad2 size={18} />, color: 'text-purple-600', bgColor: 'bg-purple-100' },
-  { id: 'Autres', label: 'Autres', icon: <MoreHorizontal size={18} />, color: 'text-slate-600', bgColor: 'bg-slate-100' },
+  { id: 'Autres', label: 'Autres', icon: <MoreHorizontal size={18} />, color: 'text-[#1B5E66]', bgColor: 'bg-[#F0F7F8]' },
 ];
 
 interface AddTransactionModalProps {
@@ -90,14 +90,14 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                 <button
                   type="button"
                   onClick={() => setType('EXPENSE')}
-                  className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${type === 'EXPENSE' ? 'bg-white text-danger-red shadow-sm' : 'text-slate-400'}`}
+                  className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${type === 'EXPENSE' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'}`}
                 >
                   Achat
                 </button>
                 <button
                   type="button"
                   onClick={() => setType('INCOME')}
-                  className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${type === 'INCOME' ? 'bg-white text-bank-blue shadow-sm' : 'text-slate-400'}`}
+                  className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${type === 'INCOME' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-400'}`}
                 >
                   Retrait
                 </button>
@@ -106,7 +106,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
               <div className="space-y-5">
                 {type === 'EXPENSE' && (
                   <>
-                    <div className="space-y-2">
+                     <div className="space-y-2">
                       <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Catégorie</label>
                       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
                         {CATEGORIES.map((cat) => (
@@ -117,11 +117,11 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                             className={`flex flex-col items-center gap-2 min-w-[70px] p-3 rounded-2xl border transition-all ${
                               selectedCategory === cat.id 
                                 ? `bg-white shadow-md scale-105 border-transparent ring-2 ${
-                                    cat.id === 'Nourriture' ? 'ring-amber-500/20' : 
+                                    cat.id === 'Nourriture' ? 'ring-teal-500/20' : 
                                     cat.id === 'Shopping' ? 'ring-rose-500/20' : 
                                     cat.id === 'Transport' ? 'ring-sky-500/20' : 
                                     cat.id === 'Loisirs' ? 'ring-purple-500/20' : 
-                                    'ring-slate-500/20'
+                                    'ring-slate-400/20'
                                   }` 
                                 : 'border-slate-100 bg-slate-50 opacity-60'
                             }`}
@@ -131,11 +131,11 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                             </div>
                             <span className={`text-[9px] font-black uppercase tracking-tight ${
                               selectedCategory === cat.id 
-                                ? (cat.id === 'Nourriture' ? 'text-amber-600' : 
+                                ? (cat.id === 'Nourriture' ? 'text-teal-600' : 
                                    cat.id === 'Shopping' ? 'text-rose-600' : 
                                    cat.id === 'Transport' ? 'text-sky-600' : 
                                    cat.id === 'Loisirs' ? 'text-purple-600' : 
-                                   'text-slate-600')
+                                   'text-slate-800')
                                 : 'text-slate-400'
                             }`}>
                               {cat.label}
@@ -150,7 +150,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                       <input
                         type="text"
                         placeholder="Qu'avez-vous acheté ?"
-                        className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-5 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-brand/20 transition-all"
+                        className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-5 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all font-mono"
                         value={label}
                         onChange={(e) => setLabel(e.target.value)}
                       />
@@ -166,7 +166,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                     required
                     autoFocus={type === 'INCOME'}
                     placeholder="0.0"
-                    className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-5 font-black text-slate-800 text-3xl focus:outline-none focus:ring-2 focus:ring-teal-brand/20 transition-all text-center"
+                    className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-5 font-black text-slate-800 text-3xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all text-center font-mono"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                   />
@@ -175,7 +175,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
 
               <button
                 type="submit"
-                className={`w-full h-16 rounded-3xl flex items-center justify-center gap-3 font-black text-white text-lg shadow-lg transform transition-all active:scale-[0.98] ${type === 'EXPENSE' ? 'bg-danger-red shadow-danger-red/20' : 'bg-bank-blue shadow-bank-blue/20'}`}
+                className={`w-full h-16 rounded-3xl flex items-center justify-center gap-3 font-black text-white text-lg shadow-lg transform transition-all active:scale-[0.98] ${type === 'EXPENSE' ? 'bg-slate-800 shadow-slate-800/20' : 'bg-teal-brand shadow-teal-brand/20'}`}
               >
                 <Check size={24} strokeWidth={3} />
                 <span>Confirmer</span>

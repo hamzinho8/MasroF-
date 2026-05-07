@@ -246,19 +246,27 @@ export default function Home({
             transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
             className="relative z-10 p-6 h-full w-full flex flex-col justify-center"
           >
-            <h2 className="text-slate-800 font-bold mb-1">
-              {widgetMode === 'balance' ? t.dansMaPoche : t.depensesHebdo}
-            </h2>
-            <div className="text-3xl font-black text-slate-900 mb-1">
-              {widgetMode === 'balance' 
-                ? `${balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} ${currency}`
-                : `${filteredTotals.totalExpense.toLocaleString('fr-FR')} ${currency}`}
+            <div className="flex items-center gap-2 mb-1">
+              <div className={`w-2 h-2 rounded-full ${widgetMode === 'balance' ? 'bg-emerald-600 animate-pulse' : 'bg-slate-400'}`} />
+              <h2 className="text-slate-900/60 font-bold uppercase tracking-widest text-[10px]">
+                {widgetMode === 'balance' ? t.dansMaPoche : t.depensesHebdo}
+              </h2>
             </div>
-            <p className="text-xs text-slate-700 font-medium opacity-80">
+
+            <div className="flex items-baseline gap-2">
+              <div className="text-4xl font-black text-slate-900 tracking-tighter">
+                {widgetMode === 'balance' 
+                  ? balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })
+                  : filteredTotals.totalExpense.toLocaleString('fr-FR')}
+              </div>
+              <span className="text-xl font-bold text-slate-900/40 uppercase">{currency}</span>
+            </div>
+
+            <p className="text-xs text-slate-900 font-bold mt-1 uppercase tracking-tight">
               {widgetMode === 'balance' ? t.argentDispo : t.cumulAchats}
             </p>
             
-            <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-20 transform scale-150 text-slate-900 pointer-events-none">
+            <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-10 transform scale-150 text-slate-900 pointer-events-none">
               {widgetMode === 'balance' ? <Wallet size={80} /> : <TrendingDown size={80} />}
             </div>
           </motion.div>
@@ -269,13 +277,13 @@ export default function Home({
       <div className="grid grid-cols-2 gap-3 mb-8">
         <div 
           onClick={onNavigateToCredits}
-          className="p-4 rounded-2xl border-2 border-indigo-500/20 bg-indigo-50/50 relative overflow-hidden group cursor-pointer transition-all hover:border-indigo-500/40 hover:shadow-sm active:scale-[0.98]"
+          className="p-4 rounded-2xl border-2 border-indigo-100 bg-indigo-50/30 relative overflow-hidden group cursor-pointer transition-all hover:border-indigo-200 hover:shadow-sm active:scale-[0.98]"
         >
           <div className="relative z-10">
-            <p className="text-xs text-slate-500 mb-1 font-medium">{ct.oweMe}</p>
+            <p className="text-[10px] text-slate-400 mb-1 font-black uppercase tracking-widest">{ct.oweMe}</p>
             <div className="flex items-baseline gap-1">
               <span className="text-xl font-black text-indigo-600 leading-none">{totalOweMe}</span>
-              <span className="text-[10px] font-bold text-indigo-500 uppercase">{currency}</span>
+              <span className="text-[10px] font-bold text-indigo-400 uppercase">{currency}</span>
             </div>
           </div>
           <TrendingUp className="absolute -right-2 -bottom-2 text-indigo-500/10 rotate-12 group-hover:scale-110 transition-transform" size={48} />
@@ -283,13 +291,13 @@ export default function Home({
 
         <div 
           onClick={onNavigateToCredits}
-          className="p-4 rounded-2xl border-2 border-amber-500/20 bg-amber-50/50 relative overflow-hidden group cursor-pointer transition-all hover:border-amber-500/40 hover:shadow-sm active:scale-[0.98]"
+          className="p-4 rounded-2xl border-2 border-amber-100 bg-amber-50/30 relative overflow-hidden group cursor-pointer transition-all hover:border-amber-200 hover:shadow-sm active:scale-[0.98]"
         >
           <div className="relative z-10">
-            <p className="text-xs text-slate-500 mb-1 font-medium">{ct.iOwe}</p>
+            <p className="text-[10px] text-slate-400 mb-1 font-black uppercase tracking-widest">{ct.iOwe}</p>
             <div className="flex items-baseline gap-1">
               <span className="text-xl font-black text-amber-600 leading-none">{totalIOwe}</span>
-              <span className="text-[10px] font-bold text-amber-500 uppercase">{currency}</span>
+              <span className="text-[10px] font-bold text-amber-400 uppercase">{currency}</span>
             </div>
           </div>
           <TrendingDown className="absolute -right-2 -bottom-2 text-amber-500/10 rotate-12 group-hover:scale-110 transition-transform" size={48} />
@@ -396,10 +404,10 @@ export default function Home({
             };
 
             const getCardStyle = () => {
-              if (isCreditPlus) return 'bg-indigo-50/30 border-indigo-100/50 hover:border-indigo-200';
-              if (isCreditMinus) return 'bg-amber-50/30 border-amber-100/50 hover:border-amber-200';
-              if (!isExpense) return 'bg-emerald-50/30 border-emerald-100/50 hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-500/5 text-emerald-600';
-              return `bg-white border-slate-100 ${getHoverColor(categoryMatch.color)}`;
+              if (isCreditPlus) return 'bg-indigo-50/30 border-indigo-100/50 hover:border-indigo-200 hover:shadow-indigo-500/5';
+              if (isCreditMinus) return 'bg-amber-50/30 border-amber-100/50 hover:border-amber-200 hover:shadow-amber-500/5';
+              if (!isExpense) return 'bg-emerald-50/30 border-emerald-100/50 hover:border-emerald-200 hover:shadow-emerald-500/5 text-emerald-600';
+              return `bg-white border-slate-100 shadow-sm ${getHoverColor(categoryMatch.color)}`;
             };
 
             const getHoverColor = (color: string) => {
@@ -409,8 +417,8 @@ export default function Home({
                 'sky': 'hover:border-sky-200 hover:shadow-sky-500/10',
                 'purple': 'hover:border-purple-200 hover:shadow-purple-500/10',
                 'slate': 'hover:border-slate-200 hover:shadow-slate-500/10',
-                'indigo': 'hover:border-indigo-200 hover:shadow-indigo-500/10',
                 'emerald': 'hover:border-emerald-200 hover:shadow-emerald-500/10',
+                'indigo': 'hover:border-indigo-200 hover:shadow-indigo-500/10',
                 'teal': 'hover:border-teal-200 hover:shadow-teal-500/10'
               };
               return colors[color] || 'hover:border-slate-200';
@@ -445,11 +453,11 @@ export default function Home({
                   <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1">{tx.label}</p>
                   <div className="flex items-center gap-4">
                     <span className="text-[10px] flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-400">
-                      <Calendar size={12} className="text-indigo-500" />
+                      <Calendar size={12} className="text-slate-300" />
                       {tx.date}
                     </span>
                     {(!isCreditPlus && !isCreditMinus) && (
-                      <span className={`text-[10px] font-black uppercase tracking-[0.1em] ${!isExpense ? 'text-emerald-600' : categoryMatch.text}`}>
+                      <span className={`text-[10px] font-black uppercase tracking-[0.1em] ${!isExpense ? 'text-emerald-500' : categoryMatch.text}`}>
                         {tx.category || (!isExpense ? t.retraits : t.achats)}
                       </span>
                     )}
@@ -583,7 +591,7 @@ export default function Home({
                   
                   <button 
                     type="submit"
-                    className="w-full py-5 bg-[#0B1E3F] text-white rounded-[24px] font-black uppercase tracking-widest shadow-xl shadow-slate-900/20 active:scale-95 transition-all mt-4"
+                    className="w-full py-5 bg-teal-brand text-white rounded-[24px] font-black uppercase tracking-widest shadow-xl shadow-teal-brand/20 active:scale-95 transition-all mt-4"
                   >
                     Enregistrer
                   </button>

@@ -506,8 +506,8 @@ export default function History({ transactions, language, currency, onDelete, on
             };
 
             const getCardStyle = () => {
-              if (isCreditPlus) return 'bg-indigo-50/30 border-indigo-100/50 hover:border-indigo-200';
-              if (isCreditMinus) return 'bg-amber-50/30 border-amber-100/50 hover:border-amber-200';
+              if (isCreditPlus) return 'bg-indigo-50/30 border-indigo-100/50 hover:border-indigo-200 hover:shadow-indigo-500/5';
+              if (isCreditMinus) return 'bg-amber-50/30 border-amber-100/50 hover:border-amber-200 hover:shadow-amber-500/5';
               if (!isExpense) return 'bg-emerald-50/30 border-emerald-100/50 hover:border-emerald-200 hover:shadow-emerald-500/5';
               return `bg-white border-slate-100 shadow-sm ${getHoverColor(categoryMatch.color)}`;
             };
@@ -519,7 +519,6 @@ export default function History({ transactions, language, currency, onDelete, on
                 'sky': 'hover:border-sky-200 hover:shadow-sky-500/10',
                 'purple': 'hover:border-purple-200 hover:shadow-purple-500/10',
                 'slate': 'hover:border-slate-200 hover:shadow-slate-500/10',
-                'indigo': 'hover:border-indigo-200 hover:shadow-indigo-500/10',
                 'emerald': 'hover:border-emerald-200 hover:shadow-emerald-500/10',
                 'teal': 'hover:border-teal-200 hover:shadow-teal-500/10'
               };

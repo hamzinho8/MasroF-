@@ -167,8 +167,8 @@ export default function Credits({ language, currency, entries, setEntries, onSet
     >
       {/* Artistic Credits Summary Card - Matched dimensions with Home.tsx */}
       <div 
-        className="relative h-44 rounded-[24px] overflow-hidden shadow-2xl shadow-indigo-500/15 mb-8 transition-all hover:scale-[1.01] border border-white/20 active:scale-95"
-        style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #F59E0B 100%)' }}
+        className="relative h-44 rounded-[24px] overflow-hidden shadow-2xl shadow-slate-200/40 mb-8 transition-all hover:scale-[1.01] border border-white/20 active:scale-95"
+        style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #f59e0b 100%)' }}
       >
         {/* Artistic Background Elements - Restore arrows */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -243,7 +243,7 @@ export default function Credits({ language, currency, entries, setEntries, onSet
           >
             <div className="flex items-center justify-between mb-6">
               <div className="space-y-1">
-                <h3 className="font-black text-xl text-slate-900 tracking-tight">{formTitle}</h3>
+                <h3 className="font-black text-xl text-slate-800 tracking-tight">{formTitle}</h3>
                 <div className="w-8 h-1 bg-indigo-500 rounded-full" />
               </div>
               {editingId && (
@@ -254,7 +254,7 @@ export default function Credits({ language, currency, entries, setEntries, onSet
                     setNewName('');
                     setNewAmount('');
                   }}
-                  className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"
+                  className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -279,9 +279,9 @@ export default function Credits({ language, currency, entries, setEntries, onSet
                     placeholder={t.amountPlaceholder}
                     value={newAmount}
                     onChange={(e) => setNewAmount(e.target.value)}
-                    className="flex-1 h-14 px-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-900 transition-all text-2xl shadow-inner"
+                    className="flex-1 h-14 px-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-800 transition-all text-2xl shadow-inner"
                   />
-                  <div className="h-14 flex items-center px-5 bg-white border-2 border-slate-100 rounded-2xl font-black text-slate-400 shadow-sm">
+                  <div className="h-14 flex items-center px-5 bg-white border-2 border-slate-50 rounded-2xl font-black text-slate-400 shadow-sm">
                     {currency}
                   </div>
                 </div>
@@ -292,7 +292,7 @@ export default function Credits({ language, currency, entries, setEntries, onSet
                 <div className="grid grid-cols-2 gap-3">
                   <button 
                     onClick={() => setNewType('OWE_ME')}
-                    className={`h-14 rounded-2xl flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-widest transition-all border-2 ${newType === 'OWE_ME' ? 'bg-indigo-500 border-indigo-500 text-white shadow-lg shadow-indigo-500/30' : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-200'}`}
+                    className={`h-14 rounded-2xl flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-widest transition-all border-2 ${newType === 'OWE_ME' ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-200'}`}
                   >
                     <Coins size={18} />
                     {t.owedToMe}
@@ -322,7 +322,7 @@ export default function Credits({ language, currency, entries, setEntries, onSet
               </button>
               <button 
                 onClick={handleAddEntry}
-                className="flex-1 h-16 rounded-[24px] bg-[#0B1E3F] text-white font-black shadow-xl shadow-slate-900/20 active:scale-95 transition-all text-sm uppercase tracking-widest"
+                className="flex-1 h-16 rounded-[24px] bg-indigo-600 text-white font-black shadow-xl shadow-indigo-600/20 active:scale-95 transition-all text-sm uppercase tracking-widest"
               >
                 {t.confirm}
               </button>
@@ -333,8 +333,8 @@ export default function Credits({ language, currency, entries, setEntries, onSet
 
       {/* List */}
       <div className="space-y-4 pt-6">
-        <h3 className="text-[#0B1E3F] text-xl font-bold flex items-center gap-3 px-1">
-          <History size={24} className="text-[#36A292]" />
+        <h3 className="text-slate-800 text-xl font-bold flex items-center gap-3 px-1">
+          <History size={24} className="text-indigo-600" />
           {t.history}
         </h3>
         
@@ -363,7 +363,7 @@ export default function Credits({ language, currency, entries, setEntries, onSet
                   }}
                 >
                   <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${
-                    isReceive ? 'bg-indigo-500 text-white shadow-indigo-500/20' : 'bg-amber-500 text-white shadow-amber-500/20'
+                    isReceive ? 'bg-indigo-600 text-white shadow-indigo-600/20' : 'bg-amber-500 text-white shadow-amber-500/20'
                   }`}>
                     {isReceive ? <TrendingUp size={24} /> : <TrendingDown size={24} />}
                   </div>
@@ -374,16 +374,16 @@ export default function Credits({ language, currency, entries, setEntries, onSet
                     </p>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
                       <span className="text-[9px] flex items-center gap-1 font-bold uppercase tracking-wider text-slate-400 shrink-0">
-                        <Calendar size={10} className={isReceive ? 'text-indigo-500' : 'text-amber-600'} />
+                        <Calendar size={10} className={isReceive ? 'text-indigo-500' : 'text-amber-500'} />
                         {entry.date}
                       </span>
-                      <span className={`text-[9px] font-black uppercase tracking-[0.1em] truncate max-w-[100px] ${isReceive ? 'text-indigo-600' : 'text-amber-700'}`}>
+                      <span className={`text-[9px] font-black uppercase tracking-[0.1em] truncate max-w-[100px] ${isReceive ? 'text-indigo-600' : 'text-amber-600'}`}>
                         {isReceive ? t.owedToMe : t.owedByMe}
                       </span>
                     </div>
                   </div>
 
-                  <div className="shrink-0 flex items-center gap-2 pl-2 border-l border-slate-100/50">
+                  <div className="shrink-0 flex items-center gap-2 pl-2 border-l border-slate-100">
                     <div className="flex flex-col items-end">
                       <p className={`font-black tracking-tighter text-base leading-none ${isReceive ? 'text-indigo-600' : 'text-amber-600'}`}>
                         {entry.amount.toLocaleString('fr-FR')} 

@@ -70,11 +70,6 @@ export default function App() {
 
   const t = translations[language as keyof typeof translations] || translations['Français'];
   const isRtl = language === 'العربية';
-  const [userProfile, setUserProfile] = useState({
-    name: 'Hamza Houam',
-    email: 'houamhamza8@gmail.com',
-    avatar: ''
-  });
   const [reminders, setReminders] = useState<Reminder[]>([
     { id: 'rem-1', title: 'Saisir mes achats', time: '22:00', enabled: true, type: 'ACHAT' },
     { id: 'rem-2', title: 'Retrait d\'argent', time: '07:45', enabled: false, type: 'RETRAIT' }
@@ -226,8 +221,6 @@ export default function App() {
             onCurrencyChange={setCurrency}
             language={language}
             onLanguageChange={setLanguage}
-            userProfile={userProfile}
-            onProfileUpdate={setUserProfile}
             reminders={reminders}
             onRemindersChange={setReminders}
             transactions={transactions}
@@ -255,20 +248,20 @@ export default function App() {
   return (
     <div 
       dir={isRtl ? 'rtl' : 'ltr'}
-      className={`h-screen ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F0F7F8]'} flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden font-sans transition-colors duration-500`}
+      className={`h-screen ${isDarkMode ? 'bg-slate-900' : 'bg-slate-50'} flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden font-sans transition-colors duration-500`}
     >
       <AnimatePresence>
         {showSplash && (
           <motion.div 
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className={`fixed inset-0 z-[100] ${isDarkMode ? 'bg-[#1A1A1A]' : 'bg-teal-light'} flex flex-col items-center justify-center max-w-md mx-auto`}
+            className={`fixed inset-0 z-[100] ${isDarkMode ? 'bg-slate-900' : 'bg-white'} flex flex-col items-center justify-center max-w-md mx-auto`}
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
-              className="w-40 h-40 bg-white rounded-full shadow-2xl border-4 border-teal-brand/20 flex items-center justify-center mb-6"
+              className="w-40 h-40 bg-white rounded-full shadow-2xl border-4 border-slate-100 flex items-center justify-center mb-6"
             >
               <MasrofLogo className="w-32 h-32" currency={currency} />
             </motion.div>
@@ -276,7 +269,7 @@ export default function App() {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="text-4xl font-black text-teal-brand tracking-tighter"
+              className="text-4xl font-black text-teal-600 tracking-tighter"
             >
               MasroF
             </motion.h1>
@@ -293,7 +286,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Header & Navigation */}
-      <header className={`sticky top-0 z-50 transition-all duration-300 ${isDarkMode ? 'bg-[#1A1A1A]/80' : 'bg-[#F0F7F8]/80'} backdrop-blur-xl border-b ${isDarkMode ? 'border-slate-800' : 'border-teal-brand/10'}`}>
+      <header className={`sticky top-0 z-50 transition-all duration-300 ${isDarkMode ? 'bg-slate-900/80' : 'bg-white/80'} backdrop-blur-xl border-b ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`}>
         {/* Global Navigation Tabs (Compact & Artistic) */}
         <nav className="flex items-center justify-around px-2 pb-5 pt-3 max-w-full mx-auto gap-1">
           <TabButton 
