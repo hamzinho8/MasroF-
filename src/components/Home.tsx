@@ -19,6 +19,7 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
+  Sigma,
   X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -54,6 +55,7 @@ export default function Home({
   const [timeframe, setTimeframe] = useState<'day' | 'week' | 'month'>('week');
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
+  const [showCalculator, setShowCalculator] = useState(false);
 
   const translations = {
     'Français': {
@@ -175,41 +177,25 @@ export default function Home({
 
   const filteredTotals = React.useMemo(() => {
     const now = new Date();
-    const currentYear = now.getFullYear();
-    
+    const startOfPeriod = new Date();
+
+    if (timeframe === 'day') {
+      startOfPeriod.setHours(0, 0, 0, 0);
+    } else if (timeframe === 'week') {
+      const day = now.getDay();
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+      startOfPeriod.setDate(diff);
+      startOfPeriod.setHours(0, 0, 0, 0);
+    } else if (timeframe === 'month') {
+      startOfPeriod.setDate(1);
+      startOfPeriod.setHours(0, 0, 0, 0);
+    }
+
     let totalExpense = 0;
     let totalIncome = 0;
 
     transactions.forEach(tx => {
-      // Parse "DD/MM HH:mm" or "DD/MM"
-      const dateStr = tx.date.split(' ')[0];
-      const [dayPart, monthPart] = dateStr.split('/');
-      
-      if (!dayPart || !monthPart) return;
-      
-      const day = parseInt(dayPart);
-      const month = parseInt(monthPart) - 1;
-      
-      const txDate = new Date(currentYear, month, day);
-      // Ensure we handle year transitions (e.g. if we are in Jan and tx is from Dec)
-      if (txDate > now) {
-        txDate.setFullYear(currentYear - 1);
-      }
-      
-      let include = false;
-      const hoursInDay = 1000 * 60 * 60 * 24;
-      
-      if (timeframe === 'day') {
-        include = day === now.getDate() && month === now.getMonth();
-      } else if (timeframe === 'week') {
-        const diffDays = (now.getTime() - txDate.getTime()) / hoursInDay;
-        // Last 7 days
-        include = diffDays >= 0 && diffDays < 7;
-      } else if (timeframe === 'month') {
-        include = month === now.getMonth();
-      }
-      
-      if (include) {
+      if (tx.timestamp >= startOfPeriod.getTime()) {
         if (tx.type === 'EXPENSE') totalExpense += tx.amount;
         else totalIncome += tx.amount;
       }
@@ -246,13 +232,20 @@ export default function Home({
             transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
             className="relative z-10 p-6 h-full w-full flex flex-col justify-center"
           >
+            <button 
+              onClick={(e) => { e.stopPropagation(); setShowCalculator(true); }}
+              className="absolute top-4 right-4 w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-slate-800 hover:bg-white/40 transition-all active:scale-95 shadow-sm border border-white/30"
+            >
+              <Sigma size={20} />
+            </button>
+
             <div className="flex items-center gap-2 mb-1">
               <div className={`w-2 h-2 rounded-full ${widgetMode === 'balance' ? 'bg-emerald-600 animate-pulse' : 'bg-slate-400'}`} />
               <h2 className="text-slate-900/60 font-bold uppercase tracking-widest text-[10px]">
                 {widgetMode === 'balance' ? t.dansMaPoche : t.depensesHebdo}
               </h2>
             </div>
-
+ 
             <div className="flex items-baseline gap-2">
               <div className="text-4xl font-black text-slate-900 tracking-tighter">
                 {widgetMode === 'balance' 
@@ -273,34 +266,69 @@ export default function Home({
         </AnimatePresence>
       </div>
 
-      {/* Credits Buttons - Matching summary card style exactly */}
-      <div className="grid grid-cols-2 gap-3 mb-8">
-        <div 
-          onClick={onNavigateToCredits}
-          className="p-4 rounded-2xl border-2 border-indigo-100 bg-indigo-50/30 relative overflow-hidden group cursor-pointer transition-all hover:border-indigo-200 hover:shadow-sm active:scale-[0.98]"
-        >
-          <div className="relative z-10">
-            <p className="text-[10px] text-slate-400 mb-1 font-black uppercase tracking-widest">{ct.oweMe}</p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl font-black text-indigo-600 leading-none">{totalOweMe}</span>
-              <span className="text-[10px] font-bold text-indigo-400 uppercase">{currency}</span>
-            </div>
-          </div>
-          <TrendingUp className="absolute -right-2 -bottom-2 text-indigo-500/10 rotate-12 group-hover:scale-110 transition-transform" size={48} />
-        </div>
+      <AnimatePresence>
+        {showCalculator && (
+          <CalculatorModal onClose={() => setShowCalculator(false)} />
+        )}
+      </AnimatePresence>
 
-        <div 
-          onClick={onNavigateToCredits}
-          className="p-4 rounded-2xl border-2 border-amber-100 bg-amber-50/30 relative overflow-hidden group cursor-pointer transition-all hover:border-amber-200 hover:shadow-sm active:scale-[0.98]"
+      {/* Quick Actions - Modern Redesign (Moved up) */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <button 
+          onClick={() => onAddClick('EXPENSE')}
+          className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-rose-100 hover:bg-rose-50/30 active:scale-95 shadow-sm"
         >
-          <div className="relative z-10">
-            <p className="text-[10px] text-slate-400 mb-1 font-black uppercase tracking-widest">{ct.iOwe}</p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl font-black text-amber-600 leading-none">{totalIOwe}</span>
-              <span className="text-[10px] font-bold text-amber-400 uppercase">{currency}</span>
-            </div>
+          <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+            <ShoppingBag size={24} strokeWidth={2.5} />
           </div>
-          <TrendingDown className="absolute -right-2 -bottom-2 text-amber-500/10 rotate-12 group-hover:scale-110 transition-transform" size={48} />
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-rose-600 transition-colors">
+            {t.ajouterAchat}
+          </span>
+        </button>
+        <button 
+          onClick={() => onAddClick('INCOME')}
+          className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-teal-100 hover:bg-teal-50/30 active:scale-95 shadow-sm"
+        >
+          <div className="w-12 h-12 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+            <ArrowDownToLine size={24} strokeWidth={2.5} />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-teal-600 transition-colors">
+            {t.ajouterRetrait}
+          </span>
+        </button>
+      </div>
+
+      {/* Credits Buttons - Matching summary card style exactly */}
+      <div className="mb-8">
+        <h3 className="text-slate-900 font-black tracking-tight mb-4 px-1">Total Crédit</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <div 
+            onClick={onNavigateToCredits}
+            className="p-4 rounded-2xl border-2 border-indigo-100 bg-indigo-50/30 relative overflow-hidden group cursor-pointer transition-all hover:border-indigo-200 hover:shadow-sm active:scale-[0.98]"
+          >
+            <div className="relative z-10">
+              <p className="text-[10px] text-slate-400 mb-1 font-black uppercase tracking-widest">{ct.oweMe}</p>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xl font-black text-indigo-600 leading-none">{totalOweMe}</span>
+                <span className="text-[10px] font-bold text-indigo-400 uppercase">{currency}</span>
+              </div>
+            </div>
+            <TrendingUp className="absolute -right-2 -bottom-2 text-indigo-500/10 rotate-12 group-hover:scale-110 transition-transform" size={48} />
+          </div>
+
+          <div 
+            onClick={onNavigateToCredits}
+            className="p-4 rounded-2xl border-2 border-amber-100 bg-amber-50/30 relative overflow-hidden group cursor-pointer transition-all hover:border-amber-200 hover:shadow-sm active:scale-[0.98]"
+          >
+            <div className="relative z-10">
+              <p className="text-[10px] text-slate-400 mb-1 font-black uppercase tracking-widest">{ct.iOwe}</p>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xl font-black text-amber-600 leading-none">{totalIOwe}</span>
+                <span className="text-[10px] font-bold text-amber-400 uppercase">{currency}</span>
+              </div>
+            </div>
+            <TrendingDown className="absolute -right-2 -bottom-2 text-amber-500/10 rotate-12 group-hover:scale-110 transition-transform" size={48} />
+          </div>
         </div>
       </div>
 
@@ -347,32 +375,6 @@ export default function Home({
             <Plus className="absolute -right-2 -bottom-2 text-bank-blue/10 rotate-12 group-hover:scale-110 transition-transform" size={48} />
           </div>
         </div>
-      </div>
-
-      {/* Quick Actions - Modern Redesign */}
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <button 
-          onClick={() => onAddClick('EXPENSE')}
-          className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-rose-100 hover:bg-rose-50/30 active:scale-95 shadow-sm"
-        >
-          <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
-            <ShoppingBag size={24} strokeWidth={2.5} />
-          </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-rose-600 transition-colors">
-            {t.ajouterAchat}
-          </span>
-        </button>
-        <button 
-          onClick={() => onAddClick('INCOME')}
-          className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-teal-100 hover:bg-teal-50/30 active:scale-95 shadow-sm"
-        >
-          <div className="w-12 h-12 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
-            <ArrowDownToLine size={24} strokeWidth={2.5} />
-          </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-teal-600 transition-colors">
-            {t.ajouterRetrait}
-          </span>
-        </button>
       </div>
 
       {/* Recent Activity */}
@@ -602,5 +604,117 @@ export default function Home({
         </AnimatePresence>
       </div>
     </motion.div>
+  );
+}
+
+function CalculatorModal({ onClose }: { onClose: () => void }) {
+  const [display, setDisplay] = useState('0');
+  const [prevValue, setPrevValue] = useState<number | null>(null);
+  const [operator, setOperator] = useState<string | null>(null);
+  const [waitingForOperand, setWaitingForOperand] = useState(false);
+
+  const clear = () => {
+    setDisplay('0');
+    setPrevValue(null);
+    setOperator(null);
+    setWaitingForOperand(false);
+  };
+
+  const inputDigit = (digit: string) => {
+    if (waitingForOperand) {
+      setDisplay(digit);
+      setWaitingForOperand(false);
+    } else {
+      setDisplay(display === '0' ? digit : display + digit);
+    }
+  };
+
+  const inputDot = () => {
+    if (waitingForOperand) {
+      setDisplay('0.');
+      setWaitingForOperand(false);
+    } else if (display.indexOf('.') === -1) {
+      setDisplay(display + '.');
+    }
+  };
+
+  const performOperation = (nextOperator: string) => {
+    const inputValue = parseFloat(display);
+
+    if (prevValue === null) {
+      setPrevValue(inputValue);
+    } else if (operator) {
+      const currentValue = prevValue || 0;
+      let newValue = currentValue;
+
+      switch (operator) {
+        case '+': newValue = currentValue + inputValue; break;
+        case '-': newValue = currentValue - inputValue; break;
+        case 'x': newValue = currentValue * inputValue; break;
+        case '/': newValue = currentValue / inputValue; break;
+        default: newValue = inputValue;
+      }
+      setPrevValue(newValue);
+      setDisplay(String(newValue));
+    }
+
+    setWaitingForOperand(true);
+    setOperator(nextOperator);
+  };
+
+  return (
+    <>
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[1000] max-w-md mx-auto"
+      />
+      <motion.div 
+        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[1001] bg-slate-900 p-4 rounded-[28px] w-[260px] shadow-2xl border border-white/10"
+      >
+        {/* Display */}
+        <div className="bg-slate-800/50 rounded-xl p-4 mb-3 text-right overflow-hidden shadow-inner border border-white/5">
+          <div className="text-[8px] h-3 font-black uppercase text-teal-400/50 tracking-widest mb-1 italic">
+            {prevValue !== null ? `${prevValue} ${operator || ''}` : 'Masrof Calc'}
+          </div>
+          <div className="text-2xl font-black text-white tracking-tighter truncate">
+            {display}
+          </div>
+        </div>
+
+        {/* Keypad */}
+        <div className="grid grid-cols-4 gap-2">
+          <button onClick={clear} className="h-10 rounded-xl bg-slate-800 text-rose-500 font-black text-sm active:scale-95 transition-all">C</button>
+          <button onClick={() => performOperation('/')} className="h-10 rounded-xl bg-slate-800/50 text-teal-400 font-black text-sm active:scale-95 transition-all">/</button>
+          <button onClick={() => performOperation('x')} className="h-10 rounded-xl bg-slate-800/50 text-teal-400 font-black text-sm active:scale-95 transition-all">x</button>
+          <button onClick={onClose} className="h-10 rounded-xl bg-rose-500/20 text-rose-500 font-black flex items-center justify-center active:scale-95 transition-all">
+            <X size={14} alt="Close calculator" />
+          </button>
+
+          {[7, 8, 9].map(n => (
+            <button key={n} onClick={() => inputDigit(String(n))} className="h-10 rounded-xl bg-slate-800 text-white font-black text-sm active:scale-95 transition-all hover:bg-slate-750">{n}</button>
+          ))}
+          <button onClick={() => performOperation('-')} className="h-10 rounded-xl bg-slate-800/50 text-teal-400 font-black text-lg active:scale-95 transition-all">-</button>
+
+          {[4, 5, 6].map(n => (
+            <button key={n} onClick={() => inputDigit(String(n))} className="h-10 rounded-xl bg-slate-800 text-white font-black text-sm active:scale-95 transition-all hover:bg-slate-750">{n}</button>
+          ))}
+          <button onClick={() => performOperation('+')} className="h-10 rounded-xl bg-slate-800/50 text-teal-400 font-black text-lg active:scale-95 transition-all">+</button>
+
+          {[1, 2, 3].map(n => (
+            <button key={n} onClick={() => inputDigit(String(n))} className="h-10 rounded-xl bg-slate-800 text-white font-black text-sm active:scale-95 transition-all hover:bg-slate-750">{n}</button>
+          ))}
+          <button onClick={() => performOperation('=')} className="h-10 rounded-xl bg-teal-500 text-white font-black text-lg row-span-2 active:scale-95 transition-all shadow-[0_0_15px_rgba(20,184,166,0.3)]">=</button>
+
+          <button onClick={() => inputDigit('0')} className="h-10 rounded-xl bg-slate-800 text-white font-black text-sm col-span-2 active:scale-95 transition-all hover:bg-slate-750">0</button>
+          <button onClick={inputDot} className="h-10 rounded-xl bg-slate-800 text-white font-black text-sm active:scale-95 transition-all">.</button>
+        </div>
+      </motion.div>
+    </>
   );
 }

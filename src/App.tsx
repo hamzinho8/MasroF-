@@ -13,14 +13,16 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Home from './components/Home';
+import Statistics from './components/Statistics';
 import Credits from './components/Credits';
 import HistoryView from './components/History';
 import SettingsView from './components/Settings';
 import MasrofLogo from './components/Logo';
 import AddTransactionModal from './components/AddTransactionModal';
-import { Transaction, Reminder, CreditEntry } from './types';
+import { Transaction, Reminder, CreditEntry, PredefinedItem } from './types';
+import { INITIAL_PREDEFINED_ITEMS } from './constants';
 
-type Tab = 'home' | 'history' | 'credits' | 'settings';
+type Tab = 'home' | 'stats' | 'history' | 'credits' | 'settings';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -39,6 +41,7 @@ export default function App() {
       historique: 'Historique',
       credits: 'Crédits',
       options: 'Options',
+      stats: 'Stat',
       trésorerie: 'Votre trésorerie, simplifiée',
       owedToMe: 'On me doit',
       owedByMe: 'Je dois',
@@ -48,6 +51,7 @@ export default function App() {
       historique: 'السجل',
       credits: 'ديون',
       options: 'الإعدادات',
+      stats: 'الإحصائيات',
       trésorerie: 'خزينتك، بكل بساطة',
       owedToMe: 'مستحقات لي',
       owedByMe: 'ديون علي',
@@ -57,6 +61,7 @@ export default function App() {
       historique: 'History',
       credits: 'Credits',
       options: 'Settings',
+      stats: 'Stats',
       trésorerie: 'Your treasury, simplified',
       owedToMe: 'Owed to me',
       owedByMe: 'I owe',
@@ -67,6 +72,56 @@ export default function App() {
     { id: '1', name: 'Ahmed', amount: 500, type: 'OWE_ME', date: '01/05/2024' },
     { id: '2', name: 'Boutique Ali', amount: 120, type: 'I_OWE', date: '03/05/2024' },
   ]);
+
+  const [predefinedItems, setPredefinedItems] = useState<PredefinedItem[]>(() => {
+    const saved = localStorage.getItem('predefinedItems');
+    if (saved) {
+      let items = JSON.parse(saved);
+      // Migration: Rename Cisset to Sucette and update icons
+      let migrated = false;
+      items = items.map((item: any) => {
+        if (item.name === 'Cisset') {
+          migrated = true;
+          return { ...item, name: 'Sucette', iconName: 'Candy' };
+        }
+        if (item.name === 'Danone' && item.iconName !== 'Milk') {
+          migrated = true;
+          return { ...item, iconName: 'Milk' };
+        }
+        if (item.name === 'Cafe grain' && item.iconName !== 'Bean') {
+          migrated = true;
+          return { ...item, iconName: 'Bean' };
+        }
+        if ((item.name === 'Gaz' || item.name === 'gaz') && item.iconName !== 'Cylinder') {
+          migrated = true;
+          return { ...item, name: 'Gaz', iconName: 'Cylinder' };
+        }
+        if (item.name === 'Cigarette' && (item.iconName !== 'Cigarette' || item.price !== 30)) {
+          migrated = true;
+          return { ...item, frequent: true, category: 'Loisirs', iconName: 'Cigarette', price: 30 };
+        }
+        return item;
+      });
+
+      // Ensure Gaz exists if not present (as it's a new default)
+      const hasGaz = items.some((item: any) => item.name === 'Gaz');
+      if (!hasGaz) {
+        migrated = true;
+        const gazItem = INITIAL_PREDEFINED_ITEMS.find(i => i.name === 'Gaz');
+        if (gazItem) items.push(gazItem);
+      }
+
+      if (migrated) {
+        localStorage.setItem('predefinedItems', JSON.stringify(items));
+      }
+      return items;
+    }
+    return INITIAL_PREDEFINED_ITEMS;
+  });
+
+  React.useEffect(() => {
+    localStorage.setItem('predefinedItems', JSON.stringify(predefinedItems));
+  }, [predefinedItems]);
 
   const t = translations[language as keyof typeof translations] || translations['Français'];
   const isRtl = language === 'العربية';
@@ -81,13 +136,13 @@ export default function App() {
   }, []);
   const [balance, setBalance] = useState(1450.50);
   const [transactions, setTransactions] = useState<Transaction[]>([
-    { id: '1', label: 'Tirage Banque', amount: 2000, type: 'INCOME', date: '03/05 18:23' },
-    { id: '2', label: 'Achat Market', amount: 840, type: 'EXPENSE', category: 'Shopping', date: '03/05 12:45' },
-    { id: '3', label: 'Café & Snack', amount: 45, type: 'EXPENSE', category: 'Nourriture', date: '03/05 09:15' },
-    { id: '4', label: 'Carburant', amount: 300, type: 'EXPENSE', category: 'Transport', date: '02/05 15:30' },
-    { id: '5', label: 'Dîner Restaurant', amount: 250, type: 'EXPENSE', category: 'Nourriture', date: '02/05 21:00' },
-    { id: '6', label: 'Virement Reçu', amount: 5000, type: 'INCOME', date: '01/05 10:00' },
-    { id: '7', label: 'Loyer', amount: 3500, type: 'EXPENSE', category: 'Autres', date: '01/05 08:00' },
+    { id: '1', label: 'Tirage Banque', amount: 2000, type: 'INCOME', date: '03/05 18:23', timestamp: new Date(2024, 4, 3, 18, 23).getTime() },
+    { id: '2', label: 'Achat Market', amount: 840, type: 'EXPENSE', category: 'Shopping', date: '03/05 12:45', timestamp: new Date(2024, 4, 3, 12, 45).getTime() },
+    { id: '3', label: 'Café & Snack', amount: 45, type: 'EXPENSE', category: 'Nourriture', date: '03/05 09:15', timestamp: new Date(2024, 4, 3, 9, 15).getTime() },
+    { id: '4', label: 'Carburant', amount: 300, type: 'EXPENSE', category: 'Transport', date: '02/05 15:30', timestamp: new Date(2024, 4, 2, 15, 30).getTime() },
+    { id: '5', label: 'Dîner Restaurant', amount: 250, type: 'EXPENSE', category: 'Nourriture', date: '02/05 21:00', timestamp: new Date(2024, 4, 2, 21, 0).getTime() },
+    { id: '6', label: 'Virement Reçu', amount: 5000, type: 'INCOME', date: '01/05 10:00', timestamp: new Date(2024, 4, 1, 10, 0).getTime() },
+    { id: '7', label: 'Loyer', amount: 3500, type: 'EXPENSE', category: 'Autres', date: '01/05 08:00', timestamp: new Date(2024, 4, 1, 8, 0).getTime() },
   ]);
 
   const addTransaction = (label: string, amount: number, type: 'INCOME' | 'EXPENSE', category?: string) => {
@@ -97,7 +152,8 @@ export default function App() {
       amount,
       type,
       category,
-      date: new Date().toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', '')
+      date: new Date().toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', ''),
+      timestamp: Date.now()
     };
 
     setTransactions(prev => [newTx, ...prev]);
@@ -187,6 +243,15 @@ export default function App() {
             onNavigateToCredits={() => setActiveTab('credits')}
           />
         );
+      case 'stats':
+        return (
+          <Statistics 
+            transactions={transactions}
+            currency={currency}
+            language={language}
+            isDarkMode={isDarkMode}
+          />
+        );
       case 'credits':
         return (
           <Credits 
@@ -205,6 +270,7 @@ export default function App() {
             currency={currency} 
             onDelete={deleteTransaction}
             onUpdate={updateTransaction}
+            onAddClick={openModal}
           />
         );
       case 'settings':
@@ -224,6 +290,8 @@ export default function App() {
             reminders={reminders}
             onRemindersChange={setReminders}
             transactions={transactions}
+            predefinedItems={predefinedItems}
+            onPredefinedItemsChange={setPredefinedItems}
           />
         );
       default:
@@ -258,20 +326,20 @@ export default function App() {
             className={`fixed inset-0 z-[100] ${isDarkMode ? 'bg-slate-900' : 'bg-white'} flex flex-col items-center justify-center max-w-md mx-auto`}
           >
             <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
+              initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="w-40 h-40 bg-white rounded-full shadow-2xl border-4 border-slate-100 flex items-center justify-center mb-6"
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="w-80 h-80 flex items-center justify-center mb-4"
             >
-              <MasrofLogo className="w-32 h-32" currency={currency} />
+              <MasrofLogo className="w-full h-full" size="large" />
             </motion.div>
             <motion.h1 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="text-4xl font-black text-teal-600 tracking-tighter"
+              transition={{ delay: 0.5, duration: 0.6 }}
+              className={`text-6xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} tracking-tighter`}
             >
-              MasroF
+              Masro<span className="text-[#84cc16]">F</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0 }}
@@ -292,7 +360,7 @@ export default function App() {
           <TabButton 
             active={activeTab === 'home'} 
             onClick={() => setActiveTab('home')} 
-            icon={<MasrofLogo className="w-12 h-12 mt-1" />} 
+            icon={<MasrofLogo className="w-10 h-10" size="small" />} 
             label="" 
             color="teal"
             isDarkMode={isDarkMode}
@@ -311,6 +379,14 @@ export default function App() {
             icon={<HandCoins size={24} strokeWidth={3} />} 
             label={t.credits} 
             color="credits"
+            isDarkMode={isDarkMode}
+          />
+          <TabButton 
+            active={activeTab === 'stats'} 
+            onClick={() => setActiveTab('stats')} 
+            icon={<BarChart3 size={24} strokeWidth={3} />} 
+            label={(t as any).stats} 
+            color="emerald"
             isDarkMode={isDarkMode}
           />
           <TabButton 
@@ -339,6 +415,7 @@ export default function App() {
         onAdd={addTransaction}
         initialType={modalType}
         currency={currency}
+        predefinedItems={predefinedItems}
       />
     </div>
   );

@@ -18,13 +18,16 @@ import {
   Clock,
   AlarmClock,
   ArrowDownRight,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  Settings2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import MasrofLogo from './Logo';
-import { Reminder } from '../types';
+import { Reminder, PredefinedItem } from '../types';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { ICON_MAP } from '../constants';
+import { Utensils, ShoppingBag, Car, Gamepad2, MoreHorizontal } from 'lucide-react';
 
 interface SettingsProps {
   widgetMode: 'balance' | 'spending';
@@ -41,7 +44,17 @@ interface SettingsProps {
   reminders: Reminder[];
   onRemindersChange: (reminders: Reminder[]) => void;
   transactions: any[];
+  predefinedItems: PredefinedItem[];
+  onPredefinedItemsChange: (items: PredefinedItem[]) => void;
 }
+
+const CATEGORIES = [
+  { id: 'Nourriture', icon: <Utensils size={18} /> },
+  { id: 'Shopping', icon: <ShoppingBag size={18} /> },
+  { id: 'Transport', icon: <Car size={18} /> },
+  { id: 'Loisirs', icon: <Gamepad2 size={18} /> },
+  { id: 'Autres', icon: <MoreHorizontal size={18} /> },
+];
 
 export default function Settings({ 
   widgetMode, 
@@ -57,14 +70,17 @@ export default function Settings({
   onLanguageChange,
   reminders,
   onRemindersChange,
-  transactions
+  transactions,
+  predefinedItems,
+  onPredefinedItemsChange
 }: SettingsProps) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
-  const [showReminderAdd, setShowReminderAdd] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [showSelector, setShowSelector] = useState<'CURRENCY' | 'LANGUAGE' | null>(null);
+  const [showArticleManager, setShowArticleManager] = useState(false);
+  const [showReminderManager, setShowReminderManager] = useState(false);
 
   const handleReset = () => {
     setIsResetting(true);
@@ -79,19 +95,6 @@ export default function Settings({
 
   const currencies = ['DH', 'EUR', 'USD', 'MAD'];
   const languages = ['Français', 'العربية', 'English'];
-
-  const toggleReminder = (id: string) => {
-    onRemindersChange(reminders.map(r => r.id === id ? { ...r, enabled: !r.enabled } : r));
-  };
-
-  const deleteReminder = (id: string) => {
-    onRemindersChange(reminders.filter(r => r.id !== id));
-  };
-
-  const addNewReminder = (newReminder: Omit<Reminder, 'id'>) => {
-    onRemindersChange([...reminders, { ...newReminder, id: `rem-${Date.now()}` }]);
-    setShowReminderAdd(false);
-  };
 
   const exportToPDF = () => {
     const doc = new jsPDF();
@@ -213,6 +216,20 @@ export default function Settings({
               showArrow={true}
             />
             <SettingsItem 
+              icon={<Plus />} 
+              title="GESTION DES ARTICLES" 
+              subtitle={`${predefinedItems.length} ARTICLES CONFIGURÉS`} 
+              onClick={() => setShowArticleManager(true)}
+              showArrow={true}
+            />
+            <SettingsItem 
+              icon={<Bell />} 
+              title="GESTION DES RAPPELS" 
+              subtitle={`${reminders.length} RAPPELS ACTIFS`} 
+              onClick={() => setShowReminderManager(true)}
+              showArrow={true}
+            />
+            <SettingsItem 
               icon={<Download />} 
               title="EXPORTER MES DONNÉES" 
               subtitle="Télécharger un rapport PDF" 
@@ -221,41 +238,7 @@ export default function Settings({
             />
           </div>
 
-          {/* Section: Rappels Programmé */}
-          <div className="py-6 px-0 bg-gradient-to-b from-[#F0F7F8] to-white">
-            <h3 className="text-[10px] font-display font-black text-teal-brand/50 uppercase tracking-[0.3em] flex items-center gap-2 px-6">
-                Rappels de Notification
-              </h3>
-            
-            <div className="space-y-0">
-              {reminders.map((reminder) => (
-                <div 
-                  key={reminder.id}
-                  className="px-6 py-4 flex items-center gap-4 bg-white/40 border-y border-[#2D8B96]/5 backdrop-blur-sm"
-                >
-                  <div className="w-10 h-10 rounded-full border border-[#2D8B96]/30 flex items-center justify-center text-[#2D8B96] shadow-[0_0_10px_rgba(45,139,150,0.1)]">
-                    {reminder.type === 'ACHAT' ? <CreditCard size={18} /> : <ArrowDownRight size={18} />}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-[#1B5E66] uppercase tracking-tight">{reminder.title}</p>
-                    <p className="text-[10px] font-black text-[#2D8B96] tracking-widest">{reminder.time}</p>
-                  </div>
-                  <Switch 
-                    active={reminder.enabled} 
-                    onToggle={() => toggleReminder(reminder.id)} 
-                  />
-                </div>
-              ))}
-              {reminders.length === 0 && (
-                <p className="text-center py-4 text-[10px] font-bold text-slate-300 uppercase tracking-widest italic">Aucune séquence active</p>
-              )}
-            </div>
-          </div>
-
-          <div className="py-10 px-0">
-            <h3 className="text-[10px] font-display font-black text-teal-brand/50 uppercase tracking-[0.3em] mb-6 px-6">
-              PRÉFÉRENCES GÉNÉRALES
-            </h3>
+          <div className="py-2 px-0">
             <div className="px-6 py-4 flex items-center gap-4 bg-white/40 border-y border-[#2D8B96]/5">
               <div className="w-10 h-10 rounded-full border border-[#2D8B96]/30 flex items-center justify-center text-[#2D8B96] shadow-[0_0_10px_rgba(45,139,150,0.1)]">
                 <Moon size={18} />
@@ -279,7 +262,7 @@ export default function Settings({
           </div>
 
           {/* Section: Widget Data */}
-          <div className="py-8 px-6 bg-[#F0F7F8]/30">
+          <div className="py-4 px-6 bg-[#F0F7F8]/30">
             <h3 className="text-[11px] font-black text-[#1B5E66] uppercase tracking-[0.4em] mb-6 flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-[#2D8B96] rounded-full shadow-[0_0_8px_#2D8B96]" />
               DONNÉES DU WIDGET
@@ -301,7 +284,7 @@ export default function Settings({
           </div>
 
           {/* Section: Intelligence IA */}
-          <div className="py-6 px-0">
+          <div className="py-4 px-0">
             <h3 className="text-[11px] font-black text-[#1B5E66] uppercase tracking-[0.4em] mb-4 px-6 flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-[#2D8B96] rounded-full shadow-[0_0_8px_#2D8B96]" />
               INTELLIGENCE IA
@@ -369,10 +352,26 @@ export default function Settings({
         )}
       </AnimatePresence>
 
-      {/* Reminder Add Modal */}
+      {/* Article Manager Modal */}
       <AnimatePresence>
-        {showReminderAdd && (
-          <ReminderForm onClose={() => setShowReminderAdd(false)} onSave={addNewReminder} />
+        {showArticleManager && (
+          <ArticleManagerModal 
+            onClose={() => setShowArticleManager(false)} 
+            items={predefinedItems}
+            onItemsChange={onPredefinedItemsChange}
+            currency={currency}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Reminder Manager Modal */}
+      <AnimatePresence>
+        {showReminderManager && (
+          <ReminderManagerModal 
+            onClose={() => setShowReminderManager(false)} 
+            reminders={reminders}
+            onRemindersChange={onRemindersChange}
+          />
         )}
       </AnimatePresence>
 
@@ -494,6 +493,237 @@ function Switch({ active, onToggle }: { active: boolean, onToggle: () => void })
   );
 }
 
+function ReminderManagerModal({ onClose, reminders, onRemindersChange }: { onClose: () => void, reminders: Reminder[], onRemindersChange: (reminders: Reminder[]) => void }) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  const handleUpdate = (id: string, updates: Partial<Reminder>) => {
+    onRemindersChange(reminders.map(r => r.id === id ? { ...r, ...updates } : r));
+  };
+
+  const handleAdd = (newReminder: Omit<Reminder, 'id'>) => {
+    onRemindersChange([...reminders, { ...newReminder, id: `rem-${Date.now()}` }]);
+    setShowAddForm(false);
+  };
+
+  const handleDelete = (id: string) => {
+    onRemindersChange(reminders.filter(r => r.id !== id));
+  };
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[110] max-w-md mx-auto"
+      />
+      <motion.div
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        exit={{ y: '100%' }}
+        className="fixed inset-x-0 bottom-0 z-[120] bg-white rounded-t-[40px] p-8 max-w-md mx-auto shadow-2xl max-h-[90vh] overflow-y-auto"
+      >
+        <div className="flex justify-between items-center mb-8">
+          <h3 className="text-xl font-black text-teal-brand tracking-tight uppercase italic">Gestion des Rappels</h3>
+          <button onClick={onClose} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
+            <X size={20} />
+          </button>
+        </div>
+
+        <button 
+          onClick={() => setShowAddForm(true)}
+          className="w-full mb-8 py-4 bg-teal-brand/10 border border-dashed border-teal-brand/30 rounded-2xl flex items-center justify-center gap-2 text-teal-brand font-black uppercase text-xs tracking-widest hover:bg-teal-brand/20 transition-all"
+        >
+          <Plus size={16} />
+          Nouveau Rappel
+        </button>
+
+        <AnimatePresence>
+          {showAddForm && (
+            <div className="mb-10 p-6 bg-slate-50 rounded-[32px] border border-teal-brand/10 relative">
+              <button 
+                onClick={() => setShowAddForm(false)}
+                className="absolute top-4 right-4 text-slate-300 hover:text-slate-500"
+              >
+                <X size={16} />
+              </button>
+              <ReminderFormFields onSave={handleAdd} onCancel={() => setShowAddForm(false)} />
+            </div>
+          )}
+        </AnimatePresence>
+
+        <div className="space-y-3">
+          <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Vos Rappels ({reminders.length})</label>
+          {reminders.map(reminder => {
+            const isEditing = editingId === reminder.id;
+            return (
+              <div 
+                key={reminder.id} 
+                className="bg-white border border-slate-100 rounded-3xl p-4 flex items-center gap-4 transition-all hover:shadow-md group shadow-sm"
+              >
+                <div className="w-10 h-10 rounded-xl bg-teal-brand/5 flex items-center justify-center text-teal-brand">
+                  {reminder.type === 'ACHAT' ? <CreditCard size={18} /> : <ArrowDownRight size={18} />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  {isEditing ? (
+                    <div className="space-y-3 p-2 bg-slate-50 rounded-2xl border border-teal-brand/5">
+                      <input 
+                        type="text" 
+                        value={reminder.title}
+                        onChange={e => handleUpdate(reminder.id, { title: e.target.value })}
+                        className="w-full bg-white border-none px-3 py-2 text-sm font-bold rounded-xl"
+                        placeholder="Titre"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <input 
+                          type="time" 
+                          value={reminder.time}
+                          onChange={e => handleUpdate(reminder.id, { time: e.target.value })}
+                          className="bg-white border-none px-3 py-2 text-sm font-bold rounded-xl"
+                        />
+                        <button 
+                          onClick={() => setEditingId(null)}
+                          className="bg-teal-brand text-white text-[10px] font-black uppercase rounded-xl"
+                        >
+                          OK
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-sm font-black text-slate-800 uppercase tracking-tight">{reminder.title}</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{reminder.time} • {reminder.frequency}</p>
+                    </>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch active={reminder.enabled} onToggle={() => handleUpdate(reminder.id, { enabled: !reminder.enabled })} />
+                  <button 
+                    onClick={() => setEditingId(isEditing ? null : reminder.id)}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center ${isEditing ? 'bg-teal-brand text-white' : 'bg-slate-100 text-slate-400'}`}
+                  >
+                    {isEditing ? <Check size={14} /> : <Settings2 size={14} />}
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(reminder.id)}
+                    className="w-8 h-8 rounded-full bg-rose-50 text-rose-400 flex items-center justify-center transition-opacity"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+          {reminders.length === 0 && !showAddForm && (
+            <div className="text-center py-10 opacity-30">
+              <Bell size={40} className="mx-auto mb-2" />
+              <p className="text-[10px] font-black uppercase tracking-widest">Aucun rappel actif</p>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </>
+  );
+}
+
+function ReminderFormFields({ onSave, onCancel }: { onSave: (reminder: Omit<Reminder, 'id'>) => void, onCancel: () => void }) {
+  const [title, setTitle] = useState('');
+  const [time, setTime] = useState('08:00');
+  const [date, setDate] = useState('');
+  const [frequency, setFrequency] = useState<'ONCE' | 'DAILY' | 'WEEKLY' | 'MONTHLY'>('ONCE');
+  const [type, setType] = useState<'ACHAT' | 'RETRAIT' | 'AUTRE'>('AUTRE');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title) return;
+    onSave({ title, time, date, type, frequency, enabled: true });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-2">
+        <label className="text-[10px] font-black uppercase text-[#1B5E66]/40 tracking-widest ml-1">Type de Rappel</label>
+        <div className="grid grid-cols-3 gap-3">
+          {(['ACHAT', 'RETRAIT', 'AUTRE'] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setType(t)}
+              className={`p-3 rounded-2xl border text-[10px] font-black uppercase tracking-wider transition-all ${type === t ? 'border-[#2D8B96] bg-[#2D8B96]/10 text-[#1B5E66] shadow-[0_0_10px_rgba(45,139,150,0.1)]' : 'border-[#2D8B96]/10 text-[#1B5E66]/40'}`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="space-y-2">
+        <label className="text-[10px] font-black uppercase text-[#1B5E66]/40 tracking-widest ml-1">Titre / Description</label>
+        <input 
+          type="text" 
+          placeholder="ex: Rappel mensuel..."
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="w-full h-14 bg-white border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] placeholder-[#1B5E66]/20 outline-none focus:border-[#2D8B96] focus:shadow-[0_0_15px_rgba(45,139,150,0.2)] transition-all"
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <label className="text-[10px] font-black uppercase text-[#1B5E66]/40 tracking-widest ml-1">Fréquence</label>
+        <div className="grid grid-cols-2 gap-3">
+          {(['ONCE', 'DAILY', 'WEEKLY', 'MONTHLY'] as const).map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setFrequency(f)}
+              className={`p-3 rounded-2xl border text-[10px] font-black uppercase tracking-wider transition-all ${frequency === f ? 'border-[#2D8B96] bg-[#2D8B96]/10 text-[#1B5E66] shadow-[0_0_10px_rgba(45,139,150,0.1)]' : 'border-[#2D8B96]/10 text-[#1B5E66]/40'}`}
+            >
+              {f === 'ONCE' ? 'Une fois' : f === 'DAILY' ? 'Chaque jour' : f === 'WEEKLY' ? 'Hebdo' : 'Mensuel'}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-[10px] font-black uppercase text-[#1B5E66]/40 tracking-widest ml-1">Heure</label>
+          <input 
+            type="time" 
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            className="w-full h-14 bg-white border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none"
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-[10px] font-black uppercase text-[#1B5E66]/40 tracking-widest ml-1">Date</label>
+          <input 
+            type="date" 
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="w-full h-14 bg-white border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none"
+          />
+        </div>
+      </div>
+      <div className="flex gap-3">
+        <button 
+          type="button" 
+          onClick={onCancel}
+          className="flex-1 h-14 bg-slate-100 text-slate-400 font-black rounded-2xl uppercase tracking-widest text-[10px]"
+        >
+          Annuler
+        </button>
+        <button 
+          type="submit" 
+          className="flex-2 h-14 bg-[#2D8B96] text-white font-black rounded-2xl shadow-[0_0_20px_rgba(45,139,150,0.4)] uppercase tracking-widest active:scale-95 transition-all text-[10px] italic"
+        >
+          Activer le Rappel
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function ReminderForm({ onClose, onSave }: { onClose: () => void, onSave: (reminder: Omit<Reminder, 'id'>) => void }) {
   const [title, setTitle] = useState('');
   const [time, setTime] = useState('08:00');
@@ -598,6 +828,171 @@ function ReminderForm({ onClose, onSave }: { onClose: () => void, onSave: (remin
             ACTIVER LE RAPPEL
           </button>
         </form>
+      </motion.div>
+    </>
+  );
+}
+
+function ArticleManagerModal({ onClose, items, onItemsChange, currency }: { onClose: () => void, items: PredefinedItem[], onItemsChange: (items: PredefinedItem[]) => void, currency: string }) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [newItem, setNewItem] = useState<{name: string, price: string, category: string, frequent: boolean, iconName: string}>({
+    name: '',
+    price: '',
+    category: 'Nourriture',
+    frequent: false,
+    iconName: 'Box'
+  });
+
+  const handleUpdate = (id: string, updates: Partial<PredefinedItem>) => {
+    onItemsChange(items.map(item => item.id === id ? { ...item, ...updates } : item));
+  };
+
+  const handleAdd = () => {
+    if (!newItem.name || !newItem.price) return;
+    const item: PredefinedItem = {
+      id: `item-${Date.now()}`,
+      name: newItem.name,
+      price: parseFloat(newItem.price),
+      category: newItem.category,
+      frequent: newItem.frequent,
+      iconName: newItem.iconName
+    };
+    onItemsChange([...items, item]);
+    setNewItem({ name: '', price: '', category: 'Nourriture', frequent: false, iconName: 'Box' });
+  };
+
+  const handleDelete = (id: string) => {
+    onItemsChange(items.filter(item => item.id !== id));
+  };
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[110] max-w-md mx-auto"
+      />
+      <motion.div
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        exit={{ y: '100%' }}
+        className="fixed inset-x-0 bottom-0 z-[120] bg-white rounded-t-[40px] p-8 max-w-md mx-auto shadow-2xl max-h-[90vh] overflow-y-auto"
+      >
+        <div className="flex justify-between items-center mb-8">
+          <h3 className="text-xl font-black text-teal-brand tracking-tight uppercase italic">Gestion des Articles</h3>
+          <button onClick={onClose} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="space-y-4 mb-10">
+          <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Ajouter un Article</label>
+          <div className="bg-slate-50 p-4 rounded-3xl border border-teal-brand/10 space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <input 
+                type="text" 
+                placeholder="Nom" 
+                value={newItem.name}
+                onChange={e => setNewItem({...newItem, name: e.target.value})}
+                className="bg-white border border-teal-brand/5 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-teal-brand"
+              />
+              <input 
+                type="number" 
+                placeholder="Prix" 
+                value={newItem.price}
+                onChange={e => setNewItem({...newItem, price: e.target.value})}
+                className="bg-white border border-teal-brand/5 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-teal-brand"
+              />
+            </div>
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {CATEGORIES.map(cat => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setNewItem({...newItem, category: cat.id})}
+                  className={`flex-shrink-0 px-3 py-2 rounded-xl border text-[9px] font-black uppercase tracking-wider transition-all ${newItem.category === cat.id ? 'border-teal-brand bg-teal-brand text-white shadow-md shadow-teal-brand/20' : 'border-teal-brand/10 text-teal-brand/50 bg-white'}`}
+                >
+                  {cat.id}
+                </button>
+              ))}
+            </div>
+            <label className="flex items-center gap-3 py-2 px-1 cursor-pointer">
+              <Switch active={newItem.frequent} onToggle={() => setNewItem({...newItem, frequent: !newItem.frequent})} />
+              <span className="text-[10px] font-black uppercase text-teal-brand/60 tracking-wider">Achat fréquent ?</span>
+            </label>
+            <button 
+              onClick={handleAdd}
+              disabled={!newItem.name || !newItem.price}
+              className="w-full h-12 bg-teal-brand text-white font-black rounded-xl shadow-lg shadow-teal-brand/20 uppercase tracking-widest text-[11px] disabled:opacity-50"
+            >
+              Ajouter à la liste
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Articles Existants ({items.length})</label>
+          {items.map(item => {
+            const IconComp = (ICON_MAP[item.iconName] || ICON_MAP['Box']) as React.ElementType;
+            const isEditing = editingId === item.id;
+            
+            return (
+              <div 
+                key={item.id} 
+                className="bg-white border border-slate-100 rounded-3xl p-4 flex items-center gap-4 transition-all hover:shadow-md group shadow-sm"
+              >
+                <div className="w-10 h-10 rounded-xl bg-teal-brand/5 flex items-center justify-center text-teal-brand">
+                  <IconComp size={18} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  {isEditing ? (
+                    <div className="flex flex-col gap-2">
+                      <input 
+                        type="text" 
+                        value={item.name}
+                        onChange={e => handleUpdate(item.id, { name: e.target.value })}
+                        className="bg-slate-50 border-none px-2 py-1 text-sm font-bold rounded"
+                      />
+                      <input 
+                        type="number" 
+                        value={item.price}
+                        onChange={e => handleUpdate(item.id, { price: parseFloat(e.target.value) })}
+                        className="bg-slate-50 border-none px-2 py-1 text-sm font-bold rounded"
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-sm font-black text-slate-800 uppercase tracking-tight">{item.name}</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{item.price} {currency} • {item.category}</p>
+                    </>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => handleUpdate(item.id, { frequent: !item.frequent })}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${item.frequent ? 'bg-amber-400 text-white' : 'bg-slate-100 text-slate-300'}`}
+                  >
+                    <Sparkles size={14} fill={item.frequent ? 'currentColor' : 'none'} />
+                  </button>
+                  <button 
+                    onClick={() => setEditingId(isEditing ? null : item.id)}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center ${isEditing ? 'bg-teal-brand text-white' : 'bg-slate-100 text-slate-400'}`}
+                  >
+                    {isEditing ? <Check size={14} /> : <Settings2 size={14} />}
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(item.id)}
+                    className="w-8 h-8 rounded-full bg-rose-50 text-rose-400 flex items-center justify-center transition-opacity"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </motion.div>
     </>
   );

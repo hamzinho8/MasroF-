@@ -1,3 +1,12 @@
+export interface PredefinedItem {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  iconName: string;
+  frequent: boolean;
+}
+
 export interface Transaction {
   id: string;
   label: string;
@@ -5,6 +14,7 @@ export interface Transaction {
   type: 'INCOME' | 'EXPENSE';
   category?: string;
   date: string;
+  timestamp: number;
 }
 
 export interface Reminder {

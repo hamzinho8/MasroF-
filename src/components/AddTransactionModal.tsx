@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, 
@@ -7,8 +7,10 @@ import {
   ShoppingBag, 
   Car, 
   Gamepad2, 
-  MoreHorizontal 
+  MoreHorizontal
 } from 'lucide-react';
+import { PredefinedItem } from '../types';
+import { ICON_MAP } from '../constants';
 
 interface Category {
   id: string;
@@ -19,11 +21,11 @@ interface Category {
 }
 
 const CATEGORIES: Category[] = [
-  { id: 'Nourriture', label: 'Nourriture', icon: <Utensils size={18} />, color: 'text-[#1B5E66]', bgColor: 'bg-[#2D8B96]/10' },
+  { id: 'Nourriture', label: 'Nourriture', icon: <Utensils size={18} />, color: 'text-teal-700', bgColor: 'bg-teal-100' },
   { id: 'Shopping', label: 'Shopping', icon: <ShoppingBag size={18} />, color: 'text-rose-600', bgColor: 'bg-rose-100' },
   { id: 'Transport', label: 'Transport', icon: <Car size={18} />, color: 'text-sky-600', bgColor: 'bg-sky-100' },
   { id: 'Loisirs', label: 'Loisirs', icon: <Gamepad2 size={18} />, color: 'text-purple-600', bgColor: 'bg-purple-100' },
-  { id: 'Autres', label: 'Autres', icon: <MoreHorizontal size={18} />, color: 'text-[#1B5E66]', bgColor: 'bg-[#F0F7F8]' },
+  { id: 'Autres', label: 'Autres', icon: <MoreHorizontal size={18} />, color: 'text-slate-600', bgColor: 'bg-slate-100' },
 ];
 
 interface AddTransactionModalProps {
@@ -32,13 +34,15 @@ interface AddTransactionModalProps {
   onAdd: (label: string, amount: number, type: 'INCOME' | 'EXPENSE', category?: string) => void;
   initialType: 'INCOME' | 'EXPENSE';
   currency: string;
+  predefinedItems: PredefinedItem[];
 }
 
-export default function AddTransactionModal({ isOpen, onClose, onAdd, initialType, currency }: AddTransactionModalProps) {
+export default function AddTransactionModal({ isOpen, onClose, onAdd, initialType, currency, predefinedItems }: AddTransactionModalProps) {
   const [label, setLabel] = useState('');
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>(initialType);
   const [selectedCategory, setSelectedCategory] = useState<string>('Autres');
+  const [showFrequent, setShowFrequent] = useState(true);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -46,8 +50,27 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
       setLabel('');
       setAmount('');
       setSelectedCategory('Autres');
+      setShowFrequent(true);
     }
   }, [isOpen, initialType]);
+
+  const handleCategoryClick = (catId: string) => {
+    setSelectedCategory(catId);
+    setShowFrequent(false);
+  };
+
+  const handleItemSelect = (name: string, price: number, category: string) => {
+    setLabel(name);
+    setAmount(price.toString());
+    setSelectedCategory(category);
+  };
+
+  const filteredItems = useMemo(() => {
+    if (showFrequent) {
+      return predefinedItems.filter(item => item.frequent);
+    }
+    return predefinedItems.filter(item => item.category === selectedCategory);
+  }, [showFrequent, selectedCategory, predefinedItems]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,36 +109,19 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="flex bg-slate-100 p-1.5 rounded-2xl mb-4">
-                <button
-                  type="button"
-                  onClick={() => setType('EXPENSE')}
-                  className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${type === 'EXPENSE' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'}`}
-                >
-                  Achat
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setType('INCOME')}
-                  className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${type === 'INCOME' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-400'}`}
-                >
-                  Retrait
-                </button>
-              </div>
-
               <div className="space-y-5">
                 {type === 'EXPENSE' && (
                   <>
                      <div className="space-y-2">
                       <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Catégorie</label>
-                      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+                      <div className="grid grid-cols-5 gap-2">
                         {CATEGORIES.map((cat) => (
                           <button
                             key={cat.id}
                             type="button"
-                            onClick={() => setSelectedCategory(cat.id)}
-                            className={`flex flex-col items-center gap-2 min-w-[70px] p-3 rounded-2xl border transition-all ${
-                              selectedCategory === cat.id 
+                            onClick={() => handleCategoryClick(cat.id)}
+                            className={`flex flex-col items-center gap-1.5 p-2 px-1 rounded-2xl border transition-all ${
+                              selectedCategory === cat.id && !showFrequent
                                 ? `bg-white shadow-md scale-105 border-transparent ring-2 ${
                                     cat.id === 'Nourriture' ? 'ring-teal-500/20' : 
                                     cat.id === 'Shopping' ? 'ring-rose-500/20' : 
@@ -126,11 +132,11 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                                 : 'border-slate-100 bg-slate-50 opacity-60'
                             }`}
                           >
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${cat.bgColor} ${cat.color} ${selectedCategory === cat.id ? 'scale-110' : ''} transition-transform`}>
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${cat.bgColor} ${cat.color} ${(selectedCategory === cat.id && !showFrequent) ? 'scale-110' : ''} transition-transform`}>
                               {cat.icon}
                             </div>
-                            <span className={`text-[9px] font-black uppercase tracking-tight ${
-                              selectedCategory === cat.id 
+                            <span className={`text-[8px] font-black uppercase tracking-tight text-center truncate w-full ${
+                              (selectedCategory === cat.id && !showFrequent)
                                 ? (cat.id === 'Nourriture' ? 'text-teal-600' : 
                                    cat.id === 'Shopping' ? 'text-rose-600' : 
                                    cat.id === 'Transport' ? 'text-sky-600' : 
@@ -142,6 +148,55 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                             </span>
                           </button>
                         ))}
+                      </div>
+                    </div>
+
+                    {/* Predefined Items Quick Select */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between px-1">
+                        <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest">
+                          {showFrequent ? 'Achats Fréquents' : `Articles: ${selectedCategory}`}
+                        </label>
+                        {!showFrequent && (
+                          <button 
+                            type="button" 
+                            onClick={() => setShowFrequent(true)}
+                            className="text-[9px] font-black text-teal-600 uppercase tracking-widest hover:underline"
+                          >
+                            Voir Fréquents
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <AnimatePresence mode="popLayout">
+                          {filteredItems.map((item) => {
+                            const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES[4];
+                            const IconComponent = (ICON_MAP[item.iconName] || ICON_MAP['Box']) as React.ElementType;
+                            return (
+                              <motion.button
+                                key={item.id}
+                                layout
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                type="button"
+                                onClick={() => handleItemSelect(item.name, item.price, item.category)}
+                                className={`flex items-center gap-2 px-3 py-2 rounded-full border border-slate-100 shadow-sm transition-all active:scale-95 bg-white hover:border-teal-500/30 ${label === item.name ? 'ring-2 ring-teal-500/20 border-teal-500/50' : ''}`}
+                              >
+                                <div className={`w-6 h-6 rounded-full flex items-center justify-center ${cat.bgColor} ${cat.color}`}>
+                                  <IconComponent size={14} />
+                                </div>
+                                <div className="flex flex-col items-start leading-none">
+                                  <span className="text-[11px] font-black text-slate-700">{item.name}</span>
+                                  <span className="text-[9px] font-bold text-slate-400">{item.price} {currency}</span>
+                                </div>
+                              </motion.button>
+                            );
+                          })}
+                        </AnimatePresence>
+                        {filteredItems.length === 0 && (
+                          <p className="text-[10px] text-slate-400 italic px-1 py-1">Mode manuel activé pour cette catégorie</p>
+                        )}
                       </div>
                     </div>
 

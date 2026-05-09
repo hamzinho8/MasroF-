@@ -26,16 +26,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-interface Transaction {
-  id: string;
-  label: string;
-  amount: number;
-  type: 'INCOME' | 'EXPENSE';
-  category?: string;
-  date: string;
-}
-
-
+import { Transaction } from '../types';
 
 interface HistoryProps {
   transactions: Transaction[];
@@ -43,12 +34,13 @@ interface HistoryProps {
   currency: string;
   onDelete: (id: string) => void;
   onUpdate: (id: string, tx: Partial<Transaction>) => void;
+  onAddClick: (type: 'INCOME' | 'EXPENSE') => void;
 }
 
 type FilterType = 'ALL' | 'INCOME' | 'EXPENSE';
 type SortType = 'DATE_DESC' | 'DATE_ASC' | 'AMOUNT_DESC' | 'AMOUNT_ASC';
 
-export default function History({ transactions, language, currency, onDelete, onUpdate }: HistoryProps) {
+export default function History({ transactions, language, currency, onDelete, onUpdate, onAddClick }: HistoryProps) {
   const translations = {
     'Français': {
       title: 'Historique',
@@ -62,6 +54,8 @@ export default function History({ transactions, language, currency, onDelete, on
       noResult: 'Aucune transaction ne correspond à vos critères.',
       resetFilters: 'Réinitialiser les filtres',
       exportData: 'Exporter les données (PDF)',
+      ajouterAchat: 'Ajouter Achat',
+      ajouterRetrait: 'Ajouter Retrait',
       dateRecent: 'Date (Récents)',
       dateAncien: 'Date (Anciens)',
       montantMax: 'Montant (Max)',
@@ -86,6 +80,8 @@ export default function History({ transactions, language, currency, onDelete, on
       noResult: 'لا توجد معاملات تطابق معاييرك.',
       resetFilters: 'إعادة ضبط الفلاتر',
       exportData: 'تصدير البيانات (PDF)',
+      ajouterAchat: 'إضافة شراء',
+      ajouterRetrait: 'إضافة سحب',
       dateRecent: 'التاريخ (الأحدث)',
       dateAncien: 'التاريخ (الأقدم)',
       montantMax: 'المبلغ (الأقصى)',
@@ -110,6 +106,8 @@ export default function History({ transactions, language, currency, onDelete, on
       noResult: 'No transactions match your criteria.',
       resetFilters: 'Reset filters',
       exportData: 'Export data (PDF)',
+      ajouterAchat: 'Add Purchase',
+      ajouterRetrait: 'Add Withdrawal',
       dateRecent: 'Date (Newest)',
       dateAncien: 'Date (Oldest)',
       montantMax: 'Amount (Max)',
@@ -230,18 +228,17 @@ export default function History({ transactions, language, currency, onDelete, on
       
       let matchesRange = true;
       if (startDate || endDate) {
-        const txDate = parseTxDate(tx.date);
-        txDate.setHours(0, 0, 0, 0);
-
+        const txTime = tx.timestamp || parseTxDate(tx.date).getTime();
+        
         if (startDate) {
           const start = new Date(startDate);
           start.setHours(0, 0, 0, 0);
-          if (txDate < start) matchesRange = false;
+          if (txTime < start.getTime()) matchesRange = false;
         }
         if (endDate) {
           const end = new Date(endDate);
-          end.setHours(0, 0, 0, 0);
-          if (txDate > end) matchesRange = false;
+          end.setHours(23, 59, 59, 999);
+          if (txTime > end.getTime()) matchesRange = false;
         }
       }
 
@@ -249,8 +246,8 @@ export default function History({ transactions, language, currency, onDelete, on
     })
     .sort((a, b) => {
       switch (sortBy) {
-        case 'DATE_DESC': return b.date.localeCompare(a.date);
-        case 'DATE_ASC': return a.date.localeCompare(b.date);
+        case 'DATE_DESC': return b.timestamp - a.timestamp;
+        case 'DATE_ASC': return a.timestamp - b.timestamp;
         case 'AMOUNT_DESC': return b.amount - a.amount;
         case 'AMOUNT_ASC': return a.amount - b.amount;
         default: return 0;
@@ -333,6 +330,32 @@ export default function History({ transactions, language, currency, onDelete, on
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Quick Actions - Identical to Home style */}
+      <div className="grid grid-cols-2 gap-4 px-1">
+        <button 
+          onClick={() => onAddClick('EXPENSE')}
+          className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-rose-100 hover:bg-rose-50/30 active:scale-95 shadow-sm"
+        >
+          <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+            <ShoppingBag size={24} strokeWidth={2.5} />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-rose-600 transition-colors">
+            {t.ajouterAchat}
+          </span>
+        </button>
+        <button 
+          onClick={() => onAddClick('INCOME')}
+          className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-teal-100 hover:bg-teal-50/30 active:scale-95 shadow-sm"
+        >
+          <div className="w-12 h-12 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+            <ArrowDownToLine size={24} strokeWidth={2.5} />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-teal-600 transition-colors">
+            {t.ajouterRetrait}
+          </span>
+        </button>
       </div>
 
       {/* New Professional Filter Pills Section */}
