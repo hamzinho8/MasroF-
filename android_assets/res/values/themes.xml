@@ -1,0 +1,12 @@
+<resources>
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#05070d</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/logo_splash</item>
+        <item name="postSplashScreenTheme">@style/Theme.Masrof</item>
+    </style>
+
+    <style name="Theme.Masrof" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#c8962e</item>
+        <item name="android:statusBarColor">#05070d</item>
+    </style>
+</resources>

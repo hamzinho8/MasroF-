@@ -19,7 +19,10 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
-  Sigma,
+  Calculator,
+  Copy,
+  Minimize2,
+  Divide,
   X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -236,7 +239,7 @@ export default function Home({
               onClick={(e) => { e.stopPropagation(); setShowCalculator(true); }}
               className="absolute top-4 right-4 w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-slate-800 hover:bg-white/40 transition-all active:scale-95 shadow-sm border border-white/30"
             >
-              <Sigma size={20} />
+              <Calculator size={20} />
             </button>
 
             <div className="flex items-center gap-2 mb-1">
@@ -612,12 +615,19 @@ function CalculatorModal({ onClose }: { onClose: () => void }) {
   const [prevValue, setPrevValue] = useState<number | null>(null);
   const [operator, setOperator] = useState<string | null>(null);
   const [waitingForOperand, setWaitingForOperand] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const clear = () => {
     setDisplay('0');
     setPrevValue(null);
     setOperator(null);
     setWaitingForOperand(false);
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(display);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const inputDigit = (digit: string) => {
@@ -690,16 +700,18 @@ function CalculatorModal({ onClose }: { onClose: () => void }) {
         {/* Keypad */}
         <div className="grid grid-cols-4 gap-2">
           <button onClick={clear} className="h-10 rounded-xl bg-slate-800 text-rose-500 font-black text-sm active:scale-95 transition-all">C</button>
-          <button onClick={() => performOperation('/')} className="h-10 rounded-xl bg-slate-800/50 text-teal-400 font-black text-sm active:scale-95 transition-all">/</button>
-          <button onClick={() => performOperation('x')} className="h-10 rounded-xl bg-slate-800/50 text-teal-400 font-black text-sm active:scale-95 transition-all">x</button>
-          <button onClick={onClose} className="h-10 rounded-xl bg-rose-500/20 text-rose-500 font-black flex items-center justify-center active:scale-95 transition-all">
-            <X size={14} alt="Close calculator" />
+          <button onClick={() => performOperation('/')} className="h-10 rounded-xl bg-slate-800/50 text-teal-400 font-black text-sm active:scale-95 transition-all">
+            <Divide size={14} />
+          </button>
+          <button onClick={() => performOperation('x')} className="h-10 rounded-xl bg-slate-800/50 text-teal-400 font-black text-sm active:scale-95 transition-all">×</button>
+          <button onClick={onClose} className="h-10 rounded-xl bg-slate-800 text-white font-black flex items-center justify-center active:scale-95 transition-all">
+            <Minimize2 size={14} />
           </button>
 
           {[7, 8, 9].map(n => (
             <button key={n} onClick={() => inputDigit(String(n))} className="h-10 rounded-xl bg-slate-800 text-white font-black text-sm active:scale-95 transition-all hover:bg-slate-750">{n}</button>
           ))}
-          <button onClick={() => performOperation('-')} className="h-10 rounded-xl bg-slate-800/50 text-teal-400 font-black text-lg active:scale-95 transition-all">-</button>
+          <button onClick={() => performOperation('-')} className="h-10 rounded-xl bg-slate-800/50 text-teal-400 font-black text-lg active:scale-95 transition-all">−</button>
 
           {[4, 5, 6].map(n => (
             <button key={n} onClick={() => inputDigit(String(n))} className="h-10 rounded-xl bg-slate-800 text-white font-black text-sm active:scale-95 transition-all hover:bg-slate-750">{n}</button>
@@ -709,10 +721,13 @@ function CalculatorModal({ onClose }: { onClose: () => void }) {
           {[1, 2, 3].map(n => (
             <button key={n} onClick={() => inputDigit(String(n))} className="h-10 rounded-xl bg-slate-800 text-white font-black text-sm active:scale-95 transition-all hover:bg-slate-750">{n}</button>
           ))}
-          <button onClick={() => performOperation('=')} className="h-10 rounded-xl bg-teal-500 text-white font-black text-lg row-span-2 active:scale-95 transition-all shadow-[0_0_15px_rgba(20,184,166,0.3)]">=</button>
+          <button onClick={() => performOperation('=')} className="h-10 rounded-xl bg-teal-500 text-white font-black text-lg active:scale-95 transition-all shadow-[0_0_15px_rgba(20,184,166,0.3)]">=</button>
 
           <button onClick={() => inputDigit('0')} className="h-10 rounded-xl bg-slate-800 text-white font-black text-sm col-span-2 active:scale-95 transition-all hover:bg-slate-750">0</button>
           <button onClick={inputDot} className="h-10 rounded-xl bg-slate-800 text-white font-black text-sm active:scale-95 transition-all">.</button>
+          <button onClick={copyToClipboard} className={`h-10 rounded-xl flex items-center justify-center transition-all active:scale-95 ${copied ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-teal-400'}`}>
+            <Copy size={14} />
+          </button>
         </div>
       </motion.div>
     </>

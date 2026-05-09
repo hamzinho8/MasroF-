@@ -323,32 +323,16 @@ export default function App() {
           <motion.div 
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className={`fixed inset-0 z-[100] ${isDarkMode ? 'bg-slate-900' : 'bg-white'} flex flex-col items-center justify-center max-w-md mx-auto`}
+            className={`fixed inset-0 z-[100] bg-[#05070d] flex flex-col items-center justify-center max-w-md mx-auto`}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="w-80 h-80 flex items-center justify-center mb-4"
+              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full h-full flex items-center justify-center"
             >
               <MasrofLogo className="w-full h-full" size="large" />
             </motion.div>
-            <motion.h1 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
-              className={`text-6xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} tracking-tighter`}
-            >
-              Masro<span className="text-[#84cc16]">F</span>
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.6 }}
-              transition={{ delay: 0.6 }}
-              className="text-slate-500 font-medium mt-2"
-            >
-              {t.trésorerie}
-            </motion.p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -360,7 +344,7 @@ export default function App() {
           <TabButton 
             active={activeTab === 'home'} 
             onClick={() => setActiveTab('home')} 
-            icon={<MasrofLogo className="w-10 h-10" size="small" />} 
+            icon={<MasrofLogo className="w-16 h-16" size="small" />} 
             label="" 
             color="teal"
             isDarkMode={isDarkMode}
