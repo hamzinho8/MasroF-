@@ -323,7 +323,8 @@ export default function App() {
           <motion.div 
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className={`fixed inset-0 z-[100] bg-[#05070d] flex flex-col items-center justify-center max-w-md mx-auto`}
+            className={`fixed inset-0 z-[100] flex flex-col items-center justify-center max-w-md mx-auto`}
+            style={{ background: 'linear-gradient(90deg, #AED8D3 0%, #FAD8A0 100%)' }}
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}

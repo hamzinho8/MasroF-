@@ -9,10 +9,14 @@ export default function MasrofLogo({ className = "w-40 h-40", size = 'large' }: 
   const svgContent = (
     <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
       <defs>
-        <radialGradient id="bg" cx="50%" cy="40%">
-          <stop offset="0%" stopColor="#0f1725"/>
-          <stop offset="100%" stopColor="#05070d"/>
-        </radialGradient>
+        <linearGradient id="cardBg" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#AED8D3"/>
+          <stop offset="100%" stopColor="#FAD8A0"/>
+        </linearGradient>
+        <linearGradient id="darkText" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#2D3F53"/>
+          <stop offset="100%" stopColor="#101820"/>
+        </linearGradient>
         <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#fff4c4"/>
           <stop offset="20%" stopColor="#f7d66b"/>
@@ -50,7 +54,7 @@ export default function MasrofLogo({ className = "w-40 h-40", size = 'large' }: 
       </defs>
       
       {/* Conditionally render background based on size or context */}
-      {size === 'large' && <rect width="100%" height="100%" fill="url(#bg)"/>}
+      {size === 'large' && <rect width="100%" height="100%" fill="url(#cardBg)"/>}
 
       <g opacity="0.4" filter="url(#glow)">
         <path d="M120 420 C240 470 320 500 470 500" stroke="#f8d26a" strokeWidth="3" fill="none"/>
@@ -108,7 +112,7 @@ export default function MasrofLogo({ className = "w-40 h-40", size = 'large' }: 
       {/* Hide text if small icon */}
       {size === 'large' && (
         <g filter="url(#shadow)">
-          <text x="180" y="860" fontSize="150" fontFamily="Poppins, Arial, sans-serif" fontWeight="700" letterSpacing="-8" fill="url(#whiteText)">
+          <text x="180" y="860" fontSize="150" fontFamily="Poppins, Arial, sans-serif" fontWeight="700" letterSpacing="-8" fill="url(#darkText)">
             Masro<tspan dx="-18">F</tspan>
           </text>
         </g>
