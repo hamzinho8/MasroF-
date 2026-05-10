@@ -20,16 +20,26 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Web Project
+        run: npm run build
+
+      - name: Capacitor Sync
+        run: npx cap sync android
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: 8.2
+          gradle-version: 8.5
 
       - name: Build with Gradle
-        run: gradle :app:assembleDebug --stacktrace --info
+        run: ./gradlew assembleDebug --stacktrace
+        working-directory: android
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Masrof-Debug-APK
-          path: app/build/outputs/apk/debug/*.apk
+          path: android/app/build/outputs/apk/debug/*.apk
