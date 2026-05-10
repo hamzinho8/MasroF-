@@ -45,15 +45,28 @@ jobs:
         run: npm run build
 
       - name: Sync Capacitor Android
-        run: npx cap sync android
+        run: |
+          npx cap sync android
+          cd android
+          
+          # Fix memory and performance for GitHub Actions runner
+          cat > gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8
+          org.gradle.daemon=false
+          org.gradle.parallel=false
+          android.useAndroidX=true
+          android.enableJetifier=true
+          EOF
+          
+          ./gradlew clean --no-daemon
 
       - name: Build Android APK (Debug)
         working-directory: ./android
-        run: ./gradlew assembleDebug --stacktrace
+        run: ./gradlew assembleDebug --no-daemon --stacktrace --info
 
       - name: Build Android AAB (Release)
         working-directory: ./android
-        run: ./gradlew bundleRelease --stacktrace
+        run: ./gradlew bundleRelease --no-daemon --stacktrace --info
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
