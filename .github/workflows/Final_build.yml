@@ -26,14 +26,18 @@ jobs:
       - name: Capacitor Sync
         run: npx cap sync android
 
-      - name: Fix Android SDK and Gradle Wrapper
+      - name: Fix Android Project (Final Fix)
         run: |
+          # 1. Ajouter la couleur manquante slate_50
+          # On l'ajoute dans le fichier colors.xml du module app
+          sed -i '/<\/resources>/i \    <color name="slate_50">#F8FAFC</color>' app/src/main/res/values/colors.xml
+          
           cd android
-          # 1. Forcer la version du SDK à 36 dans variables.gradle
+          # 2. Forcer la version du SDK à 36 pour satisfaire les dépendances
           sed -i 's/compileSdkVersion = 34/compileSdkVersion = 36/g' variables.gradle
           sed -i 's/targetSdkVersion = 34/targetSdkVersion = 36/g' variables.gradle
           
-          # 2. Réparer le Gradle Wrapper corrompu
+          # 3. Réparer le Gradle Wrapper corrompu
           rm -f gradle/wrapper/gradle-wrapper.jar
           gradle wrapper --gradle-version 8.7
           chmod +x gradlew
