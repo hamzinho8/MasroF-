@@ -37,8 +37,8 @@ jobs:
         with:
           gradle-version: 8.5
 
-      - name: Build with Gradle
-        run: gradle assembleDebug --stacktrace
+      - name: Build with Gradle (Detailed Logs)
+        run: gradle assembleDebug --stacktrace --info
         working-directory: android
 
       - name: Upload APK
