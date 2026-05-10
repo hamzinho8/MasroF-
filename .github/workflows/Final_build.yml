@@ -1,7 +1,7 @@
 name: Final APK Build
 
 on:
-  workflow_dispatch: # Permet de le lancer manuellement
+  workflow_dispatch:
 
 jobs:
   build:
@@ -26,11 +26,16 @@ jobs:
       - name: Capacitor Sync
         run: npx cap sync android
 
-      - name: Fix and Regenerate Gradle Wrapper
+      - name: Fix Android SDK and Gradle Wrapper
         run: |
           cd android
+          # 1. Forcer la version du SDK à 36 dans variables.gradle
+          sed -i 's/compileSdkVersion = 34/compileSdkVersion = 36/g' variables.gradle
+          sed -i 's/targetSdkVersion = 34/targetSdkVersion = 36/g' variables.gradle
+          
+          # 2. Réparer le Gradle Wrapper corrompu
           rm -f gradle/wrapper/gradle-wrapper.jar
-          gradle wrapper --gradle-version 8.5
+          gradle wrapper --gradle-version 8.7
           chmod +x gradlew
 
       - name: Build APK
