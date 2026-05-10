@@ -43,6 +43,8 @@ jobs:
         run: |
           npx cap sync android
           cd android
+          mkdir -p gradle/wrapper
+          wget -qO gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar
           chmod +x gradlew
           sed -i 's/\r$//' gradlew
           ./gradlew clean --no-daemon
@@ -50,8 +52,6 @@ jobs:
       - name: Expert Android Environment Repair
         run: |
           cd android
-          # Force regeneration of the wrapper if JAR is corrupt
-          rm -f gradle/wrapper/gradle-wrapper.jar
           # Inject ultimate stability properties for GitHub Actions
           cat > gradle.properties <<EOF
           org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8
