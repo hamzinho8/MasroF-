@@ -43,9 +43,7 @@ jobs:
         run: |
           npx cap sync android
           cd android
-          mkdir -p gradle/wrapper
-          wget -qO gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar
-          chmod +x gradlew
+                    chmod +x gradlew
           sed -i 's/\r$//' gradlew
           
           # Fix memory and performance for GitHub Actions runner
