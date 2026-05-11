@@ -135,6 +135,7 @@ export default function App() {
     return () => clearTimeout(timer);
   }, []);
   const [balance, setBalance] = useState(1450.50);
+  const [bankBalance, setBankBalance] = useState(15000);
   const [transactions, setTransactions] = useState<Transaction[]>([
     { id: '1', label: 'Tirage Banque', amount: 2000, type: 'INCOME', date: '03/05 18:23', timestamp: new Date(2024, 4, 3, 18, 23).getTime() },
     { id: '2', label: 'Achat Market', amount: 840, type: 'EXPENSE', category: 'Shopping', date: '03/05 12:45', timestamp: new Date(2024, 4, 3, 12, 45).getTime() },
@@ -145,7 +146,7 @@ export default function App() {
     { id: '7', label: 'Loyer', amount: 3500, type: 'EXPENSE', category: 'Autres', date: '01/05 08:00', timestamp: new Date(2024, 4, 1, 8, 0).getTime() },
   ]);
 
-  const addTransaction = (label: string, amount: number, type: 'INCOME' | 'EXPENSE', category?: string) => {
+  const addTransaction = (label: string, amount: number, type: 'INCOME' | 'EXPENSE', category?: string, paidByBank: boolean = false) => {
     const newTx: Transaction = {
       id: Date.now().toString(),
       label,
@@ -153,14 +154,20 @@ export default function App() {
       type,
       category,
       date: new Date().toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', ''),
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      paidByBank
     };
 
     setTransactions(prev => [newTx, ...prev]);
     if (type === 'INCOME') {
       setBalance(prev => prev + amount);
+      setBankBalance(prev => prev - amount); // Retrait déduit du compte bancaire
     } else {
-      setBalance(prev => prev - amount);
+      if (paidByBank) {
+        setBankBalance(prev => prev - amount);
+      } else {
+        setBalance(prev => prev - amount);
+      }
     }
   };
 
@@ -170,8 +177,13 @@ export default function App() {
 
     if (tx.type === 'INCOME') {
       setBalance(prev => prev - tx.amount);
+      setBankBalance(prev => prev + tx.amount);
     } else {
-      setBalance(prev => prev + tx.amount);
+      if (tx.paidByBank) {
+        setBankBalance(prev => prev + tx.amount);
+      } else {
+        setBalance(prev => prev + tx.amount);
+      }
     }
     setTransactions(prev => prev.filter(t => t.id !== id));
   };
@@ -180,11 +192,15 @@ export default function App() {
     setTransactions(prev => prev.map(tx => {
       if (tx.id === id) {
         const result = { ...tx, ...updatedTx };
-        // Simple balance adjustment (could be more complex if amount changed)
         if (updatedTx.amount !== undefined) {
           const diff = updatedTx.amount - tx.amount;
-          if (tx.type === 'INCOME') setBalance(b => b + diff);
-          else setBalance(b => b - diff);
+          if (tx.type === 'INCOME') {
+            setBalance(b => b + diff);
+            setBankBalance(b => b - diff);
+          } else {
+            if (tx.paidByBank) setBankBalance(b => b - diff);
+            else setBalance(b => b - diff);
+          }
         }
         return result;
       }
@@ -231,6 +247,21 @@ export default function App() {
         return (
           <Home 
             balance={balance} 
+            bankBalance={bankBalance}
+            onAddBankBalance={(amount) => {
+              setBankBalance(prev => prev + amount);
+              const tx = {
+                id: Date.now().toString(),
+                label: language === 'Français' ? 'Salaire / Dépôt' : (language === 'العربية' ? 'راتب / إيداع' : 'Salary / Deposit'),
+                amount,
+                type: 'INCOME',
+                category: 'Banque',
+                date: new Date().toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', ''),
+                timestamp: Date.now(),
+                paidByBank: true
+              } as Transaction;
+              setTransactions(prev => [tx, ...prev]);
+            }}
             transactions={transactions} 
             onAddClick={openModal}
             onViewAll={() => setActiveTab('history')}
@@ -260,6 +291,7 @@ export default function App() {
             entries={creditEntries}
             setEntries={setCreditEntries}
             onSettle={handleCreditSettlement}
+            transactions={transactions}
           />
         );
       case 'history':
@@ -298,6 +330,21 @@ export default function App() {
         return (
           <Home 
             balance={balance} 
+            bankBalance={bankBalance}
+            onAddBankBalance={(amount) => {
+              setBankBalance(prev => prev + amount);
+              const tx = {
+                id: Date.now().toString(),
+                label: language === 'Français' ? 'Salaire / Dépôt' : (language === 'العربية' ? 'راتب / إيداع' : 'Salary / Deposit'),
+                amount,
+                type: 'INCOME',
+                category: 'Banque',
+                date: new Date().toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', ''),
+                timestamp: Date.now(),
+                paidByBank: true
+              } as Transaction;
+              setTransactions(prev => [tx, ...prev]);
+            }}
             transactions={transactions} 
             onAddClick={openModal}
             onViewAll={() => setActiveTab('history')}

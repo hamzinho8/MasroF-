@@ -31,7 +31,7 @@ const CATEGORIES: Category[] = [
 interface AddTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (label: string, amount: number, type: 'INCOME' | 'EXPENSE', category?: string) => void;
+  onAdd: (label: string, amount: number, type: 'INCOME' | 'EXPENSE', category?: string, paidByBank?: boolean) => void;
   initialType: 'INCOME' | 'EXPENSE';
   currency: string;
   predefinedItems: PredefinedItem[];
@@ -43,6 +43,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>(initialType);
   const [selectedCategory, setSelectedCategory] = useState<string>('Autres');
   const [showFrequent, setShowFrequent] = useState(true);
+  const [paidByBank, setPaidByBank] = useState(false);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -51,6 +52,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
       setAmount('');
       setSelectedCategory('Autres');
       setShowFrequent(true);
+      setPaidByBank(false);
     }
   }, [isOpen, initialType]);
 
@@ -76,7 +78,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
     e.preventDefault();
     if (amount) {
       const finalLabel = type === 'INCOME' ? 'Retrait Banque' : (label.trim() || 'Achat');
-      onAdd(finalLabel, parseFloat(amount), type, type === 'EXPENSE' ? selectedCategory : undefined);
+      onAdd(finalLabel, parseFloat(amount), type, type === 'EXPENSE' ? selectedCategory : undefined, paidByBank);
       onClose();
     }
   };
@@ -226,6 +228,18 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                     onChange={(e) => setAmount(e.target.value)}
                   />
                 </div>
+
+                {type === 'EXPENSE' && (
+                  <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 p-4 rounded-2xl cursor-pointer" onClick={() => setPaidByBank(!paidByBank)}>
+                    <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${paidByBank ? 'bg-teal-500 text-white' : 'bg-slate-200 text-transparent'}`}>
+                      <Check size={16} strokeWidth={3} />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-black text-slate-800 tracking-tight">Payé par solde bancaire</span>
+                      <span className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Ne pas déduire de la poche</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <button

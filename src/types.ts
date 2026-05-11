@@ -15,6 +15,7 @@ export interface Transaction {
   category?: string;
   date: string;
   timestamp: number;
+  paidByBank?: boolean;
 }
 
 export interface Reminder {

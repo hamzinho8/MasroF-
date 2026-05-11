@@ -30,6 +30,8 @@ import { Transaction, CreditEntry } from '../types';
 
 interface HomeProps {
   balance: number;
+  bankBalance: number;
+  onAddBankBalance: (amount: number) => void;
   transactions: Transaction[];
   onAddClick: (type: 'INCOME' | 'EXPENSE') => void;
   onViewAll: () => void;
@@ -44,6 +46,8 @@ interface HomeProps {
 
 export default function Home({ 
   balance, 
+  bankBalance,
+  onAddBankBalance,
   transactions, 
   onAddClick, 
   onViewAll, 
@@ -59,6 +63,7 @@ export default function Home({
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
   const [showCalculator, setShowCalculator] = useState(false);
+  const [showBankModal, setShowBankModal] = useState(false);
 
   const translations = {
     'Français': {
@@ -223,7 +228,7 @@ export default function Home({
     >
       {/* Main Widget Card */}
       <div 
-        className="relative h-44 rounded-[24px] overflow-hidden shadow-lg mb-8 transition-all hover:scale-[1.01] cursor-pointer"
+        className="relative min-h-[12rem] h-auto rounded-[24px] overflow-hidden shadow-lg mb-8 transition-all hover:scale-[1.01] cursor-pointer"
         style={{ background: widgetMode === 'balance' ? 'linear-gradient(90deg, #AED8D3 0%, #FAD8A0 100%)' : 'linear-gradient(90deg, #F9B29B 0%, #C8E6C9 100%)' }}
       >
         <AnimatePresence mode="wait">
@@ -233,34 +238,61 @@ export default function Home({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 10 }}
             transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-            className="relative z-10 p-6 h-full w-full flex flex-col justify-center"
+            className="relative z-10 py-5 px-6 h-full w-full flex flex-col justify-center"
           >
             <button 
-              onClick={(e) => { e.stopPropagation(); setShowCalculator(true); }}
-              className="absolute top-4 right-4 w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-slate-800 hover:bg-white/40 transition-all active:scale-95 shadow-sm border border-white/30"
+              onClick={(e) => { e.stopPropagation(); setShowBankModal(true); }}
+              className="absolute top-4 right-4 w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-slate-800 hover:bg-white/40 transition-all active:scale-95 shadow-sm border border-white/30 z-10"
             >
-              <Calculator size={20} />
+              <Plus size={20} strokeWidth={3} />
             </button>
 
-            <div className="flex items-center gap-2 mb-1">
-              <div className={`w-2 h-2 rounded-full ${widgetMode === 'balance' ? 'bg-emerald-600 animate-pulse' : 'bg-slate-400'}`} />
-              <h2 className="text-slate-900/60 font-bold uppercase tracking-widest text-[10px]">
-                {widgetMode === 'balance' ? t.dansMaPoche : t.depensesHebdo}
-              </h2>
-            </div>
- 
-            <div className="flex items-baseline gap-2">
-              <div className="text-4xl font-black text-slate-900 tracking-tighter">
-                {widgetMode === 'balance' 
-                  ? balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })
-                  : filteredTotals.totalExpense.toLocaleString('fr-FR')}
+            {widgetMode === 'balance' && (
+              <div className="flex flex-col items-start mb-3 z-10 relative mt-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                  <h2 className="text-slate-900/60 font-bold uppercase tracking-widest text-[10px]">Solde Bancaire</h2>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <div className="text-4xl font-black text-slate-900 tracking-tighter">
+                    {bankBalance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}
+                  </div>
+                  <span className="text-xl font-bold text-slate-900/40 uppercase">{currency}</span>
+                </div>
               </div>
-              <span className="text-xl font-bold text-slate-900/40 uppercase">{currency}</span>
-            </div>
+            )}
 
-            <p className="text-xs text-slate-900 font-bold mt-1 uppercase tracking-tight">
-              {widgetMode === 'balance' ? t.argentDispo : t.cumulAchats}
-            </p>
+            <div className={`flex flex-col items-start relative z-10 ${widgetMode === 'balance' ? 'border-t border-slate-900/10 pt-3' : ''}`}>
+              <div className="flex items-center gap-2 mb-1">
+                <div className={`w-2 h-2 rounded-full ${widgetMode === 'balance' ? 'bg-emerald-600 animate-pulse' : 'bg-slate-400'}`} />
+                <h2 className="text-slate-900/60 font-bold uppercase tracking-widest text-[10px]">
+                  {widgetMode === 'balance' ? t.dansMaPoche : t.depensesHebdo}
+                </h2>
+              </div>
+  
+              <div className="flex items-end justify-between w-full">
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <div className="text-4xl font-black text-slate-900 tracking-tighter">
+                      {widgetMode === 'balance' 
+                        ? balance.toLocaleString('fr-FR', { minimumFractionDigits: 2 })
+                        : filteredTotals.totalExpense.toLocaleString('fr-FR')}
+                    </div>
+                    <span className="text-xl font-bold text-slate-900/40 uppercase">{currency}</span>
+                  </div>
+                  <p className="text-xs text-slate-900 font-bold mt-1 uppercase tracking-tight">
+                    {widgetMode === 'balance' ? t.argentDispo : t.cumulAchats}
+                  </p>
+                </div>
+                
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setShowCalculator(true); }}
+                  className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-slate-800 hover:bg-white/40 transition-all active:scale-95 shadow-sm border border-white/30"
+                >
+                  <Calculator size={20} />
+                </button>
+              </div>
+            </div>
             
             <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-10 transform scale-150 text-slate-900 pointer-events-none">
               {widgetMode === 'balance' ? <Wallet size={80} /> : <TrendingDown size={80} />}
@@ -272,6 +304,13 @@ export default function Home({
       <AnimatePresence>
         {showCalculator && (
           <CalculatorModal onClose={() => setShowCalculator(false)} />
+        )}
+        {showBankModal && (
+          <AddBankBalanceModal 
+            onClose={() => setShowBankModal(false)} 
+            onAdd={onAddBankBalance} 
+            currency={currency} 
+          />
         )}
       </AnimatePresence>
 
@@ -729,6 +768,63 @@ function CalculatorModal({ onClose }: { onClose: () => void }) {
             <Copy size={14} />
           </button>
         </div>
+      </motion.div>
+    </>
+  );
+}
+
+function AddBankBalanceModal({ onClose, onAdd, currency }: { onClose: () => void, onAdd: (amount: number) => void, currency: string }) {
+  const [amount, setAmount] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (amount && !isNaN(Number(amount))) {
+      onAdd(Number(amount));
+      onClose();
+    }
+  };
+
+  return (
+    <>
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[1000] max-w-md mx-auto"
+      />
+      <motion.div 
+        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[1001] bg-white p-6 rounded-[28px] w-[300px] shadow-2xl"
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-black text-slate-800">Ajouter au solde bancaire</h3>
+          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600">
+            <X size={20} />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Montant du salaire / dépôt ({currency})</label>
+            <input
+              type="number"
+              step="0.1"
+              required
+              autoFocus
+              className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-5 font-black text-slate-800 text-2xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all text-center"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full h-14 rounded-2xl bg-teal-500 text-white font-black uppercase tracking-widest shadow-lg shadow-teal-500/20 active:scale-[0.98] transition-all"
+          >
+            Confirmer
+          </button>
+        </form>
       </motion.div>
     </>
   );

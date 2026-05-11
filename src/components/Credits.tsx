@@ -18,7 +18,7 @@ import {
   HandCoins
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { CreditEntry } from '../types';
+import { CreditEntry, Transaction } from '../types';
 
 interface CreditsProps {
   language: string;
@@ -26,11 +26,12 @@ interface CreditsProps {
   entries: CreditEntry[];
   setEntries: React.Dispatch<React.SetStateAction<CreditEntry[]>>;
   onSettle?: (id: string) => void;
+  transactions?: Transaction[];
 }
 
 // decorative backgrounds removed
 
-export default function Credits({ language, currency, entries, setEntries, onSettle }: CreditsProps) {
+export default function Credits({ language, currency, entries, setEntries, onSettle, transactions = [] }: CreditsProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [newName, setNewName] = useState('');
   const [newAmount, setNewAmount] = useState('');
@@ -156,6 +157,49 @@ export default function Credits({ language, currency, entries, setEntries, onSet
     }
     setActiveMenuId(null);
   };
+
+  const getBankVariation = (period: 'day' | 'week' | 'month') => {
+    const now = new Date();
+    const startOfPeriod = new Date();
+
+    if (period === 'day') {
+      startOfPeriod.setHours(0, 0, 0, 0);
+    } else if (period === 'week') {
+      const day = now.getDay() || 7; 
+      startOfPeriod.setDate(now.getDate() - day + 1);
+      startOfPeriod.setHours(0, 0, 0, 0);
+    } else {
+      startOfPeriod.setDate(1);
+      startOfPeriod.setHours(0, 0, 0, 0);
+    }
+
+    return transactions
+      .filter(tx => tx.timestamp >= startOfPeriod.getTime() && tx.timestamp <= now.getTime())
+      .reduce((acc, tx) => {
+        if (tx.type === 'INCOME' && tx.paidByBank) return acc + tx.amount; // Salaire / Dépôt (+Bank)
+        if (tx.type === 'EXPENSE' && tx.paidByBank) return acc - tx.amount; // Achat carte (-Bank)
+        if (tx.type === 'INCOME' && !tx.paidByBank) return acc - tx.amount; // Retrait poche (-Bank)
+        return acc;
+      }, 0);
+  };
+
+  const todayBankVar = getBankVariation('day');
+  const weekBankVar = getBankVariation('week');
+  const monthBankVar = getBankVariation('month');
+
+  const bankTransactions = transactions.filter(tx => {
+    return (tx.type === 'INCOME' && tx.paidByBank) || 
+           (tx.type === 'EXPENSE' && tx.paidByBank) || 
+           (tx.type === 'INCOME' && !tx.paidByBank);
+  });
+
+  const getCategoryMap = () => [
+    { label: language === 'Français' ? 'Nourriture' : language === 'العربية' ? 'طعام' : 'Food', icon: <TrendingDown size={24} />, color: 'teal', bg: 'bg-teal-100', text: 'text-teal-600', glow: 'bg-teal-400' },
+    { label: language === 'Français' ? 'Shopping' : language === 'العربية' ? 'تسوق' : 'Shopping', icon: <TrendingDown size={24} />, color: 'rose', bg: 'bg-rose-100', text: 'text-rose-600', glow: 'bg-rose-400' },
+    { label: language === 'Français' ? 'Transport' : language === 'العربية' ? 'نقل' : 'Transport', icon: <TrendingDown size={24} />, color: 'sky', bg: 'bg-sky-100', text: 'text-sky-600', glow: 'bg-sky-400' },
+    { label: language === 'Français' ? 'Loisirs' : language === 'العربية' ? 'ترفيه' : 'Entertainment', icon: <TrendingDown size={24} />, color: 'purple', bg: 'bg-purple-100', text: 'text-purple-600', glow: 'bg-purple-400' },
+    { label: language === 'Français' ? 'Autres' : language === 'العربية' ? 'أخرى' : 'Other', icon: <TrendingDown size={24} />, color: 'slate', bg: 'bg-slate-100', text: 'text-slate-600', glow: 'bg-slate-400' },
+  ];
 
   return (
     <motion.div 
@@ -439,6 +483,120 @@ export default function Credits({ language, currency, entries, setEntries, onSet
                           </>
                         )}
                       </AnimatePresence>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* SECTION: Historique du compteur bancaire */}
+      <div className="space-y-4 pt-8 mt-8 border-t-[3px] border-slate-100 border-dashed">
+        <h3 className="text-slate-800 text-xl font-bold flex items-center gap-3 px-1 mb-6">
+          <Wallet size={24} className="text-teal-600" />
+          {language === 'Français' ? 'Historique Bancaire' : language === 'العربية' ? 'سجل البنك' : 'Bank History'}
+        </h3>
+        
+        {/* Sommaire Jour / Semaine / Mois */}
+        <div className="flex gap-3 mb-6 overflow-x-auto pb-4 scrollbar-hide snap-x">
+          <div className="shrink-0 snap-start bg-white border border-slate-100 rounded-[24px] p-5 min-w-[140px] shadow-sm">
+             <div className="flex items-center gap-2 mb-2">
+               <div className="w-2 h-2 rounded-full bg-slate-200" />
+               <span className="text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
+                 {language === 'Français' ? 'Aujourd\'hui' : language === 'العربية' ? 'اليوم' : 'Today'}
+               </span>
+             </div>
+             <span className={`text-xl font-black ${todayBankVar >= 0 ? 'text-teal-600' : 'text-rose-500'}`}>
+               {todayBankVar > 0 ? '+' : ''}{todayBankVar.toLocaleString('fr-FR')} <span className="text-xs">{currency}</span>
+             </span>
+          </div>
+          <div className="shrink-0 snap-start bg-white border border-slate-100 rounded-[24px] p-5 min-w-[140px] shadow-sm">
+             <div className="flex items-center gap-2 mb-2">
+               <div className="w-2 h-2 rounded-full bg-slate-300" />
+               <span className="text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
+                 {language === 'Français' ? '7 Jours' : language === 'العربية' ? '٧ أيام' : '7 Days'}
+               </span>
+             </div>
+             <span className={`text-xl font-black ${weekBankVar >= 0 ? 'text-teal-600' : 'text-rose-500'}`}>
+               {weekBankVar > 0 ? '+' : ''}{weekBankVar.toLocaleString('fr-FR')} <span className="text-xs">{currency}</span>
+             </span>
+          </div>
+          <div className="shrink-0 snap-start bg-white border border-slate-100 rounded-[24px] p-5 min-w-[140px] shadow-sm">
+             <div className="flex items-center gap-2 mb-2">
+               <div className="w-2 h-2 rounded-full bg-slate-400" />
+               <span className="text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
+                 {language === 'Français' ? '30 Jours' : language === 'العربية' ? '٣٠ يوماً' : '30 Days'}
+               </span>
+             </div>
+             <span className={`text-xl font-black ${monthBankVar >= 0 ? 'text-teal-600' : 'text-rose-500'}`}>
+               {monthBankVar > 0 ? '+' : ''}{monthBankVar.toLocaleString('fr-FR')} <span className="text-xs">{currency}</span>
+             </span>
+          </div>
+        </div>
+
+        {/* Bank Transactions List */}
+        {bankTransactions.length === 0 ? (
+          <div className="text-center py-12 text-slate-400 font-medium italic">
+            {language === 'Français' ? 'Aucune transaction bancaire' : language === 'العربية' ? 'لا توجد معاملات بنكية' : 'No bank transactions'}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {bankTransactions.map((tx, index) => {
+              const isIncome = tx.type === 'INCOME' && tx.paidByBank; // Salaire / Dépôt
+              const isExpense = tx.type === 'EXPENSE' || (tx.type === 'INCOME' && !tx.paidByBank); // Retrait is visually an expense from bank
+              
+              const categoryMatch = getCategoryMap().find(c => 
+                c.label && c.label.toLowerCase() === (tx.category || '').toLowerCase()
+              ) || {
+                icon: isIncome ? <TrendingUp size={24} /> : <TrendingDown size={24} />,
+                color: isIncome ? 'teal' : 'slate',
+                bg: isIncome ? 'bg-teal-100' : 'bg-slate-100',
+                text: isIncome ? 'text-teal-600' : 'text-slate-600',
+                glow: isIncome ? 'bg-teal-400' : 'bg-slate-400'
+              };
+
+              // Retrait will not match a category, so it defaults correctly, but let's tint Retrait nicely
+              if (tx.type === 'INCOME' && !tx.paidByBank) {
+                categoryMatch.icon = <HandCoins size={24} />;
+                categoryMatch.bg = 'bg-bank-blue/20'; // Or sky-100
+                categoryMatch.text = 'text-sky-600';
+              }
+
+              const getCardStyle = () => {
+                if (isIncome) return 'bg-teal-50/30 border-teal-100/50 hover:border-teal-200 hover:shadow-teal-500/5 text-teal-600';
+                return 'bg-white border-slate-100 hover:border-slate-200 hover:shadow-slate-500/5 text-slate-600';
+              };
+
+              return (
+                <motion.div 
+                  key={tx.id} 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className={`flex items-center gap-4 p-5 rounded-[32px] border transition-all relative shadow-sm ${getCardStyle()}`}
+                >
+                  <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all shadow-sm ${categoryMatch.bg} ${categoryMatch.text}`}>
+                    {categoryMatch.icon}
+                  </div>
+                  
+                  <div className="flex-1 min-w-0 py-1">
+                    <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1">{tx.label}</p>
+                    <div className="flex items-center gap-4">
+                      <span className="text-[10px] flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-400">
+                        <Calendar size={12} className="text-slate-300" />
+                        {tx.date}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 flex items-center gap-2 pl-2 border-l border-slate-100">
+                    <div className="flex flex-col items-end">
+                      <p className={`font-black tracking-tighter text-base leading-none ${isIncome ? 'text-teal-600' : 'text-slate-800'}`}>
+                         {isIncome ? '+' : '-'}{tx.amount.toLocaleString('fr-FR')} 
+                      </p>
+                      <span className="text-[9px] font-bold uppercase text-slate-400 mt-0.5">{currency}</span>
                     </div>
                   </div>
                 </motion.div>
