@@ -1,8 +1,0 @@
-<resources>
-    <string name="app_name">MasroF</string>
-    <string name="money_pocket">Argent dans ma poche</string>
-    <string name="add_purchase">Achat</string>
-    <string name="add_withdrawal">Retrait</string>
-    <string name="stats">Statistiques</string>
-    <string name="reset">Réinitialiser</string>
-</resources>
