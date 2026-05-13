@@ -1,57 +1,32 @@
-name: Android Build
+Name: Android Build APK (Auto-Fix)
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 17
+          java-version: '17'
+          distribution: 'temurin'
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build web app
-        run: npm run build
-
-      - name: Capacitor Sync
-        run: npx cap sync android
-
-      - name: Grant execute permission
-        run: chmod +x android/gradlew
-
-      - name: Show wrapper files
+      # CETTE ÉTAPE RÉPARE TON GRADLEW S'IL EST CORROMPU
+      - name: Force Install Gradle Wrapper
         run: |
-          ls -la android/gradle/wrapper/
-          file android/gradle/wrapper/gradle-wrapper.jar
+          gradle wrapper --gradle-version 8.2
+          chmod +x gradlew
 
       - name: Build Debug APK
-        run: |
-          cd android
-          ./gradlew assembleDebug --stacktrace --warning-mode all
+        run: ./gradlew assembleDebug
 
-      - name: Find APK
-        run: find android -name "*.apk"
-
-      - name: Upload APK
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: MasroF-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
