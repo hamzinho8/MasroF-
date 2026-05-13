@@ -1,4 +1,4 @@
-Name: Android Build APK (Auto-Fix)
+name: Android Build APK (Auto-Fix)
 
 on:
   workflow_dispatch:
