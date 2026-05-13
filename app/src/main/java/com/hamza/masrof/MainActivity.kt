@@ -18,28 +18,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.hamza.masrof.data.AppDatabase
-import com.hamza.masrof.data.ExpenseEntity
 import com.hamza.masrof.ui.BudgetViewModel
-import com.hamza.masrof.ui.BudgetViewModelFactory
 import com.hamza.masrof.ui.theme.MasroFTheme
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Initialisation de la BDD manuellement puisqu'on n'utilise pas Hilt
-        val db = AppDatabase.getDatabase(this)
-        val dao = db.expenseDao()
-        val factory = BudgetViewModelFactory(dao)
-
         setContent {
             MasroFTheme {
-                val budgetViewModel: BudgetViewModel = viewModel(factory = factory)
-                MasroFApp(viewModel = budgetViewModel)
+                val viewModel: BudgetViewModel = viewModel()
+                MasroFApp(viewModel = viewModel)
             }
         }
     }
@@ -48,7 +37,7 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MasroFApp(viewModel: BudgetViewModel) {
-    val expenses by viewModel.expenses.collectAsState()
+    val items by viewModel.items.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -76,7 +65,7 @@ fun MasroFApp(viewModel: BudgetViewModel) {
                 .padding(paddingValues),
             color = MaterialTheme.colorScheme.background
         ) {
-            if (expenses.isEmpty()) {
+            if (items.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -91,10 +80,9 @@ fun MasroFApp(viewModel: BudgetViewModel) {
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(expenses) { expense ->
+                    items(items) { item ->
                         ExpenseItem(
-                            expense = expense,
-                            onDelete = { viewModel.deleteExpense(expense) }
+                            item = item
                         )
                     }
                 }
@@ -104,8 +92,8 @@ fun MasroFApp(viewModel: BudgetViewModel) {
         if (showAddDialog) {
             AddExpenseDialog(
                 onDismiss = { showAddDialog = false },
-                onConfirm = { title, amount, category ->
-                    viewModel.addExpense(title, amount, category)
+                onConfirm = { name ->
+                    viewModel.addExpense(name)
                     showAddDialog = false
                 }
             )
@@ -114,10 +102,8 @@ fun MasroFApp(viewModel: BudgetViewModel) {
 }
 
 @Composable
-fun AddExpenseDialog(onDismiss: () -> Unit, onConfirm: (String, Double, String) -> Unit) {
+fun AddExpenseDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
     var title by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -131,29 +117,13 @@ fun AddExpenseDialog(onDismiss: () -> Unit, onConfirm: (String, Double, String) 
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-                OutlinedTextField(
-                    value = amount,
-                    onValueChange = { amount = it },
-                    label = { Text("Montant (DH)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = category,
-                    onValueChange = { category = it },
-                    label = { Text("Catégorie") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
             }
         },
         confirmButton = {
             Button(
                 onClick = {
-                    val amountDouble = amount.toDoubleOrNull() ?: 0.0
-                    if (title.isNotBlank() && amountDouble > 0) {
-                        onConfirm(title, amountDouble, category.ifBlank { "Général" })
+                    if (title.isNotBlank()) {
+                        onConfirm(title)
                     }
                 }
             ) {
@@ -169,9 +139,7 @@ fun AddExpenseDialog(onDismiss: () -> Unit, onConfirm: (String, Double, String) 
 }
 
 @Composable
-fun ExpenseItem(expense: ExpenseEntity, onDelete: () -> Unit) {
-    val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) }
-    
+fun ExpenseItem(item: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -186,28 +154,9 @@ fun ExpenseItem(expense: ExpenseEntity, onDelete: () -> Unit) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = expense.title,
+                    text = item,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "-${expense.amount} DH",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
-                Text(
-                    text = "${expense.category} • ${dateFormat.format(Date(expense.date))}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            IconButton(onClick = onDelete) {
-                Icon(
-                    Icons.Filled.Delete,
-                    contentDescription = "Supprimer",
-                    tint = MaterialTheme.colorScheme.error
                 )
             }
         }

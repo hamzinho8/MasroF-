@@ -1,34 +1,57 @@
-name: Android Build APK
+name: Android Build
 
 on:
-  push:
-    branches: [ "main" ]
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          distribution: temurin
+          java-version: 17
 
-      - name: Build with Gradle
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Capacitor Sync
+        run: npx cap sync android
+
+      - name: Grant execute permission
+        run: chmod +x android/gradlew
+
+      - name: Show wrapper files
         run: |
-          # Trouver le dossier où se trouve gradlew
-          GRADLE_PATH=$(find . -name gradlew -exec dirname {} \;)
-          cd $GRADLE_PATH
-          chmod +x gradlew
-          # Clean pour supprimer les doublons et compilation
-          ./gradlew clean assembleDebug --stacktrace
+          ls -la android/gradle/wrapper/
+          file android/gradle/wrapper/gradle-wrapper.jar
+
+      - name: Build Debug APK
+        run: |
+          cd android
+          ./gradlew assembleDebug --stacktrace --warning-mode all
+
+      - name: Find APK
+        run: find android -name "*.apk"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: MasroF-APK
-          path: "**/app/build/outputs/apk/debug/app-debug.apk"
+          name: app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
