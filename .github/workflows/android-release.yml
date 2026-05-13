@@ -24,15 +24,9 @@ jobs:
             
       - name: Find gradlew and build APK
         run: |
-          # Trouver le dossier qui contient gradlew
-          GRADLE_DIR=$(dirname $(find . -name "gradlew" | head -n 1))
-          echo "Dossier gradle trouvé : $GRADLE_DIR"
-          cd $GRADLE_DIR
-          
-          # Donner les droits d'exécution
-          chmod +x ./gradlew
-          
-          # Nettoyer et compiler
+          GRADLE_PATH=$(find . -name gradlew -exec dirname {} \;)
+          cd $GRADLE_PATH
+          chmod +x gradlew
           ./gradlew clean assembleDebug
 
       - name: Upload APK
