@@ -1,15 +1,17 @@
-name: Android Build APK
+name: Android Release Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -17,18 +19,23 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-
-      - name: Build with Gradle
+          cache: gradle
+            
+      - name: Find gradlew and build APK
         run: |
-          # Trouver le dossier où se trouve gradlew
-          GRADLE_PATH=$(find . -name gradlew -exec dirname {} \;)
-          cd $GRADLE_PATH
-          chmod +x gradlew
-          # Clean pour supprimer les doublons et compilation
-          ./gradlew clean assembleDebug --stacktrace
+          # Trouver le dossier qui contient gradlew
+          GRADLE_DIR=$(dirname $(find . -name "gradlew" | head -n 1))
+          echo "Dossier gradle trouvé : $GRADLE_DIR"
+          cd $GRADLE_DIR
+          
+          # Donner les droits d'exécution
+          chmod +x ./gradlew
+          
+          # Nettoyer et compiler
+          ./gradlew clean assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: MasroF-APK
-          path: "**/app/build/outputs/apk/debug/app-debug.apk"
+          name: masrof-app-debug
+          path: '**/app/build/outputs/apk/debug/*.apk'
