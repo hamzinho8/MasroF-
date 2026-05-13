@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.hamza.masrof"
+    namespace "com.masrof.app"
     compileSdk 36
     defaultConfig {
         applicationId "com.hamza.masrof"
-        minSdkVersion rootProject.ext.minSdkVersion
+        minSdk rootProject.ext.minSdkVersion
         targetSdk 36
         versionCode 1
         versionName "1.0"

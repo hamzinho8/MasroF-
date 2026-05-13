@@ -45,12 +45,14 @@ jobs:
       - name: Build Debug APK
         run: |
           cd android
-          gradle assembleDebug --stacktrace --warning-mode all
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace
 
-      - name: Build Release AAB
+      - name: Build Release APK
         run: |
           cd android
-          gradle bundleRelease --stacktrace --warning-mode all
+          chmod +x gradlew
+          ./gradlew assembleRelease --stacktrace
 
       - name: Debug Output Files
         run: |
@@ -65,8 +67,8 @@ jobs:
           name: app-debug-apk
           path: android/app/build/outputs/apk/debug/*.apk
 
-      - name: Upload AAB
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-aab
-          path: android/app/build/outputs/bundle/release/*.aab
+          name: app-release-apk
+          path: android/app/build/outputs/apk/release/*.apk
