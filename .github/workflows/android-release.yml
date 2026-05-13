@@ -24,10 +24,13 @@ jobs:
             
       - name: Find gradlew and build APK
         run: |
-          GRADLE_PATH=$(find . -name gradlew -exec dirname {} \;)
+          GRADLE_PATH=$(find . -name "gradlew" -exec dirname {} \;)
           cd "$GRADLE_PATH"
-          chmod +x gradlew
-          ./gradlew clean assembleDebug
+          chmod +x ./gradlew
+          echo "Cleaning project..."
+          ./gradlew clean
+          echo "Building debug APK..."
+          ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
