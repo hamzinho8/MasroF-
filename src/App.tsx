@@ -292,6 +292,7 @@ export default function App() {
             setEntries={setCreditEntries}
             onSettle={handleCreditSettlement}
             transactions={transactions}
+            onAddClick={openModal}
           />
         );
       case 'history':

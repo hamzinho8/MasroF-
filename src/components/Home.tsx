@@ -23,7 +23,9 @@ import {
   Copy,
   Minimize2,
   Divide,
-  X
+  X,
+  Landmark,
+  Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Transaction, CreditEntry } from '../types';
@@ -49,7 +51,7 @@ export default function Home({
   bankBalance,
   onAddBankBalance,
   transactions, 
-  onAddClick, 
+  onAddClick,
   onViewAll, 
   onDelete,
   onEdit,
@@ -794,35 +796,38 @@ function AddBankBalanceModal({ onClose, onAdd, currency }: { onClose: () => void
         className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[1000] max-w-md mx-auto"
       />
       <motion.div 
-        initial={{ scale: 0.9, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.9, opacity: 0, y: 20 }}
-        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[1001] bg-white p-6 rounded-[28px] w-[300px] shadow-2xl"
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        className="fixed bottom-0 left-0 right-0 z-[1001] bg-white rounded-t-[40px] p-8 max-w-md mx-auto shadow-2xl max-h-[90vh] overflow-y-auto"
       >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-black text-slate-800">Ajouter au solde bancaire</h3>
-          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-black text-slate-800 tracking-tight">Ajouter Salaire / Dépôt</h2>
+          <button onClick={onClose} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors">
             <X size={20} />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-1.5">
-            <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Montant du salaire / dépôt ({currency})</label>
+            <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Montant ({currency})</label>
             <input
               type="number"
               step="0.1"
               required
               autoFocus
-              className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-5 font-black text-slate-800 text-2xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all text-center"
+              placeholder="0.0"
+              className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-5 font-black text-slate-800 text-3xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all text-center font-mono"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
           </div>
           <button
             type="submit"
-            className="w-full h-14 rounded-2xl bg-teal-500 text-white font-black uppercase tracking-widest shadow-lg shadow-teal-500/20 active:scale-[0.98] transition-all"
+            className="w-full h-16 rounded-3xl flex items-center justify-center gap-3 font-black text-white text-lg shadow-lg transform transition-all active:scale-[0.98] bg-blue-600 shadow-blue-600/20"
           >
-            Confirmer
+            <Check size={24} strokeWidth={3} />
+            <span>Confirmer</span>
           </button>
         </form>
       </motion.div>

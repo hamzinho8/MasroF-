@@ -4,6 +4,7 @@ import {
   CalendarDays,
   CalendarRange,
   ShoppingCart,
+  Wallet,
   Plus,
   Filter, 
   TrendingUp, 
@@ -22,7 +23,8 @@ import {
   MoreVertical,
   Trash2,
   Pencil,
-  ListFilter
+  ListFilter,
+  Landmark
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -333,7 +335,7 @@ export default function History({ transactions, language, currency, onDelete, on
       </div>
 
       {/* Quick Actions - Identical to Home style */}
-      <div className="grid grid-cols-2 gap-4 px-1">
+      <div className="grid grid-cols-2 gap-4 px-1 mb-6">
         <button 
           onClick={() => onAddClick('EXPENSE')}
           className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-rose-100 hover:bg-rose-50/30 active:scale-95 shadow-sm"

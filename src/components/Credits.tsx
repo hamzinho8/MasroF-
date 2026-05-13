@@ -15,7 +15,17 @@ import {
   TrendingUp,
   TrendingDown,
   X,
-  HandCoins
+  HandCoins,
+  Utensils,
+  ShoppingBag,
+  Car,
+  Gamepad2,
+  MoreHorizontal,
+  ArrowDownToLine,
+  CalendarCheck,
+  CalendarRange,
+  CalendarDays,
+  Landmark
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CreditEntry, Transaction } from '../types';
@@ -27,11 +37,12 @@ interface CreditsProps {
   setEntries: React.Dispatch<React.SetStateAction<CreditEntry[]>>;
   onSettle?: (id: string) => void;
   transactions?: Transaction[];
+  onAddClick?: (type: 'INCOME' | 'EXPENSE') => void;
 }
 
 // decorative backgrounds removed
 
-export default function Credits({ language, currency, entries, setEntries, onSettle, transactions = [] }: CreditsProps) {
+export default function Credits({ language, currency, entries, setEntries, onSettle, transactions = [], onAddClick }: CreditsProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [newName, setNewName] = useState('');
   const [newAmount, setNewAmount] = useState('');
@@ -158,13 +169,15 @@ export default function Credits({ language, currency, entries, setEntries, onSet
     setActiveMenuId(null);
   };
 
-  const getBankVariation = (period: 'day' | 'week' | 'month') => {
+  const [bankTimeframe, setBankTimeframe] = useState<'day' | 'week' | 'month'>('day');
+
+  const filteredBankTotals = React.useMemo(() => {
     const now = new Date();
     const startOfPeriod = new Date();
 
-    if (period === 'day') {
+    if (bankTimeframe === 'day') {
       startOfPeriod.setHours(0, 0, 0, 0);
-    } else if (period === 'week') {
+    } else if (bankTimeframe === 'week') {
       const day = now.getDay() || 7; 
       startOfPeriod.setDate(now.getDate() - day + 1);
       startOfPeriod.setHours(0, 0, 0, 0);
@@ -173,19 +186,29 @@ export default function Credits({ language, currency, entries, setEntries, onSet
       startOfPeriod.setHours(0, 0, 0, 0);
     }
 
-    return transactions
-      .filter(tx => tx.timestamp >= startOfPeriod.getTime() && tx.timestamp <= now.getTime())
-      .reduce((acc, tx) => {
-        if (tx.type === 'INCOME' && tx.paidByBank) return acc + tx.amount; // Salaire / Dépôt (+Bank)
-        if (tx.type === 'EXPENSE' && tx.paidByBank) return acc - tx.amount; // Achat carte (-Bank)
-        if (tx.type === 'INCOME' && !tx.paidByBank) return acc - tx.amount; // Retrait poche (-Bank)
-        return acc;
-      }, 0);
-  };
+    let totalExpense = 0; // Everything strictly drawn from the bank (purchases directly from bank, and withdrawals from bank)
+    let totalIncome = 0; // Salaries/deposits into the bank
 
-  const todayBankVar = getBankVariation('day');
-  const weekBankVar = getBankVariation('week');
-  const monthBankVar = getBankVariation('month');
+    transactions
+      .filter(tx => tx.timestamp >= startOfPeriod.getTime() && tx.timestamp <= now.getTime())
+      .forEach(tx => {
+        if (tx.type === 'INCOME' && tx.paidByBank) {
+          totalIncome += tx.amount;
+        } else if (tx.type === 'EXPENSE' && tx.paidByBank) {
+          totalExpense += tx.amount;
+        } else if (tx.type === 'INCOME' && !tx.paidByBank) {
+          totalExpense += tx.amount;
+        }
+      });
+
+    return { totalIncome, totalExpense };
+  }, [transactions, bankTimeframe]);
+
+  const getTimeframeLabel = (frame: 'day' | 'week' | 'month') => {
+    if (language === 'Français') return frame === 'day' ? "Aujourd'hui" : frame === 'week' ? "7 Jours" : "30 Jours";
+    if (language === 'العربية') return frame === 'day' ? "اليوم" : frame === 'week' ? "٧ أيام" : "٣٠ يوماً";
+    return frame === 'day' ? "Today" : frame === 'week' ? "7 Days" : "30 Days";
+  };
 
   const bankTransactions = transactions.filter(tx => {
     return (tx.type === 'INCOME' && tx.paidByBank) || 
@@ -194,11 +217,11 @@ export default function Credits({ language, currency, entries, setEntries, onSet
   });
 
   const getCategoryMap = () => [
-    { label: language === 'Français' ? 'Nourriture' : language === 'العربية' ? 'طعام' : 'Food', icon: <TrendingDown size={24} />, color: 'teal', bg: 'bg-teal-100', text: 'text-teal-600', glow: 'bg-teal-400' },
-    { label: language === 'Français' ? 'Shopping' : language === 'العربية' ? 'تسوق' : 'Shopping', icon: <TrendingDown size={24} />, color: 'rose', bg: 'bg-rose-100', text: 'text-rose-600', glow: 'bg-rose-400' },
-    { label: language === 'Français' ? 'Transport' : language === 'العربية' ? 'نقل' : 'Transport', icon: <TrendingDown size={24} />, color: 'sky', bg: 'bg-sky-100', text: 'text-sky-600', glow: 'bg-sky-400' },
-    { label: language === 'Français' ? 'Loisirs' : language === 'العربية' ? 'ترفيه' : 'Entertainment', icon: <TrendingDown size={24} />, color: 'purple', bg: 'bg-purple-100', text: 'text-purple-600', glow: 'bg-purple-400' },
-    { label: language === 'Français' ? 'Autres' : language === 'العربية' ? 'أخرى' : 'Other', icon: <TrendingDown size={24} />, color: 'slate', bg: 'bg-slate-100', text: 'text-slate-600', glow: 'bg-slate-400' },
+    { label: language === 'Français' ? 'Nourriture' : language === 'العربية' ? 'طعام' : 'Food', icon: <Utensils size={24} />, color: 'teal', bg: 'bg-teal-100', text: 'text-teal-600', glow: 'bg-teal-400' },
+    { label: language === 'Français' ? 'Shopping' : language === 'العربية' ? 'تسوق' : 'Shopping', icon: <ShoppingBag size={24} />, color: 'rose', bg: 'bg-rose-100', text: 'text-rose-600', glow: 'bg-rose-400' },
+    { label: language === 'Français' ? 'Transport' : language === 'العربية' ? 'نقل' : 'Transport', icon: <Car size={24} />, color: 'sky', bg: 'bg-sky-100', text: 'text-sky-600', glow: 'bg-sky-400' },
+    { label: language === 'Français' ? 'Loisirs' : language === 'العربية' ? 'ترفيه' : 'Entertainment', icon: <Gamepad2 size={24} />, color: 'purple', bg: 'bg-purple-100', text: 'text-purple-600', glow: 'bg-purple-400' },
+    { label: language === 'Français' ? 'Autres' : language === 'العربية' ? 'أخرى' : 'Other', icon: <MoreHorizontal size={24} />, color: 'slate', bg: 'bg-slate-100', text: 'text-slate-600', glow: 'bg-slate-400' },
   ];
 
   return (
@@ -499,41 +522,97 @@ export default function Credits({ language, currency, entries, setEntries, onSet
           {language === 'Français' ? 'Historique Bancaire' : language === 'العربية' ? 'سجل البنك' : 'Bank History'}
         </h3>
         
-        {/* Sommaire Jour / Semaine / Mois */}
-        <div className="flex gap-3 mb-6 overflow-x-auto pb-4 scrollbar-hide snap-x">
-          <div className="shrink-0 snap-start bg-white border border-slate-100 rounded-[24px] p-5 min-w-[140px] shadow-sm">
-             <div className="flex items-center gap-2 mb-2">
-               <div className="w-2 h-2 rounded-full bg-slate-200" />
-               <span className="text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
-                 {language === 'Français' ? 'Aujourd\'hui' : language === 'العربية' ? 'اليوم' : 'Today'}
-               </span>
-             </div>
-             <span className={`text-xl font-black ${todayBankVar >= 0 ? 'text-teal-600' : 'text-rose-500'}`}>
-               {todayBankVar > 0 ? '+' : ''}{todayBankVar.toLocaleString('fr-FR')} <span className="text-xs">{currency}</span>
-             </span>
+        {/* Premium Summary Card (Bank) */}
+        <div className="relative overflow-hidden rounded-[38px] shadow-xl shadow-slate-200/40 border border-white mb-6">
+          <div className="absolute inset-0 bg-gradient-to-br from-teal-50 via-white to-sky-50 z-0" />
+          <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-teal-400/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-[-20%] left-[-10%] w-64 h-64 bg-sky-400/10 rounded-full blur-3xl" />
+          
+          <div className="relative z-10 p-5">
+            <div className="flex bg-white/40 backdrop-blur-md p-1 rounded-3xl shadow-sm border border-white/50 mb-8">
+              <button 
+                onClick={() => setBankTimeframe('day')}
+                className={`flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 ${bankTimeframe === 'day' ? 'bg-slate-900 text-white shadow-xl' : 'text-slate-500 hover:bg-white/40'}`}
+              >
+                <CalendarCheck size={18} strokeWidth={bankTimeframe === 'day' ? 2.5 : 2} />
+                <span className="text-[10px] font-black uppercase tracking-wider">{getTimeframeLabel('day')}</span>
+              </button>
+              <button 
+                onClick={() => setBankTimeframe('week')}
+                className={`flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 ${bankTimeframe === 'week' ? 'bg-slate-900 text-white shadow-xl' : 'text-slate-500 hover:bg-white/40'}`}
+              >
+                <CalendarRange size={18} strokeWidth={bankTimeframe === 'week' ? 2.5 : 2} />
+                <span className="text-[10px] font-black uppercase tracking-wider">{getTimeframeLabel('week')}</span>
+              </button>
+              <button 
+                onClick={() => setBankTimeframe('month')}
+                className={`flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 ${bankTimeframe === 'month' ? 'bg-slate-900 text-white shadow-xl' : 'text-slate-500 hover:bg-white/40'}`}
+              >
+                <CalendarDays size={18} strokeWidth={bankTimeframe === 'month' ? 2.5 : 2} />
+                <span className="text-[10px] font-black uppercase tracking-wider">{getTimeframeLabel('month')}</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6 relative px-2 mb-2">
+              <div className="absolute left-1/2 top-4 bottom-4 w-px bg-slate-200/50" />
+              
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-teal-500/10 flex items-center justify-center text-teal-600">
+                    <TrendingUp size={16} strokeWidth={2.5} />
+                  </div>
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                    {language === 'Français' ? 'Dépôts' : language === 'العربية' ? 'إيداعات' : 'Deposits'}
+                  </span>
+                </div>
+                <p className="text-2xl font-black text-teal-600 tracking-tighter">
+                  {filteredBankTotals.totalIncome.toLocaleString('fr-FR')} 
+                  <span className="text-xs ml-1 font-bold text-slate-400 uppercase">{currency}</span>
+                </p>
+              </div>
+
+              <div className="space-y-1 pl-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-slate-500/10 flex items-center justify-center text-slate-600">
+                    <TrendingDown size={16} strokeWidth={2.5} />
+                  </div>
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                    {language === 'Français' ? 'Sorties' : language === 'العربية' ? 'نفقات' : 'Outflows'}
+                  </span>
+                </div>
+                <p className="text-2xl font-black text-slate-600 tracking-tighter">
+                  {filteredBankTotals.totalExpense.toLocaleString('fr-FR')} 
+                  <span className="text-xs ml-1 font-bold text-slate-400 uppercase">{currency}</span>
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="shrink-0 snap-start bg-white border border-slate-100 rounded-[24px] p-5 min-w-[140px] shadow-sm">
-             <div className="flex items-center gap-2 mb-2">
-               <div className="w-2 h-2 rounded-full bg-slate-300" />
-               <span className="text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
-                 {language === 'Français' ? '7 Jours' : language === 'العربية' ? '٧ أيام' : '7 Days'}
-               </span>
-             </div>
-             <span className={`text-xl font-black ${weekBankVar >= 0 ? 'text-teal-600' : 'text-rose-500'}`}>
-               {weekBankVar > 0 ? '+' : ''}{weekBankVar.toLocaleString('fr-FR')} <span className="text-xs">{currency}</span>
-             </span>
-          </div>
-          <div className="shrink-0 snap-start bg-white border border-slate-100 rounded-[24px] p-5 min-w-[140px] shadow-sm">
-             <div className="flex items-center gap-2 mb-2">
-               <div className="w-2 h-2 rounded-full bg-slate-400" />
-               <span className="text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
-                 {language === 'Français' ? '30 Jours' : language === 'العربية' ? '٣٠ يوماً' : '30 Days'}
-               </span>
-             </div>
-             <span className={`text-xl font-black ${monthBankVar >= 0 ? 'text-teal-600' : 'text-rose-500'}`}>
-               {monthBankVar > 0 ? '+' : ''}{monthBankVar.toLocaleString('fr-FR')} <span className="text-xs">{currency}</span>
-             </span>
-          </div>
+        </div>
+
+        {/* Quick Actions - Identical to Home & History style */}
+        <div className="grid grid-cols-2 gap-4 px-1 mb-6">
+          <button 
+            onClick={() => onAddClick && onAddClick('EXPENSE')}
+            className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-rose-100 hover:bg-rose-50/30 active:scale-95 shadow-sm"
+          >
+            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+              <ShoppingBag size={24} strokeWidth={2.5} />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-rose-600 transition-colors">
+              {language === 'Français' ? 'Ajouter Achat' : language === 'العربية' ? 'إضافة شراء' : 'Add Purchase'}
+            </span>
+          </button>
+          <button 
+            onClick={() => onAddClick && onAddClick('INCOME')}
+            className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-teal-100 hover:bg-teal-50/30 active:scale-95 shadow-sm"
+          >
+            <div className="w-12 h-12 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+              <ArrowDownToLine size={24} strokeWidth={2.5} />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-teal-600 transition-colors">
+              {language === 'Français' ? 'Ajouter Retrait' : language === 'العربية' ? 'إضافة سحب' : 'Add Withdrawal'}
+            </span>
+          </button>
         </div>
 
         {/* Bank Transactions List */}
@@ -545,28 +624,32 @@ export default function Credits({ language, currency, entries, setEntries, onSet
           <div className="space-y-4">
             {bankTransactions.map((tx, index) => {
               const isIncome = tx.type === 'INCOME' && tx.paidByBank; // Salaire / Dépôt
-              const isExpense = tx.type === 'EXPENSE' || (tx.type === 'INCOME' && !tx.paidByBank); // Retrait is visually an expense from bank
+              const isExpense = tx.type === 'EXPENSE'; // Achat carte
+              const isRetrait = tx.type === 'INCOME' && !tx.paidByBank; // Retrait poche
               
               const categoryMatch = getCategoryMap().find(c => 
                 c.label && c.label.toLowerCase() === (tx.category || '').toLowerCase()
               ) || {
-                icon: isIncome ? <TrendingUp size={24} /> : <TrendingDown size={24} />,
-                color: isIncome ? 'teal' : 'slate',
-                bg: isIncome ? 'bg-teal-100' : 'bg-slate-100',
-                text: isIncome ? 'text-teal-600' : 'text-slate-600',
-                glow: isIncome ? 'bg-teal-400' : 'bg-slate-400'
+                icon: isIncome ? <TrendingUp size={24} /> : (isRetrait ? <ArrowDownToLine size={24} /> : <ShoppingBag size={24} />),
+                color: isIncome ? 'teal' : (isRetrait ? 'emerald' : 'slate'),
+                bg: isIncome ? 'bg-teal-100' : (isRetrait ? 'bg-emerald-500' : 'bg-slate-100'),
+                text: isIncome ? 'text-teal-600' : (isRetrait ? 'text-white' : 'text-slate-600'),
+                glow: isIncome ? 'bg-teal-400' : (isRetrait ? 'bg-emerald-400' : 'bg-slate-400')
               };
 
-              // Retrait will not match a category, so it defaults correctly, but let's tint Retrait nicely
-              if (tx.type === 'INCOME' && !tx.paidByBank) {
-                categoryMatch.icon = <HandCoins size={24} />;
-                categoryMatch.bg = 'bg-bank-blue/20'; // Or sky-100
-                categoryMatch.text = 'text-sky-600';
-              }
-
+              // Use exact identical card visual style as History page items
               const getCardStyle = () => {
-                if (isIncome) return 'bg-teal-50/30 border-teal-100/50 hover:border-teal-200 hover:shadow-teal-500/5 text-teal-600';
-                return 'bg-white border-slate-100 hover:border-slate-200 hover:shadow-slate-500/5 text-slate-600';
+                const colors: Record<string, string> = {
+                  'rose': 'hover:border-rose-200 hover:shadow-rose-500/10',
+                  'sky': 'hover:border-sky-200 hover:shadow-sky-500/10',
+                  'indigo': 'hover:border-indigo-200 hover:shadow-indigo-500/10',
+                  'amber': 'hover:border-amber-200 hover:shadow-amber-500/10',
+                  'purple': 'hover:border-purple-200 hover:shadow-purple-500/10',
+                  'slate': 'hover:border-slate-200 hover:shadow-slate-500/10',
+                  'emerald': 'hover:border-emerald-200 hover:shadow-emerald-500/10',
+                  'teal': 'hover:border-teal-200 hover:shadow-teal-500/10'
+                };
+                return colors[categoryMatch.color] || 'hover:border-slate-200';
               };
 
               return (
@@ -575,7 +658,7 @@ export default function Credits({ language, currency, entries, setEntries, onSet
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className={`flex items-center gap-4 p-5 rounded-[32px] border transition-all relative shadow-sm ${getCardStyle()}`}
+                  className={`flex items-center gap-4 p-4 rounded-[32px] border transition-all relative backdrop-blur-sm bg-white shadow-sm group ${getCardStyle()}`}
                 >
                   <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all shadow-sm ${categoryMatch.bg} ${categoryMatch.text}`}>
                     {categoryMatch.icon}
