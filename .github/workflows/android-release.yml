@@ -25,7 +25,7 @@ jobs:
       - name: Find gradlew and build APK
         run: |
           GRADLE_PATH=$(find . -name gradlew -exec dirname {} \;)
-          cd $GRADLE_PATH
+          cd "$GRADLE_PATH"
           chmod +x gradlew
           ./gradlew clean assembleDebug
 
