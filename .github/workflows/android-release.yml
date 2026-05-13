@@ -20,11 +20,12 @@ jobs:
 
       - name: Build with Gradle
         run: |
-          # On cherche où est le fichier gradlew et on entre dans ce dossier
+          # Trouver le dossier où se trouve gradlew
           GRADLE_PATH=$(find . -name gradlew -exec dirname {} \;)
           cd $GRADLE_PATH
           chmod +x gradlew
-          ./gradlew assembleDebug
+          # Clean pour supprimer les doublons et compilation
+          ./gradlew clean assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
