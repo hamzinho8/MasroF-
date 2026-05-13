@@ -18,16 +18,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Find and Fix Gradlew
-        run: |
-          GRADLEW_PATH=$(find . -name gradlew)
-          echo "Found gradlew at: $GRADLEW_PATH"
-          chmod +x $GRADLEW_PATH
-          echo "GRADLEW_PATH=$GRADLEW_PATH" >> $GITHUB_ENV
-
       - name: Build with Gradle
         run: |
-          $GRADLEW_PATH assembleDebug
+          # On cherche où est le fichier gradlew et on entre dans ce dossier
+          GRADLE_PATH=$(find . -name gradlew -exec dirname {} \;)
+          cd $GRADLE_PATH
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
