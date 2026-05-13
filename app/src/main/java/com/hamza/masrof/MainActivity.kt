@@ -20,8 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hamza.masrof.data.AppDatabase
 import com.hamza.masrof.data.ExpenseEntity
-import com.hamza.masrof.ui.ExpenseViewModel
-import com.hamza.masrof.ui.ExpenseViewModelFactory
+import com.hamza.masrof.ui.BudgetViewModel
+import com.hamza.masrof.ui.BudgetViewModelFactory
 import com.hamza.masrof.ui.theme.MasroFTheme
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -34,12 +34,12 @@ class MainActivity : ComponentActivity() {
         // Initialisation de la BDD manuellement puisqu'on n'utilise pas Hilt
         val db = AppDatabase.getDatabase(this)
         val dao = db.expenseDao()
-        val factory = ExpenseViewModelFactory(dao)
+        val factory = BudgetViewModelFactory(dao)
 
         setContent {
             MasroFTheme {
-                val expenseViewModel: ExpenseViewModel = viewModel(factory = factory)
-                MasroFApp(viewModel = expenseViewModel)
+                val budgetViewModel: BudgetViewModel = viewModel(factory = factory)
+                MasroFApp(viewModel = budgetViewModel)
             }
         }
     }
@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MasroFApp(viewModel: ExpenseViewModel) {
+fun MasroFApp(viewModel: BudgetViewModel) {
     val expenses by viewModel.expenses.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
 
