@@ -1,5 +1,5 @@
 package com.hamza.masrof
-// Application MainActivity - Synchronized Version - Final Fix
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -39,120 +39,39 @@ fun MasroFApp(viewModel: BudgetViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("MasroF", fontWeight = FontWeight.Bold) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                title = { Text("MasroF", fontWeight = FontWeight.Bold) }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showAddDialog = true },
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = "Ajouter dépense")
+            FloatingActionButton(onClick = { showAddDialog = true }) {
+                Icon(Icons.Filled.Add, contentDescription = null)
             }
         }
     ) { paddingValues ->
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            color = MaterialTheme.colorScheme.background
-        ) {
+        Column(modifier = Modifier.padding(paddingValues)) {
             if (items.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Aucune dépense. Appuyez sur + pour ajouter.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Appuyez sur + pour ajouter.")
                 }
             } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                LazyColumn {
                     items(items) { item ->
-                        ExpenseItem(item = item)
+                        Text(item, modifier = Modifier.padding(16.dp))
                     }
                 }
             }
         }
 
         if (showAddDialog) {
-            AddExpenseDialog(
-                onDismiss = { showAddDialog = false },
-                onConfirm = { name ->
-                    viewModel.addExpense(name)
-                    showAddDialog = false
-                }
+            AlertDialog(
+                onDismissRequest = { showAddDialog = false },
+                confirmButton = {
+                    Button(onClick = {
+                        viewModel.addExpense("Nouvelle dépense")
+                        showAddDialog = false
+                    }) { Text("Ajouter") }
+                },
+                title = { Text("Ajouter") }
             )
         }
     }
-}
-
-@Composable
-fun AddExpenseDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
-    var title by remember { mutableStateOf("") }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Nouvelle dépense") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text("Titre") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    if (title.isNotBlank()) {
-                        onConfirm(title)
-                    }
-                }
-            ) {
-                Text("Ajouter")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Annuler")
-            }
-        }
-    )
-}
-
-@Composable
-fun ExpenseItem(item: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = item,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
-}
