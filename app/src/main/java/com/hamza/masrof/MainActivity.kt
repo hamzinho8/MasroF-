@@ -1,5 +1,5 @@
 package com.hamza.masrof
-// Application MainActivity - Force Update
+// Application MainActivity - Synchronized Version
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
