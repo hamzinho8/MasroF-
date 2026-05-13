@@ -1,39 +1,24 @@
-name: Android Release Build
-# Updated to force Github synchronization
-
+name: Android Build
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
-
+  push:
+    branches: [main]
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
+      - uses: actions/checkout@v4
+      - name: set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
-            
-      - name: Find gradlew and build APK
+      - name: Build with Gradle
         run: |
-          GRADLE_PATH=$(find . -name "gradlew" -exec dirname {} \;)
-          cd "$GRADLE_PATH"
-          chmod +x ./gradlew
-          echo "Cleaning project..."
-          ./gradlew clean
-          echo "Building debug APK..."
-          ./gradlew assembleDebug
-
+          chmod +x gradlew
+          ./gradlew clean assembleDebug --stacktrace
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: masrof-app-debug
-          path: '**/app/build/outputs/apk/debug/*.apk'
+          name: app-debug
+          path: app/build/outputs/apk/debug/*.apk
