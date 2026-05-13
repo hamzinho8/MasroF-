@@ -1,5 +1,5 @@
 package com.hamza.masrof
-// Application MainActivity - Synchronized Version
+// Application MainActivity - Synchronized Version - Final Fix
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
