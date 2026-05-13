@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
+    kotlin("kapt") version "1.9.22"
 }
 android {
     namespace = "com.hamza.masrof"
