@@ -1,6 +1,8 @@
-name: Android Build APK (Auto-Fix)
+name: Android Build APK
 
 on:
+  push:
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -16,16 +18,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # CETTE ÉTAPE RÉPARE TON GRADLEW S'IL EST CORROMPU
-      - name: Force Install Gradle Wrapper
-        run: |
-          gradle wrapper --gradle-version 8.2
-          chmod +x gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-      - name: Build Debug APK
+      - name: Build with Gradle
         run: ./gradlew assembleDebug
 
-      - name: Upload APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: MasroF-APK
