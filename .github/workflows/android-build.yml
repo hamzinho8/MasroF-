@@ -44,11 +44,11 @@ jobs:
           chmod +x gradlew
           ./gradlew clean
 
-      - name: Build Release APK
+      - name: Build Debug APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleRelease --stacktrace --info
+          ./gradlew assembleDebug --stacktrace --info
 
       - name: Debug Output Files
         run: |
@@ -57,8 +57,8 @@ jobs:
           echo "Looking for AAB files:"
           find android -name "*.aab"
 
-      - name: Upload Release APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-apk
-          path: android/app/build/outputs/apk/release/*.apk
+          name: app-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
