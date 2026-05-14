@@ -46,6 +46,8 @@ interface SettingsProps {
   transactions: any[];
   predefinedItems: PredefinedItem[];
   onPredefinedItemsChange: (items: PredefinedItem[]) => void;
+  balanceThreshold: number | null;
+  onBalanceThresholdChange: (threshold: number | null) => void;
 }
 
 const CATEGORIES = [
@@ -72,7 +74,9 @@ export default function Settings({
   onRemindersChange,
   transactions,
   predefinedItems,
-  onPredefinedItemsChange
+  onPredefinedItemsChange,
+  balanceThreshold,
+  onBalanceThresholdChange
 }: SettingsProps) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
@@ -280,6 +284,27 @@ export default function Settings({
               >
                 DÉPENSES HEBDO
               </button>
+            </div>
+          </div>
+
+          {/* Section: Alerte Solde */}
+          <div className="py-4 px-6 bg-[#F0F7F8]/30 border-t border-[#2D8B96]/5">
+            <h3 className="text-[11px] font-black text-[#1B5E66] uppercase tracking-[0.4em] mb-6 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 bg-[#E5C366] rounded-full shadow-[0_0_8px_#E5C366]" />
+              ALERTE SOLDE BAS
+            </h3>
+            <div className="bg-white/50 p-4 rounded-3xl border border-[#2D8B96]/10 flex flex-col gap-3">
+              <p className="text-[10px] text-[#1B5E66] font-bold uppercase tracking-widest">Seuil minimal (optionnel) :</p>
+              <div className="flex items-center gap-3">
+                <input 
+                  type="number" 
+                  value={balanceThreshold ?? ''}
+                  onChange={(e) => onBalanceThresholdChange(e.target.value ? parseFloat(e.target.value) : null)}
+                  placeholder="ex: 500"
+                  className="flex-1 h-12 bg-white border border-[#2D8B96]/20 rounded-xl px-4 text-sm font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
+                />
+                <span className="text-sm font-black text-[#2D8B96] w-12">{currency}</span>
+              </div>
             </div>
           </div>
 

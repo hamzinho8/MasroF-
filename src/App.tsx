@@ -31,6 +31,7 @@ export default function App() {
   const [modalType, setModalType] = useState<'INCOME' | 'EXPENSE'>('EXPENSE');
   const [widgetMode, setWidgetMode] = useState<'balance' | 'spending'>('balance');
   const [aiNotifications, setAiNotifications] = useState(true);
+  const [balanceThreshold, setBalanceThreshold] = useState<number | null>(500);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [currency, setCurrency] = useState('DH');
   const [language, setLanguage] = useState<'Français' | 'العربية' | 'English'>('Français');
@@ -135,6 +136,15 @@ export default function App() {
     return () => clearTimeout(timer);
   }, []);
   const [balance, setBalance] = useState(1450.50);
+  const prevBalanceRef = React.useRef(balance);
+
+  React.useEffect(() => {
+    if (balanceThreshold !== null && balance < balanceThreshold && prevBalanceRef.current >= balanceThreshold) {
+      alert(`Attention ! Votre solde (${balance.toFixed(2)} ${currency}) est passé en dessous du seuil configuré (${balanceThreshold} ${currency}).`);
+    }
+    prevBalanceRef.current = balance;
+  }, [balance, balanceThreshold, currency]);
+
   const [bankBalance, setBankBalance] = useState(15000);
   const [transactions, setTransactions] = useState<Transaction[]>([
     { id: '1', label: 'Tirage Banque', amount: 2000, type: 'INCOME', date: '03/05 18:23', timestamp: new Date(2024, 4, 3, 18, 23).getTime() },
@@ -325,6 +335,8 @@ export default function App() {
             transactions={transactions}
             predefinedItems={predefinedItems}
             onPredefinedItemsChange={setPredefinedItems}
+            balanceThreshold={balanceThreshold}
+            onBalanceThresholdChange={setBalanceThreshold}
           />
         );
       default:
