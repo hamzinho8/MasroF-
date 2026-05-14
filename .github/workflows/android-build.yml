@@ -32,6 +32,11 @@ jobs:
       - name: Capacitor Sync
         run: npx cap sync android
 
+      - name: Regenerate Official Gradle Wrapper
+        run: |
+          cd android
+          gradle wrapper --gradle-version 8.11.1
+
       - name: Setup Gradle Cache
         uses: gradle/actions/setup-gradle@v4
         with:
