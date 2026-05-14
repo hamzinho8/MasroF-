@@ -38,11 +38,17 @@ jobs:
       - name: Clean Gradle Caches
         run: rm -rf ~/.gradle/caches
 
+      - name: Clean Project
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew clean
+
       - name: Build Release APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew clean assembleRelease --stacktrace --info
+          ./gradlew assembleRelease --stacktrace --info
 
       - name: Debug Output Files
         run: |
