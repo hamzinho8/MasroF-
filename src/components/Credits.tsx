@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { 
-  Plus, 
-  Minus, 
-  Users, 
-  Trash2, 
+import React, { useState } from "react";
+import {
+  Plus,
+  Minus,
+  Users,
+  Trash2,
   CircleDollarSign,
   UserPlus,
   Coins,
@@ -25,10 +25,11 @@ import {
   CalendarCheck,
   CalendarRange,
   CalendarDays,
-  Landmark
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { CreditEntry, Transaction } from '../types';
+  Landmark,
+} from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { CreditEntry, Transaction } from "../types";
+import AddBankBalanceModal from "./AddBankBalanceModal";
 
 interface CreditsProps {
   language: string;
@@ -37,103 +38,127 @@ interface CreditsProps {
   setEntries: React.Dispatch<React.SetStateAction<CreditEntry[]>>;
   onSettle?: (id: string) => void;
   transactions?: Transaction[];
-  onAddClick?: (type: 'INCOME' | 'EXPENSE') => void;
+  onAddClick?: (type: "INCOME" | "EXPENSE") => void;
+  onAddBankBalance?: (amount: number) => void;
 }
 
 // decorative backgrounds removed
 
-export default function Credits({ language, currency, entries, setEntries, onSettle, transactions = [], onAddClick }: CreditsProps) {
+export default function Credits({
+  language,
+  currency,
+  entries,
+  setEntries,
+  onSettle,
+  transactions = [],
+  onAddClick,
+  onAddBankBalance,
+}: CreditsProps) {
   const [isAdding, setIsAdding] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [newAmount, setNewAmount] = useState('');
-  const [newType, setNewType] = useState<'OWE_ME' | 'I_OWE'>('OWE_ME');
+  const [newName, setNewName] = useState("");
+  const [newAmount, setNewAmount] = useState("");
+  const [newType, setNewType] = useState<"OWE_ME" | "I_OWE">("OWE_ME");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showBankModal, setShowBankModal] = useState(false);
 
   const translations = {
-    'Français': {
-      title: 'Gestion des Crédits',
-      subtitle: 'Suivez vos dettes et vos créances',
-      totalOweMe: 'On me doit',
-      totalIOwe: 'Je dois',
-      addEntry: 'Ajouter',
-      namePlaceholder: 'Nom de la personne',
-      amountPlaceholder: 'Montant',
-      typeOweMe: 'On me doit (Créance)',
-      typeIOwe: 'Je dois (Dette)',
-      cancel: 'Annuler',
-      confirm: 'Confirmer',
-      noEntries: 'Aucun crédit pour le moment',
-      history: 'Historique des Crédits',
-      owedToMe: 'ON ME DOIT',
-      owedByMe: 'JE DOIS',
-      settle: 'Régler (Solder)',
-      edit: 'Modifier',
+    Français: {
+      title: "Gestion des Crédits",
+      subtitle: "Suivez vos dettes et vos créances",
+      totalOweMe: "On me doit",
+      totalIOwe: "Je dois",
+      addEntry: "Ajouter",
+      namePlaceholder: "Nom de la personne",
+      amountPlaceholder: "Montant",
+      typeOweMe: "On me doit (Créance)",
+      typeIOwe: "Je dois (Dette)",
+      cancel: "Annuler",
+      confirm: "Confirmer",
+      noEntries: "Aucun crédit pour le moment",
+      history: "Historique des Crédits",
+      owedToMe: "ON ME DOIT",
+      owedByMe: "JE DOIS",
+      settle: "Régler (Solder)",
+      edit: "Modifier",
     },
-    'العربية': {
-      title: 'إدارة الديون',
-      subtitle: 'تتبع ديونك ومستحقاتك',
-      totalOweMe: 'لي عند الآخرين',
-      totalIOwe: 'علي للآخرين',
-      addEntry: 'إضافة',
-      namePlaceholder: 'اسم الشخص',
-      amountPlaceholder: 'المبلغ',
-      typeOweMe: 'لي عند الآخرين (دين لي)',
-      typeIOwe: 'علي للآخرين (دين علي)',
-      cancel: 'إلغاء',
-      confirm: 'تأكيد',
-      noEntries: 'لا توجد ديون حالياً',
-      history: 'سجل الديون',
-      owedToMe: 'مستحقات لي',
-      owedByMe: 'ديون علي',
-      settle: 'تسوية (سداد)',
-      edit: 'تعديل',
+    العربية: {
+      title: "إدارة الديون",
+      subtitle: "تتبع ديونك ومستحقاتك",
+      totalOweMe: "لي عند الآخرين",
+      totalIOwe: "علي للآخرين",
+      addEntry: "إضافة",
+      namePlaceholder: "اسم الشخص",
+      amountPlaceholder: "المبلغ",
+      typeOweMe: "لي عند الآخرين (دين لي)",
+      typeIOwe: "علي للآخرين (دين علي)",
+      cancel: "إلغاء",
+      confirm: "تأكيد",
+      noEntries: "لا توجد ديون حالياً",
+      history: "سجل الديون",
+      owedToMe: "مستحقات لي",
+      owedByMe: "ديون علي",
+      settle: "تسوية (سداد)",
+      edit: "تعديل",
     },
-    'English': {
-      title: 'Credits Management',
-      subtitle: 'Track your debts and loans',
-      totalOweMe: 'Owed to me',
-      totalIOwe: 'I owe',
-      addEntry: 'Add Entry',
-      namePlaceholder: 'Person name',
-      amountPlaceholder: 'Amount',
-      typeOweMe: 'Owed to me (Loan)',
-      typeIOwe: 'I owe (Debt)',
-      cancel: 'Cancel',
-      confirm: 'Confirm',
-      noEntries: 'No credits at the moment',
-      history: 'Credits History',
-      owedToMe: 'Loans',
-      owedByMe: 'Debts',
-      settle: 'Settle (Delete)',
-      edit: 'Modify',
-    }
+    English: {
+      title: "Credits Management",
+      subtitle: "Track your debts and loans",
+      totalOweMe: "Owed to me",
+      totalIOwe: "I owe",
+      addEntry: "Add Entry",
+      namePlaceholder: "Person name",
+      amountPlaceholder: "Amount",
+      typeOweMe: "Owed to me (Loan)",
+      typeIOwe: "I owe (Debt)",
+      cancel: "Cancel",
+      confirm: "Confirm",
+      noEntries: "No credits at the moment",
+      history: "Credits History",
+      owedToMe: "Loans",
+      owedByMe: "Debts",
+      settle: "Settle (Delete)",
+      edit: "Modify",
+    },
   };
 
-  const t = translations[language as keyof typeof translations] || translations['Français'];
-  const isRtl = language === 'العربية';
+  const t =
+    translations[language as keyof typeof translations] ||
+    translations["Français"];
+  const isRtl = language === "العربية";
 
-  const formTitle = editingId 
-    ? (language === 'Français' ? 'Modifier le crédit' : language === 'العربية' ? 'تعديل السجل' : 'Edit Credit')
+  const formTitle = editingId
+    ? language === "Français"
+      ? "Modifier le crédit"
+      : language === "العربية"
+        ? "تعديل السجل"
+        : "Edit Credit"
     : t.addEntry;
 
   const totalOweMe = entries
-    .filter(e => e.type === 'OWE_ME')
+    .filter((e) => e.type === "OWE_ME")
     .reduce((acc, e) => acc + e.amount, 0);
 
   const totalIOwe = entries
-    .filter(e => e.type === 'I_OWE')
+    .filter((e) => e.type === "I_OWE")
     .reduce((acc, e) => acc + e.amount, 0);
 
   const handleAddEntry = () => {
     if (!newName || !newAmount) return;
 
     if (editingId) {
-      setEntries(prev => prev.map(e => 
-        e.id === editingId 
-          ? { ...e, name: newName, amount: parseFloat(newAmount), type: newType }
-          : e
-      ));
+      setEntries((prev) =>
+        prev.map((e) =>
+          e.id === editingId
+            ? {
+                ...e,
+                name: newName,
+                amount: parseFloat(newAmount),
+                type: newType,
+              }
+            : e,
+        ),
+      );
       setEditingId(null);
     } else {
       const newEntry: CreditEntry = {
@@ -141,13 +166,15 @@ export default function Credits({ language, currency, entries, setEntries, onSet
         name: newName,
         amount: parseFloat(newAmount),
         type: newType,
-        date: new Date().toLocaleDateString(language === 'Français' ? 'fr-FR' : 'en-US'),
+        date: new Date().toLocaleDateString(
+          language === "Français" ? "fr-FR" : "en-US",
+        ),
       };
-      setEntries(prev => [newEntry, ...prev]);
+      setEntries((prev) => [newEntry, ...prev]);
     }
-    
-    setNewName('');
-    setNewAmount('');
+
+    setNewName("");
+    setNewAmount("");
     setIsAdding(false);
   };
 
@@ -164,21 +191,23 @@ export default function Credits({ language, currency, entries, setEntries, onSet
     if (onSettle) {
       onSettle(id);
     } else {
-      setEntries(prev => prev.filter(e => e.id !== id));
+      setEntries((prev) => prev.filter((e) => e.id !== id));
     }
     setActiveMenuId(null);
   };
 
-  const [bankTimeframe, setBankTimeframe] = useState<'day' | 'week' | 'month'>('day');
+  const [bankTimeframe, setBankTimeframe] = useState<"day" | "week" | "month">(
+    "day",
+  );
 
   const filteredBankTotals = React.useMemo(() => {
     const now = new Date();
     const startOfPeriod = new Date();
 
-    if (bankTimeframe === 'day') {
+    if (bankTimeframe === "day") {
       startOfPeriod.setHours(0, 0, 0, 0);
-    } else if (bankTimeframe === 'week') {
-      const day = now.getDay() || 7; 
+    } else if (bankTimeframe === "week") {
+      const day = now.getDay() || 7;
       startOfPeriod.setDate(now.getDate() - day + 1);
       startOfPeriod.setHours(0, 0, 0, 0);
     } else {
@@ -190,13 +219,17 @@ export default function Credits({ language, currency, entries, setEntries, onSet
     let totalIncome = 0; // Salaries/deposits into the bank
 
     transactions
-      .filter(tx => tx.timestamp >= startOfPeriod.getTime() && tx.timestamp <= now.getTime())
-      .forEach(tx => {
-        if (tx.type === 'INCOME' && tx.paidByBank) {
+      .filter(
+        (tx) =>
+          tx.timestamp >= startOfPeriod.getTime() &&
+          tx.timestamp <= now.getTime(),
+      )
+      .forEach((tx) => {
+        if (tx.type === "INCOME" && tx.paidByBank) {
           totalIncome += tx.amount;
-        } else if (tx.type === 'EXPENSE' && tx.paidByBank) {
+        } else if (tx.type === "EXPENSE" && tx.paidByBank) {
           totalExpense += tx.amount;
-        } else if (tx.type === 'INCOME' && !tx.paidByBank) {
+        } else if (tx.type === "INCOME" && !tx.paidByBank) {
           totalExpense += tx.amount;
         }
       });
@@ -204,28 +237,92 @@ export default function Credits({ language, currency, entries, setEntries, onSet
     return { totalIncome, totalExpense };
   }, [transactions, bankTimeframe]);
 
-  const getTimeframeLabel = (frame: 'day' | 'week' | 'month') => {
-    if (language === 'Français') return frame === 'day' ? "Aujourd'hui" : frame === 'week' ? "7 Jours" : "30 Jours";
-    if (language === 'العربية') return frame === 'day' ? "اليوم" : frame === 'week' ? "٧ أيام" : "٣٠ يوماً";
-    return frame === 'day' ? "Today" : frame === 'week' ? "7 Days" : "30 Days";
+  const getTimeframeLabel = (frame: "day" | "week" | "month") => {
+    if (language === "Français")
+      return frame === "day" ? "Jour" : frame === "week" ? "Semaine" : "Mois";
+    if (language === "العربية")
+      return frame === "day" ? "اليوم" : frame === "week" ? "أسبوع" : "شهر";
+    return frame === "day" ? "Day" : frame === "week" ? "Week" : "Month";
   };
 
-  const bankTransactions = transactions.filter(tx => {
-    return (tx.type === 'INCOME' && tx.paidByBank) || 
-           (tx.type === 'EXPENSE' && tx.paidByBank) || 
-           (tx.type === 'INCOME' && !tx.paidByBank);
+  const bankTransactions = transactions.filter((tx) => {
+    return (
+      (tx.type === "INCOME" && tx.paidByBank) ||
+      (tx.type === "EXPENSE" && tx.paidByBank) ||
+      (tx.type === "INCOME" && !tx.paidByBank)
+    );
   });
 
   const getCategoryMap = () => [
-    { label: language === 'Français' ? 'Nourriture' : language === 'العربية' ? 'طعام' : 'Food', icon: <Utensils size={24} />, color: 'teal', bg: 'bg-teal-100', text: 'text-teal-600', glow: 'bg-teal-400' },
-    { label: language === 'Français' ? 'Shopping' : language === 'العربية' ? 'تسوق' : 'Shopping', icon: <ShoppingBag size={24} />, color: 'rose', bg: 'bg-rose-100', text: 'text-rose-600', glow: 'bg-rose-400' },
-    { label: language === 'Français' ? 'Transport' : language === 'العربية' ? 'نقل' : 'Transport', icon: <Car size={24} />, color: 'sky', bg: 'bg-sky-100', text: 'text-sky-600', glow: 'bg-sky-400' },
-    { label: language === 'Français' ? 'Loisirs' : language === 'العربية' ? 'ترفيه' : 'Entertainment', icon: <Gamepad2 size={24} />, color: 'purple', bg: 'bg-purple-100', text: 'text-purple-600', glow: 'bg-purple-400' },
-    { label: language === 'Français' ? 'Autres' : language === 'العربية' ? 'أخرى' : 'Other', icon: <MoreHorizontal size={24} />, color: 'slate', bg: 'bg-slate-100', text: 'text-slate-600', glow: 'bg-slate-400' },
+    {
+      label:
+        language === "Français"
+          ? "Nourriture"
+          : language === "العربية"
+            ? "طعام"
+            : "Food",
+      icon: <Utensils size={24} />,
+      color: "teal",
+      bg: "bg-teal-100",
+      text: "text-teal-600",
+      glow: "bg-teal-400",
+    },
+    {
+      label:
+        language === "Français"
+          ? "Shopping"
+          : language === "العربية"
+            ? "تسوق"
+            : "Shopping",
+      icon: <ShoppingBag size={24} />,
+      color: "rose",
+      bg: "bg-rose-100",
+      text: "text-rose-600",
+      glow: "bg-rose-400",
+    },
+    {
+      label:
+        language === "Français"
+          ? "Transport"
+          : language === "العربية"
+            ? "نقل"
+            : "Transport",
+      icon: <Car size={24} />,
+      color: "sky",
+      bg: "bg-sky-100",
+      text: "text-sky-600",
+      glow: "bg-sky-400",
+    },
+    {
+      label:
+        language === "Français"
+          ? "Loisirs"
+          : language === "العربية"
+            ? "ترفيه"
+            : "Entertainment",
+      icon: <Gamepad2 size={24} />,
+      color: "purple",
+      bg: "bg-purple-100",
+      text: "text-purple-600",
+      glow: "bg-purple-400",
+    },
+    {
+      label:
+        language === "Français"
+          ? "Autres"
+          : language === "العربية"
+            ? "أخرى"
+            : "Other",
+      icon: <MoreHorizontal size={24} />,
+      color: "slate",
+      bg: "bg-slate-100",
+      text: "text-slate-600",
+      glow: "bg-slate-400",
+    },
   ];
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
@@ -233,31 +330,40 @@ export default function Credits({ language, currency, entries, setEntries, onSet
       onClick={() => setActiveMenuId(null)}
     >
       {/* Artistic Credits Summary Card - Matched dimensions with Home.tsx */}
-      <div 
+      <div
         className="relative h-44 rounded-[24px] overflow-hidden shadow-2xl shadow-slate-200/40 mb-8 transition-all hover:scale-[1.01] border border-white/20 active:scale-95"
-        style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #f59e0b 100%)' }}
+        style={{
+          background: "linear-gradient(135deg, #4f46e5 0%, #f59e0b 100%)",
+        }}
       >
         {/* Artistic Background Elements - Restore arrows */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <TrendingUp 
-            size={120} 
-            className="absolute -left-8 -top-8 text-white/10 -rotate-12" 
+          <TrendingUp
+            size={120}
+            className="absolute -left-8 -top-8 text-white/10 -rotate-12"
           />
-          <TrendingDown 
-            size={120} 
-            className="absolute -right-8 -bottom-8 text-white/10 rotate-12" 
+          <TrendingDown
+            size={120}
+            className="absolute -right-8 -bottom-8 text-white/10 rotate-12"
           />
         </div>
 
         {/* Central Plus Button - Fully Transparent Background */}
         <div className="absolute inset-0 flex items-center justify-center z-30">
-          <motion.button 
+          <motion.button
             whileHover={{ scale: 1.2, rotate: 90 }}
             whileTap={{ scale: 0.9 }}
-            onClick={(e) => { e.stopPropagation(); setIsAdding(true); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsAdding(true);
+            }}
             className="w-20 h-20 bg-transparent text-white flex items-center justify-center transition-all z-40 outline-none"
           >
-            <Plus size={52} strokeWidth={2.5} className="drop-shadow-lg opacity-80 hover:opacity-100 transition-opacity" />
+            <Plus
+              size={52}
+              strokeWidth={2.5}
+              className="drop-shadow-lg opacity-80 hover:opacity-100 transition-opacity"
+            />
           </motion.button>
         </div>
 
@@ -273,9 +379,11 @@ export default function Credits({ language, currency, entries, setEntries, onSet
             </div>
             <div className="flex items-baseline gap-1.5 translate-x-1">
               <span className="text-4xl font-black text-white tracking-tighter drop-shadow-lg leading-none">
-                {totalOweMe.toLocaleString('fr-FR')}
+                {totalOweMe.toLocaleString("fr-FR")}
               </span>
-              <span className="text-[10px] font-bold text-white/60 uppercase">{currency}</span>
+              <span className="text-[10px] font-bold text-white/60 uppercase">
+                {currency}
+              </span>
             </div>
           </div>
 
@@ -283,9 +391,11 @@ export default function Credits({ language, currency, entries, setEntries, onSet
           <div className="flex flex-col items-end text-right pb-1">
             <div className="flex items-baseline justify-end gap-1.5 translate-x-[-4px]">
               <span className="text-4xl font-black text-white tracking-tighter drop-shadow-lg leading-none">
-                {totalIOwe.toLocaleString('fr-FR')}
+                {totalIOwe.toLocaleString("fr-FR")}
               </span>
-              <span className="text-[10px] font-bold text-white/60 uppercase">{currency}</span>
+              <span className="text-[10px] font-bold text-white/60 uppercase">
+                {currency}
+              </span>
             </div>
             <div className="flex items-center gap-2 mt-1">
               <div className="bg-white/10 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/10">
@@ -301,7 +411,7 @@ export default function Credits({ language, currency, entries, setEntries, onSet
       {/* Add Form Modal-like */}
       <AnimatePresence>
         {isAdding && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
@@ -310,16 +420,18 @@ export default function Credits({ language, currency, entries, setEntries, onSet
           >
             <div className="flex items-center justify-between mb-6">
               <div className="space-y-1">
-                <h3 className="font-black text-xl text-slate-800 tracking-tight">{formTitle}</h3>
+                <h3 className="font-black text-xl text-slate-800 tracking-tight">
+                  {formTitle}
+                </h3>
                 <div className="w-8 h-1 bg-indigo-500 rounded-full" />
               </div>
               {editingId && (
-                <button 
+                <button
                   onClick={() => {
                     setIsAdding(false);
                     setEditingId(null);
-                    setNewName('');
-                    setNewAmount('');
+                    setNewName("");
+                    setNewAmount("");
                   }}
                   className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"
                 >
@@ -329,9 +441,11 @@ export default function Credits({ language, currency, entries, setEntries, onSet
             </div>
             <div className="space-y-5">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Personne</label>
-                <input 
-                  type="text" 
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                  Personne
+                </label>
+                <input
+                  type="text"
                   placeholder={t.namePlaceholder}
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
@@ -339,10 +453,12 @@ export default function Credits({ language, currency, entries, setEntries, onSet
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Montant</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                  Montant
+                </label>
                 <div className="flex gap-4">
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     placeholder={t.amountPlaceholder}
                     value={newAmount}
                     onChange={(e) => setNewAmount(e.target.value)}
@@ -353,20 +469,22 @@ export default function Credits({ language, currency, entries, setEntries, onSet
                   </div>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Type de crédit</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                  Type de crédit
+                </label>
                 <div className="grid grid-cols-2 gap-3">
-                  <button 
-                    onClick={() => setNewType('OWE_ME')}
-                    className={`h-14 rounded-2xl flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-widest transition-all border-2 ${newType === 'OWE_ME' ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-200'}`}
+                  <button
+                    onClick={() => setNewType("OWE_ME")}
+                    className={`h-14 rounded-2xl flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-widest transition-all border-2 ${newType === "OWE_ME" ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/30" : "bg-white border-slate-100 text-slate-400 hover:border-indigo-200"}`}
                   >
                     <Coins size={18} />
                     {t.owedToMe}
                   </button>
-                  <button 
-                    onClick={() => setNewType('I_OWE')}
-                    className={`h-14 rounded-2xl flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-widest transition-all border-2 ${newType === 'I_OWE' ? 'bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-500/30' : 'bg-white border-slate-100 text-slate-400 hover:border-amber-200'}`}
+                  <button
+                    onClick={() => setNewType("I_OWE")}
+                    className={`h-14 rounded-2xl flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-widest transition-all border-2 ${newType === "I_OWE" ? "bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-500/30" : "bg-white border-slate-100 text-slate-400 hover:border-amber-200"}`}
                   >
                     <Wallet size={18} />
                     {t.owedByMe}
@@ -376,18 +494,18 @@ export default function Credits({ language, currency, entries, setEntries, onSet
             </div>
 
             <div className="flex gap-3 pt-4">
-              <button 
+              <button
                 onClick={() => {
                   setIsAdding(false);
                   setEditingId(null);
-                  setNewName('');
-                  setNewAmount('');
+                  setNewName("");
+                  setNewAmount("");
                 }}
                 className="flex-1 h-16 rounded-[24px] font-black text-slate-400 hover:bg-slate-50 transition-all uppercase text-xs tracking-widest"
               >
                 {t.cancel}
               </button>
-              <button 
+              <button
                 onClick={handleAddEntry}
                 className="flex-1 h-16 rounded-[24px] bg-indigo-600 text-white font-black shadow-xl shadow-indigo-600/20 active:scale-95 transition-all text-sm uppercase tracking-widest"
               >
@@ -404,47 +522,62 @@ export default function Credits({ language, currency, entries, setEntries, onSet
           <History size={24} className="text-indigo-600" />
           {t.history}
         </h3>
-        
+
         {entries.length === 0 ? (
           <div className="text-center py-12 text-slate-400 font-medium italic">
             {t.noEntries}
           </div>
         ) : (
           <div className="space-y-4">
-            {entries.map(entry => {
-              const isReceive = entry.type === 'OWE_ME';
+            {entries.map((entry) => {
+              const isReceive = entry.type === "OWE_ME";
               return (
-                <motion.div 
+                <motion.div
                   layout
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  key={entry.id} 
+                  key={entry.id}
                   className={`group flex items-center gap-4 p-5 rounded-[32px] border transition-all relative backdrop-blur-sm shadow-sm ${
-                    isReceive 
-                      ? 'bg-indigo-50/30 border-indigo-100/50 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10' 
-                      : 'bg-amber-50/30 border-amber-100/50 hover:border-amber-200 hover:shadow-xl hover:shadow-amber-500/10'
+                    isReceive
+                      ? "bg-indigo-50/30 border-indigo-100/50 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10"
+                      : "bg-amber-50/30 border-amber-100/50 hover:border-amber-200 hover:shadow-xl hover:shadow-amber-500/10"
                   }`}
-                  style={{ 
-                    overflow: activeMenuId === entry.id ? 'visible' : 'hidden',
-                    zIndex: activeMenuId === entry.id ? 50 : 1
+                  style={{
+                    overflow: activeMenuId === entry.id ? "visible" : "hidden",
+                    zIndex: activeMenuId === entry.id ? 50 : 1,
                   }}
                 >
-                  <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${
-                    isReceive ? 'bg-indigo-600 text-white shadow-indigo-600/20' : 'bg-amber-500 text-white shadow-amber-500/20'
-                  }`}>
-                    {isReceive ? <TrendingUp size={24} /> : <TrendingDown size={24} />}
+                  <div
+                    className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${
+                      isReceive
+                        ? "bg-indigo-600 text-white shadow-indigo-600/20"
+                        : "bg-amber-500 text-white shadow-amber-500/20"
+                    }`}
+                  >
+                    {isReceive ? (
+                      <TrendingUp size={24} />
+                    ) : (
+                      <TrendingDown size={24} />
+                    )}
                   </div>
-                  
+
                   <div className="flex-1 min-w-0 flex flex-col justify-center py-1">
                     <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1 italic select-none">
                       {entry.name}
                     </p>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
                       <span className="text-[9px] flex items-center gap-1 font-bold uppercase tracking-wider text-slate-400 shrink-0">
-                        <Calendar size={10} className={isReceive ? 'text-indigo-500' : 'text-amber-500'} />
+                        <Calendar
+                          size={10}
+                          className={
+                            isReceive ? "text-indigo-500" : "text-amber-500"
+                          }
+                        />
                         {entry.date}
                       </span>
-                      <span className={`text-[9px] font-black uppercase tracking-[0.1em] truncate max-w-[100px] ${isReceive ? 'text-indigo-600' : 'text-amber-600'}`}>
+                      <span
+                        className={`text-[9px] font-black uppercase tracking-[0.1em] truncate max-w-[100px] ${isReceive ? "text-indigo-600" : "text-amber-600"}`}
+                      >
                         {isReceive ? t.owedToMe : t.owedByMe}
                       </span>
                     </div>
@@ -452,18 +585,24 @@ export default function Credits({ language, currency, entries, setEntries, onSet
 
                   <div className="shrink-0 flex items-center gap-2 pl-2 border-l border-slate-100">
                     <div className="flex flex-col items-end">
-                      <p className={`font-black tracking-tighter text-base leading-none ${isReceive ? 'text-indigo-600' : 'text-amber-600'}`}>
-                        {entry.amount.toLocaleString('fr-FR')} 
+                      <p
+                        className={`font-black tracking-tighter text-base leading-none ${isReceive ? "text-indigo-600" : "text-amber-600"}`}
+                      >
+                        {entry.amount.toLocaleString("fr-FR")}
                       </p>
-                      <span className="text-[9px] font-bold uppercase text-slate-400 mt-0.5">{currency}</span>
+                      <span className="text-[9px] font-bold uppercase text-slate-400 mt-0.5">
+                        {currency}
+                      </span>
                     </div>
-                    
+
                     <div className="relative">
-                      <button 
+                      <button
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          setActiveMenuId(activeMenuId === entry.id ? null : entry.id);
+                          setActiveMenuId(
+                            activeMenuId === entry.id ? null : entry.id,
+                          );
                         }}
                         className="w-10 h-10 flex items-center justify-center hover:bg-white rounded-xl transition-colors text-slate-300 group-hover:text-slate-500 relative z-[60]"
                       >
@@ -472,22 +611,22 @@ export default function Credits({ language, currency, entries, setEntries, onSet
                       <AnimatePresence>
                         {activeMenuId === entry.id && (
                           <>
-                            <div 
-                              className="fixed inset-0 z-[80]" 
+                            <div
+                              className="fixed inset-0 z-[80]"
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 setActiveMenuId(null);
-                              }} 
+                              }}
                             />
-                            <motion.div 
+                            <motion.div
                               initial={{ opacity: 0, scale: 0.95, y: 10 }}
                               animate={{ opacity: 1, scale: 1, y: 0 }}
                               exit={{ opacity: 0, scale: 0.95, y: 10 }}
                               className="absolute right-0 top-12 bg-white border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-2xl py-2 w-48 z-[150] overflow-hidden"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <button 
+                              <button
                                 onClick={() => handleEditClick(entry)}
                                 className="w-full px-5 py-3.5 text-left text-xs font-black text-slate-600 hover:bg-slate-50 hover:text-teal-600 flex items-center gap-3 transition-colors uppercase tracking-widest whitespace-nowrap active:bg-slate-100"
                               >
@@ -495,7 +634,7 @@ export default function Credits({ language, currency, entries, setEntries, onSet
                                 {t.edit}
                               </button>
                               <div className="h-px bg-slate-50 mx-4 my-1" />
-                              <button 
+                              <button
                                 onClick={() => handleSettleEntry(entry.id)}
                                 className="w-full px-5 py-3.5 text-left text-xs font-black text-rose-500 hover:bg-rose-50 flex items-center gap-3 transition-colors uppercase tracking-widest whitespace-nowrap active:bg-rose-100"
                               >
@@ -519,55 +658,94 @@ export default function Credits({ language, currency, entries, setEntries, onSet
       <div className="space-y-4 pt-8 mt-8 border-t-[3px] border-slate-100 border-dashed">
         <h3 className="text-slate-800 text-xl font-bold flex items-center gap-3 px-1 mb-6">
           <Wallet size={24} className="text-teal-600" />
-          {language === 'Français' ? 'Historique Bancaire' : language === 'العربية' ? 'سجل البنك' : 'Bank History'}
+          {language === "Français"
+            ? "Historique Bancaire"
+            : language === "العربية"
+              ? "سجل البنك"
+              : "Bank History"}
         </h3>
-        
+
+        <AnimatePresence>
+          {showBankModal && (
+            <AddBankBalanceModal
+              onClose={() => setShowBankModal(false)}
+              onAdd={(amount) => {
+                if (onAddBankBalance) {
+                  onAddBankBalance(amount);
+                }
+              }}
+              currency={currency}
+            />
+          )}
+        </AnimatePresence>
+
         {/* Premium Summary Card (Bank) */}
         <div className="relative overflow-hidden rounded-[38px] shadow-xl shadow-slate-200/40 border border-white mb-6">
           <div className="absolute inset-0 bg-gradient-to-br from-teal-50 via-white to-sky-50 z-0" />
           <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-teal-400/10 rounded-full blur-3xl" />
           <div className="absolute bottom-[-20%] left-[-10%] w-64 h-64 bg-sky-400/10 rounded-full blur-3xl" />
-          
+
           <div className="relative z-10 p-5">
             <div className="flex bg-white/40 backdrop-blur-md p-1 rounded-3xl shadow-sm border border-white/50 mb-8">
-              <button 
-                onClick={() => setBankTimeframe('day')}
-                className={`flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 ${bankTimeframe === 'day' ? 'bg-slate-900 text-white shadow-xl' : 'text-slate-500 hover:bg-white/40'}`}
+              <button
+                onClick={() => setBankTimeframe("day")}
+                className={`flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 ${bankTimeframe === "day" ? "bg-slate-900 text-white shadow-xl" : "text-slate-500 hover:bg-white/40"}`}
               >
-                <CalendarCheck size={18} strokeWidth={bankTimeframe === 'day' ? 2.5 : 2} />
-                <span className="text-[10px] font-black uppercase tracking-wider">{getTimeframeLabel('day')}</span>
+                <CalendarCheck
+                  size={18}
+                  strokeWidth={bankTimeframe === "day" ? 2.5 : 2}
+                />
+                <span className="text-[10px] font-black uppercase tracking-wider">
+                  {getTimeframeLabel("day")}
+                </span>
               </button>
-              <button 
-                onClick={() => setBankTimeframe('week')}
-                className={`flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 ${bankTimeframe === 'week' ? 'bg-slate-900 text-white shadow-xl' : 'text-slate-500 hover:bg-white/40'}`}
+              <button
+                onClick={() => setBankTimeframe("week")}
+                className={`flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 ${bankTimeframe === "week" ? "bg-slate-900 text-white shadow-xl" : "text-slate-500 hover:bg-white/40"}`}
               >
-                <CalendarRange size={18} strokeWidth={bankTimeframe === 'week' ? 2.5 : 2} />
-                <span className="text-[10px] font-black uppercase tracking-wider">{getTimeframeLabel('week')}</span>
+                <CalendarRange
+                  size={18}
+                  strokeWidth={bankTimeframe === "week" ? 2.5 : 2}
+                />
+                <span className="text-[10px] font-black uppercase tracking-wider">
+                  {getTimeframeLabel("week")}
+                </span>
               </button>
-              <button 
-                onClick={() => setBankTimeframe('month')}
-                className={`flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 ${bankTimeframe === 'month' ? 'bg-slate-900 text-white shadow-xl' : 'text-slate-500 hover:bg-white/40'}`}
+              <button
+                onClick={() => setBankTimeframe("month")}
+                className={`flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 ${bankTimeframe === "month" ? "bg-slate-900 text-white shadow-xl" : "text-slate-500 hover:bg-white/40"}`}
               >
-                <CalendarDays size={18} strokeWidth={bankTimeframe === 'month' ? 2.5 : 2} />
-                <span className="text-[10px] font-black uppercase tracking-wider">{getTimeframeLabel('month')}</span>
+                <CalendarDays
+                  size={18}
+                  strokeWidth={bankTimeframe === "month" ? 2.5 : 2}
+                />
+                <span className="text-[10px] font-black uppercase tracking-wider">
+                  {getTimeframeLabel("month")}
+                </span>
               </button>
             </div>
 
             <div className="grid grid-cols-2 gap-6 relative px-2 mb-2">
               <div className="absolute left-1/2 top-4 bottom-4 w-px bg-slate-200/50" />
-              
+
               <div className="space-y-1">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-8 h-8 rounded-lg bg-teal-500/10 flex items-center justify-center text-teal-600">
                     <TrendingUp size={16} strokeWidth={2.5} />
                   </div>
                   <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                    {language === 'Français' ? 'Dépôts' : language === 'العربية' ? 'إيداعات' : 'Deposits'}
+                    {language === "Français"
+                      ? "Dépôts"
+                      : language === "العربية"
+                        ? "إيداعات"
+                        : "Deposits"}
                   </span>
                 </div>
                 <p className="text-2xl font-black text-teal-600 tracking-tighter">
-                  {filteredBankTotals.totalIncome.toLocaleString('fr-FR')} 
-                  <span className="text-xs ml-1 font-bold text-slate-400 uppercase">{currency}</span>
+                  {filteredBankTotals.totalIncome.toLocaleString("fr-FR")}
+                  <span className="text-xs ml-1 font-bold text-slate-400 uppercase">
+                    {currency}
+                  </span>
                 </p>
               </div>
 
@@ -577,12 +755,18 @@ export default function Credits({ language, currency, entries, setEntries, onSet
                     <TrendingDown size={16} strokeWidth={2.5} />
                   </div>
                   <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                    {language === 'Français' ? 'Sorties' : language === 'العربية' ? 'نفقات' : 'Outflows'}
+                    {language === "Français"
+                      ? "Sorties"
+                      : language === "العربية"
+                        ? "نفقات"
+                        : "Outflows"}
                   </span>
                 </div>
                 <p className="text-2xl font-black text-slate-600 tracking-tighter">
-                  {filteredBankTotals.totalExpense.toLocaleString('fr-FR')} 
-                  <span className="text-xs ml-1 font-bold text-slate-400 uppercase">{currency}</span>
+                  {filteredBankTotals.totalExpense.toLocaleString("fr-FR")}
+                  <span className="text-xs ml-1 font-bold text-slate-400 uppercase">
+                    {currency}
+                  </span>
                 </p>
               </div>
             </div>
@@ -591,26 +775,34 @@ export default function Credits({ language, currency, entries, setEntries, onSet
 
         {/* Quick Actions - Identical to Home & History style */}
         <div className="grid grid-cols-2 gap-4 px-1 mb-6">
-          <button 
-            onClick={() => onAddClick && onAddClick('EXPENSE')}
-            className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-rose-100 hover:bg-rose-50/30 active:scale-95 shadow-sm"
+          <button
+            onClick={() => setShowBankModal(true)}
+            className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-emerald-100 hover:bg-emerald-50/30 active:scale-95 shadow-sm"
           >
-            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
-              <ShoppingBag size={24} strokeWidth={2.5} />
+            <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+              <Landmark size={24} strokeWidth={2.5} />
             </div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-rose-600 transition-colors">
-              {language === 'Français' ? 'Ajouter Achat' : language === 'العربية' ? 'إضافة شراء' : 'Add Purchase'}
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-emerald-600 transition-colors">
+              {language === "Français"
+                ? "Ajouter Salaire"
+                : language === "العربية"
+                  ? "إضافة راتب"
+                  : "Add Salary"}
             </span>
           </button>
-          <button 
-            onClick={() => onAddClick && onAddClick('INCOME')}
+          <button
+            onClick={() => onAddClick && onAddClick("INCOME")}
             className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-teal-100 hover:bg-teal-50/30 active:scale-95 shadow-sm"
           >
             <div className="w-12 h-12 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
               <ArrowDownToLine size={24} strokeWidth={2.5} />
             </div>
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-teal-600 transition-colors">
-              {language === 'Français' ? 'Ajouter Retrait' : language === 'العربية' ? 'إضافة سحب' : 'Add Withdrawal'}
+              {language === "Français"
+                ? "Ajouter Retrait"
+                : language === "العربية"
+                  ? "إضافة سحب"
+                  : "Add Withdrawal"}
             </span>
           </button>
         </div>
@@ -618,54 +810,83 @@ export default function Credits({ language, currency, entries, setEntries, onSet
         {/* Bank Transactions List */}
         {bankTransactions.length === 0 ? (
           <div className="text-center py-12 text-slate-400 font-medium italic">
-            {language === 'Français' ? 'Aucune transaction bancaire' : language === 'العربية' ? 'لا توجد معاملات بنكية' : 'No bank transactions'}
+            {language === "Français"
+              ? "Aucune transaction bancaire"
+              : language === "العربية"
+                ? "لا توجد معاملات بنكية"
+                : "No bank transactions"}
           </div>
         ) : (
           <div className="space-y-4">
             {bankTransactions.map((tx, index) => {
-              const isIncome = tx.type === 'INCOME' && tx.paidByBank; // Salaire / Dépôt
-              const isExpense = tx.type === 'EXPENSE'; // Achat carte
-              const isRetrait = tx.type === 'INCOME' && !tx.paidByBank; // Retrait poche
-              
-              const categoryMatch = getCategoryMap().find(c => 
-                c.label && c.label.toLowerCase() === (tx.category || '').toLowerCase()
+              const isIncome = tx.type === "INCOME" && tx.paidByBank; // Salaire / Dépôt
+              const isExpense = tx.type === "EXPENSE"; // Achat carte
+              const isRetrait = tx.type === "INCOME" && !tx.paidByBank; // Retrait poche
+
+              const categoryMatch = getCategoryMap().find(
+                (c) =>
+                  c.label &&
+                  c.label.toLowerCase() === (tx.category || "").toLowerCase(),
               ) || {
-                icon: isIncome ? <TrendingUp size={24} /> : (isRetrait ? <ArrowDownToLine size={24} /> : <ShoppingBag size={24} />),
-                color: isIncome ? 'teal' : (isRetrait ? 'emerald' : 'slate'),
-                bg: isIncome ? 'bg-teal-100' : (isRetrait ? 'bg-emerald-500' : 'bg-slate-100'),
-                text: isIncome ? 'text-teal-600' : (isRetrait ? 'text-white' : 'text-slate-600'),
-                glow: isIncome ? 'bg-teal-400' : (isRetrait ? 'bg-emerald-400' : 'bg-slate-400')
+                icon: isIncome ? (
+                  <TrendingUp size={24} />
+                ) : isRetrait ? (
+                  <ArrowDownToLine size={24} />
+                ) : (
+                  <ShoppingBag size={24} />
+                ),
+                color: isIncome ? "teal" : isRetrait ? "emerald" : "slate",
+                bg: isIncome
+                  ? "bg-teal-100"
+                  : isRetrait
+                    ? "bg-emerald-500"
+                    : "bg-slate-100",
+                text: isIncome
+                  ? "text-teal-600"
+                  : isRetrait
+                    ? "text-white"
+                    : "text-slate-600",
+                glow: isIncome
+                  ? "bg-teal-400"
+                  : isRetrait
+                    ? "bg-emerald-400"
+                    : "bg-slate-400",
               };
 
               // Use exact identical card visual style as History page items
               const getCardStyle = () => {
                 const colors: Record<string, string> = {
-                  'rose': 'hover:border-rose-200 hover:shadow-rose-500/10',
-                  'sky': 'hover:border-sky-200 hover:shadow-sky-500/10',
-                  'indigo': 'hover:border-indigo-200 hover:shadow-indigo-500/10',
-                  'amber': 'hover:border-amber-200 hover:shadow-amber-500/10',
-                  'purple': 'hover:border-purple-200 hover:shadow-purple-500/10',
-                  'slate': 'hover:border-slate-200 hover:shadow-slate-500/10',
-                  'emerald': 'hover:border-emerald-200 hover:shadow-emerald-500/10',
-                  'teal': 'hover:border-teal-200 hover:shadow-teal-500/10'
+                  rose: "hover:border-rose-200 hover:shadow-rose-500/10",
+                  sky: "hover:border-sky-200 hover:shadow-sky-500/10",
+                  indigo: "hover:border-indigo-200 hover:shadow-indigo-500/10",
+                  amber: "hover:border-amber-200 hover:shadow-amber-500/10",
+                  purple: "hover:border-purple-200 hover:shadow-purple-500/10",
+                  slate: "hover:border-slate-200 hover:shadow-slate-500/10",
+                  emerald:
+                    "hover:border-emerald-200 hover:shadow-emerald-500/10",
+                  teal: "hover:border-teal-200 hover:shadow-teal-500/10",
                 };
-                return colors[categoryMatch.color] || 'hover:border-slate-200';
+                return colors[categoryMatch.color] || "hover:border-slate-200";
               };
 
               return (
-                <motion.div 
-                  key={tx.id} 
+                <motion.div
+                  key={tx.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className={`flex items-center gap-4 p-4 rounded-[32px] border transition-all relative backdrop-blur-sm bg-white shadow-sm group ${getCardStyle()}`}
                 >
-                  <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all shadow-sm ${categoryMatch.bg} ${categoryMatch.text}`}>
+                  <div
+                    className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all shadow-sm ${categoryMatch.bg} ${categoryMatch.text}`}
+                  >
                     {categoryMatch.icon}
                   </div>
-                  
+
                   <div className="flex-1 min-w-0 py-1">
-                    <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1">{tx.label}</p>
+                    <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1">
+                      {tx.label}
+                    </p>
                     <div className="flex items-center gap-4">
                       <span className="text-[10px] flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-400">
                         <Calendar size={12} className="text-slate-300" />
@@ -676,10 +897,15 @@ export default function Credits({ language, currency, entries, setEntries, onSet
 
                   <div className="shrink-0 flex items-center gap-2 pl-2 border-l border-slate-100">
                     <div className="flex flex-col items-end">
-                      <p className={`font-black tracking-tighter text-base leading-none ${isIncome ? 'text-teal-600' : 'text-slate-800'}`}>
-                         {isIncome ? '+' : '-'}{tx.amount.toLocaleString('fr-FR')} 
+                      <p
+                        className={`font-black tracking-tighter text-base leading-none ${isIncome ? "text-teal-600" : "text-slate-800"}`}
+                      >
+                        {isIncome ? "+" : "-"}
+                        {tx.amount.toLocaleString("fr-FR")}
                       </p>
-                      <span className="text-[9px] font-bold uppercase text-slate-400 mt-0.5">{currency}</span>
+                      <span className="text-[9px] font-bold uppercase text-slate-400 mt-0.5">
+                        {currency}
+                      </span>
                     </div>
                   </div>
                 </motion.div>
@@ -691,4 +917,3 @@ export default function Credits({ language, currency, entries, setEntries, onSet
     </motion.div>
   );
 }
-

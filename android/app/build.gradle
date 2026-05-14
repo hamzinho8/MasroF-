@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.masrof.app"
-    compileSdk 36
+    namespace 'com.hamza.masrof'
+    compileSdk 34
     defaultConfig {
         applicationId "com.hamza.masrof"
-        minSdk rootProject.ext.minSdk
-        targetSdk 36
+        minSdk 24
+        targetSdk 34
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
