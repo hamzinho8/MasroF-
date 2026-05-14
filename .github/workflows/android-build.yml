@@ -34,6 +34,8 @@ jobs:
 
       - name: Setup Gradle Cache
         uses: gradle/actions/setup-gradle@v4
+        with:
+          validate-wrappers: false
 
       - name: Clean Gradle Caches
         run: rm -rf ~/.gradle/caches
