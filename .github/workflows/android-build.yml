@@ -32,27 +32,17 @@ jobs:
       - name: Capacitor Sync
         run: npx cap sync android
 
-      - name: Install manual Gradle (Bypass Wrapper)
-        run: |
-          wget https://services.gradle.org/distributions/gradle-8.11.1-bin.zip
-          unzip -q gradle-8.11.1-bin.zip
-          sudo mv gradle-8.11.1 /opt/gradle
-          echo "/opt/gradle/bin" >> $GITHUB_PATH
+      - name: Setup Gradle Cache
+        uses: gradle/actions/setup-gradle@v4
 
-      - name: Verify Gradle Installation
-        run: gradle -v
-
-      - name: Build Debug APK
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+      - name: Clean Gradle Caches
+        run: rm -rf ~/.gradle/caches
 
       - name: Build Release APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleRelease --stacktrace
+          ./gradlew clean assembleRelease --stacktrace --info
 
       - name: Debug Output Files
         run: |
@@ -60,12 +50,6 @@ jobs:
           find android -name "*.apk"
           echo "Looking for AAB files:"
           find android -name "*.aab"
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug-apk
-          path: android/app/build/outputs/apk/debug/*.apk
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
