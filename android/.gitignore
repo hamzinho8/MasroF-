@@ -102,3 +102,4 @@ app/src/main/res/xml/config.xml
 
 # Ignore JAR files as they can cause wrapper validation issues and bloat
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
