@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import {
-  History,
+  ArrowRightLeft as HistoryIcon,
   PieChart,
   Settings as SettingsIcon,
-  Home as HomeIcon,
-  Users,
+  Wallet as HomeIcon,
+  Handshake,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Home from "./components/Home";
@@ -591,14 +591,14 @@ export default function App() {
           <TabButton
             active={activeTab === "history"}
             onClick={() => setActiveTab("history")}
-            icon={<History size={28} strokeWidth={2.5} />}
+            icon={<HistoryIcon size={28} strokeWidth={2.5} />}
             color="rose"
             isDarkMode={isDarkMode}
           />
           <TabButton
             active={activeTab === "credits"}
             onClick={() => setActiveTab("credits")}
-            icon={<Users size={28} strokeWidth={2.5} />}
+            icon={<Handshake size={28} strokeWidth={2.5} />}
             color="credits"
             isDarkMode={isDarkMode}
           />
