@@ -1,15 +1,10 @@
 import React, { useState } from "react";
 import {
   History,
-  BarChart3,
+  PieChart,
   Settings as SettingsIcon,
-  Wallet,
   Home as HomeIcon,
-  Search,
   Users,
-  BookOpenText,
-  HandCoins,
-  Settings2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Home from "./components/Home";
@@ -589,40 +584,35 @@ export default function App() {
           <TabButton
             active={activeTab === "home"}
             onClick={() => setActiveTab("home")}
-            icon={<MasrofLogo className="w-16 h-16" size="small" />}
-            label=""
+            icon={<HomeIcon size={28} strokeWidth={2.5} />}
             color="teal"
             isDarkMode={isDarkMode}
           />
           <TabButton
             active={activeTab === "history"}
             onClick={() => setActiveTab("history")}
-            icon={<BookOpenText size={24} strokeWidth={3} />}
-            label={t.historique}
+            icon={<History size={28} strokeWidth={2.5} />}
             color="rose"
             isDarkMode={isDarkMode}
           />
           <TabButton
             active={activeTab === "credits"}
             onClick={() => setActiveTab("credits")}
-            icon={<HandCoins size={24} strokeWidth={3} />}
-            label={t.credits}
+            icon={<Users size={28} strokeWidth={2.5} />}
             color="credits"
             isDarkMode={isDarkMode}
           />
           <TabButton
             active={activeTab === "stats"}
             onClick={() => setActiveTab("stats")}
-            icon={<BarChart3 size={24} strokeWidth={3} />}
-            label={(t as any).stats}
+            icon={<PieChart size={28} strokeWidth={2.5} />}
             color="emerald"
             isDarkMode={isDarkMode}
           />
           <TabButton
             active={activeTab === "settings"}
             onClick={() => setActiveTab("settings")}
-            icon={<Settings2 size={24} strokeWidth={3} />}
-            label={t.options}
+            icon={<SettingsIcon size={28} strokeWidth={2.5} />}
             color="slate"
             isDarkMode={isDarkMode}
           />
@@ -656,14 +646,12 @@ function TabButton({
   active,
   onClick,
   icon,
-  label,
   isDarkMode,
   color = "teal",
 }: {
   active: boolean;
   onClick: () => void;
   icon: React.ReactNode;
-  label: string;
   isDarkMode: boolean;
   color?: "teal" | "indigo" | "rose" | "slate" | "credits" | "emerald";
 }) {
@@ -739,13 +727,6 @@ function TabButton({
           icon
         )}
       </div>
-      {label && (
-        <span
-          className={`text-[12px] font-black uppercase tracking-[0.1em] transition-all duration-300 mt-1 whitespace-nowrap leading-none ${active ? "opacity-100 translate-y-0" : "opacity-60"}`}
-        >
-          {label}
-        </span>
-      )}
       {active && (
         <motion.div
           layoutId="activeTabDot"
