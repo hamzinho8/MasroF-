@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocalStorage } from "./hooks/useLocalStorage";
+import { LocalNotifications } from '@capacitor/local-notifications';
+import { Preferences } from '@capacitor/preferences';
 import {
   ArrowRightLeft as HistoryIcon,
   PieChart,
@@ -78,16 +80,7 @@ export default function App() {
     },
   };
 
-  const [creditEntries, setCreditEntries] = useLocalStorage<CreditEntry[]>("creditEntries", [
-    { id: "1", name: "Ahmed", amount: 500, type: "OWE_ME", date: "01/05/2024" },
-    {
-      id: "2",
-      name: "Boutique Ali",
-      amount: 120,
-      type: "I_OWE",
-      date: "03/05/2024",
-    },
-  ]);
+  const [creditEntries, setCreditEntries] = useLocalStorage<CreditEntry[]>("creditEntries", []);
 
   const [predefinedItems, setPredefinedItems] = useState<PredefinedItem[]>(
     () => {
@@ -159,28 +152,47 @@ export default function App() {
     translations[language as keyof typeof translations] ||
     translations["Français"];
   const isRtl = language === "العربية";
-  const [reminders, setReminders] = useLocalStorage<Reminder[]>("reminders", [
-    {
-      id: "rem-1",
-      title: "Saisir mes achats",
-      time: "22:00",
-      enabled: true,
-      type: "ACHAT",
-    },
-    {
-      id: "rem-2",
-      title: "Retrait d'argent",
-      time: "07:45",
-      enabled: false,
-      type: "RETRAIT",
-    },
-  ]);
+  const [reminders, setReminders] = useLocalStorage<Reminder[]>("reminders", []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setTimeout(() => setShowSplash(false), 2000);
     return () => clearTimeout(timer);
   }, []);
-  const [balance, setBalance] = useLocalStorage("balance", 1450.5);
+
+  useEffect(() => {
+    async function syncNotifications() {
+      try {
+        const permStatus = await LocalNotifications.checkPermissions();
+        if (permStatus.display !== 'granted') {
+          await LocalNotifications.requestPermissions();
+        }
+
+        await LocalNotifications.cancel({ notifications: await LocalNotifications.getPending().then(res => res.notifications) });
+
+        const toSchedule = reminders
+          .filter(r => r.enabled)
+          .map((r, i) => {
+            const [hours, minutes] = r.time.split(':').map(Number);
+            
+            return {
+              title: r.title,
+              body: `Rappel de type ${r.type}`,
+              id: i + 1,
+              schedule: { on: { hour: hours, minute: minutes } },
+            };
+          });
+
+        if (toSchedule.length > 0) {
+          await LocalNotifications.schedule({ notifications: toSchedule });
+        }
+      } catch (err) {
+        console.error("Local notifications not supported or failed", err);
+      }
+    }
+    syncNotifications();
+  }, [reminders]);
+
+  const [balance, setBalance] = useLocalStorage("balance", 0);
   const prevBalanceRef = React.useRef(balance);
 
   React.useEffect(() => {
@@ -194,72 +206,14 @@ export default function App() {
       );
     }
     prevBalanceRef.current = balance;
+
+    // Sync for native Android Widget
+    Preferences.set({ key: 'widget_balance', value: balance.toString() });
+    Preferences.set({ key: 'widget_currency', value: currency });
   }, [balance, balanceThreshold, currency]);
 
-  const [bankBalance, setBankBalance] = useLocalStorage("bankBalance", 15000);
-  const [transactions, setTransactions] = useLocalStorage<Transaction[]>("transactions", [
-    {
-      id: "1",
-      label: "Tirage Banque",
-      amount: 2000,
-      type: "INCOME",
-      date: "03/05 18:23",
-      timestamp: new Date(2024, 4, 3, 18, 23).getTime(),
-    },
-    {
-      id: "2",
-      label: "Achat Market",
-      amount: 840,
-      type: "EXPENSE",
-      category: "Shopping",
-      date: "03/05 12:45",
-      timestamp: new Date(2024, 4, 3, 12, 45).getTime(),
-    },
-    {
-      id: "3",
-      label: "Café & Snack",
-      amount: 45,
-      type: "EXPENSE",
-      category: "Nourriture",
-      date: "03/05 09:15",
-      timestamp: new Date(2024, 4, 3, 9, 15).getTime(),
-    },
-    {
-      id: "4",
-      label: "Carburant",
-      amount: 300,
-      type: "EXPENSE",
-      category: "Transport",
-      date: "02/05 15:30",
-      timestamp: new Date(2024, 4, 2, 15, 30).getTime(),
-    },
-    {
-      id: "5",
-      label: "Dîner Restaurant",
-      amount: 250,
-      type: "EXPENSE",
-      category: "Nourriture",
-      date: "02/05 21:00",
-      timestamp: new Date(2024, 4, 2, 21, 0).getTime(),
-    },
-    {
-      id: "6",
-      label: "Virement Reçu",
-      amount: 5000,
-      type: "INCOME",
-      date: "01/05 10:00",
-      timestamp: new Date(2024, 4, 1, 10, 0).getTime(),
-    },
-    {
-      id: "7",
-      label: "Loyer",
-      amount: 3500,
-      type: "EXPENSE",
-      category: "Autres",
-      date: "01/05 08:00",
-      timestamp: new Date(2024, 4, 1, 8, 0).getTime(),
-    },
-  ]);
+  const [bankBalance, setBankBalance] = useLocalStorage("bankBalance", 0);
+  const [transactions, setTransactions] = useLocalStorage<Transaction[]>("transactions", []);
 
   const addTransaction = (
     label: string,
@@ -341,6 +295,7 @@ export default function App() {
   const resetTransactions = () => {
     setTransactions([]);
     setBalance(0);
+    setBankBalance(0);
   };
 
   const openModal = (type: "INCOME" | "EXPENSE") => {
@@ -630,7 +585,17 @@ export default function App() {
         <div className="pb-32">
           {" "}
           {/* Increased padding for the 3-dots menu space at the end of lists */}
-          <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15 }}
+            >
+              {renderContent()}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
 
