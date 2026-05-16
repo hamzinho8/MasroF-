@@ -27,7 +27,7 @@ jobs:
           cache: 'npm'
 
       - name: Install NPM dependencies
-        run: npm install --legacy-peer-deps
+        run: npm install
 
       - name: Build Web App
         run: npm run build
@@ -49,6 +49,10 @@ jobs:
 
       - name: Create local.properties
         run: echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
+
+      - name: Restore Gradle Wrapper
+        working-directory: ./android/gradle/wrapper
+        run: wget -q -O gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.11.1/gradle/wrapper/gradle-wrapper.jar
 
       - name: Set gradlew permissions
         working-directory: ./android
