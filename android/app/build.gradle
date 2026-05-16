@@ -52,4 +52,4 @@ try {
     logger.info("google-services.json not found, push notifications skipped.")
 }
 
-apply from: '../../node_modules/@capacitor/android/capacitor.build.gradle'
+apply from: 'capacitor.build.gradle'
