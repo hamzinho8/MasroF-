@@ -3,70 +3,75 @@ name: Android Build
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
-    name: Build APK
     runs-on: ubuntu-latest
-    
+
     env:
-      ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
 
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      # Node
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
+          cache: npm
 
-      - name: Install NPM dependencies
+      - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Build Web App
+      - name: Build web
         run: npm run build
-        env:
-          NODE_OPTIONS: "--max_old_space_size=4096"
 
-      - name: Setup Java 21
+      # Java
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '21'
-          cache: 'gradle'
+          distribution: temurin
+          java-version: 21
 
+      # Android SDK
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      # 🔥 INSTALL SDK (CRUCIAL)
+      - name: Install Android SDK packages
+        run: |
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+
+      # Capacitor
       - name: Sync Capacitor
         run: npx cap sync android
 
+      # local.properties
       - name: Create local.properties
         run: echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
 
-      - name: Set gradlew permissions
-        working-directory: ./android
-        run: chmod +x gradlew
+      # Permissions
+      - name: Grant permission
+        run: chmod +x android/gradlew
 
-      - name: Clean Android Project
-        working-directory: ./android
-        run: ./gradlew clean --no-daemon
+      # Clean
+      - name: Clean project
+        run: |
+          cd android
+          ./gradlew clean
 
-      - name: Build APK (Debug)
-        working-directory: ./android
-        run: ./gradlew assembleDebug --no-daemon
-        env:
-          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx3072m -Dfile.encoding=UTF-8"
+      # Build
+      - name: Build APK
+        run: |
+          cd android
+          ./gradlew assembleDebug --no-daemon
 
+      # Upload
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
+          name: app-debug.apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 7
