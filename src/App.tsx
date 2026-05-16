@@ -2,8 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Preferences } from '@capacitor/preferences';
+import { registerPlugin } from '@capacitor/core';
+
+const WidgetUpdater = registerPlugin<any>('WidgetUpdater');
+
 import {
   ArrowRightLeft as HistoryIcon,
+
   PieChart,
   Settings as SettingsIcon,
   Wallet as HomeIcon,
@@ -38,6 +43,7 @@ export default function App() {
   const [widgetColor, setWidgetColor] = useLocalStorage<
     "default" | "blue" | "purple" | "rose"
   >("widgetColor", "default");
+  const [widgetTextColor, setWidgetTextColor] = useLocalStorage<string>("widgetTextColor", "#FFFFFF");
   const [aiNotifications, setAiNotifications] = useLocalStorage("aiNotifications", true);
   const [balanceThreshold, setBalanceThreshold] = useLocalStorage<number | null>("balanceThreshold", 500);
   const [isDarkMode, setIsDarkMode] = useLocalStorage("isDarkMode", false);
@@ -207,10 +213,16 @@ export default function App() {
     }
     prevBalanceRef.current = balance;
 
-    // Sync for native Android Widget
-    Preferences.set({ key: 'widget_balance', value: balance.toString() });
-    Preferences.set({ key: 'widget_currency', value: currency });
-  }, [balance, balanceThreshold, currency]);
+    async function updateWidget() {
+      await Preferences.set({ key: 'widget_balance', value: balance.toString() });
+      await Preferences.set({ key: 'widget_currency', value: currency });
+      await Preferences.set({ key: 'widget_text_color', value: widgetTextColor });
+      if (typeof window !== "undefined") {
+        WidgetUpdater.update().catch((err: any) => console.log('WidgetUpdater skip:', err));
+      }
+    }
+    updateWidget();
+  }, [balance, balanceThreshold, currency, widgetTextColor]);
 
   const [bankBalance, setBankBalance] = useLocalStorage("bankBalance", 0);
   const [transactions, setTransactions] = useLocalStorage<Transaction[]>("transactions", []);
@@ -441,6 +453,8 @@ export default function App() {
             onWidgetBalanceTypeChange={setWidgetBalanceType}
             widgetColor={widgetColor}
             onWidgetColorChange={setWidgetColor}
+            widgetTextColor={widgetTextColor}
+            onWidgetTextColorChange={setWidgetTextColor}
             onResetTransactions={resetTransactions}
             aiNotifications={aiNotifications}
             onAiNotificationsChange={setAiNotifications}

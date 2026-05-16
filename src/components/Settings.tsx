@@ -42,6 +42,8 @@ interface SettingsProps {
   onWidgetBalanceTypeChange: (type: "cash" | "bank") => void;
   widgetColor: "default" | "blue" | "purple" | "rose";
   onWidgetColorChange: (color: "default" | "blue" | "purple" | "rose") => void;
+  widgetTextColor: string;
+  onWidgetTextColorChange: (color: string) => void;
   onResetTransactions: () => void;
   aiNotifications: boolean;
   onAiNotificationsChange: (enabled: boolean) => void;
@@ -75,6 +77,8 @@ export default function Settings({
   onWidgetBalanceTypeChange,
   widgetColor,
   onWidgetColorChange,
+  widgetTextColor,
+  onWidgetTextColorChange,
   onResetTransactions,
   aiNotifications,
   onAiNotificationsChange,
@@ -365,6 +369,35 @@ export default function Settings({
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* Section: Widget Native Android */}
+          <div className="py-4 px-6 bg-[#F0F7F8]/50 border-t border-[#2D8B96]/5">
+            <h3 className="text-[11px] font-black text-[#1B5E66] uppercase tracking-[0.4em] mb-4 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 bg-[#1B5E66] rounded-full shadow-[0_0_8px_#1B5E66]" />
+              WIDGET NATIVE ANDROID
+            </h3>
+            <p className="text-[10px] text-[#1B5E66] font-bold uppercase tracking-widest mb-3">
+              Couleur du texte :
+            </p>
+            <div className="flex items-center gap-3">
+              {[
+                { id: "#000000", color: "bg-black" },
+                { id: "#FFFFFF", color: "bg-white" },
+                { id: "#3b82f6", color: "bg-blue-500" },
+                { id: "#22c55e", color: "bg-green-500" },
+                { id: "#ef4444", color: "bg-red-500" },
+              ].map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => onWidgetTextColorChange(c.id)}
+                  className={`w-8 h-8 rounded-full border border-gray-300 transition-all ${c.color} ${widgetTextColor === c.id ? "ring-2 ring-offset-2 ring-[#1B5E66] scale-110 shadow-md opacity-100" : "opacity-60 hover:opacity-100"}`}
+                />
+              ))}
+            </div>
+            <p className="text-[10px] text-[#1B5E66]/60 mt-3">
+              Le fond du widget Android est transparent. Modifiez la couleur du texte pour l'adapter à votre fond d'écran.
+            </p>
           </div>
 
           {/* Section: Alerte Solde */}

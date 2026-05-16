@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.widget.RemoteViews;
+import android.graphics.Color;
 
 public class MasrofWidgetProvider extends AppWidgetProvider {
 
@@ -24,6 +25,7 @@ public class MasrofWidgetProvider extends AppWidgetProvider {
         // Capacitor wraps strings in quotes in its store or leaves them raw depending on version, let's just grab it
         String balance = prefs.getString("widget_balance", "0");
         String currency = prefs.getString("widget_currency", "DH");
+        String textColorHex = prefs.getString("widget_text_color", "#FFFFFF");
 
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.masrof_widget_layout);
@@ -35,8 +37,20 @@ public class MasrofWidgetProvider extends AppWidgetProvider {
         if (currency.startsWith("\"") && currency.endsWith("\"")) {
             currency = currency.substring(1, currency.length() - 1);
         }
+        if (textColorHex.startsWith("\"") && textColorHex.endsWith("\"")) {
+            textColorHex = textColorHex.substring(1, textColorHex.length() - 1);
+        }
 
         views.setTextViewText(R.id.widget_balance_text, balance + " " + currency);
+        
+        try {
+            int color = Color.parseColor(textColorHex);
+            views.setTextColor(R.id.widget_title_text, color);
+            views.setTextColor(R.id.widget_balance_text, color);
+        } catch (Exception e) {
+            views.setTextColor(R.id.widget_title_text, Color.WHITE);
+            views.setTextColor(R.id.widget_balance_text, Color.WHITE);
+        }
 
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, views);
