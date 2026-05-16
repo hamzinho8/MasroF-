@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLocalStorage } from "./hooks/useLocalStorage";
 import {
   ArrowRightLeft as HistoryIcon,
   PieChart,
@@ -21,23 +22,26 @@ type Tab = "home" | "stats" | "history" | "credits" | "settings";
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [activeTab, setActiveTab] = useState<Tab>("home");
+  const [activeTab, setActiveTab] = useLocalStorage<Tab>("activeTab", "home");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"INCOME" | "EXPENSE">("EXPENSE");
-  const [widgetMode, setWidgetMode] = useState<"balance" | "spending">(
+  const [widgetMode, setWidgetMode] = useLocalStorage<"balance" | "spending">(
+    "widgetMode",
     "balance",
   );
-  const [widgetBalanceType, setWidgetBalanceType] = useState<"cash" | "bank">(
+  const [widgetBalanceType, setWidgetBalanceType] = useLocalStorage<"cash" | "bank">(
+    "widgetBalanceType",
     "cash",
   );
-  const [widgetColor, setWidgetColor] = useState<
+  const [widgetColor, setWidgetColor] = useLocalStorage<
     "default" | "blue" | "purple" | "rose"
-  >("default");
-  const [aiNotifications, setAiNotifications] = useState(true);
-  const [balanceThreshold, setBalanceThreshold] = useState<number | null>(500);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [currency, setCurrency] = useState("DH");
-  const [language, setLanguage] = useState<"Français" | "العربية" | "English">(
+  >("widgetColor", "default");
+  const [aiNotifications, setAiNotifications] = useLocalStorage("aiNotifications", true);
+  const [balanceThreshold, setBalanceThreshold] = useLocalStorage<number | null>("balanceThreshold", 500);
+  const [isDarkMode, setIsDarkMode] = useLocalStorage("isDarkMode", false);
+  const [currency, setCurrency] = useLocalStorage("currency", "DH");
+  const [language, setLanguage] = useLocalStorage<"Français" | "العربية" | "English">(
+    "language",
     "Français",
   );
 
@@ -74,7 +78,7 @@ export default function App() {
     },
   };
 
-  const [creditEntries, setCreditEntries] = useState<CreditEntry[]>([
+  const [creditEntries, setCreditEntries] = useLocalStorage<CreditEntry[]>("creditEntries", [
     { id: "1", name: "Ahmed", amount: 500, type: "OWE_ME", date: "01/05/2024" },
     {
       id: "2",
@@ -155,7 +159,7 @@ export default function App() {
     translations[language as keyof typeof translations] ||
     translations["Français"];
   const isRtl = language === "العربية";
-  const [reminders, setReminders] = useState<Reminder[]>([
+  const [reminders, setReminders] = useLocalStorage<Reminder[]>("reminders", [
     {
       id: "rem-1",
       title: "Saisir mes achats",
@@ -176,7 +180,7 @@ export default function App() {
     const timer = setTimeout(() => setShowSplash(false), 2000);
     return () => clearTimeout(timer);
   }, []);
-  const [balance, setBalance] = useState(1450.5);
+  const [balance, setBalance] = useLocalStorage("balance", 1450.5);
   const prevBalanceRef = React.useRef(balance);
 
   React.useEffect(() => {
@@ -192,8 +196,8 @@ export default function App() {
     prevBalanceRef.current = balance;
   }, [balance, balanceThreshold, currency]);
 
-  const [bankBalance, setBankBalance] = useState(15000);
-  const [transactions, setTransactions] = useState<Transaction[]>([
+  const [bankBalance, setBankBalance] = useLocalStorage("bankBalance", 15000);
+  const [transactions, setTransactions] = useLocalStorage<Transaction[]>("transactions", [
     {
       id: "1",
       label: "Tirage Banque",
@@ -490,7 +494,7 @@ export default function App() {
             currency={currency}
             onCurrencyChange={setCurrency}
             language={language}
-            onLanguageChange={setLanguage}
+            onLanguageChange={(lang) => setLanguage(lang as any)}
             reminders={reminders}
             onRemindersChange={setReminders}
             transactions={transactions}
