@@ -41,15 +41,14 @@ jobs:
           java-version: '21'
           cache: 'gradle'
 
-      - name: Configure Android SDK and Accept Licenses
-        run: |
-          mkdir -p android
-          echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
-          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
-          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platforms;android-36" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
       - name: Sync Capacitor
         run: npx cap sync android
+
+      - name: Create local.properties
+        run: echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
 
       - name: Set gradlew permissions
         working-directory: ./android
