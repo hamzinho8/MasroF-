@@ -28,7 +28,6 @@ import { INITIAL_PREDEFINED_ITEMS } from "./constants";
 type Tab = "home" | "stats" | "history" | "credits" | "settings";
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useLocalStorage<Tab>("activeTab", "home");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"INCOME" | "EXPENSE">("EXPENSE");
@@ -159,11 +158,6 @@ export default function App() {
     translations["Français"];
   const isRtl = language === "العربية";
   const [reminders, setReminders] = useLocalStorage<Reminder[]>("reminders", []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 2000);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     async function syncNotifications() {
@@ -555,25 +549,6 @@ export default function App() {
       dir={isRtl ? "rtl" : "ltr"}
       className={`h-screen ${isDarkMode ? "bg-slate-900" : "bg-slate-50"} flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden font-sans transition-colors duration-500`}
     >
-      <AnimatePresence>
-        {showSplash && (
-          <motion.div
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className={`fixed inset-0 z-[100] flex flex-col items-center justify-center max-w-md mx-auto ${isDarkMode ? "bg-slate-900" : "bg-slate-50"}`}
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-              className="w-full h-full flex items-center justify-center"
-            >
-              <MasrofLogo className="w-8/12 h-auto max-w-[400px]" size="large" />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Header & Navigation */}
       <header
         className={`sticky top-0 z-50 transition-all duration-300 ${isDarkMode ? "bg-slate-900/80" : "bg-white/80"} backdrop-blur-xl border-b ${isDarkMode ? "border-slate-800" : "border-slate-100"}`}
