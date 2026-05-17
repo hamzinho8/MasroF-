@@ -535,10 +535,7 @@ export default function App() {
           <motion.div
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className={`fixed inset-0 z-[100] flex flex-col items-center justify-center max-w-md mx-auto`}
-            style={{
-              background: "linear-gradient(90deg, #AED8D3 0%, #FAD8A0 100%)",
-            }}
+            className={`fixed inset-0 z-[100] flex flex-col items-center justify-center max-w-md mx-auto ${isDarkMode ? "bg-slate-900" : "bg-slate-50"}`}
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
@@ -546,7 +543,7 @@ export default function App() {
               transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
               className="w-full h-full flex items-center justify-center"
             >
-              <MasrofLogo className="w-full h-full" size="large" />
+              <MasrofLogo className="w-8/12 h-auto max-w-[400px]" size="large" />
             </motion.div>
           </motion.div>
         )}
