@@ -172,12 +172,32 @@ export default function App() {
         return;
       }
       try {
-        const permStatus = await LocalNotifications.checkPermissions();
+        let permStatus = await LocalNotifications.checkPermissions();
         if (permStatus.display !== 'granted') {
-          await LocalNotifications.requestPermissions();
+          permStatus = await LocalNotifications.requestPermissions();
         }
 
-        await LocalNotifications.cancel({ notifications: await LocalNotifications.getPending().then(res => res.notifications) });
+        if (permStatus.display !== 'granted') {
+          return;
+        }
+
+        try {
+          await LocalNotifications.createChannel({
+            id: 'reminders',
+            name: 'Rappels',
+            description: 'Rappels quotidiens',
+            importance: 5,
+            visibility: 1,
+            vibration: true,
+          });
+        } catch (e) {
+          console.error("Error creating channel", e);
+        }
+
+        const pending = await LocalNotifications.getPending();
+        if (pending.notifications.length > 0) {
+          await LocalNotifications.cancel({ notifications: pending.notifications });
+        }
 
         const toSchedule = reminders
           .filter(r => r.enabled)
@@ -186,9 +206,14 @@ export default function App() {
             
             return {
               title: r.title,
-              body: `Rappel de type ${r.type}`,
+              body: "Il est temps de checker votre trésorerie !",
               id: i + 1,
-              schedule: { on: { hour: hours, minute: minutes } },
+              channelId: 'reminders',
+              schedule: { 
+                repeats: true,
+                on: { hour: hours, minute: minutes },
+                allowWhileIdle: true
+              },
             };
           });
 
