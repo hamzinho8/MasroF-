@@ -203,6 +203,8 @@ export default function App() {
               body: "Il est temps de checker votre trésorerie !",
               id: i + 1,
               channelId: 'reminders',
+              smallIcon: 'ic_launcher',
+              largeIcon: 'ic_launcher',
               schedule: { 
                 repeats: true,
                 on: { hour: hours, minute: minutes },
