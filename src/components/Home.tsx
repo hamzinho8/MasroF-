@@ -258,7 +258,7 @@ export default function Home({
     transactions.forEach((tx) => {
       if (tx.timestamp >= startOfPeriod.getTime()) {
         if (tx.type === "EXPENSE") totalExpense += tx.amount;
-        else totalIncome += tx.amount;
+        else if (tx.type === "INCOME" && !tx.paidByBank) totalIncome += tx.amount;
       }
     });
 

@@ -7,14 +7,13 @@
     android:orientation="vertical"
     android:padding="8dp">
 
-    <TextView
-        android:id="@+id/widget_title_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Solde Actuel"
-        android:textColor="#FFFFFF"
-        android:textSize="12sp"
-        android:textStyle="bold" />
+    <ImageView
+        android:id="@+id/widget_wallet_icon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginBottom="4dp"
+        android:src="@drawable/ic_widget_wallet"
+        android:contentDescription="Wallet" />
 
     <TextView
         android:id="@+id/widget_balance_text"
@@ -22,7 +21,9 @@
         android:layout_height="wrap_content"
         android:text="0 DH"
         android:textColor="#FFFFFF"
-        android:textSize="20sp"
+        android:textSize="24sp"
+        android:fontFamily="sans-serif-medium"
+        android:letterSpacing="-0.02"
         android:textStyle="bold" />
 
 </LinearLayout>

@@ -45,10 +45,8 @@ public class MasrofWidgetProvider extends AppWidgetProvider {
         
         try {
             int color = Color.parseColor(textColorHex);
-            views.setTextColor(R.id.widget_title_text, color);
             views.setTextColor(R.id.widget_balance_text, color);
         } catch (Exception e) {
-            views.setTextColor(R.id.widget_title_text, Color.WHITE);
             views.setTextColor(R.id.widget_balance_text, Color.WHITE);
         }
 

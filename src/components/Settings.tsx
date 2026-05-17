@@ -130,7 +130,7 @@ export default function Settings({
     doc.setTextColor(100);
     doc.text(`Généré le: ${new Date().toLocaleString("fr-FR")}`, 14, 30);
     doc.text(
-      `Solde actuel: ${transactions.reduce((acc, tx) => (tx.type === "INCOME" ? acc + tx.amount : acc - tx.amount), 0).toFixed(2)} ${currency}`,
+      `Solde (Dépenses): ${transactions.reduce((acc, tx) => (tx.type === "EXPENSE" ? acc + tx.amount : acc), 0).toFixed(2)} ${currency}`,
       14,
       38,
     );
@@ -140,7 +140,7 @@ export default function Settings({
       tx.date,
       tx.label,
       tx.category || (tx.type === "INCOME" ? "Banque" : "Marché"),
-      tx.type === "INCOME" ? "Retrait" : "Achat",
+      tx.type === "INCOME" ? (tx.paidByBank ? "Salaire / Dépôt" : "Retrait") : "Achat",
       `${tx.amount.toFixed(2)} ${currency}`,
     ]);
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Preferences } from '@capacitor/preferences';
-import { registerPlugin } from '@capacitor/core';
+import { registerPlugin, Capacitor } from '@capacitor/core';
 
 const WidgetUpdater = registerPlugin<any>('WidgetUpdater');
 
@@ -167,6 +167,10 @@ export default function App() {
 
   useEffect(() => {
     async function syncNotifications() {
+      if (!Capacitor.isNativePlatform()) {
+        console.log("Local notifications skipped: not running on native platform.");
+        return;
+      }
       try {
         const permStatus = await LocalNotifications.checkPermissions();
         if (permStatus.display !== 'granted') {
@@ -599,12 +603,12 @@ export default function App() {
         <div className="pb-32">
           {" "}
           {/* Increased padding for the 3-dots menu space at the end of lists */}
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             <motion.div
               key={activeTab}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
+              exit={{ opacity: 0, position: "absolute", left: 0, right: 0 }}
               transition={{ duration: 0.15 }}
             >
               {renderContent()}

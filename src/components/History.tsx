@@ -202,7 +202,7 @@ export default function History({ transactions, language, currency, onDelete, on
       
       if (include) {
         if (tx.type === 'EXPENSE') totalExpense += tx.amount;
-        else totalIncome += tx.amount;
+        else if (tx.type === 'INCOME' && !tx.paidByBank) totalIncome += tx.amount;
       }
     });
 
