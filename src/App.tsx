@@ -431,6 +431,7 @@ export default function App() {
             onSettle={handleCreditSettlement}
             transactions={transactions}
             onAddClick={openModal}
+            onAddTransaction={addTransaction}
             onAddBankBalance={(amount) => {
               setBankBalance((prev) => prev + amount);
               const tx = {

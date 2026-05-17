@@ -39,6 +39,7 @@ interface CreditsProps {
   onSettle?: (id: string) => void;
   transactions?: Transaction[];
   onAddClick?: (type: "INCOME" | "EXPENSE") => void;
+  onAddTransaction?: (label: string, amount: number, type: "INCOME" | "EXPENSE", category?: string, paidByBank?: boolean) => void;
   onAddBankBalance?: (amount: number) => void;
 }
 
@@ -52,12 +53,14 @@ export default function Credits({
   onSettle,
   transactions = [],
   onAddClick,
+  onAddTransaction,
   onAddBankBalance,
 }: CreditsProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [newName, setNewName] = useState("");
   const [newAmount, setNewAmount] = useState("");
   const [newType, setNewType] = useState<"OWE_ME" | "I_OWE">("OWE_ME");
+  const [source, setSource] = useState<"poche" | "compte" | "rien">("poche");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showBankModal, setShowBankModal] = useState(false);
@@ -171,10 +174,22 @@ export default function Credits({
         ),
       };
       setEntries((prev) => [newEntry, ...prev]);
+
+      if (onAddTransaction && source !== "rien") {
+        const floatAmount = parseFloat(newAmount);
+        if (newType === "OWE_ME") {
+          // If they owe me, I gave them money (EXPENSE)
+          onAddTransaction(`Prêt à ${newName}`, floatAmount, "EXPENSE", t.owedByMe, source === "compte");
+        } else if (newType === "I_OWE") {
+          // If I owe them, they gave me money (INCOME)
+          onAddTransaction(`Emprunt de ${newName}`, floatAmount, "INCOME", t.owedToMe, source === "compte");
+        }
+      }
     }
 
     setNewName("");
     setNewAmount("");
+    setSource("poche");
     setIsAdding(false);
   };
 
@@ -183,6 +198,7 @@ export default function Credits({
     setNewName(entry.name);
     setNewAmount(entry.amount.toString());
     setNewType(entry.type);
+    setSource("rien");
     setIsAdding(true);
     setActiveMenuId(null);
   };
@@ -491,6 +507,34 @@ export default function Credits({
                   </button>
                 </div>
               </div>
+
+              {!editingId && (
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                    {language === "Français" ? "Déduire de / Ajouter à" : language === "العربية" ? "خصم من / إضافة إلى" : "Deduct from / Add to"}
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      onClick={() => setSource("poche")}
+                      className={`h-12 rounded-2xl flex items-center justify-center font-black text-[10px] uppercase tracking-wider transition-all border-2 ${source === "poche" ? "bg-slate-800 border-slate-800 text-white shadow-md shadow-slate-800/20" : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"}`}
+                    >
+                      {language === "Français" ? "Ma poche" : language === "العربية" ? "جيبي" : "Pocket"}
+                    </button>
+                    <button
+                      onClick={() => setSource("compte")}
+                      className={`h-12 rounded-2xl flex items-center justify-center font-black text-[10px] uppercase tracking-wider transition-all border-2 ${source === "compte" ? "bg-teal-600 border-teal-600 text-white shadow-md shadow-teal-600/20" : "bg-white border-slate-100 text-slate-400 hover:border-teal-200"}`}
+                    >
+                      {language === "Français" ? "Mon compte" : language === "العربية" ? "حسابي" : "Bank"}
+                    </button>
+                    <button
+                      onClick={() => setSource("rien")}
+                      className={`h-12 rounded-2xl flex items-center justify-center font-black text-[10px] uppercase tracking-wider transition-all border-2 ${source === "rien" ? "bg-slate-100 border-slate-200 text-slate-500 shadow-inner" : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"}`}
+                    >
+                      {language === "Français" ? "Rien" : language === "العربية" ? "لا شيء" : "Nothing"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 pt-4">
