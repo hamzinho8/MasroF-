@@ -814,32 +814,47 @@ export default function Home({
 
                       <AnimatePresence>
                         {activeMenuId === tx.id && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.9, x: 20 }}
-                            animate={{ opacity: 1, scale: 1, x: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, x: 20 }}
-                            className="absolute right-12 top-0 bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-1.5 flex gap-1 z-[70]"
-                          >
-                            <button
+                          <>
+                            <div
+                              className="fixed inset-0 z-[80]"
                               onClick={(e) => {
+                                e.preventDefault();
                                 e.stopPropagation();
-                                setEditingTx(tx);
-                              }}
-                              className="w-9 h-9 flex items-center justify-center text-blue-500 hover:bg-blue-50 rounded-xl transition-colors"
-                            >
-                              <Edit size={16} />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onDelete(tx.id);
                                 setActiveMenuId(null);
                               }}
-                              className="w-9 h-9 flex items-center justify-center text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"
+                            />
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                              className="absolute right-0 top-12 bg-white border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-2xl py-2 w-48 z-[150] overflow-hidden"
+                              onClick={(e) => e.stopPropagation()}
                             >
-                              <Trash2 size={16} />
-                            </button>
-                          </motion.div>
+                              <button
+                                onClick={() => {
+                                  setEditingTx(tx);
+                                  setActiveMenuId(null);
+                                }}
+                                className="w-full px-5 py-3.5 text-left text-xs font-black text-slate-600 hover:bg-slate-50 hover:text-teal-600 flex items-center gap-3 transition-colors uppercase tracking-widest whitespace-nowrap active:bg-slate-100"
+                              >
+                                <Pencil size={15} />
+                                Modifier
+                              </button>
+                              <div className="h-px bg-slate-50 mx-4 my-1" />
+                              <button
+                                onClick={() => {
+                                  if (window.confirm('Supprimer cette transaction ?')) {
+                                    onDelete(tx.id);
+                                    setActiveMenuId(null);
+                                  }
+                                }}
+                                className="w-full px-5 py-3.5 text-left text-xs font-black text-rose-500 hover:bg-rose-50 flex items-center gap-3 transition-colors uppercase tracking-widest whitespace-nowrap active:bg-rose-100"
+                              >
+                                <Trash2 size={15} />
+                                Supprimer
+                              </button>
+                            </motion.div>
+                          </>
                         )}
                       </AnimatePresence>
                     </div>
