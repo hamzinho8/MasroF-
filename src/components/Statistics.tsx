@@ -63,7 +63,8 @@ export default function Statistics({ transactions, currency, language, isDarkMod
     }
 
     const expenses = transactions.filter(t => {
-      const isExpense = t.type === 'EXPENSE' || (t.type as any) === 'expense';
+      const isCredit = (t.category && ["on me doit","je dois","مستحقات لي","ديون علي","owed to me","i owe","loans","debts","crédit +","crédit --"].includes(t.category.toLowerCase()));
+      const isExpense = (t.type === 'EXPENSE' || (t.type as any) === 'expense') && !isCredit;
       return isExpense && t.timestamp >= startOfPeriod.getTime();
     });
 
@@ -219,7 +220,8 @@ export default function Statistics({ transactions, currency, language, isDarkMod
             }
 
             const periodExpenses = transactions.filter(t => {
-              const isExpense = t.type === 'EXPENSE' || (t.type as any) === 'expense';
+              const isCredit = (t.category && ["on me doit","je dois","مستحقات لي","ديون علي","owed to me","i owe","loans","debts","crédit +","crédit --"].includes(t.category.toLowerCase()));
+              const isExpense = (t.type === 'EXPENSE' || (t.type as any) === 'expense') && !isCredit;
               return isExpense && t.timestamp >= startOfPeriod.getTime();
             });
 
