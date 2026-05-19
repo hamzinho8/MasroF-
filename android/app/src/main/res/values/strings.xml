@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MasroF</string>
+    <string name="title_activity_main">MasroF</string>
+    <string name="package_name">com.hamza.masrof</string>
+    <string name="custom_url_scheme">com.hamza.masrof</string>
 </resources>
