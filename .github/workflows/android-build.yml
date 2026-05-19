@@ -28,7 +28,8 @@ jobs:
 
       - name: Install NPM dependencies
         run: |
-          rm package-lock.json || true
+          rm -rf node_modules package-lock.json || true
+          npm cache clean --force
           npm install
 
       - name: Build Web App
