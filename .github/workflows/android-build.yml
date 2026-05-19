@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 18
           cache: 'npm'
 
       - name: Install NPM dependencies
@@ -34,6 +34,18 @@ jobs:
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
 
+      - name: Check if android folder exists
+        run: |
+          if [ ! -d "android" ]; then
+            echo "❌ Android folder not found! Adding Android platform..."
+            npx cap add android
+          else
+            echo "✅ Android folder found!"
+          fi
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
       - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
@@ -43,9 +55,6 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-
-      - name: Sync Capacitor
-        run: npx cap sync android
 
       - name: Create local.properties
         run: echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
