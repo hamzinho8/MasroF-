@@ -1,0 +1,44 @@
+name: 🎨 Générer Icônes Android
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_url:
+        description: 'URL de l''image source (PNG carré)'
+        required: true
+        default: 'https://i.postimg.cc/V6Q0Fv9k/icone.png'
+
+jobs:
+  generate-icons:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Cloner le repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📦 Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: 📚 Installer les dépendances
+        run: |
+          npm install sharp axios --save-dev
+
+      - name: 🎨 Générer les icônes
+        run: |
+          node scripts/generate-icons.js
+        env:
+          IMAGE_URL: ${{ github.event.inputs.image_url }}
+
+      - name: 📤 Commit et Push des changements
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git diff --quiet && git diff --staged --quiet || (git commit -m "🎨 Mise à jour automatique des icônes Android" && git push)
+
+      - name: ✅ Succès!
+        run: echo "✅ Icônes générées avec succès!"
