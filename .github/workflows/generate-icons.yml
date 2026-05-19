@@ -8,6 +8,10 @@ on:
         required: true
         default: 'https://i.postimg.cc/V6Q0Fv9k/icone.png'
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   generate-icons:
     runs-on: ubuntu-latest
@@ -47,6 +51,7 @@ jobs:
             Veuillez vérifier et merger si tout est correct! 🚀
           branch: feature/auto-icons-${{ github.run_number }}
           delete-branch: true
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: ✅ Succès!
         run: echo "✅ Workflow complété! Vérifiez les Pull Requests pour merger les changements."
