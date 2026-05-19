@@ -2,12 +2,12 @@ apply plugin: 'com.android.application'
 
 android {
     namespace "com.hamza.masrof"
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.hamza.masrof"
-        minSdk 22
-        targetSdk 34
+        minSdk 24
+        targetSdk 35
         versionCode 1
         versionName "1.0"
     }
@@ -21,8 +21,10 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'com.getcapacitor:core:6.+'
+    implementation 'androidx.activity:activity:1.10.0'
+    implementation 'androidx.core:core-splashscreen:1.0.1'
+    implementation 'com.getcapacitor:core:6.1.0'
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
 }
