@@ -16,6 +16,7 @@ export interface Transaction {
   date: string;
   timestamp: number;
   paidByBank?: boolean;
+  isPureInflow?: boolean;
 }
 
 export interface Reminder {
@@ -34,4 +35,5 @@ export interface CreditEntry {
   amount: number;
   type: 'OWE_ME' | 'I_OWE';
   date: string;
+  source?: 'poche' | 'compte' | 'rien';
 }

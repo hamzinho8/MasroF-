@@ -258,6 +258,7 @@ export default function App() {
     type: "INCOME" | "EXPENSE",
     category?: string,
     paidByBank: boolean = false,
+    isPureInflow: boolean = false,
   ) => {
     const newTx: Transaction = {
       id: Date.now().toString(),
@@ -275,12 +276,21 @@ export default function App() {
         .replace(",", ""),
       timestamp: Date.now(),
       paidByBank,
+      isPureInflow,
     };
 
     setTransactions((prev) => [newTx, ...prev]);
     if (type === "INCOME") {
-      setBalance((prev) => prev + amount);
-      setBankBalance((prev) => prev - amount); // Retrait déduit du compte bancaire
+      if (isPureInflow) {
+        if (paidByBank) {
+          setBankBalance((prev) => prev + amount);
+        } else {
+          setBalance((prev) => prev + amount);
+        }
+      } else {
+        setBalance((prev) => prev + amount);
+        setBankBalance((prev) => prev - amount); // Retrait déduit du compte bancaire
+      }
     } else {
       if (paidByBank) {
         setBankBalance((prev) => prev - amount);
@@ -295,8 +305,16 @@ export default function App() {
     if (!tx) return;
 
     if (tx.type === "INCOME") {
-      setBalance((prev) => prev - tx.amount);
-      setBankBalance((prev) => prev + tx.amount);
+      if (tx.isPureInflow) {
+        if (tx.paidByBank) {
+          setBankBalance((prev) => prev - tx.amount);
+        } else {
+          setBalance((prev) => prev - tx.amount);
+        }
+      } else {
+        setBalance((prev) => prev - tx.amount);
+        setBankBalance((prev) => prev + tx.amount);
+      }
     } else {
       if (tx.paidByBank) {
         setBankBalance((prev) => prev + tx.amount);
@@ -315,8 +333,13 @@ export default function App() {
           if (updatedTx.amount !== undefined) {
             const diff = updatedTx.amount - tx.amount;
             if (tx.type === "INCOME") {
-              setBalance((b) => b + diff);
-              setBankBalance((b) => b - diff);
+              if (tx.isPureInflow) {
+                if (tx.paidByBank) setBankBalance((b) => b + diff);
+                else setBalance((b) => b + diff);
+              } else {
+                setBalance((b) => b + diff);
+                setBankBalance((b) => b - diff);
+              }
             } else {
               if (tx.paidByBank) setBankBalance((b) => b - diff);
               else setBalance((b) => b - diff);
@@ -340,25 +363,26 @@ export default function App() {
     setIsModalOpen(true);
   };
 
-  const handleCreditSettlement = (id: string) => {
+  const handleCreditSettlement = (id: string, settleSource: 'compte' | 'poche' = 'poche') => {
     const entry = creditEntries.find((e) => e.id === id);
     if (!entry) return;
 
     // Add corresponding transaction
+    const paidByBank = settleSource === "compte";
     if (entry.type === "OWE_ME") {
       // Someone paid me back (Income)
       const label =
         language === "العربية"
           ? `استرداد مستحق: ${entry.name}`
           : `Remboursement : ${entry.name}`;
-      addTransaction(label, entry.amount, "INCOME", t.owedToMe);
+      addTransaction(label, entry.amount, "INCOME", t.owedToMe, paidByBank, true);
     } else {
       // I paid someone back (Expense)
       const label =
         language === "العربية"
           ? `تسديد دين: ${entry.name}`
           : `Paiement dette : ${entry.name}`;
-      addTransaction(label, entry.amount, "EXPENSE", t.owedByMe);
+      addTransaction(label, entry.amount, "EXPENSE", t.owedByMe, paidByBank, true);
     }
 
     // Remove credit entry
@@ -395,6 +419,7 @@ export default function App() {
                   .replace(",", ""),
                 timestamp: Date.now(),
                 paidByBank: true,
+                isPureInflow: true,
               } as Transaction;
               setTransactions((prev) => [tx, ...prev]);
             }}
@@ -454,6 +479,7 @@ export default function App() {
                   .replace(",", ""),
                 timestamp: Date.now(),
                 paidByBank: true,
+                isPureInflow: true,
               } as Transaction;
               setTransactions((prev) => [tx, ...prev]);
             }}
@@ -527,6 +553,7 @@ export default function App() {
                   .replace(",", ""),
                 timestamp: Date.now(),
                 paidByBank: true,
+                isPureInflow: true,
               } as Transaction;
               setTransactions((prev) => [tx, ...prev]);
             }}

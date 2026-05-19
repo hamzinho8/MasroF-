@@ -36,10 +36,10 @@ interface CreditsProps {
   currency: string;
   entries: CreditEntry[];
   setEntries: React.Dispatch<React.SetStateAction<CreditEntry[]>>;
-  onSettle?: (id: string) => void;
+  onSettle?: (id: string, settleSource: 'compte' | 'poche') => void;
   transactions?: Transaction[];
   onAddClick?: (type: "INCOME" | "EXPENSE") => void;
-  onAddTransaction?: (label: string, amount: number, type: "INCOME" | "EXPENSE", category?: string, paidByBank?: boolean) => void;
+  onAddTransaction?: (label: string, amount: number, type: "INCOME" | "EXPENSE", category?: string, paidByBank?: boolean, isPureInflow?: boolean) => void;
   onAddBankBalance?: (amount: number) => void;
 }
 
@@ -158,6 +158,7 @@ export default function Credits({
                 name: newName,
                 amount: parseFloat(newAmount),
                 type: newType,
+                source: source,
               }
             : e,
         ),
@@ -172,6 +173,7 @@ export default function Credits({
         date: new Date().toLocaleDateString(
           language === "Français" ? "fr-FR" : "en-US",
         ),
+        source: source,
       };
       setEntries((prev) => [newEntry, ...prev]);
 
@@ -182,7 +184,7 @@ export default function Credits({
           onAddTransaction(`Prêt à ${newName}`, floatAmount, "EXPENSE", t.owedByMe, source === "compte");
         } else if (newType === "I_OWE") {
           // If I owe them, they gave me money (INCOME)
-          onAddTransaction(`Emprunt de ${newName}`, floatAmount, "INCOME", t.owedToMe, source === "compte");
+          onAddTransaction(`Emprunt de ${newName}`, floatAmount, "INCOME", t.owedToMe, source === "compte", true);
         }
       }
     }
@@ -198,18 +200,21 @@ export default function Credits({
     setNewName(entry.name);
     setNewAmount(entry.amount.toString());
     setNewType(entry.type);
-    setSource("rien");
+    setSource(entry.source || "poche");
     setIsAdding(true);
     setActiveMenuId(null);
   };
 
-  const handleSettleEntry = (id: string) => {
+  const [settlingId, setSettlingId] = useState<string | null>(null);
+
+  const handleSettleEntry = (id: string, settleSource: 'compte' | 'poche') => {
     if (onSettle) {
-      onSettle(id);
+      onSettle(id, settleSource);
     } else {
       setEntries((prev) => prev.filter((e) => e.id !== id));
     }
     setActiveMenuId(null);
+    setSettlingId(null);
   };
 
   const [bankTimeframe, setBankTimeframe] = useState<"day" | "week" | "month">(
@@ -679,7 +684,7 @@ export default function Credits({
                               </button>
                               <div className="h-px bg-slate-50 mx-4 my-1" />
                               <button
-                                onClick={() => handleSettleEntry(entry.id)}
+                                onClick={() => { setSettlingId(entry.id); setActiveMenuId(null); }}
                                 className="w-full px-5 py-3.5 text-left text-xs font-black text-rose-500 hover:bg-rose-50 flex items-center gap-3 transition-colors uppercase tracking-widest whitespace-nowrap active:bg-rose-100"
                               >
                                 <CircleDollarSign size={15} />
@@ -708,6 +713,52 @@ export default function Credits({
               ? "سجل البنك"
               : "Bank History"}
         </h3>
+
+        <AnimatePresence>
+          {settlingId && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+              onClick={() => setSettlingId(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white rounded-[32px] p-6 w-full max-w-sm shadow-2xl border border-slate-100 flex flex-col gap-6"
+              >
+                <div className="flex flex-col gap-2">
+                  <h3 className="text-xl font-black text-slate-800 tracking-tight text-center">
+                    {language === "Français" ? "Choisir la destination" : language === "العربية" ? "اختر الوجهة" : "Choose destination"}
+                  </h3>
+                  <p className="text-sm font-medium text-slate-500 text-center">
+                    {language === "Français" ? "Où voulez-vous solder ce crédit ?" : language === "العربية" ? "أين تريد تسوية هذا الرصيد؟" : "Where do you want to settle this credit?"}
+                  </p>
+                </div>
+                
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={() => handleSettleEntry(settlingId, "poche")}
+                    className="w-full h-16 rounded-[24px] bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900 font-black flex items-center justify-center gap-3 active:scale-95 transition-all text-sm uppercase tracking-widest"
+                  >
+                    <Wallet size={20} />
+                    {language === "Français" ? "Ma poche" : language === "العربية" ? "جيبي" : "Pocket"}
+                  </button>
+                  <button
+                    onClick={() => handleSettleEntry(settlingId, "compte")}
+                    className="w-full h-16 rounded-[24px] bg-indigo-600 text-white shadow-xl shadow-indigo-600/20 active:scale-95 transition-all text-sm uppercase tracking-widest font-black flex items-center justify-center gap-3"
+                  >
+                    <Landmark size={20} />
+                    {language === "Français" ? "Mon compte" : language === "العربية" ? "حسابي" : "Bank Account"}
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <AnimatePresence>
           {showBankModal && (
