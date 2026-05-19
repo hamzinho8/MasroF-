@@ -15,8 +15,6 @@ jobs:
     steps:
       - name: 📥 Cloner le repository
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 📦 Installer Node.js
         uses: actions/setup-node@v4
@@ -33,12 +31,22 @@ jobs:
         env:
           IMAGE_URL: ${{ github.event.inputs.image_url }}
 
-      - name: 📤 Commit et Push des changements
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add -A
-          git diff --quiet && git diff --staged --quiet || (git commit -m "🎨 Mise à jour automatique des icônes Android" && git push)
+      - name: 📤 Créer une Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: '🎨 Mise à jour automatique des icônes Android'
+          title: '🎨 Icônes Android générées automatiquement'
+          body: |
+            ## 📦 Fichiers générés automatiquement
+            
+            - ✅ Splash screens (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi)
+            - ✅ Icônes mipmap (tous les formats)
+            - ✅ Icônes notification (monochrome)
+            - ✅ Images sources téléchargées
+            
+            Veuillez vérifier et merger si tout est correct! 🚀
+          branch: feature/auto-icons-${{ github.run_number }}
+          delete-branch: true
 
       - name: ✅ Succès!
-        run: echo "✅ Icônes générées avec succès!"
+        run: echo "✅ Workflow complété! Vérifiez les Pull Requests pour merger les changements."
