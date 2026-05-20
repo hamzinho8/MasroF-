@@ -199,12 +199,24 @@ export default function App() {
           .map((r, i) => {
             const [hours, minutes] = r.time.split(':').map(Number);
             
+            let smallIcon = 'ic_notif_autre';
+            let iconColor = '#4f46e5'; // indigo-600
+
+            if (r.type === 'ACHAT') {
+              smallIcon = 'ic_notif_achat';
+              iconColor = '#e11d48'; // rose-600
+            } else if (r.type === 'RETRAIT') {
+              smallIcon = 'ic_notif_retrait';
+              iconColor = '#0d9488'; // teal-600
+            }
+            
             return {
               title: r.title,
               body: "Il est temps de checker votre trésorerie !",
               id: i + 1,
               channelId: 'reminders',
-              smallIcon: 'ic_stat_notification',
+              smallIcon,
+              iconColor,
               largeIcon: 'ic_launcher',
               schedule: { 
                 repeats: true,
