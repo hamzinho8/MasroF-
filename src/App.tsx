@@ -603,7 +603,7 @@ export default function App() {
     >
       {/* Header & Navigation */}
       <header
-        className={`sticky top-0 z-50 transition-all duration-300 ${isDarkMode ? "bg-slate-900/80" : "bg-white/80"} backdrop-blur-xl border-b ${isDarkMode ? "border-slate-800" : "border-slate-100"}`}
+        className={`sticky top-0 z-50 transition-all duration-300 ${isDarkMode ? "bg-slate-900/95" : "bg-white/95"} backdrop-blur-md border-b ${isDarkMode ? "border-slate-800" : "border-slate-100"}`}
       >
         {/* Global Navigation Tabs (Compact & Artistic) */}
         <nav className="flex items-center justify-around px-2 pb-5 pt-3 max-w-full mx-auto gap-1">
@@ -652,13 +652,13 @@ export default function App() {
         <div className="pb-32">
           {" "}
           {/* Increased padding for the 3-dots menu space at the end of lists */}
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, position: "absolute", left: 0, right: 0 }}
-              transition={{ duration: 0.15 }}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             >
               {renderContent()}
             </motion.div>
