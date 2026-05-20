@@ -19,6 +19,9 @@ import {
   AlarmClock,
   ArrowDownRight,
   Calendar as CalendarIcon,
+  ShoppingBag,
+  ArrowDownToLine,
+  Coins,
   Settings2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
@@ -760,11 +763,21 @@ function ReminderManagerModal({
                 key={reminder.id}
                 className="bg-white border border-slate-100 rounded-3xl p-4 flex items-center gap-4 transition-all hover:shadow-md group shadow-sm"
               >
-                <div className="w-10 h-10 rounded-xl bg-teal-brand/5 flex items-center justify-center text-teal-brand">
+                <div
+                  className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
+                    reminder.type === "ACHAT"
+                      ? "bg-rose-50 text-rose-600"
+                      : reminder.type === "RETRAIT"
+                        ? "bg-teal-50 text-teal-600"
+                        : "bg-indigo-600 text-white"
+                  }`}
+                >
                   {reminder.type === "ACHAT" ? (
-                    <CreditCard size={18} />
+                    <ShoppingBag size={20} strokeWidth={2.5} />
+                  ) : reminder.type === "RETRAIT" ? (
+                    <ArrowDownToLine size={20} strokeWidth={2.5} />
                   ) : (
-                    <ArrowDownRight size={18} />
+                    <Coins size={20} strokeWidth={2.5} />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -880,9 +893,24 @@ function ReminderFormFields({
               key={t}
               type="button"
               onClick={() => setType(t)}
-              className={`p-3 rounded-2xl border text-[10px] font-black uppercase tracking-wider transition-all ${type === t ? "border-[#2D8B96] bg-[#2D8B96]/10 text-[#1B5E66] shadow-[0_0_10px_rgba(45,139,150,0.1)]" : "border-[#2D8B96]/10 text-[#1B5E66]/40"}`}
+              className={`py-3 px-2 border-2 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all ${
+                type === t 
+                  ? t === "ACHAT" ? "border-rose-100 bg-rose-50 text-rose-600 shadow-sm"
+                  : t === "RETRAIT" ? "border-teal-100 bg-teal-50 text-teal-600 shadow-sm"
+                  : "border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
+                  : "border-slate-50 bg-white text-slate-400 hover:border-slate-100"
+              }`}
             >
-              {t}
+              {t === "ACHAT" ? (
+                <ShoppingBag size={18} strokeWidth={2.5} />
+              ) : t === "RETRAIT" ? (
+                <ArrowDownToLine size={18} strokeWidth={2.5} />
+              ) : (
+                <Coins size={18} strokeWidth={2.5} />
+              )}
+              <span className="text-[10px] font-black uppercase tracking-wider">
+                {t}
+              </span>
             </button>
           ))}
         </div>
@@ -1032,9 +1060,24 @@ function ReminderForm({
                   key={t}
                   type="button"
                   onClick={() => setType(t)}
-                  className={`p-3 rounded-2xl border text-[10px] font-black uppercase tracking-wider transition-all ${type === t ? "border-[#2D8B96] bg-[#2D8B96]/10 text-[#1B5E66] shadow-[0_0_10px_rgba(45,139,150,0.1)]" : "border-[#2D8B96]/10 text-[#1B5E66]/40"}`}
+                  className={`py-3 px-2 border-2 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all ${
+                    type === t 
+                      ? t === "ACHAT" ? "border-rose-100 bg-rose-50 text-rose-600 shadow-sm"
+                      : t === "RETRAIT" ? "border-teal-100 bg-teal-50 text-teal-600 shadow-sm"
+                      : "border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
+                      : "border-slate-50 bg-white text-slate-400 hover:border-slate-100"
+                  }`}
                 >
-                  {t}
+                  {t === "ACHAT" ? (
+                    <ShoppingBag size={18} strokeWidth={2.5} />
+                  ) : t === "RETRAIT" ? (
+                    <ArrowDownToLine size={18} strokeWidth={2.5} />
+                  ) : (
+                    <Coins size={18} strokeWidth={2.5} />
+                  )}
+                  <span className="text-[10px] font-black uppercase tracking-wider">
+                    {t}
+                  </span>
                 </button>
               ))}
             </div>
