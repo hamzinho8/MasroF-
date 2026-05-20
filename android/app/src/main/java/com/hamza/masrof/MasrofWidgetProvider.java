@@ -50,6 +50,11 @@ public class MasrofWidgetProvider extends AppWidgetProvider {
             views.setTextColor(R.id.widget_balance_text, Color.WHITE);
         }
 
+        // Set pending intent to launch main activity when clicking the widget
+        Intent intent = new Intent(context, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        views.setOnClickPendingIntent(R.id.widget_container, pendingIntent);
+
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }

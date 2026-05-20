@@ -859,6 +859,9 @@ function ReminderFormFields({
   >("ONCE");
   const [type, setType] = useState<"ACHAT" | "RETRAIT" | "AUTRE">("AUTRE");
 
+  const timeRef = React.useRef<HTMLInputElement>(null);
+  const dateRef = React.useRef<HTMLInputElement>(null);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title) return;
@@ -926,8 +929,10 @@ function ReminderFormFields({
             Heure
           </label>
           <input
+            ref={timeRef}
             type="time"
             value={time}
+            onClick={() => { try { timeRef.current?.showPicker() } catch(e) {} }}
             onChange={(e) => setTime(e.target.value)}
             className="w-full h-14 bg-white border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none"
             required
@@ -938,8 +943,10 @@ function ReminderFormFields({
             Date
           </label>
           <input
+            ref={dateRef}
             type="date"
             value={date}
+            onClick={() => { try { dateRef.current?.showPicker() } catch(e) {} }}
             onChange={(e) => setDate(e.target.value)}
             className="w-full h-14 bg-white border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none"
           />
@@ -978,6 +985,9 @@ function ReminderForm({
     "ONCE" | "DAILY" | "WEEKLY" | "MONTHLY"
   >("ONCE");
   const [type, setType] = useState<"ACHAT" | "RETRAIT" | "AUTRE">("AUTRE");
+
+  const timeRef2 = React.useRef<HTMLInputElement>(null);
+  const dateRef2 = React.useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1071,8 +1081,10 @@ function ReminderForm({
                 Heure
               </label>
               <input
+                ref={timeRef2}
                 type="time"
                 value={time}
+                onClick={() => { try { timeRef2.current?.showPicker() } catch(e) {} }}
                 onChange={(e) => setTime(e.target.value)}
                 className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none"
                 required
@@ -1083,8 +1095,10 @@ function ReminderForm({
                 Date
               </label>
               <input
+                ref={dateRef2}
                 type="date"
                 value={date}
+                onClick={() => { try { dateRef2.current?.showPicker() } catch(e) {} }}
                 onChange={(e) => setDate(e.target.value)}
                 className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none"
               />

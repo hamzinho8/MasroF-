@@ -24,6 +24,7 @@ import MasrofLogo from "./components/Logo";
 import AddTransactionModal from "./components/AddTransactionModal";
 import { Transaction, Reminder, CreditEntry, PredefinedItem } from "./types";
 import { INITIAL_PREDEFINED_ITEMS } from "./constants";
+import { useSwipeable } from "react-swipeable";
 
 type Tab = "home" | "stats" | "history" | "credits" | "settings";
 
@@ -574,8 +575,29 @@ export default function App() {
     }
   };
 
+  const TABS: Tab[] = ["home", "history", "credits", "stats", "settings"];
+  
+  const handleSwipe = (dir: "Left" | "Right") => {
+    const currentIndex = TABS.indexOf(activeTab);
+    if (dir === "Left") {
+      const nextIndex = isRtl ? currentIndex - 1 : currentIndex + 1;
+      if (nextIndex >= 0 && nextIndex < TABS.length) setActiveTab(TABS[nextIndex]);
+    } else if (dir === "Right") {
+      const prevIndex = isRtl ? currentIndex + 1 : currentIndex - 1;
+      if (prevIndex >= 0 && prevIndex < TABS.length) setActiveTab(TABS[prevIndex]);
+    }
+  };
+
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => handleSwipe("Left"),
+    onSwipedRight: () => handleSwipe("Right"),
+    preventScrollOnSwipe: false,
+    trackMouse: false
+  });
+
   return (
     <div
+      {...swipeHandlers}
       dir={isRtl ? "rtl" : "ltr"}
       className={`h-screen ${isDarkMode ? "bg-slate-900" : "bg-slate-50"} flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden font-sans transition-colors duration-500`}
     >
