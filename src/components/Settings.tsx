@@ -852,6 +852,29 @@ function ReminderManagerModal({
             </div>
           )}
         </div>
+
+        {/* Custom Notification Sound Instructions */}
+        <div className="bg-slate-50/50 rounded-[32px] p-6 border-2 border-slate-100 mt-6">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-slate-800 shrink-0 shadow-sm">
+               <Settings2 size={24} strokeWidth={2.5} />
+            </div>
+            <div>
+              <h4 className="text-[14px] font-black uppercase text-slate-800 tracking-tight">Appliquer vos musiques</h4>
+              <p className="text-[11px] font-bold text-slate-400">Pour les notifications de rappels</p>
+            </div>
+          </div>
+          <p className="text-[12px] font-medium text-slate-500 mb-4 leading-relaxed">
+            Pour des raisons de sécurité, Android gère l'accès aux musiques locales. Vous pouvez facilement appliquer votre propre son MP3/WAV à l'application depuis les paramètres de votre téléphone.
+          </p>
+          <div className="bg-white rounded-[24px] p-5 border border-slate-100 shadow-sm text-[11px] font-bold text-slate-500 leading-relaxed uppercase tracking-wider space-y-2">
+            <p>1. Allez dans les <span className="text-indigo-600 font-black">Paramètres</span> d'Android</p>
+            <p>2. <span className="text-indigo-600 font-black">Applications</span> &gt; Masrof</p>
+            <p>3. <span className="text-indigo-600 font-black">Notifications</span> &gt; Rappels ("Reminder")</p>
+            <p>4. Choisissez "Son" puis <span className="text-indigo-600 font-black">Fichiers Locaux</span>.</p>
+          </div>
+        </div>
+
       </motion.div>
     </>
   );

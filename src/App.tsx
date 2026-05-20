@@ -178,12 +178,13 @@ export default function App() {
 
         try {
           await LocalNotifications.createChannel({
-            id: 'reminders',
+            id: 'reminders_checkout_v1',
             name: 'Rappels',
-            description: 'Rappels quotidiens',
+            description: 'Rappels avec son checkout',
             importance: 5,
             visibility: 1,
             vibration: true,
+            sound: 'checkout.wav',
           });
         } catch (e) {
           console.error("Error creating channel", e);
@@ -214,7 +215,8 @@ export default function App() {
               title: r.title,
               body: "Il est temps de checker votre trésorerie !",
               id: i + 1,
-              channelId: 'reminders',
+              channelId: 'reminders_checkout_v1',
+              sound: 'checkout.wav',
               smallIcon,
               iconColor,
               largeIcon: 'ic_launcher',
