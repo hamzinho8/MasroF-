@@ -23,6 +23,8 @@ import {
   ArrowDownToLine,
   Coins,
   Settings2,
+  Music,
+  Play,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import MasrofLogo from "./Logo";
@@ -853,25 +855,70 @@ function ReminderManagerModal({
           )}
         </div>
 
-        {/* Custom Notification Sound Instructions */}
+        {/* Custom Notification Sound Settings */}
         <div className="bg-slate-50/50 rounded-[32px] p-6 border-2 border-slate-100 mt-6">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-slate-800 shrink-0 shadow-sm">
-               <Settings2 size={24} strokeWidth={2.5} />
+               <Music size={24} strokeWidth={2.5} />
             </div>
             <div>
-              <h4 className="text-[14px] font-black uppercase text-slate-800 tracking-tight">Appliquer vos musiques</h4>
-              <p className="text-[11px] font-bold text-slate-400">Pour les notifications de rappels</p>
+              <h4 className="text-[14px] font-black uppercase text-slate-800 tracking-tight">Son de Notification</h4>
+              <p className="text-[11px] font-bold text-slate-400">Pour les rappels internes</p>
             </div>
           </div>
+          
           <p className="text-[12px] font-medium text-slate-500 mb-4 leading-relaxed">
-            Pour des raisons de sécurité, Android gère l'accès aux musiques locales. Vous pouvez facilement appliquer votre propre son MP3/WAV à l'application depuis les paramètres de votre téléphone.
+            Sélectionnez un fichier audio (MP3, WAV) depuis votre appareil. Ce son sera joué à l'intérieur de l'application lorsqu'un rappel se déclenche.
           </p>
-          <div className="bg-white rounded-[24px] p-5 border border-slate-100 shadow-sm text-[11px] font-bold text-slate-500 leading-relaxed uppercase tracking-wider space-y-2">
-            <p>1. Allez dans les <span className="text-indigo-600 font-black">Paramètres</span> d'Android</p>
-            <p>2. <span className="text-indigo-600 font-black">Applications</span> &gt; Masrof</p>
-            <p>3. <span className="text-indigo-600 font-black">Notifications</span> &gt; Rappels ("Reminder")</p>
-            <p>4. Choisissez "Son" puis <span className="text-indigo-600 font-black">Fichiers Locaux</span>.</p>
+
+          <div className="flex flex-col gap-3">
+            <label className="w-full relative flex items-center justify-center p-4 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-bold uppercase text-[12px] rounded-2xl cursor-pointer transition-colors active:scale-[0.98] shadow-sm">
+              <Music size={18} className="mr-3" />
+              Choisir un fichier audio
+              <input 
+                type="file" 
+                accept="audio/*" 
+                className="hidden" 
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      localStorage.setItem("customNotificationSound", reader.result as string);
+                      alert("Son de notification mis à jour !");
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }} 
+              />
+            </label>
+
+            <button
+              onClick={() => {
+                const sound = localStorage.getItem("customNotificationSound");
+                if (sound) {
+                  const audio = new Audio(sound);
+                  audio.play().catch(e => alert("Erreur de lecture: " + e.message));
+                } else {
+                  alert("Aucun son personnalisé configuré.");
+                }
+              }}
+              className="w-full flex items-center justify-center p-4 bg-teal-50 hover:bg-teal-100 text-teal-700 font-bold uppercase text-[12px] rounded-2xl transition-colors active:scale-[0.98]"
+            >
+              <Play size={18} className="mr-3" />
+              Tester le son
+            </button>
+            
+            <button
+              onClick={() => {
+                localStorage.removeItem("customNotificationSound");
+                alert("Son réinitialisé par défaut.");
+              }}
+              className="w-full flex items-center justify-center p-4 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold uppercase text-[12px] rounded-2xl transition-colors active:scale-[0.98]"
+            >
+              <Trash2 size={18} className="mr-3" />
+              Rétablir par défaut
+            </button>
           </div>
         </div>
 

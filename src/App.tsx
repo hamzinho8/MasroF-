@@ -236,6 +236,21 @@ export default function App() {
       }
     }
     syncNotifications();
+
+    if (Capacitor.isNativePlatform()) {
+      let listenerRemoved = false;
+      const listener = LocalNotifications.addListener('localNotificationReceived', (notification) => {
+          const customSound = localStorage.getItem("customNotificationSound");
+          if (customSound) {
+            const audio = new Audio(customSound);
+            audio.play().catch(e => console.error("Could not play custom sound", e));
+          }
+      });
+      return () => {
+         listenerRemoved = true;
+         listener.then(l => l.remove()).catch(() => {});
+      };
+    }
   }, [reminders]);
 
   const [balance, setBalance] = useLocalStorage("balance", 0);
