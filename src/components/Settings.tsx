@@ -108,7 +108,11 @@ export default function Settings({
   const [resetSuccess, setResetSuccess] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [showSelector, setShowSelector] = useState<
-    "CURRENCY" | "LANGUAGE" | "SOUND" | "WIDGET_MODE" | "WIDGET_BALANCE_TYPE" | "WIDGET_COLOR" | "WIDGET_TEXT_COLOR" | null
+    | "CURRENCY"
+    | "LANGUAGE"
+    | "SOUND"
+    | "WIDGET_SETTINGS"
+    | null
   >(null);
   const [soundType, setSoundType] = useState(() => localStorage.getItem("notificationSoundType") || "checkout");
   const [showArticleManager, setShowArticleManager] = useState(false);
@@ -290,37 +294,16 @@ export default function Settings({
               showArrow={true}
             />
             <SettingsItem
-              icon={<Layout />}
-              title="MODE DU WIDGET (DONNÉES)"
-              subtitle={widgetMode === 'balance' ? 'Solde actuel' : 'Dépenses hebdo'}
-              onClick={() => setShowSelector("WIDGET_MODE")}
-              showArrow={true}
-            />
-            {widgetMode === "balance" && (
-              <SettingsItem
-                icon={<Coins />}
-                title="AFFICHAGE PRINCIPAL (WIDGET)"
-                subtitle={widgetBalanceType === "cash" ? "Argent Dispo" : "Solde Bancaire"}
-                onClick={() => setShowSelector("WIDGET_BALANCE_TYPE")}
-                showArrow={true}
-              />
-            )}
-            <SettingsItem
-              icon={<Palette />}
-              title="COULEUR D'ACCENTUATION"
-              subtitle={
-                widgetColor === "default" ? "Défaut (Sarcelle)" :
-                widgetColor === "blue" ? "Bleu" :
-                widgetColor === "purple" ? "Violet" : "Rose"
-              }
-              onClick={() => setShowSelector("WIDGET_COLOR")}
-              showArrow={true}
-            />
-            <SettingsItem
               icon={<Smartphone />}
-              title="TEXTE WIDGET ANDROID"
-              subtitle="Modifier la couleur du texte"
-              onClick={() => setShowSelector("WIDGET_TEXT_COLOR")}
+              title="RÉGLAGES WIDGET ANDROID"
+              subtitle={
+                widgetMode === "spending"
+                  ? "Dépenses hebdo"
+                  : widgetBalanceType === "cash"
+                  ? "Argent Dispo"
+                  : "Solde Bancaire"
+              }
+              onClick={() => setShowSelector("WIDGET_SETTINGS")}
               showArrow={true}
             />
             <SettingsItem
@@ -505,18 +488,58 @@ export default function Settings({
               className="fixed inset-x-0 bottom-0 z-[120] bg-white/95 backdrop-blur-2xl border-t border-[#2D8B96]/30 rounded-t-[40px] p-8 max-w-md mx-auto shadow-[0_-10px_40px_rgba(45,139,150,0.15)]"
             >
               <h3 className="text-xl font-black text-[#1B5E66] mb-6 italic uppercase tracking-tighter">
-                Sélection {
+                {showSelector === "WIDGET_SETTINGS" ? "Réglages Widget" : `Sélection ${
                   showSelector === "CURRENCY" ? "Devise" :
                   showSelector === "LANGUAGE" ? "Langue" :
-                  showSelector === "SOUND" ? "Son" :
-                  showSelector === "WIDGET_MODE" ? "Mode" :
-                  showSelector === "WIDGET_BALANCE_TYPE" ? "Affichage" :
-                  showSelector === "WIDGET_COLOR" ? "Couleur" :
-                  showSelector === "WIDGET_TEXT_COLOR" ? "Texte" : ""
-                }
+                  showSelector === "SOUND" ? "Son" : ""
+                }`}
               </h3>
               <div className="space-y-3">
-                {(() => {
+                {showSelector === "WIDGET_SETTINGS" ? (
+                  <div className="space-y-6">
+                    <div>
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-[#1B5E66]/60 mb-3">Données à afficher</h4>
+                      <div className="grid grid-cols-1 gap-2">
+                        {[
+                          { id: "cash", label: "Argent Dispo", action: () => { onWidgetModeChange("balance"); onWidgetBalanceTypeChange("cash"); } },
+                          { id: "bank", label: "Solde Bancaire", action: () => { onWidgetModeChange("balance"); onWidgetBalanceTypeChange("bank"); } },
+                          { id: "spending", label: "Dépenses Hebdo", action: () => { onWidgetModeChange("spending"); } }
+                        ].map(opt => {
+                          const isActive = widgetMode === "spending" ? opt.id === "spending" : opt.id === widgetBalanceType;
+                          return (
+                            <button
+                              key={opt.id}
+                              onClick={() => opt.action()}
+                              className={`w-full p-4 rounded-2xl border transition-all flex items-center justify-between ${isActive ? 'bg-[#2D8B96]/10 border-[#2D8B96] text-[#1B5E66] shadow-[0_0_15px_rgba(45,139,150,0.2)]' : 'border-[#2D8B96]/10 text-[#1B5E66]/40'}`}
+                            >
+                              <span className="font-bold text-sm tracking-widest uppercase italic">{opt.label}</span>
+                              {isActive && <div className="w-5 h-5 rounded-full bg-[#E5C366] shadow-[0_0_8px_#E5C366]" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-[#1B5E66]/60 mb-3">Couleur du texte</h4>
+                      <div className="flex gap-3">
+                        {[
+                          { id: "#000000", color: "bg-black" },
+                          { id: "#FFFFFF", color: "bg-white" },
+                          { id: "#3b82f6", color: "bg-blue-500" },
+                          { id: "#22c55e", color: "bg-green-500" },
+                          { id: "#ef4444", color: "bg-red-500" }
+                        ].map(c => (
+                           <button
+                             key={c.id}
+                             onClick={() => onWidgetTextColorChange(c.id)}
+                             className={`w-10 h-10 rounded-full border border-gray-300 transition-all ${c.color} ${widgetTextColor === c.id ? "ring-2 ring-offset-2 ring-[#1B5E66] scale-110 shadow-md opacity-100" : "opacity-60 hover:opacity-100"}`}
+                           />
+                        ))}
+                      </div>
+                    </div>
+                    <button onClick={() => setShowSelector(null)} className="w-full bg-[#2D8B96] text-white rounded-2xl p-5 font-bold uppercase tracking-widest text-sm mt-2 active:scale-95 transition-transform">Terminé</button>
+                  </div>
+                ) : (() => {
                   let options: { id: string; label: string; color?: string }[] = [];
                   let activeValue = "";
                   
@@ -529,35 +552,6 @@ export default function Settings({
                   } else if (showSelector === "SOUND") {
                     options = soundOptions;
                     activeValue = soundType;
-                  } else if (showSelector === "WIDGET_MODE") {
-                    options = [
-                      { id: "balance", label: "Solde actuel" },
-                      { id: "spending", label: "Dépenses hebdo" }
-                    ];
-                    activeValue = widgetMode;
-                  } else if (showSelector === "WIDGET_BALANCE_TYPE") {
-                    options = [
-                      { id: "cash", label: "Argent Dispo" },
-                      { id: "bank", label: "Solde Bancaire" }
-                    ];
-                    activeValue = widgetBalanceType;
-                  } else if (showSelector === "WIDGET_COLOR") {
-                    options = [
-                      { id: "default", label: "Défaut (Sarcelle)", color: "bg-[#AED8D3]" },
-                      { id: "blue", label: "Bleu", color: "bg-blue-300" },
-                      { id: "purple", label: "Violet", color: "bg-purple-300" },
-                      { id: "rose", label: "Rose", color: "bg-rose-300" }
-                    ];
-                    activeValue = widgetColor;
-                  } else if (showSelector === "WIDGET_TEXT_COLOR") {
-                    options = [
-                      { id: "#000000", label: "Noir", color: "bg-black" },
-                      { id: "#FFFFFF", label: "Blanc", color: "bg-white" },
-                      { id: "#3b82f6", label: "Bleu", color: "bg-blue-500" },
-                      { id: "#22c55e", label: "Vert", color: "bg-green-500" },
-                      { id: "#ef4444", label: "Rouge", color: "bg-red-500" }
-                    ];
-                    activeValue = widgetTextColor;
                   }
 
                   return options.map((opt) => (
@@ -570,10 +564,6 @@ export default function Settings({
                           setSoundType(opt.id);
                           localStorage.setItem("notificationSoundType", opt.id);
                         }
-                        else if (showSelector === "WIDGET_MODE") onWidgetModeChange(opt.id as any);
-                        else if (showSelector === "WIDGET_BALANCE_TYPE") onWidgetBalanceTypeChange(opt.id as any);
-                        else if (showSelector === "WIDGET_COLOR") onWidgetColorChange(opt.id as any);
-                        else if (showSelector === "WIDGET_TEXT_COLOR") onWidgetTextColorChange(opt.id);
                         setShowSelector(null);
                       }}
                       className={`w-full p-5 rounded-2xl border transition-all flex items-center justify-between group ${
