@@ -40,7 +40,7 @@ export default function LockScreen({ onUnlock, correctPin }: LockScreenProps) {
   return (
     <div className="fixed inset-0 z-[200] bg-[#F0F7F8] flex flex-col items-center justify-center p-6 bg-cover bg-center">
       <div className="absolute top-12">
-        <MasrofLogo width={64} height={64} className="text-[#2D8B96]" />
+        <MasrofLogo className="w-16 h-16 text-[#2D8B96]" />
       </div>
 
       <div className="flex flex-col items-center mb-12">
