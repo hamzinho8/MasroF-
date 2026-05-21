@@ -67,6 +67,8 @@ interface SettingsProps {
   onPredefinedItemsChange: (items: PredefinedItem[]) => void;
   balanceThreshold: number | null;
   onBalanceThresholdChange: (threshold: number | null) => void;
+  appPin: string | null;
+  onAppPinChange: (pin: string | null) => void;
 }
 
 const CATEGORIES = [
@@ -102,6 +104,8 @@ export default function Settings({
   onPredefinedItemsChange,
   balanceThreshold,
   onBalanceThresholdChange,
+  appPin,
+  onAppPinChange,
 }: SettingsProps) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
@@ -112,8 +116,11 @@ export default function Settings({
     | "LANGUAGE"
     | "SOUND"
     | "WIDGET_SETTINGS"
+    | "PIN_SETUP"
     | null
   >(null);
+  const [pinSetupStep, setPinSetupStep] = useState<1 | 2>(1);
+  const [tempPin, setTempPin] = useState("");
   const [soundType, setSoundType] = useState(() => localStorage.getItem("notificationSoundType") || "checkout");
   const [showArticleManager, setShowArticleManager] = useState(false);
   const [showReminderManager, setShowReminderManager] = useState(false);
@@ -334,12 +341,58 @@ export default function Settings({
               />
             </div>
             <SettingsItem
-              icon={<Shield />}
+              icon={<Coins />}
               title="MONNAIE"
               subtitle={`Devise par défaut: ${currency}`}
               onClick={() => setShowSelector("CURRENCY")}
               showArrow={true}
             />
+          </div>
+
+          <div className="py-2 px-0">
+            <div className="px-6 py-4 flex items-center justify-between bg-white/40 border-y border-[#2D8B96]/5">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full border border-[#2D8B96]/30 flex items-center justify-center text-[#2D8B96] shadow-[0_0_10px_rgba(45,139,150,0.1)]">
+                  <Shield size={18} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-[#1B5E66] uppercase tracking-tight">
+                    Verrouillage App
+                  </p>
+                  <p className="text-[10px] font-black text-[#2D8B96] tracking-widest uppercase">
+                    {appPin ? "Code PIN Activé" : "Non Sécurisé"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                {appPin && (
+                  <button 
+                    onClick={() => {
+                      setPinSetupStep(1);
+                      setTempPin("");
+                      setShowSelector("PIN_SETUP");
+                    }} 
+                    className="text-[10px] font-black uppercase text-[#2D8B96] border border-[#2D8B96]/30 px-3 py-1.5 rounded-full active:scale-95 transition-all"
+                  >
+                    Modifier
+                  </button>
+                )}
+                <Switch
+                  active={!!appPin}
+                  onToggle={() => {
+                    if (appPin) {
+                      if (window.confirm("Voulez-vous vraiment désactiver le code PIN ?")) {
+                        onAppPinChange(null);
+                      }
+                    } else {
+                      setPinSetupStep(1);
+                      setTempPin("");
+                      setShowSelector("PIN_SETUP");
+                    }
+                  }}
+                />
+              </div>
+            </div>
           </div>
 
           {/* Final Actions */}
@@ -434,14 +487,120 @@ export default function Settings({
               className="fixed inset-x-0 bottom-0 z-[120] bg-white/95 backdrop-blur-2xl border-t border-[#2D8B96]/30 rounded-t-[40px] p-8 max-w-md mx-auto shadow-[0_-10px_40px_rgba(45,139,150,0.15)]"
             >
               <h3 className="text-xl font-black text-[#1B5E66] mb-6 italic uppercase tracking-tighter">
-                {showSelector === "WIDGET_SETTINGS" ? "Réglages Widget" : `Sélection ${
+                {showSelector === "WIDGET_SETTINGS" ? "Réglages Widget" : 
+                 showSelector === "PIN_SETUP" ? "Configurer Code PIN" :
+                 `Sélection ${
                   showSelector === "CURRENCY" ? "Devise" :
                   showSelector === "LANGUAGE" ? "Langue" :
                   showSelector === "SOUND" ? "Son" : ""
                 }`}
               </h3>
               <div className="space-y-3">
-                {showSelector === "WIDGET_SETTINGS" ? (
+                {showSelector === "PIN_SETUP" ? (
+                  <div className="flex flex-col items-center py-6">
+                    <p className="text-sm font-bold text-[#1B5E66]/60 mb-8 uppercase tracking-widest text-center">
+                      {pinSetupStep === 1 
+                        ? "Saisissez un code à 4 chiffres" 
+                        : "Confirmez votre code"}
+                    </p>
+                    <div className="flex items-center gap-4 mb-10">
+                      {[0, 1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                            tempPin.length > i 
+                              ? "bg-[#2D8B96] scale-110 shadow-[0_0_10px_rgba(45,139,150,0.5)]"
+                              : "bg-[#2D8B96]/20"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 w-full max-w-[240px]">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                        <button
+                          key={num}
+                          onClick={() => {
+                            if (tempPin.length < 4) {
+                              const newPin = tempPin + num;
+                              setTempPin(newPin);
+                              if (newPin.length === 4) {
+                                setTimeout(() => {
+                                  if (pinSetupStep === 1) {
+                                    setPinSetupStep(2);
+                                    setTempPin("");
+                                    // Hack to store first step pin without another state variable
+                                    localStorage.setItem("temp_pin_setup", newPin);
+                                  } else {
+                                    const expected = localStorage.getItem("temp_pin_setup");
+                                    if (expected === newPin) {
+                                      onAppPinChange(newPin);
+                                      setShowSelector(null);
+                                      localStorage.removeItem("temp_pin_setup");
+                                    } else {
+                                      alert("Les codes PIN ne correspondent pas. Veuillez réessayer.");
+                                      setPinSetupStep(1);
+                                      setTempPin("");
+                                    }
+                                  }
+                                }, 300);
+                              }
+                            }
+                          }}
+                          className="h-14 rounded-full bg-[#F0F7F8] text-[#1B5E66] text-xl font-black shadow-sm active:bg-[#2D8B96]/20 active:scale-95 transition-all flex items-center justify-center"
+                        >
+                          {num}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => {
+                          setPinSetupStep(1);
+                          setTempPin("");
+                          setShowSelector(null);
+                        }}
+                        className="h-14 rounded-full bg-transparent text-[#1B5E66]/60 active:text-[#2D8B96] active:scale-95 transition-all flex items-center justify-center text-xs font-bold uppercase"
+                      >
+                        Annuler
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (tempPin.length < 4) {
+                            const newPin = tempPin + "0";
+                            setTempPin(newPin);
+                            if (newPin.length === 4) {
+                              setTimeout(() => {
+                                if (pinSetupStep === 1) {
+                                  setPinSetupStep(2);
+                                  setTempPin("");
+                                  localStorage.setItem("temp_pin_setup", newPin);
+                                } else {
+                                  const expected = localStorage.getItem("temp_pin_setup");
+                                  if (expected === newPin) {
+                                    onAppPinChange(newPin);
+                                    setShowSelector(null);
+                                    localStorage.removeItem("temp_pin_setup");
+                                  } else {
+                                    alert("Les codes PIN ne correspondent pas. Veuillez réessayer.");
+                                    setPinSetupStep(1);
+                                    setTempPin("");
+                                  }
+                                }
+                              }, 300);
+                            }
+                          }
+                        }}
+                        className="h-14 rounded-full bg-[#F0F7F8] text-[#1B5E66] text-xl font-black shadow-sm active:bg-[#2D8B96]/20 active:scale-95 transition-all flex items-center justify-center"
+                      >
+                        0
+                      </button>
+                      <button
+                        onClick={() => setTempPin(p => p.slice(0, -1))}
+                        className="h-14 rounded-full bg-transparent text-[#1B5E66]/60 active:text-[#2D8B96] active:scale-95 transition-all flex items-center justify-center"
+                      >
+                        <X size={24} />
+                      </button>
+                    </div>
+                  </div>
+                ) : showSelector === "WIDGET_SETTINGS" ? (
                   <div className="space-y-6">
                     <div>
                       <h4 className="text-[10px] font-black uppercase tracking-widest text-[#1B5E66]/60 mb-3">Données à afficher</h4>

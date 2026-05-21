@@ -20,6 +20,7 @@ import Statistics from "./components/Statistics";
 import Credits from "./components/Credits";
 import HistoryView from "./components/History";
 import SettingsView from "./components/Settings";
+import LockScreen from "./components/LockScreen";
 import MasrofLogo from "./components/Logo";
 import AddTransactionModal from "./components/AddTransactionModal";
 import { Transaction, Reminder, CreditEntry, PredefinedItem } from "./types";
@@ -48,6 +49,15 @@ export default function App() {
   const [balanceThreshold, setBalanceThreshold] = useLocalStorage<number | null>("balanceThreshold", 500);
   const [isDarkMode, setIsDarkMode] = useLocalStorage("isDarkMode", false);
   const [currency, setCurrency] = useLocalStorage("currency", "DH");
+  const [appPin, setAppPin] = useLocalStorage<string | null>("appPin", null);
+  const [isLocked, setIsLocked] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (!appPin) {
+      setIsLocked(false);
+    }
+  }, [appPin]);
+
   const [language, setLanguage] = useLocalStorage<"Français" | "العربية" | "English">(
     "language",
     "Français",
@@ -559,6 +569,8 @@ export default function App() {
             onPredefinedItemsChange={setPredefinedItems}
             balanceThreshold={balanceThreshold}
             onBalanceThresholdChange={setBalanceThreshold}
+            appPin={appPin}
+            onAppPinChange={setAppPin}
           />
         );
       default:
@@ -629,6 +641,17 @@ export default function App() {
     preventScrollOnSwipe: false,
     trackMouse: false
   });
+
+  if (isLocked && appPin) {
+    return (
+      <div className={`h-screen ${isDarkMode ? "bg-slate-900" : "bg-slate-50"} flex flex-col max-w-md mx-auto relative overflow-hidden font-sans`}>
+        <LockScreen 
+          correctPin={appPin} 
+          onUnlock={() => setIsLocked(false)} 
+        />
+      </div>
+    );
+  }
 
   return (
     <div
