@@ -34,7 +34,6 @@ import autoTable from "jspdf-autotable";
 import { ICON_MAP } from "../constants";
 import {
   Utensils,
-  ShoppingBag,
   Car,
   Gamepad2,
   MoreHorizontal,
@@ -106,8 +105,9 @@ export default function Settings({
   const [resetSuccess, setResetSuccess] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [showSelector, setShowSelector] = useState<
-    "CURRENCY" | "LANGUAGE" | null
+    "CURRENCY" | "LANGUAGE" | "SOUND" | null
   >(null);
+  const [soundType, setSoundType] = useState(() => localStorage.getItem("notificationSoundType") || "checkout");
   const [showArticleManager, setShowArticleManager] = useState(false);
   const [showReminderManager, setShowReminderManager] = useState(false);
 
@@ -124,6 +124,11 @@ export default function Settings({
 
   const currencies = ["DH", "EUR", "USD", "MAD"];
   const languages = ["Français", "العربية", "English"];
+  const soundOptions = [
+    { id: "default", label: "Défaut d'Android" },
+    { id: "checkout", label: "Masrof (Checkout)" },
+    { id: "bell", label: "Cloche (Bell)" }
+  ];
 
   const exportToPDF = () => {
     const doc = new jsPDF();
@@ -272,6 +277,13 @@ export default function Settings({
               title="GESTION DES RAPPELS"
               subtitle={`${reminders.length} RAPPELS ACTIFS`}
               onClick={() => setShowReminderManager(true)}
+              showArrow={true}
+            />
+            <SettingsItem
+              icon={<Music />}
+              title="SON DE NOTIFICATION"
+              subtitle={soundOptions.find(o => o.id === soundType)?.label || "Défaut d'Android"}
+              onClick={() => setShowSelector("SOUND")}
               showArrow={true}
             />
             <SettingsItem
@@ -434,49 +446,6 @@ export default function Settings({
             </div>
           </div>
 
-          {/* Section: Son de Notification */}
-          <div className="py-4 px-6 bg-[#F0F7F8]/30 border-t border-[#2D8B96]/5">
-            <h3 className="text-[11px] font-black text-[#1B5E66] uppercase tracking-[0.4em] mb-6 flex items-center gap-2">
-              <div className="w-1.5 h-1.5 bg-[#E58366] rounded-full shadow-[0_0_8px_#E58366]" />
-              SON DE NOTIFICATION
-            </h3>
-            <div className="bg-white/50 p-4 rounded-3xl border border-[#2D8B96]/10 flex flex-col gap-3">
-              <p className="text-[10px] text-[#1B5E66] font-bold uppercase tracking-widest leading-relaxed">
-                Choisissez le son des rappels :
-              </p>
-              <div className="flex flex-col gap-3">
-                <select
-                  defaultValue={localStorage.getItem("notificationSoundType") || "checkout"}
-                  onChange={(e) => {
-                    localStorage.setItem("notificationSoundType", e.target.value);
-                    alert("Le son de notification a été mis à jour.");
-                  }}
-                  className="w-full h-12 bg-white border border-[#2D8B96]/20 rounded-xl px-4 text-sm font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
-                >
-                  <option value="default">Défaut d'Android</option>
-                  <option value="checkout">Masrof (Checkout)</option>
-                  <option value="bell">Cloche (Bell)</option>
-                </select>
-
-                <button
-                  onClick={() => {
-                    const soundPref = localStorage.getItem("notificationSoundType") || "checkout";
-                    if (soundPref === "default") {
-                      alert("Son système par défaut. Le test utilise les sons personnalisés.");
-                    } else {
-                      const audio = new Audio(`/${soundPref}.wav`);
-                      audio.play().catch(e => alert("Erreur de lecture: " + e.message));
-                    }
-                  }}
-                  className="w-full flex items-center justify-center p-3 bg-[#2D8B96]/10 hover:bg-[#2D8B96]/20 text-[#2D8B96] font-bold uppercase text-[11px] rounded-xl transition-colors active:scale-[0.98]"
-                >
-                  <Play size={16} className="mr-2" />
-                  Tester le son
-                </button>
-              </div>
-            </div>
-          </div>
-
           {/* Section: Intelligence IA */}
           <div className="py-4 px-0">
             <h3 className="text-[11px] font-black text-[#1B5E66] uppercase tracking-[0.4em] mb-4 px-6 flex items-center gap-2">
@@ -594,35 +563,69 @@ export default function Settings({
               className="fixed inset-x-0 bottom-0 z-[120] bg-white/95 backdrop-blur-2xl border-t border-[#2D8B96]/30 rounded-t-[40px] p-8 max-w-md mx-auto shadow-[0_-10px_40px_rgba(45,139,150,0.15)]"
             >
               <h3 className="text-xl font-black text-[#1B5E66] mb-6 italic uppercase tracking-tighter">
-                Séléction {showSelector === "CURRENCY" ? "Devise" : "Langue"}
+                Sélection {showSelector === "CURRENCY" ? "Devise" : showSelector === "LANGUAGE" ? "Langue" : "Son"}
               </h3>
               <div className="space-y-3">
-                {(showSelector === "CURRENCY" ? currencies : languages).map(
-                  (opt) => (
+                {(() => {
+                  let options: { id: string; label: string }[] = [];
+                  let activeValue = "";
+                  
+                  if (showSelector === "CURRENCY") {
+                    options = currencies.map(c => ({ id: c, label: c }));
+                    activeValue = currency;
+                  } else if (showSelector === "LANGUAGE") {
+                    options = languages.map(l => ({ id: l, label: l }));
+                    activeValue = language;
+                  } else if (showSelector === "SOUND") {
+                    options = soundOptions;
+                    activeValue = soundType;
+                  }
+
+                  return options.map((opt) => (
                     <button
-                      key={opt}
+                      key={opt.id}
                       onClick={() => {
-                        if (showSelector === "CURRENCY") onCurrencyChange(opt);
-                        else onLanguageChange(opt);
+                        if (showSelector === "CURRENCY") onCurrencyChange(opt.id);
+                        else if (showSelector === "LANGUAGE") onLanguageChange(opt.id);
+                        else if (showSelector === "SOUND") {
+                          setSoundType(opt.id);
+                          localStorage.setItem("notificationSoundType", opt.id);
+                        }
                         setShowSelector(null);
                       }}
                       className={`w-full p-5 rounded-2xl border transition-all flex items-center justify-between group ${
-                        (showSelector === "CURRENCY" ? currency : language) ===
-                        opt
+                        activeValue === opt.id
                           ? "border-[#2D8B96] bg-[#2D8B96]/10 text-[#1B5E66] shadow-[0_0_15px_rgba(45,139,150,0.2)]"
                           : "border-[#2D8B96]/10 text-[#1B5E66]/40"
                       }`}
                     >
                       <span className="font-bold italic uppercase tracking-widest text-sm">
-                        {opt}
+                        {opt.label}
                       </span>
-                      {(showSelector === "CURRENCY" ? currency : language) ===
-                        opt && (
-                        <div className="w-5 h-5 rounded-full bg-[#E5C366] shadow-[0_0_8px_#E5C366]" />
-                      )}
+                      <div className="flex items-center gap-3">
+                        {showSelector === "SOUND" && (
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (opt.id === "default") {
+                                alert("Son système par défaut. Le test utilise les sons personnalisés.");
+                              } else {
+                                const audio = new Audio(`/${opt.id}.wav`);
+                                audio.play().catch(err => alert("Erreur de lecture: " + err.message));
+                              }
+                            }}
+                            className="w-8 h-8 rounded-full bg-[#2D8B96]/10 border border-[#2D8B96]/20 flex items-center justify-center text-[#2D8B96] hover:bg-[#2D8B96]/20 transition-colors"
+                          >
+                            <Play size={14} className="ml-0.5" />
+                          </div>
+                        )}
+                        {activeValue === opt.id && (
+                          <div className="w-5 h-5 rounded-full bg-[#E5C366] shadow-[0_0_8px_#E5C366]" />
+                        )}
+                      </div>
                     </button>
-                  ),
-                )}
+                  ));
+                })()}
               </div>
             </motion.div>
           </>
