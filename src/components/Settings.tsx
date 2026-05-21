@@ -121,6 +121,7 @@ export default function Settings({
   >(null);
   const [pinSetupStep, setPinSetupStep] = useState<1 | 2>(1);
   const [tempPin, setTempPin] = useState("");
+  const [pinError, setPinError] = useState(false);
   const [soundType, setSoundType] = useState(() => localStorage.getItem("notificationSoundType") || "checkout");
   const [showArticleManager, setShowArticleManager] = useState(false);
   const [showReminderManager, setShowReminderManager] = useState(false);
@@ -381,9 +382,7 @@ export default function Settings({
                   active={!!appPin}
                   onToggle={() => {
                     if (appPin) {
-                      if (window.confirm("Voulez-vous vraiment désactiver le code PIN ?")) {
-                        onAppPinChange(null);
-                      }
+                      onAppPinChange(null);
                     } else {
                       setPinSetupStep(1);
                       setTempPin("");
@@ -503,13 +502,15 @@ export default function Settings({
                         ? "Saisissez un code à 4 chiffres" 
                         : "Confirmez votre code"}
                     </p>
-                    <div className="flex items-center gap-4 mb-10">
+                    <div className={`flex items-center gap-4 mb-10 ${pinError ? "animate-pulse" : ""}`}>
                       {[0, 1, 2, 3].map((i) => (
                         <div
                           key={i}
                           className={`w-4 h-4 rounded-full transition-all duration-300 ${
                             tempPin.length > i 
-                              ? "bg-[#2D8B96] scale-110 shadow-[0_0_10px_rgba(45,139,150,0.5)]"
+                              ? pinError
+                                ? "bg-red-500 scale-110 shadow-[0_0_10px_rgba(239,68,68,0.5)]"
+                                : "bg-[#2D8B96] scale-110 shadow-[0_0_10px_rgba(45,139,150,0.5)]"
                               : "bg-[#2D8B96]/20"
                           }`}
                         />
@@ -523,6 +524,7 @@ export default function Settings({
                             if (tempPin.length < 4) {
                               const newPin = tempPin + num;
                               setTempPin(newPin);
+                              setPinError(false);
                               if (newPin.length === 4) {
                                 setTimeout(() => {
                                   if (pinSetupStep === 1) {
@@ -537,9 +539,12 @@ export default function Settings({
                                       setShowSelector(null);
                                       localStorage.removeItem("temp_pin_setup");
                                     } else {
-                                      alert("Les codes PIN ne correspondent pas. Veuillez réessayer.");
-                                      setPinSetupStep(1);
-                                      setTempPin("");
+                                      setPinError(true);
+                                      setTimeout(() => {
+                                        setPinSetupStep(1);
+                                        setTempPin("");
+                                        setPinError(false);
+                                      }, 800);
                                     }
                                   }
                                 }, 300);
@@ -566,6 +571,7 @@ export default function Settings({
                           if (tempPin.length < 4) {
                             const newPin = tempPin + "0";
                             setTempPin(newPin);
+                            setPinError(false);
                             if (newPin.length === 4) {
                               setTimeout(() => {
                                 if (pinSetupStep === 1) {
@@ -579,9 +585,12 @@ export default function Settings({
                                     setShowSelector(null);
                                     localStorage.removeItem("temp_pin_setup");
                                   } else {
-                                    alert("Les codes PIN ne correspondent pas. Veuillez réessayer.");
-                                    setPinSetupStep(1);
-                                    setTempPin("");
+                                    setPinError(true);
+                                    setTimeout(() => {
+                                      setPinSetupStep(1);
+                                      setTempPin("");
+                                      setPinError(false);
+                                    }, 800);
                                   }
                                 }
                               }, 300);
@@ -691,10 +700,10 @@ export default function Settings({
                             onClick={(e) => {
                               e.stopPropagation();
                               if (opt.id === "default") {
-                                alert("Son système par défaut. Le test utilise les sons personnalisés.");
+                                console.log("Son système par défaut.");
                               } else {
                                 const audio = new Audio(`/${opt.id}.wav`);
-                                audio.play().catch(err => alert("Erreur de lecture: " + err.message));
+                                audio.play().catch(err => console.log("Erreur de lecture: " + err.message));
                               }
                             }}
                             className="w-8 h-8 rounded-full bg-[#2D8B96]/10 border border-[#2D8B96]/20 flex items-center justify-center text-[#2D8B96] hover:bg-[#2D8B96]/20 transition-colors"
