@@ -177,14 +177,17 @@ export default function App() {
         }
 
         try {
+          const soundPref = localStorage.getItem("notificationSoundType") || "checkout";
+          const channelId = `reminders_${soundPref}_v1`;
+
           await LocalNotifications.createChannel({
-            id: 'reminders_checkout_v1',
+            id: channelId,
             name: 'Rappels',
-            description: 'Rappels avec son checkout',
+            description: 'Rappels réguliers',
             importance: 5,
             visibility: 1,
             vibration: true,
-            sound: 'checkout.wav',
+            ...(soundPref !== "default" ? { sound: `${soundPref}.wav` } : {})
           });
         } catch (e) {
           console.error("Error creating channel", e);
@@ -211,12 +214,15 @@ export default function App() {
               iconColor = '#0d9488'; // teal-600
             }
             
+            const soundPref = localStorage.getItem("notificationSoundType") || "checkout";
+            const channelId = `reminders_${soundPref}_v1`;
+
             return {
               title: r.title,
               body: "Il est temps de checker votre trésorerie !",
               id: i + 1,
-              channelId: 'reminders_checkout_v1',
-              sound: 'checkout.wav',
+              channelId: channelId,
+              sound: soundPref !== "default" ? `${soundPref}.wav` : undefined,
               smallIcon,
               iconColor,
               largeIcon: 'ic_launcher',
@@ -240,9 +246,9 @@ export default function App() {
     if (Capacitor.isNativePlatform()) {
       let listenerRemoved = false;
       const listener = LocalNotifications.addListener('localNotificationReceived', (notification) => {
-          const customSound = localStorage.getItem("customNotificationSound");
-          if (customSound) {
-            const audio = new Audio(customSound);
+          const soundPref = localStorage.getItem("notificationSoundType") || "checkout";
+          if (soundPref !== "default") {
+            const audio = new Audio(`/${soundPref}.wav`);
             audio.play().catch(e => console.error("Could not play custom sound", e));
           }
       });

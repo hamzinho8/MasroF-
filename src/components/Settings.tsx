@@ -434,6 +434,49 @@ export default function Settings({
             </div>
           </div>
 
+          {/* Section: Son de Notification */}
+          <div className="py-4 px-6 bg-[#F0F7F8]/30 border-t border-[#2D8B96]/5">
+            <h3 className="text-[11px] font-black text-[#1B5E66] uppercase tracking-[0.4em] mb-6 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 bg-[#E58366] rounded-full shadow-[0_0_8px_#E58366]" />
+              SON DE NOTIFICATION
+            </h3>
+            <div className="bg-white/50 p-4 rounded-3xl border border-[#2D8B96]/10 flex flex-col gap-3">
+              <p className="text-[10px] text-[#1B5E66] font-bold uppercase tracking-widest leading-relaxed">
+                Choisissez le son des rappels :
+              </p>
+              <div className="flex flex-col gap-3">
+                <select
+                  defaultValue={localStorage.getItem("notificationSoundType") || "checkout"}
+                  onChange={(e) => {
+                    localStorage.setItem("notificationSoundType", e.target.value);
+                    alert("Le son de notification a été mis à jour.");
+                  }}
+                  className="w-full h-12 bg-white border border-[#2D8B96]/20 rounded-xl px-4 text-sm font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
+                >
+                  <option value="default">Défaut d'Android</option>
+                  <option value="checkout">Masrof (Checkout)</option>
+                  <option value="bell">Cloche (Bell)</option>
+                </select>
+
+                <button
+                  onClick={() => {
+                    const soundPref = localStorage.getItem("notificationSoundType") || "checkout";
+                    if (soundPref === "default") {
+                      alert("Son système par défaut. Le test utilise les sons personnalisés.");
+                    } else {
+                      const audio = new Audio(`/${soundPref}.wav`);
+                      audio.play().catch(e => alert("Erreur de lecture: " + e.message));
+                    }
+                  }}
+                  className="w-full flex items-center justify-center p-3 bg-[#2D8B96]/10 hover:bg-[#2D8B96]/20 text-[#2D8B96] font-bold uppercase text-[11px] rounded-xl transition-colors active:scale-[0.98]"
+                >
+                  <Play size={16} className="mr-2" />
+                  Tester le son
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Section: Intelligence IA */}
           <div className="py-4 px-0">
             <h3 className="text-[11px] font-black text-[#1B5E66] uppercase tracking-[0.4em] mb-4 px-6 flex items-center gap-2">
@@ -854,74 +897,6 @@ function ReminderManagerModal({
             </div>
           )}
         </div>
-
-        {/* Custom Notification Sound Settings */}
-        <div className="bg-slate-50/50 rounded-[32px] p-6 border-2 border-slate-100 mt-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-slate-800 shrink-0 shadow-sm">
-               <Music size={24} strokeWidth={2.5} />
-            </div>
-            <div>
-              <h4 className="text-[14px] font-black uppercase text-slate-800 tracking-tight">Son de Notification</h4>
-              <p className="text-[11px] font-bold text-slate-400">Pour les rappels internes</p>
-            </div>
-          </div>
-          
-          <p className="text-[12px] font-medium text-slate-500 mb-4 leading-relaxed">
-            Sélectionnez un fichier audio (MP3, WAV) depuis votre appareil. Ce son sera joué à l'intérieur de l'application lorsqu'un rappel se déclenche.
-          </p>
-
-          <div className="flex flex-col gap-3">
-            <label className="w-full relative flex items-center justify-center p-4 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-bold uppercase text-[12px] rounded-2xl cursor-pointer transition-colors active:scale-[0.98] shadow-sm">
-              <Music size={18} className="mr-3" />
-              Choisir un fichier audio
-              <input 
-                type="file" 
-                accept="audio/*" 
-                className="hidden" 
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                      localStorage.setItem("customNotificationSound", reader.result as string);
-                      alert("Son de notification mis à jour !");
-                    };
-                    reader.readAsDataURL(file);
-                  }
-                }} 
-              />
-            </label>
-
-            <button
-              onClick={() => {
-                const sound = localStorage.getItem("customNotificationSound");
-                if (sound) {
-                  const audio = new Audio(sound);
-                  audio.play().catch(e => alert("Erreur de lecture: " + e.message));
-                } else {
-                  alert("Aucun son personnalisé configuré.");
-                }
-              }}
-              className="w-full flex items-center justify-center p-4 bg-teal-50 hover:bg-teal-100 text-teal-700 font-bold uppercase text-[12px] rounded-2xl transition-colors active:scale-[0.98]"
-            >
-              <Play size={18} className="mr-3" />
-              Tester le son
-            </button>
-            
-            <button
-              onClick={() => {
-                localStorage.removeItem("customNotificationSound");
-                alert("Son réinitialisé par défaut.");
-              }}
-              className="w-full flex items-center justify-center p-4 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold uppercase text-[12px] rounded-2xl transition-colors active:scale-[0.98]"
-            >
-              <Trash2 size={18} className="mr-3" />
-              Rétablir par défaut
-            </button>
-          </div>
-        </div>
-
       </motion.div>
     </>
   );
