@@ -25,6 +25,9 @@ import {
   Settings2,
   Music,
   Play,
+  Layout,
+  Palette,
+  Smartphone,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import MasrofLogo from "./Logo";
@@ -105,7 +108,7 @@ export default function Settings({
   const [resetSuccess, setResetSuccess] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [showSelector, setShowSelector] = useState<
-    "CURRENCY" | "LANGUAGE" | "SOUND" | null
+    "CURRENCY" | "LANGUAGE" | "SOUND" | "WIDGET_MODE" | "WIDGET_BALANCE_TYPE" | "WIDGET_COLOR" | "WIDGET_TEXT_COLOR" | null
   >(null);
   const [soundType, setSoundType] = useState(() => localStorage.getItem("notificationSoundType") || "checkout");
   const [showArticleManager, setShowArticleManager] = useState(false);
@@ -287,6 +290,40 @@ export default function Settings({
               showArrow={true}
             />
             <SettingsItem
+              icon={<Layout />}
+              title="MODE DU WIDGET (DONNÉES)"
+              subtitle={widgetMode === 'balance' ? 'Solde actuel' : 'Dépenses hebdo'}
+              onClick={() => setShowSelector("WIDGET_MODE")}
+              showArrow={true}
+            />
+            {widgetMode === "balance" && (
+              <SettingsItem
+                icon={<Coins />}
+                title="AFFICHAGE PRINCIPAL (WIDGET)"
+                subtitle={widgetBalanceType === "cash" ? "Argent Dispo" : "Solde Bancaire"}
+                onClick={() => setShowSelector("WIDGET_BALANCE_TYPE")}
+                showArrow={true}
+              />
+            )}
+            <SettingsItem
+              icon={<Palette />}
+              title="COULEUR D'ACCENTUATION"
+              subtitle={
+                widgetColor === "default" ? "Défaut (Sarcelle)" :
+                widgetColor === "blue" ? "Bleu" :
+                widgetColor === "purple" ? "Violet" : "Rose"
+              }
+              onClick={() => setShowSelector("WIDGET_COLOR")}
+              showArrow={true}
+            />
+            <SettingsItem
+              icon={<Smartphone />}
+              title="TEXTE WIDGET ANDROID"
+              subtitle="Modifier la couleur du texte"
+              onClick={() => setShowSelector("WIDGET_TEXT_COLOR")}
+              showArrow={true}
+            />
+            <SettingsItem
               icon={<Download />}
               title="EXPORTER MES DONNÉES"
               subtitle="Télécharger un rapport PDF"
@@ -320,101 +357,6 @@ export default function Settings({
               onClick={() => setShowSelector("CURRENCY")}
               showArrow={true}
             />
-          </div>
-
-          {/* Section: Widget Data */}
-          <div className="py-4 px-6 bg-[#F0F7F8]/30 space-y-6">
-            <div>
-              <h3 className="text-[11px] font-black text-[#1B5E66] uppercase tracking-[0.4em] mb-4 flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-[#2D8B96] rounded-full shadow-[0_0_8px_#2D8B96]" />
-                DONNÉES DU WIDGET
-              </h3>
-              <div className="bg-[#2D8B96]/20 p-1.5 rounded-2xl border border-[#2D8B96]/20 inline-flex w-full overflow-hidden">
-                <button
-                  onClick={() => onWidgetModeChange("balance")}
-                  className={`flex-1 py-3 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${widgetMode === "balance" ? "bg-[#E5C366] text-[#1B5E66] shadow-[0_0_15px_rgba(229,195,102,0.4)] scale-[1.02]" : "text-[#1B5E66]/60"}`}
-                >
-                  SOLDE ACTUEL
-                </button>
-                <button
-                  onClick={() => onWidgetModeChange("spending")}
-                  className={`flex-1 py-3 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${widgetMode === "spending" ? "bg-[#E5C366] text-[#1B5E66] shadow-[0_0_15px_rgba(229,195,102,0.4)] scale-[1.02]" : "text-[#1B5E66]/60"}`}
-                >
-                  DÉPENSES HEBDO
-                </button>
-              </div>
-            </div>
-
-            {widgetMode === "balance" && (
-              <div>
-                <p className="text-[10px] text-[#1B5E66] font-bold uppercase tracking-widest mb-3">
-                  Affichage principal :
-                </p>
-                <div className="bg-[#2D8B96]/10 p-1.5 rounded-2xl border border-[#2D8B96]/10 inline-flex w-full overflow-hidden">
-                  <button
-                    onClick={() => onWidgetBalanceTypeChange("cash")}
-                    className={`flex-1 py-2 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${widgetBalanceType === "cash" ? "bg-white text-[#1B5E66] shadow-sm" : "text-[#1B5E66]/50"}`}
-                  >
-                    Argent Dispo
-                  </button>
-                  <button
-                    onClick={() => onWidgetBalanceTypeChange("bank")}
-                    className={`flex-1 py-2 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${widgetBalanceType === "bank" ? "bg-white text-[#1B5E66] shadow-sm" : "text-[#1B5E66]/50"}`}
-                  >
-                    Solde Bancaire
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div>
-              <p className="text-[10px] text-[#1B5E66] font-bold uppercase tracking-widest mb-3">
-                Couleur d'accentuation :
-              </p>
-              <div className="flex items-center gap-3">
-                {[
-                  { id: "default", color: "bg-[#AED8D3]" },
-                  { id: "blue", color: "bg-blue-300" },
-                  { id: "purple", color: "bg-purple-300" },
-                  { id: "rose", color: "bg-rose-300" },
-                ].map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => onWidgetColorChange(c.id as any)}
-                    className={`w-8 h-8 rounded-full border-2 transition-all ${c.color} ${widgetColor === c.id ? "border-[#1B5E66] scale-110 shadow-md" : "border-transparent opacity-60 hover:opacity-100"}`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Section: Widget Native Android */}
-          <div className="py-4 px-6 bg-[#F0F7F8]/50 border-t border-[#2D8B96]/5">
-            <h3 className="text-[11px] font-black text-[#1B5E66] uppercase tracking-[0.4em] mb-4 flex items-center gap-2">
-              <div className="w-1.5 h-1.5 bg-[#1B5E66] rounded-full shadow-[0_0_8px_#1B5E66]" />
-              WIDGET NATIVE ANDROID
-            </h3>
-            <p className="text-[10px] text-[#1B5E66] font-bold uppercase tracking-widest mb-3">
-              Couleur du texte :
-            </p>
-            <div className="flex items-center gap-3">
-              {[
-                { id: "#000000", color: "bg-black" },
-                { id: "#FFFFFF", color: "bg-white" },
-                { id: "#3b82f6", color: "bg-blue-500" },
-                { id: "#22c55e", color: "bg-green-500" },
-                { id: "#ef4444", color: "bg-red-500" },
-              ].map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => onWidgetTextColorChange(c.id)}
-                  className={`w-8 h-8 rounded-full border border-gray-300 transition-all ${c.color} ${widgetTextColor === c.id ? "ring-2 ring-offset-2 ring-[#1B5E66] scale-110 shadow-md opacity-100" : "opacity-60 hover:opacity-100"}`}
-                />
-              ))}
-            </div>
-            <p className="text-[10px] text-[#1B5E66]/60 mt-3">
-              Le fond du widget Android est transparent. Modifiez la couleur du texte pour l'adapter à votre fond d'écran.
-            </p>
           </div>
 
           {/* Section: Alerte Solde */}
@@ -563,11 +505,19 @@ export default function Settings({
               className="fixed inset-x-0 bottom-0 z-[120] bg-white/95 backdrop-blur-2xl border-t border-[#2D8B96]/30 rounded-t-[40px] p-8 max-w-md mx-auto shadow-[0_-10px_40px_rgba(45,139,150,0.15)]"
             >
               <h3 className="text-xl font-black text-[#1B5E66] mb-6 italic uppercase tracking-tighter">
-                Sélection {showSelector === "CURRENCY" ? "Devise" : showSelector === "LANGUAGE" ? "Langue" : "Son"}
+                Sélection {
+                  showSelector === "CURRENCY" ? "Devise" :
+                  showSelector === "LANGUAGE" ? "Langue" :
+                  showSelector === "SOUND" ? "Son" :
+                  showSelector === "WIDGET_MODE" ? "Mode" :
+                  showSelector === "WIDGET_BALANCE_TYPE" ? "Affichage" :
+                  showSelector === "WIDGET_COLOR" ? "Couleur" :
+                  showSelector === "WIDGET_TEXT_COLOR" ? "Texte" : ""
+                }
               </h3>
               <div className="space-y-3">
                 {(() => {
-                  let options: { id: string; label: string }[] = [];
+                  let options: { id: string; label: string; color?: string }[] = [];
                   let activeValue = "";
                   
                   if (showSelector === "CURRENCY") {
@@ -579,6 +529,35 @@ export default function Settings({
                   } else if (showSelector === "SOUND") {
                     options = soundOptions;
                     activeValue = soundType;
+                  } else if (showSelector === "WIDGET_MODE") {
+                    options = [
+                      { id: "balance", label: "Solde actuel" },
+                      { id: "spending", label: "Dépenses hebdo" }
+                    ];
+                    activeValue = widgetMode;
+                  } else if (showSelector === "WIDGET_BALANCE_TYPE") {
+                    options = [
+                      { id: "cash", label: "Argent Dispo" },
+                      { id: "bank", label: "Solde Bancaire" }
+                    ];
+                    activeValue = widgetBalanceType;
+                  } else if (showSelector === "WIDGET_COLOR") {
+                    options = [
+                      { id: "default", label: "Défaut (Sarcelle)", color: "bg-[#AED8D3]" },
+                      { id: "blue", label: "Bleu", color: "bg-blue-300" },
+                      { id: "purple", label: "Violet", color: "bg-purple-300" },
+                      { id: "rose", label: "Rose", color: "bg-rose-300" }
+                    ];
+                    activeValue = widgetColor;
+                  } else if (showSelector === "WIDGET_TEXT_COLOR") {
+                    options = [
+                      { id: "#000000", label: "Noir", color: "bg-black" },
+                      { id: "#FFFFFF", label: "Blanc", color: "bg-white" },
+                      { id: "#3b82f6", label: "Bleu", color: "bg-blue-500" },
+                      { id: "#22c55e", label: "Vert", color: "bg-green-500" },
+                      { id: "#ef4444", label: "Rouge", color: "bg-red-500" }
+                    ];
+                    activeValue = widgetTextColor;
                   }
 
                   return options.map((opt) => (
@@ -591,6 +570,10 @@ export default function Settings({
                           setSoundType(opt.id);
                           localStorage.setItem("notificationSoundType", opt.id);
                         }
+                        else if (showSelector === "WIDGET_MODE") onWidgetModeChange(opt.id as any);
+                        else if (showSelector === "WIDGET_BALANCE_TYPE") onWidgetBalanceTypeChange(opt.id as any);
+                        else if (showSelector === "WIDGET_COLOR") onWidgetColorChange(opt.id as any);
+                        else if (showSelector === "WIDGET_TEXT_COLOR") onWidgetTextColorChange(opt.id);
                         setShowSelector(null);
                       }}
                       className={`w-full p-5 rounded-2xl border transition-all flex items-center justify-between group ${
@@ -599,9 +582,14 @@ export default function Settings({
                           : "border-[#2D8B96]/10 text-[#1B5E66]/40"
                       }`}
                     >
-                      <span className="font-bold italic uppercase tracking-widest text-sm">
-                        {opt.label}
-                      </span>
+                      <div className="flex items-center gap-3">
+                        {opt.color && (
+                          <div className={`w-6 h-6 rounded-full shadow-sm border border-black/10 ${opt.color}`} />
+                        )}
+                        <span className="font-bold italic uppercase tracking-widest text-sm">
+                          {opt.label}
+                        </span>
+                      </div>
                       <div className="flex items-center gap-3">
                         {showSelector === "SOUND" && (
                           <div
