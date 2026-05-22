@@ -22,13 +22,12 @@ import HistoryView from "./components/History";
 import SettingsView from "./components/Settings";
 import LockScreen from "./components/LockScreen";
 import MasrofLogo from "./components/Logo";
-import TestAssets from "./components/TestAssets";
 import AddTransactionModal from "./components/AddTransactionModal";
 import { Transaction, Reminder, CreditEntry, PredefinedItem } from "./types";
 import { INITIAL_PREDEFINED_ITEMS } from "./constants";
 import { useSwipeable } from "react-swipeable";
 
-type Tab = "home" | "stats" | "history" | "credits" | "settings" | "test";
+type Tab = "home" | "stats" | "history" | "credits" | "settings";
 
 export default function App() {
   const [activeTab, setActiveTab] = useLocalStorage<Tab>("activeTab", "home");
@@ -574,8 +573,6 @@ export default function App() {
             onAppPinChange={setAppPin}
           />
         );
-      case "test":
-        return <TestAssets />;
       default:
         return (
           <Home
@@ -625,7 +622,7 @@ export default function App() {
     }
   };
 
-  const TABS: Tab[] = ["home", "history", "credits", "stats", "settings", "test"];
+  const TABS: Tab[] = ["home", "history", "credits", "stats", "settings"];
   
   const handleSwipe = (dir: "Left" | "Right") => {
     const currentIndex = TABS.indexOf(activeTab);
@@ -701,13 +698,6 @@ export default function App() {
             onClick={() => setActiveTab("settings")}
             icon={<SettingsIcon size={28} strokeWidth={2.5} />}
             color="slate"
-            isDarkMode={isDarkMode}
-          />
-          <TabButton
-            active={activeTab === "test"}
-            onClick={() => setActiveTab("test")}
-            icon={<div className="font-bold text-lg">T</div>}
-            color="indigo"
             isDarkMode={isDarkMode}
           />
         </nav>
