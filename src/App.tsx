@@ -213,7 +213,6 @@ export default function App() {
           .map((r, i) => {
             const [hours, minutes] = r.time.split(':').map(Number);
             
-            let smallIcon = 'ic_notification';
             let iconColor = '#0f1725'; // Default dark color 
 
             if (r.type === 'ACHAT') {
@@ -231,7 +230,7 @@ export default function App() {
               id: i + 1,
               channelId: channelId,
               sound: soundPref !== "default" ? `${soundPref}.wav` : undefined,
-              smallIcon,
+              smallIcon: "ic_notification",
               iconColor,
               largeIcon: 'ic_launcher',
               schedule: { 
