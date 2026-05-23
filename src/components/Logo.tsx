@@ -1,5 +1,4 @@
 import React from 'react';
-import logoSrc from '../assets/logo.png';
 
 interface LogoProps {
   className?: string;
@@ -10,14 +9,14 @@ export default function MasrofLogo({ className = "w-40 h-40", size = 'large' }: 
   if (size === 'small') {
     return (
       <div className={`flex items-center justify-center overflow-hidden ${className}`}>
-        <img src={logoSrc} alt="MasroF" className="w-full h-full object-contain drop-shadow-sm" />
+        <img src="/logo.png" alt="MasroF" className="w-full h-full object-contain drop-shadow-sm" />
       </div>
     );
   }
 
   return (
     <div className={`flex flex-col items-center justify-center overflow-hidden ${className}`}>
-      <img src={logoSrc} alt="MasroF" className="w-full h-full object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500" />
+      <img src="/logo.png" alt="MasroF" className="w-full h-full object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500" />
     </div>
   );
 }

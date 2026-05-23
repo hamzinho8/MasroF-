@@ -213,14 +213,12 @@ export default function App() {
           .map((r, i) => {
             const [hours, minutes] = r.time.split(':').map(Number);
             
-            let smallIcon = 'ic_notif_autre';
-            let iconColor = '#4f46e5'; // indigo-600
+            let smallIcon = 'ic_notification';
+            let iconColor = '#0f1725'; // Default dark color 
 
             if (r.type === 'ACHAT') {
-              smallIcon = 'ic_notif_achat';
               iconColor = '#e11d48'; // rose-600
             } else if (r.type === 'RETRAIT') {
-              smallIcon = 'ic_notif_retrait';
               iconColor = '#0d9488'; // teal-600
             }
             
