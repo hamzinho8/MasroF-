@@ -12,7 +12,8 @@ import {
   Settings as SettingsIcon,
   Wallet as HomeIcon,
   Handshake,
-  Package // newly added
+  Package,
+  Box // newly added
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Home from "./components/Home";
@@ -721,7 +722,7 @@ export default function App() {
           <TabButton
             active={activeTab === "inventory"}
             onClick={() => setActiveTab("inventory")}
-            icon={<Package size={28} strokeWidth={2.5} />}
+            icon={<Box size={28} strokeWidth={2.5} />}
             color="indigo"
             isDarkMode={isDarkMode}
           />
