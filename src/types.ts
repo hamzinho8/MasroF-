@@ -50,4 +50,7 @@ export interface InventoryItem {
   quantity: number;
   addedAt: number;
   history: InventoryDecreaseAction[];
+  iconName?: string;
+  color?: string;
+  bg?: string;
 }

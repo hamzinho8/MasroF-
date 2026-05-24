@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Package, Plus, Minus, X, Info, Search, History as HistoryIcon, User } from 'lucide-react';
 import { InventoryItem, InventoryDecreaseAction } from '../types';
+import { ICON_MAP } from '../constants';
 
 interface InventoryProps {
   items: InventoryItem[];
@@ -12,7 +13,6 @@ interface InventoryProps {
 export default function Inventory({ items, onItemsChange, language }: InventoryProps) {
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [selectedItemInfo, setSelectedItemInfo] = useState<InventoryItem | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
   
   const translations = {
     Français: {
@@ -29,7 +29,8 @@ export default function Inventory({ items, onItemsChange, language }: InventoryP
       decreaseByOne: "Retirer 1",
       history: "Historique des retraits",
       noHistory: "Aucun retrait enregistré",
-      inventory: "Inventaire"
+      inventory: "Inventaire",
+      consumed: "Articles consommés"
     },
     العربية: {
       title: "المخزون",
@@ -45,7 +46,8 @@ export default function Inventory({ items, onItemsChange, language }: InventoryP
       decreaseByOne: "سحب 1",
       history: "سجل السحوبات",
       noHistory: "لا توجد سحوبات مسجلة",
-      inventory: "المخزون"
+      inventory: "المخزون",
+      consumed: "عناصر مستهلكة"
     },
     English: {
       title: "Stock",
@@ -61,7 +63,8 @@ export default function Inventory({ items, onItemsChange, language }: InventoryP
       decreaseByOne: "Remove 1",
       history: "Withdrawal History",
       noHistory: "No withdrawals recorded",
-      inventory: "Inventory"
+      inventory: "Inventory",
+      consumed: "Consumed Items"
     }
   };
 
@@ -127,9 +130,8 @@ export default function Inventory({ items, onItemsChange, language }: InventoryP
     }
   };
 
-  const filteredItems = items.filter(item => 
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const activeItems = items.filter(item => item.quantity > 0);
+  const consumedItems = items.filter(item => item.quantity === 0);
 
   return (
     <motion.div
@@ -142,60 +144,114 @@ export default function Inventory({ items, onItemsChange, language }: InventoryP
         <h2 className="text-2xl font-black text-slate-900 tracking-tight">{t.title}</h2>
         <button
           onClick={() => setIsAddItemModalOpen(true)}
-          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all"
+          className="flex items-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-5 py-2.5 rounded-2xl text-sm font-bold shadow-md shadow-indigo-500/20 hover:from-violet-500 hover:to-indigo-500 active:scale-95 transition-all"
         >
           <Plus size={18} strokeWidth={3} />
           {t.add}
         </button>
       </div>
 
-      <div className="relative mb-6">
-        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400">
-          <Search size={18} />
-        </div>
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={t.search}
-          className="w-full bg-slate-100 border-none rounded-2xl py-3 pl-11 pr-4 text-slate-700 font-medium placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
-        />
-      </div>
-
-      {filteredItems.length === 0 ? (
-        <div className="text-center py-12 px-4 rounded-[32px] border-2 border-dashed border-slate-200">
-          <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4 text-slate-400">
-            <Package size={32} />
+      {items.length === 0 ? (
+        <div className="text-center py-16 px-6 rounded-[40px] border-2 border-dashed border-slate-200 bg-slate-50/50">
+          <div className="w-20 h-20 rounded-full bg-slate-200/50 flex items-center justify-center mx-auto mb-5 text-slate-400">
+            <Package size={40} />
           </div>
-          <p className="text-slate-500 font-medium">{t.empty}</p>
+          <p className="text-slate-500 font-bold text-lg">{t.empty}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4">
-          {filteredItems.map(item => (
-            <motion.div
-              key={item.id}
-              layoutId={`card-${item.id}`}
-              onClick={() => setSelectedItemInfo(item)}
-              className="bg-white rounded-3xl p-5 border shadow-sm border-slate-100 cursor-pointer hover:border-indigo-100 hover:shadow-indigo-500/5 transition-all active:scale-95 relative overflow-hidden group"
-            >
-              <div className="flex flex-col h-full justify-between gap-4 relative z-10">
-                <div className="flex justify-between items-start">
-                  <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500">
-                    <Package size={20} />
-                  </div>
-                  <div className="bg-slate-100 px-2 py-1 rounded-lg">
-                    <span className="text-xs font-black text-slate-700">{item.quantity}</span>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-800 text-sm truncate">{item.name}</h3>
-                </div>
+        <div className="flex flex-col gap-6">
+          {activeItems.length > 0 && (
+            <div className="flex flex-col gap-3">
+              {activeItems.map(item => {
+                const IconComponent = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : Package;
+                const iconColorClass = item.color ? item.color : "text-white";
+                const bgClass = item.bg ? item.bg : "bg-violet-600";
+                
+                return (
+                  <motion.div
+                    key={item.id}
+                    layoutId={`card-${item.id}`}
+                    onClick={() => setSelectedItemInfo(item)}
+                    className="group flex items-center gap-4 p-5 rounded-[32px] border transition-all relative backdrop-blur-sm shadow-sm bg-slate-50/50 border-slate-100 hover:border-slate-200 hover:shadow-xl hover:shadow-slate-500/10 cursor-pointer overflow-hidden"
+                  >
+                    <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${bgClass} ${iconColorClass} relative z-10 opacity-90`}>
+                      <IconComponent size={24} />
+                    </div>
+
+                    <div className="flex-1 min-w-0 flex flex-col justify-center py-1 relative z-10">
+                      <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1 italic select-none">
+                        {item.name}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                        <span className="text-[9px] flex items-center gap-1 font-bold uppercase tracking-wider text-slate-400 shrink-0">
+                          <IconComponent size={10} className="text-slate-400" />
+                          {new Date(item.addedAt).toLocaleDateString(language === 'Français' ? 'fr-FR' : language === 'العربية' ? 'ar-MA' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                        <span className="text-[9px] font-bold text-slate-400 tracking-wider">
+                          {new Date(item.addedAt).toLocaleTimeString(language === 'Français' ? 'fr-FR' : language === 'العربية' ? 'ar-MA' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-end shrink-0 pl-2 relative z-10">
+                      <span className="text-xl font-black text-slate-700 leading-none">{item.quantity}</span>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                        {language === 'Français' ? 'Qté' : language === 'العربية' ? 'كمية' : 'Qty'}
+                      </span>
+                    </div>
+                    <div className="absolute -right-4 -bottom-4 opacity-[0.02] transform group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500 pointer-events-none text-slate-900 z-0">
+                      <IconComponent size={100} />
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+
+          {consumedItems.length > 0 && (
+            <div className="mt-2">
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                {t.consumed}
+              </h3>
+              <div className="flex flex-col gap-3">
+                {consumedItems.map(item => {
+                  const IconComponent = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : Package;
+                  return (
+                    <motion.div
+                      key={item.id}
+                      layoutId={`card-${item.id}`}
+                      onClick={() => setSelectedItemInfo(item)}
+                      className="group flex items-center gap-4 p-5 rounded-[32px] border transition-all relative backdrop-blur-sm shadow-sm bg-slate-50 border-slate-200 hover:border-slate-300 cursor-pointer overflow-hidden opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
+                    >
+                      <div className="shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 shadow-sm bg-slate-200 text-slate-500 relative z-10">
+                        <IconComponent size={24} />
+                      </div>
+
+                      <div className="flex-1 min-w-0 flex flex-col justify-center py-1 relative z-10">
+                        <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1 italic select-none line-through">
+                          {item.name}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                          <span className="text-[9px] flex items-center gap-1 font-bold uppercase tracking-wider text-slate-400 shrink-0">
+                            <IconComponent size={10} className="text-slate-400" />
+                            {new Date(item.addedAt).toLocaleDateString(language === 'Français' ? 'fr-FR' : language === 'العربية' ? 'ar-MA' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-end shrink-0 pl-2 relative z-10">
+                        <span className="text-xl font-black text-slate-400 leading-none">0</span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                          {language === 'Français' ? 'Épuisé' : language === 'العربية' ? 'نفذت' : 'Out'}
+                        </span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
-              <div className="absolute right-0 bottom-0 opacity-[0.03] transform translate-x-1/4 translate-y-1/4 pointer-events-none">
-                <Package size={80} />
-              </div>
-            </motion.div>
-          ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -270,7 +326,7 @@ function AddItemModal({ onClose, onAdd, t, language }: any) {
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-3 font-medium focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all"
+              className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-3 font-medium focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 outline-none transition-all"
               required
               autoFocus
             />
@@ -282,7 +338,7 @@ function AddItemModal({ onClose, onAdd, t, language }: any) {
               min="0"
               value={quantity}
               onChange={e => setQuantity(e.target.value)}
-              className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-3 font-medium focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all"
+              className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-3 font-medium focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 outline-none transition-all"
               required
             />
           </div>
@@ -290,7 +346,7 @@ function AddItemModal({ onClose, onAdd, t, language }: any) {
             <button
               type="submit"
               disabled={!name.trim() || !quantity}
-              className="w-full bg-indigo-600 text-white font-bold rounded-2xl py-4 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-700 active:scale-95 transition-all shadow-sm shadow-indigo-200"
+              className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold rounded-2xl py-4 disabled:opacity-50 disabled:cursor-not-allowed hover:from-violet-500 hover:to-indigo-500 active:scale-95 transition-all shadow-md shadow-indigo-500/20"
             >
               {t.save}
             </button>
@@ -302,6 +358,8 @@ function AddItemModal({ onClose, onAdd, t, language }: any) {
 }
 
 function ItemDetailsModal({ item, onClose, onDecrease, onDelete, t, language }: any) {
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -318,12 +376,20 @@ function ItemDetailsModal({ item, onClose, onDecrease, onDelete, t, language }: 
       >
         <div className="flex justify-between items-start mb-6 shrink-0">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
-              <Package size={28} />
-            </div>
+            <button
+              onClick={onDecrease}
+              disabled={item.quantity <= 0}
+              className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 flex flex-col items-center justify-center text-white shrink-0 shadow-lg shadow-indigo-500/30 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed group border-2 border-indigo-400/20"
+            >
+              <span className="text-3xl font-black tracking-tighter leading-none mt-1">{item.quantity}</span>
+              <div className="flex items-center gap-0.5 opacity-80 mt-0.5 group-active:text-rose-200 transition-colors">
+                <Minus size={10} strokeWidth={4} />
+                <span className="text-[9px] font-black uppercase tracking-widest leading-none">1</span>
+              </div>
+            </button>
             <div>
-              <h3 className="text-xl font-black text-slate-800 line-clamp-2">{item.name}</h3>
-              <p className="text-sm font-medium text-slate-500">{t.details}</p>
+              <h3 className="text-xl font-black text-slate-800 line-clamp-2 leading-tight">{item.name}</h3>
+              <p className="text-sm font-bold text-violet-500 mt-0.5">{t.details}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 transition-colors shrink-0 ml-2">
@@ -331,64 +397,74 @@ function ItemDetailsModal({ item, onClose, onDecrease, onDelete, t, language }: 
           </button>
         </div>
 
-        <div className="bg-slate-50 p-6 rounded-[24px] mb-6 border border-slate-100 flex justify-between items-center shrink-0">
-          <div>
-            <p className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">{t.currentQty}</p>
-            <p className="text-4xl font-black text-slate-800">{item.quantity}</p>
-          </div>
-          <button
-            onClick={onDecrease}
-            disabled={item.quantity <= 0}
-            className="flex flex-col items-center justify-center gap-1 bg-white border-2 border-rose-100 text-rose-600 rounded-2xl h-20 w-24 hover:bg-rose-50 hover:border-rose-200 active:scale-95 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed group"
-          >
-            <div className="group-active:-translate-y-1 transition-transform">
-              <Minus size={24} strokeWidth={3} />
-            </div>
-            <span className="text-[10px] font-bold uppercase tracking-widest">{t.decreaseByOne}</span>
-          </button>
-        </div>
-
         <div className="flex-1 overflow-y-auto min-h-[150px] relative">
-          <div className="sticky top-0 bg-white/90 backdrop-blur pb-2 pt-1 mb-2">
-            <h4 className="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-              <HistoryIcon size={16} className="text-indigo-500" />
+          <div className="sticky top-0 bg-white/90 backdrop-blur pb-2 pt-1 mb-2 z-10">
+            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <HistoryIcon size={14} className="text-violet-400" />
               {t.history}
             </h4>
           </div>
           
           {item.history.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-slate-400 font-medium text-sm">{t.noHistory}</p>
+            <div className="text-center py-10 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100">
+              <p className="text-slate-400 font-bold text-sm">{t.noHistory}</p>
             </div>
           ) : (
             <div className="space-y-3 pb-4">
               {item.history.map((action: any) => (
-                <div key={action.id} className="flex justify-between items-center p-3 rounded-xl bg-slate-50 border border-slate-100">
+                <div key={action.id} className="flex justify-between items-center p-3 rounded-2xl bg-white border-2 border-slate-50 shadow-sm">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center">
-                      <Minus size={16} strokeWidth={3} />
+                    <div className="w-10 h-10 rounded-[14px] bg-rose-50 text-rose-500 flex items-center justify-center">
+                      <Minus size={18} strokeWidth={3} />
                     </div>
-                    <span className="font-bold text-slate-700">-1</span>
+                    <div>
+                      <span className="font-black text-slate-700 block">-1</span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quantité</span>
+                    </div>
                   </div>
-                  <span className="text-xs font-medium text-slate-500">{action.dateStr}</span>
+                  <span className="text-xs font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg">{action.dateStr}</span>
                 </div>
               ))}
             </div>
           )}
         </div>
         
-        <div className="mt-4 pt-4 border-t border-slate-100 flex justify-center shrink-0">
-            <button
-                onClick={() => {
-                    const confirmMsg = language === 'Français' ? 'Voulez-vous vraiment supprimer cet article ?' : language === 'العربية' ? 'هل تريد حقاً حذف هذا العنصر؟' : 'Do you really want to delete this item?';
-                    if (window.confirm(confirmMsg)) {
-                        onDelete();
-                    }
-                }}
-                className="text-xs font-bold text-red-500 hover:text-red-600 uppercase tracking-widest py-2 px-4 rounded-xl hover:bg-red-50 transition-colors"
+        <div className="mt-4 pt-4 border-t-2 border-slate-100 flex justify-center shrink-0 overflow-hidden">
+            <AnimatePresence mode="wait">
+              {!showConfirmDelete ? (
+                <motion.button
+                    key="delete-btn"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    onClick={() => setShowConfirmDelete(true)}
+                    className="text-[10px] font-black text-rose-500 hover:text-rose-600 uppercase tracking-widest py-3 px-6 rounded-xl hover:bg-rose-50 transition-colors w-full"
                 >
-                    {language === 'Français' ? 'Supprimer l\'article' : language === 'العربية' ? 'حذف العنصر' : 'Delete item'}
-            </button>
+                    {language === 'Français' ? 'Supprimer cet article' : language === 'العربية' ? 'حذف هذا العنصر' : 'Delete this item'}
+                </motion.button>
+              ) : (
+                <motion.div
+                    key="confirm-delete"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="flex items-center gap-2 w-full"
+                >
+                  <button
+                      onClick={() => setShowConfirmDelete(false)}
+                      className="flex-1 bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest py-3 px-4 rounded-xl hover:bg-slate-200 transition-colors"
+                  >
+                      {language === 'Français' ? 'Annuler' : language === 'العربية' ? 'إلغاء' : 'Cancel'}
+                  </button>
+                  <button
+                      onClick={onDelete}
+                      className="flex-1 bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest py-3 px-4 rounded-xl hover:bg-rose-600 transition-colors shadow-sm shadow-rose-200"
+                  >
+                      {language === 'Français' ? 'Confirmer' : language === 'العربية' ? 'تأكيد' : 'Confirm'}
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
         </div>
       </motion.div>
     </motion.div>

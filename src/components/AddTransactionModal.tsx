@@ -31,7 +31,7 @@ const CATEGORIES: Category[] = [
 interface AddTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (label: string, amount: number, type: 'INCOME' | 'EXPENSE', category?: string, paidByBank?: boolean) => void;
+  onAdd: (label: string, amount: number, type: 'INCOME' | 'EXPENSE', category?: string, paidByBank?: boolean, isPureInflow?: boolean, inventoryData?: { quantity: number; color: string; bg: string; iconName: string }) => void;
   initialType: 'INCOME' | 'EXPENSE';
   currency: string;
   predefinedItems: PredefinedItem[];
@@ -44,6 +44,8 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
   const [selectedCategory, setSelectedCategory] = useState<string>('Autres');
   const [showFrequent, setShowFrequent] = useState(true);
   const [paidByBank, setPaidByBank] = useState(false);
+  const [addToInventory, setAddToInventory] = useState(false);
+  const [inventoryQty, setInventoryQty] = useState('1');
 
   React.useEffect(() => {
     if (isOpen) {
@@ -53,6 +55,8 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
       setSelectedCategory('Autres');
       setShowFrequent(true);
       setPaidByBank(false);
+      setAddToInventory(false);
+      setInventoryQty('1');
     }
   }, [isOpen, initialType]);
 
@@ -78,7 +82,26 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
     e.preventDefault();
     if (amount) {
       const finalLabel = type === 'INCOME' ? 'Retrait Banque' : (label.trim() || 'Achat');
-      onAdd(finalLabel, parseFloat(amount), type, type === 'EXPENSE' ? selectedCategory : undefined, paidByBank);
+      let invReq = undefined;
+      
+      if (type === 'EXPENSE' && addToInventory) {
+        const cat = CATEGORIES.find(c => c.id === selectedCategory) || CATEGORIES[4];
+        let iconName = 'Box'; // fallback
+        if (cat.id === 'Nourriture') iconName = 'Utensils';
+        else if (cat.id === 'Shopping') iconName = 'ShoppingBag';
+        else if (cat.id === 'Transport') iconName = 'Car';
+        else if (cat.id === 'Loisirs') iconName = 'Gamepad2';
+        else if (cat.id === 'Autres') iconName = 'MoreHorizontal';
+        
+        invReq = {
+          quantity: parseInt(inventoryQty) || 1,
+          color: cat.color,
+          bg: cat.bgColor,
+          iconName
+        };
+      }
+      
+      onAdd(finalLabel, parseFloat(amount), type, type === 'EXPENSE' ? selectedCategory : undefined, paidByBank, false, invReq);
       onClose();
     }
   };
@@ -230,15 +253,50 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                 </div>
 
                 {type === 'EXPENSE' && (
-                  <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 p-4 rounded-2xl cursor-pointer" onClick={() => setPaidByBank(!paidByBank)}>
-                    <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${paidByBank ? 'bg-teal-500 text-white' : 'bg-slate-200 text-transparent'}`}>
-                      <Check size={16} strokeWidth={3} />
+                  <>
+                    <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 p-4 rounded-2xl cursor-pointer" onClick={() => setPaidByBank(!paidByBank)}>
+                      <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${paidByBank ? 'bg-teal-500 text-white' : 'bg-slate-200 text-transparent'}`}>
+                        <Check size={16} strokeWidth={3} />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-black text-slate-800 tracking-tight">Payé par solde bancaire</span>
+                        <span className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Ne pas déduire de la poche</span>
+                      </div>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-sm font-black text-slate-800 tracking-tight">Payé par solde bancaire</span>
-                      <span className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Ne pas déduire de la poche</span>
+                    
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 p-4 rounded-2xl cursor-pointer" onClick={() => setAddToInventory(!addToInventory)}>
+                        <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${addToInventory ? 'bg-violet-500 text-white' : 'bg-slate-200 text-transparent'}`}>
+                          <Check size={16} strokeWidth={3} />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-black text-slate-800 tracking-tight">Ajouter au stockage</span>
+                          <span className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Enregistrer dans l'inventaire</span>
+                        </div>
+                      </div>
+
+                      <AnimatePresence>
+                        {addToInventory && (
+                          <motion.div 
+                            initial={{ opacity: 0, height: 0, marginTop: -12 }} 
+                            animate={{ opacity: 1, height: 'auto', marginTop: 0 }} 
+                            exit={{ opacity: 0, height: 0, marginTop: -12 }}
+                            className="space-y-1.5 overflow-hidden"
+                          >
+                            <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Quantité (Articles)</label>
+                            <input
+                              type="number"
+                              min="1"
+                              placeholder="1"
+                              className="w-full h-14 bg-violet-50/50 border border-violet-100 rounded-2xl px-5 font-black text-violet-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 transition-all font-mono"
+                              value={inventoryQty}
+                              onChange={(e) => setInventoryQty(e.target.value)}
+                            />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
-                  </div>
+                  </>
                 )}
               </div>
 

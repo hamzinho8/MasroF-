@@ -304,6 +304,7 @@ export default function App() {
     category?: string,
     paidByBank: boolean = false,
     isPureInflow: boolean = false,
+    inventoryData?: { quantity: number; color: string; bg: string; iconName: string }
   ) => {
     const newTx: Transaction = {
       id: Date.now().toString(),
@@ -325,6 +326,23 @@ export default function App() {
     };
 
     setTransactions((prev) => [newTx, ...prev]);
+
+    if (inventoryData) {
+      setInventoryItems((prev) => [
+        {
+          id: Date.now().toString() + "_inv", // ensure unique ID
+          name: label,
+          quantity: inventoryData.quantity,
+          addedAt: Date.now(),
+          history: [],
+          color: inventoryData.color,
+          bg: inventoryData.bg,
+          iconName: inventoryData.iconName,
+        },
+        ...prev,
+      ]);
+    }
+
     if (type === "INCOME") {
       if (isPureInflow) {
         if (paidByBank) {
@@ -629,7 +647,7 @@ export default function App() {
     }
   };
 
-  const TABS: Tab[] = ["home", "history", "credits", "stats", "settings"];
+  const TABS: Tab[] = ["home", "history", "credits", "stats", "inventory", "settings"];
   
   const handleSwipe = (dir: "Left" | "Right") => {
     const currentIndex = TABS.indexOf(activeTab);
