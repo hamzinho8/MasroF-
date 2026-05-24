@@ -8,11 +8,11 @@ const WidgetUpdater = registerPlugin<any>('WidgetUpdater');
 
 import {
   ArrowRightLeft as HistoryIcon,
-
   PieChart,
   Settings as SettingsIcon,
   Wallet as HomeIcon,
   Handshake,
+  Package // newly added
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Home from "./components/Home";
@@ -21,13 +21,14 @@ import Credits from "./components/Credits";
 import HistoryView from "./components/History";
 import SettingsView from "./components/Settings";
 import LockScreen from "./components/LockScreen";
+import Inventory from "./components/Inventory"; // newly added
 import MasrofLogo from "./components/Logo";
 import AddTransactionModal from "./components/AddTransactionModal";
-import { Transaction, Reminder, CreditEntry, PredefinedItem } from "./types";
+import { Transaction, Reminder, CreditEntry, PredefinedItem, InventoryItem } from "./types";
 import { INITIAL_PREDEFINED_ITEMS } from "./constants";
 import { useSwipeable } from "react-swipeable";
 
-type Tab = "home" | "stats" | "history" | "credits" | "settings";
+type Tab = "home" | "stats" | "history" | "credits" | "inventory" | "settings";
 
 export default function App() {
   const [activeTab, setActiveTab] = useLocalStorage<Tab>("activeTab", "home");
@@ -97,6 +98,7 @@ export default function App() {
   };
 
   const [creditEntries, setCreditEntries] = useLocalStorage<CreditEntry[]>("creditEntries", []);
+  const [inventoryItems, setInventoryItems] = useLocalStorage<InventoryItem[]>("inventoryItems", []);
 
   const [predefinedItems, setPredefinedItems] = useState<PredefinedItem[]>(
     () => {
@@ -539,6 +541,14 @@ export default function App() {
             onAddClick={openModal}
           />
         );
+      case "inventory":
+        return (
+          <Inventory
+            items={inventoryItems}
+            onItemsChange={setInventoryItems}
+            language={language}
+          />
+        );
       case "settings":
         return (
           <SettingsView
@@ -688,6 +698,13 @@ export default function App() {
             onClick={() => setActiveTab("stats")}
             icon={<PieChart size={28} strokeWidth={2.5} />}
             color="emerald"
+            isDarkMode={isDarkMode}
+          />
+          <TabButton
+            active={activeTab === "inventory"}
+            onClick={() => setActiveTab("inventory")}
+            icon={<Package size={28} strokeWidth={2.5} />}
+            color="indigo"
             isDarkMode={isDarkMode}
           />
           <TabButton

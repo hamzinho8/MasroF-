@@ -37,3 +37,17 @@ export interface CreditEntry {
   date: string;
   source?: 'poche' | 'compte' | 'rien';
 }
+
+export interface InventoryDecreaseAction {
+  id: string;
+  timestamp: number;
+  dateStr: string; // e.g. "2023-10-25 14:30"
+}
+
+export interface InventoryItem {
+  id: string;
+  name: string;
+  quantity: number;
+  addedAt: number;
+  history: InventoryDecreaseAction[];
+}
