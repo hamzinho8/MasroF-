@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   Utensils, ShoppingBag, Car, Gamepad2, MoreHorizontal,
-  Coffee, Milk, Wheat, Box, Cookie, Droplets, CupSoda, Candy, Zap, 
+  Coffee, Milk, Wheat, PackageOpen, Cookie, Droplets, CupSoda, Candy, Zap, 
   CircleDot, Soup, TrainFront, Fuel, Flame, Tv, Search, Baby,
   Bean, Cylinder, Cigarette
 } from 'lucide-react';
@@ -9,7 +9,7 @@ import { PredefinedItem } from './types';
 
 export const ICON_MAP: Record<string, React.ElementType> = {
   Utensils, ShoppingBag, Car, Gamepad2, MoreHorizontal,
-  Coffee, Milk, Wheat, Box, Cookie, Droplets, CupSoda, Candy, Zap, 
+  Coffee, Milk, Wheat, Box: PackageOpen, Cookie, Droplets, CupSoda, Candy, Zap, 
   CircleDot, Soup, TrainFront, Fuel, Flame, Tv, Search, Baby, Bean,
   Cylinder, Cigarette
 };

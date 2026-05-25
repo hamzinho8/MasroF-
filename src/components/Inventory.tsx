@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Package, Box, Plus, Minus, X, Info, Search, History as HistoryIcon, User } from 'lucide-react';
+import { Package, PackageOpen, Plus, Minus, X, Info, Search, History as HistoryIcon, User } from 'lucide-react';
 import { InventoryItem, InventoryDecreaseAction } from '../types';
 import { ICON_MAP } from '../constants';
 
@@ -154,7 +154,7 @@ export default function Inventory({ items, onItemsChange, language }: InventoryP
       {items.length === 0 ? (
         <div className="text-center py-16 px-6 rounded-[40px] border-2 border-dashed border-slate-200 bg-slate-50/50">
           <div className="w-20 h-20 rounded-full bg-slate-200/50 flex items-center justify-center mx-auto mb-5 text-slate-400">
-            <Box size={40} />
+            <PackageOpen size={40} />
           </div>
           <p className="text-slate-500 font-bold text-lg">{t.empty}</p>
         </div>
@@ -163,7 +163,7 @@ export default function Inventory({ items, onItemsChange, language }: InventoryP
           {activeItems.length > 0 && (
             <div className="flex flex-col gap-3">
               {activeItems.map(item => {
-                const IconComponent = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : Box;
+                const IconComponent = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : PackageOpen;
                 const iconColorClass = item.color ? item.color : "text-white";
                 const bgClass = item.bg ? item.bg : "bg-violet-600";
                 
@@ -216,7 +216,7 @@ export default function Inventory({ items, onItemsChange, language }: InventoryP
               </h3>
               <div className="flex flex-col gap-3">
                 {consumedItems.map(item => {
-                  const IconComponent = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : Box;
+                  const IconComponent = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : PackageOpen;
                   return (
                     <motion.div
                       key={item.id}
