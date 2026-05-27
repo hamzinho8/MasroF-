@@ -146,6 +146,7 @@ export default function History({ transactions, language, currency, onDelete, on
   const [activeInlineMenu, setActiveInlineMenu] = useState<'DATE' | 'TYPE' | 'CATEGORY' | null>(null);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
+  const [visibleCount, setVisibleCount] = useState(30);
 
   const handleEdit = (tx: Transaction) => {
     setActiveMenuId(null);
@@ -280,7 +281,7 @@ export default function History({ transactions, language, currency, onDelete, on
         
         <div className="relative z-10 p-5">
           {/* Header with Full-Width Selector */}
-          <div className="flex bg-white/40 backdrop-blur-md p-1 rounded-3xl shadow-sm border border-white/50 mb-8">
+          <div className="flex bg-white/80 p-1 rounded-3xl shadow-sm border border-white/50 mb-8">
             <button 
               onClick={() => setTimeframe('day')}
               className={`flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 ${timeframe === 'day' ? 'bg-slate-900 text-white shadow-xl' : 'text-slate-500 hover:bg-white/40'}`}
@@ -424,7 +425,7 @@ export default function History({ transactions, language, currency, onDelete, on
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-            className="overflow-hidden bg-white/60 backdrop-blur-md rounded-[32px] border border-white/80 shadow-lg shadow-slate-200/40 mx-1"
+            className="overflow-hidden bg-white/95 rounded-[32px] border border-white/80 shadow-lg shadow-slate-200/40 mx-1"
           >
             <div className="p-6">
               {activeInlineMenu === 'DATE' && (
@@ -518,7 +519,7 @@ export default function History({ transactions, language, currency, onDelete, on
       {/* List */}
       <div className="space-y-4 pb-8">
         <AnimatePresence mode="popLayout">
-          {filteredTransactions.map((tx, index) => {
+          {filteredTransactions.slice(0, visibleCount).map((tx, index) => {
             // Case-insensitive matching to handle "TRANSPORT" vs "Transport"
             const isExpense = tx.type === 'EXPENSE';
             const isCreditPlus = tx.category === t.owedToMe || tx.category === 'Crédit +';
@@ -563,7 +564,7 @@ export default function History({ transactions, language, currency, onDelete, on
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: index * 0.03 }}
-                  className={`group flex items-center gap-4 p-5 rounded-[32px] border transition-all relative backdrop-blur-sm shadow-sm ${
+                  className={`group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm ${
                     isReceive
                       ? "bg-indigo-50/30 border-indigo-100/50 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10"
                       : "bg-amber-50/30 border-amber-100/50 hover:border-amber-200 hover:shadow-xl hover:shadow-amber-500/10"
@@ -690,7 +691,7 @@ export default function History({ transactions, language, currency, onDelete, on
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: index * 0.03 }}
-                className={`flex items-center gap-4 p-4 rounded-[32px] border transition-all group relative backdrop-blur-sm ${getCardStyle()}`}
+                className={`flex items-center gap-4 p-4 rounded-[32px] border transition-transform group relative ${getCardStyle()}`}
                 style={{ 
                   overflow: activeMenuId === tx.id ? 'visible' : 'hidden',
                   zIndex: activeMenuId === tx.id ? 50 : 1
@@ -799,6 +800,15 @@ export default function History({ transactions, language, currency, onDelete, on
           })}
         </AnimatePresence>
 
+        {visibleCount < filteredTransactions.length && (
+          <button
+            onClick={() => setVisibleCount(v => v + 30)}
+            className="w-full py-4 rounded-2xl bg-white border border-slate-100 text-slate-500 font-bold uppercase tracking-widest text-[10px] hover:bg-slate-50 transition-colors shadow-sm mt-4"
+          >
+            {language === 'العربية' ? 'عرض المزيد' : (language === 'English' ? 'Load more' : 'Voir plus')}
+          </button>
+        )}
+
         {/* Inline Edit Modal */}
         <AnimatePresence>
           {editingTx && (
@@ -806,7 +816,7 @@ export default function History({ transactions, language, currency, onDelete, on
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm"
+              className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-slate-900/60"
             >
               <motion.div 
                 initial={{ scale: 0.9, y: 20 }}

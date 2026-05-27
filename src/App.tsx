@@ -687,7 +687,7 @@ export default function App() {
     >
       {/* Header & Navigation */}
       <header
-        className={`sticky top-0 z-50 transition-all duration-300 ${isDarkMode ? "bg-slate-900/95" : "bg-white/95"} backdrop-blur-md border-b ${isDarkMode ? "border-slate-800" : "border-slate-100"}`}
+        className={`sticky top-0 z-50 transition-colors duration-300 ${isDarkMode ? "bg-slate-900" : "bg-white"} border-b ${isDarkMode ? "border-slate-800" : "border-slate-100"}`}
       >
         {/* Global Navigation Tabs (Compact & Artistic) */}
         <nav className="flex items-center justify-around px-2 pb-5 pt-3 max-w-full mx-auto gap-1">

@@ -172,7 +172,7 @@ export default function Inventory({ items, onItemsChange, language }: InventoryP
                     key={item.id}
                     layoutId={`card-${item.id}`}
                     onClick={() => setSelectedItemInfo(item)}
-                    className="group flex items-center gap-4 p-5 rounded-[32px] border transition-all relative backdrop-blur-sm shadow-sm bg-slate-50/50 border-slate-100 hover:border-slate-200 hover:shadow-xl hover:shadow-slate-500/10 cursor-pointer overflow-hidden"
+                    className="group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm bg-slate-50/90 border-slate-100 hover:border-slate-200 hover:shadow-xl hover:shadow-slate-500/10 cursor-pointer overflow-hidden"
                   >
                     <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${bgClass} ${iconColorClass} relative z-10 opacity-90`}>
                       <IconComponent size={24} />
@@ -222,7 +222,7 @@ export default function Inventory({ items, onItemsChange, language }: InventoryP
                       key={item.id}
                       layoutId={`card-${item.id}`}
                       onClick={() => setSelectedItemInfo(item)}
-                      className="group flex items-center gap-4 p-5 rounded-[32px] border transition-all relative backdrop-blur-sm shadow-sm bg-slate-50 border-slate-200 hover:border-slate-300 cursor-pointer overflow-hidden opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
+                      className="group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm bg-slate-50 border-slate-200 hover:border-slate-300 cursor-pointer overflow-hidden opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
                     >
                       <div className="shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 shadow-sm bg-slate-200 text-slate-500 relative z-10">
                         <IconComponent size={24} />
@@ -300,7 +300,7 @@ function AddItemModal({ onClose, onAdd, t, language }: any) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-slate-900/60"
       onClick={onClose}
     >
       <motion.div
@@ -365,7 +365,7 @@ function ItemDetailsModal({ item, onClose, onDecrease, onDelete, t, language }: 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-slate-900/60"
       onClick={onClose}
     >
       <motion.div
@@ -398,7 +398,7 @@ function ItemDetailsModal({ item, onClose, onDecrease, onDelete, t, language }: 
         </div>
 
         <div className="flex-1 overflow-y-auto min-h-[150px] relative">
-          <div className="sticky top-0 bg-white/90 backdrop-blur pb-2 pt-1 mb-2 z-10">
+          <div className="sticky top-0 bg-white/95 pb-2 pt-1 mb-2 z-10">
             <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <HistoryIcon size={14} className="text-violet-400" />
               {t.history}

@@ -313,7 +313,7 @@ export default function Home({
                 e.stopPropagation();
                 setShowBankModal(true);
               }}
-              className="absolute top-4 right-4 w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-slate-800 hover:bg-white/40 transition-all active:scale-95 shadow-sm border border-white/30 z-10"
+              className="absolute top-4 right-4 w-10 h-10 bg-white/40 rounded-xl flex items-center justify-center text-slate-800 hover:bg-white/60 transition-colors active:scale-95 shadow-sm border border-white/30 z-10"
             >
               <Plus size={20} strokeWidth={3} />
             </button>
@@ -429,7 +429,7 @@ export default function Home({
                         e.stopPropagation();
                         setShowCalculator(true);
                       }}
-                      className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-slate-800 hover:bg-white/40 transition-all active:scale-95 shadow-sm border border-white/30"
+                      className="w-10 h-10 bg-white/40 rounded-xl flex items-center justify-center text-slate-800 hover:bg-white/60 transition-colors active:scale-95 shadow-sm border border-white/30"
                     >
                       <Calculator size={20} />
                     </button>
@@ -455,7 +455,7 @@ export default function Home({
 
       {widgetMode === "balance" && widgetBalanceType === "bank" && (
         <div className="mb-8">
-          <div className="bg-white/50 backdrop-blur-md rounded-2xl px-5 py-4 border border-teal-brand/10 shadow-sm flex items-center justify-between hover:bg-white/80 transition-colors">
+          <div className="bg-white/90 rounded-2xl px-5 py-4 border border-teal-brand/10 shadow-sm flex items-center justify-between hover:bg-white transition-colors">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
                 <Wallet size={20} />
@@ -740,7 +740,7 @@ export default function Home({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: index * 0.03 }}
-                  className={`group flex items-center gap-4 p-5 rounded-[32px] border transition-all relative backdrop-blur-sm shadow-sm ${
+                  className={`group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative bg-opacity-95 shadow-sm ${
                     isReceive
                       ? "bg-indigo-50/30 border-indigo-100/50 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10"
                       : "bg-amber-50/30 border-amber-100/50 hover:border-amber-200 hover:shadow-xl hover:shadow-amber-500/10"
@@ -869,7 +869,7 @@ export default function Home({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className={`flex items-center gap-4 p-5 rounded-[32px] border transition-all group relative shadow-sm ${getCardStyle()}`}
+                className={`flex items-center gap-4 p-5 rounded-[32px] border transition-transform group relative bg-opacity-95 shadow-sm ${getCardStyle()}`}
                 style={{
                   overflow: activeMenuId === tx.id ? "visible" : "hidden",
                   zIndex: activeMenuId === tx.id ? 50 : 1,
@@ -1010,7 +1010,7 @@ export default function Home({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm"
+              className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-900/60"
               onClick={() => setEditingTx(null)}
             >
               <motion.div
