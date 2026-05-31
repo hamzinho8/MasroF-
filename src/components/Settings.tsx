@@ -28,6 +28,7 @@ import {
   Layout,
   Palette,
   Smartphone,
+  Upload
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import MasrofLogo from "./Logo";
@@ -35,6 +36,7 @@ import { Reminder, PredefinedItem } from "../types";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { ICON_MAP } from "../constants";
+import { importDataFromFile } from "../utils/backup";
 import {
   Utensils,
   Car,
@@ -114,7 +116,6 @@ export default function Settings({
   const [showSelector, setShowSelector] = useState<
     | "CURRENCY"
     | "LANGUAGE"
-    | "SOUND"
     | "WIDGET_SETTINGS"
     | "PIN_SETUP"
     | null
@@ -178,6 +179,16 @@ export default function Settings({
     });
 
     doc.save(`Masrof_Rapport_${new Date().toISOString().split("T")[0]}.pdf`);
+  };
+
+  const handleRestoreData = async () => {
+    const success = await importDataFromFile();
+    if (success) {
+      alert(language === "Français" ? "Données restaurées avec succès. L'application va redémarrer." : "Data restored successfully. App will restart.");
+      window.location.reload();
+    } else {
+      alert(language === "Français" ? "Aucune sauvegarde trouvée ou fichier corrompu." : "No backup found or file corrupted.");
+    }
   };
 
   const labels = {
@@ -295,13 +306,6 @@ export default function Settings({
               showArrow={true}
             />
             <SettingsItem
-              icon={<Music />}
-              title="SON DE NOTIFICATION"
-              subtitle={soundOptions.find(o => o.id === soundType)?.label || "Défaut d'Android"}
-              onClick={() => setShowSelector("SOUND")}
-              showArrow={true}
-            />
-            <SettingsItem
               icon={<Smartphone />}
               title="RÉGLAGES WIDGET ANDROID"
               subtitle={
@@ -319,6 +323,13 @@ export default function Settings({
               title="EXPORTER MES DONNÉES"
               subtitle="Télécharger un rapport PDF"
               onClick={exportToPDF}
+              showArrow={true}
+            />
+            <SettingsItem
+              icon={<Upload />}
+              title="RESTAURATION DE DONNÉES"
+              subtitle="Importer un fichier de sauvegarde crypté"
+              onClick={handleRestoreData}
               showArrow={true}
             />
           </div>
@@ -490,8 +501,7 @@ export default function Settings({
                  showSelector === "PIN_SETUP" ? "Configurer Code PIN" :
                  `Sélection ${
                   showSelector === "CURRENCY" ? "Devise" :
-                  showSelector === "LANGUAGE" ? "Langue" :
-                  showSelector === "SOUND" ? "Son" : ""
+                  showSelector === "LANGUAGE" ? "Langue" : ""
                 }`}
               </h3>
               <div className="space-y-3">
@@ -663,9 +673,6 @@ export default function Settings({
                   } else if (showSelector === "LANGUAGE") {
                     options = languages.map(l => ({ id: l, label: l }));
                     activeValue = language;
-                  } else if (showSelector === "SOUND") {
-                    options = soundOptions;
-                    activeValue = soundType;
                   }
 
                   return options.map((opt) => (
@@ -674,10 +681,6 @@ export default function Settings({
                       onClick={() => {
                         if (showSelector === "CURRENCY") onCurrencyChange(opt.id);
                         else if (showSelector === "LANGUAGE") onLanguageChange(opt.id);
-                        else if (showSelector === "SOUND") {
-                          setSoundType(opt.id);
-                          localStorage.setItem("notificationSoundType", opt.id);
-                        }
                         setShowSelector(null);
                       }}
                       className={`w-full p-5 rounded-2xl border transition-all flex items-center justify-between group ${
@@ -934,11 +937,18 @@ function ReminderManagerModal({
                       />
                       <div className="grid grid-cols-2 gap-2">
                         <input
-                          type="time"
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="HH:MM"
+                          maxLength={5}
                           value={reminder.time}
-                          onChange={(e) =>
-                            handleUpdate(reminder.id, { time: e.target.value })
-                          }
+                          onChange={(e) => {
+                            let val = e.target.value.replace(/[^0-9]/g, '');
+                            if (val.length >= 3) {
+                              val = val.slice(0, 2) + ':' + val.slice(2, 4);
+                            }
+                            handleUpdate(reminder.id, { time: val });
+                          }}
                           className="bg-white border-none px-3 py-2 text-sm font-bold rounded-xl"
                         />
                         <button
@@ -1097,11 +1107,18 @@ function ReminderFormFields({
             Heure
           </label>
           <input
-            ref={timeRef}
-            type="time"
+            type="text"
+            inputMode="numeric"
+            placeholder="HH:MM"
+            maxLength={5}
             value={time}
-            onClick={() => { try { timeRef.current?.showPicker() } catch(e) {} }}
-            onChange={(e) => setTime(e.target.value)}
+            onChange={(e) => {
+              let val = e.target.value.replace(/[^0-9]/g, '');
+              if (val.length >= 3) {
+                val = val.slice(0, 2) + ':' + val.slice(2, 4);
+              }
+              setTime(val);
+            }}
             className="w-full h-14 bg-white border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none"
             required
           />
@@ -1264,11 +1281,18 @@ function ReminderForm({
                 Heure
               </label>
               <input
-                ref={timeRef2}
-                type="time"
+                type="text"
+                inputMode="numeric"
+                placeholder="HH:MM"
+                maxLength={5}
                 value={time}
-                onClick={() => { try { timeRef2.current?.showPicker() } catch(e) {} }}
-                onChange={(e) => setTime(e.target.value)}
+                onChange={(e) => {
+                  let val = e.target.value.replace(/[^0-9]/g, '');
+                  if (val.length >= 3) {
+                    val = val.slice(0, 2) + ':' + val.slice(2, 4);
+                  }
+                  setTime(val);
+                }}
                 className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none"
                 required
               />

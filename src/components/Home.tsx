@@ -310,12 +310,14 @@ export default function Home({
           >
             <button
               onClick={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 setShowBankModal(true);
               }}
-              className="absolute top-4 right-4 w-10 h-10 bg-white/40 rounded-xl flex items-center justify-center text-slate-800 hover:bg-white/60 transition-colors active:scale-95 shadow-sm border border-white/30 z-10"
+              className="absolute top-3 right-3 w-12 h-12 bg-white/40 rounded-xl flex items-center justify-center text-slate-800 active:bg-white/60 transition-colors shadow-sm border border-white/30 z-[100]"
+              style={{ touchAction: "manipulation" }}
             >
-              <Plus size={20} strokeWidth={3} />
+              <Plus size={22} strokeWidth={3} className="pointer-events-none" />
             </button>
 
             {widgetMode === "balance" && widgetBalanceType === "bank" && (

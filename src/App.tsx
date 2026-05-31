@@ -3,6 +3,7 @@ import { useLocalStorage } from "./hooks/useLocalStorage";
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Preferences } from '@capacitor/preferences';
 import { registerPlugin, Capacitor } from '@capacitor/core';
+import { importDataFromFile } from "./utils/backup";
 
 const WidgetUpdater = registerPlugin<any>('WidgetUpdater');
 
@@ -32,6 +33,23 @@ import { useSwipeable } from "react-swipeable";
 type Tab = "home" | "stats" | "history" | "credits" | "inventory" | "settings";
 
 export default function App() {
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  useEffect(() => {
+    const initBackup = async () => {
+      // Check if it looks like a fresh install (no transactions key in localStorage)
+      if (!window.localStorage.getItem("transactions")) {
+        const restored = await importDataFromFile();
+        if (restored) {
+          window.location.reload();
+          return;
+        }
+      }
+      setIsInitializing(false);
+    };
+    initBackup();
+  }, []);
+
   const [activeTab, setActiveTab] = useLocalStorage<Tab>("activeTab", "home");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"INCOME" | "EXPENSE">("EXPENSE");
@@ -190,8 +208,7 @@ export default function App() {
         }
 
         try {
-          const soundPref = localStorage.getItem("notificationSoundType") || "checkout";
-          const channelId = `reminders_${soundPref}_v1`;
+          const channelId = `reminders_default_v1`;
 
           await LocalNotifications.createChannel({
             id: channelId,
@@ -199,8 +216,7 @@ export default function App() {
             description: 'Rappels réguliers',
             importance: 5,
             visibility: 1,
-            vibration: true,
-            ...(soundPref !== "default" ? { sound: `${soundPref}.wav` } : {})
+            vibration: true
           });
         } catch (e) {
           console.error("Error creating channel", e);
@@ -224,15 +240,13 @@ export default function App() {
               iconColor = '#0d9488'; // teal-600
             }
             
-            const soundPref = localStorage.getItem("notificationSoundType") || "checkout";
-            const channelId = `reminders_${soundPref}_v1`;
+            const channelId = `reminders_default_v1`;
 
             return {
               title: r.title,
               body: "Il est temps de checker votre trésorerie !",
               id: i + 1,
               channelId: channelId,
-              sound: soundPref !== "default" ? `${soundPref}.wav` : undefined,
               smallIcon: "ic_notification",
               iconColor,
               largeIcon: 'ic_launcher',
@@ -256,11 +270,7 @@ export default function App() {
     if (Capacitor.isNativePlatform()) {
       let listenerRemoved = false;
       const listener = LocalNotifications.addListener('localNotificationReceived', (notification) => {
-          const soundPref = localStorage.getItem("notificationSoundType") || "checkout";
-          if (soundPref !== "default") {
-            const audio = new Audio(`/${soundPref}.wav`);
-            audio.play().catch(e => console.error("Could not play custom sound", e));
-          }
+         // Do anything else needed
       });
       return () => {
          listenerRemoved = true;
@@ -668,6 +678,14 @@ export default function App() {
     trackMouse: false
   });
 
+  if (isInitializing) {
+    return (
+      <div className={`h-screen ${isDarkMode ? "bg-slate-900 text-slate-200" : "bg-slate-50 text-slate-500"} flex items-center justify-center`}>
+         <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="w-8 h-8 border-4 border-t-transparent border-[#2D8B96] rounded-full" />
+      </div>
+    );
+  }
+
   if (isLocked && appPin) {
     return (
       <div className={`h-screen ${isDarkMode ? "bg-slate-900" : "bg-slate-50"} flex flex-col max-w-md mx-auto relative overflow-hidden font-sans`}>
@@ -743,17 +761,7 @@ export default function App() {
         <div className="pb-32">
           {" "}
           {/* Increased padding for the 3-dots menu space at the end of lists */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              {renderContent()}
-            </motion.div>
-          </AnimatePresence>
+          {renderContent()}
         </div>
       </main>
 

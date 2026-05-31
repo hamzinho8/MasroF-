@@ -1,4 +1,17 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { exportDataToFile } from '../utils/backup';
+
+// Debounce timer for saving data
+let backupTimeout: NodeJS.Timeout | null = null;
+
+const triggerBackup = () => {
+    if (backupTimeout) {
+        clearTimeout(backupTimeout);
+    }
+    backupTimeout = setTimeout(() => {
+        exportDataToFile();
+    }, 1000); // 1s debounce
+};
 
 export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val: T) => T)) => void] {
   const [storedValue, setStoredValue] = useState<T>(() => {
@@ -18,6 +31,7 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T 
           value instanceof Function ? (value as Function)(prev) : value;
         if (typeof window !== 'undefined') {
           window.localStorage.setItem(key, JSON.stringify(valueToStore));
+          triggerBackup();
         }
         return valueToStore;
       });
