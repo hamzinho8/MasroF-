@@ -20,6 +20,8 @@ interface StatisticsProps {
   currency: string;
   language: string;
   isDarkMode: boolean;
+  categoryBudgets?: Record<string, number>;
+  onUpdateBudget?: (category: string, limit: number) => void;
 }
 
 const CATEGORY_STYLES: Record<string, { color: string; icon: React.ReactNode; bg: string }> = {
@@ -38,7 +40,7 @@ const CATEGORY_STYLES: Record<string, { color: string; icon: React.ReactNode; bg
   'أخرى': { color: '#64748B', icon: <CreditCard size={18} />, bg: 'bg-slate-100' },
 };
 
-export default function Statistics({ transactions, currency, language, isDarkMode }: StatisticsProps) {
+export default function Statistics({ transactions, currency, language, isDarkMode, categoryBudgets = {}, onUpdateBudget }: StatisticsProps) {
   const [period, setPeriod] = useState<'day' | 'week' | 'month'>('week');
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
@@ -159,12 +161,31 @@ export default function Statistics({ transactions, currency, language, isDarkMod
                       <p className="text-lg font-black tracking-tighter" style={{ color: isDarkMode ? 'white' : '#0F172A' }}>
                         {data.total.toLocaleString()} <span className="text-xs opacity-40">{currency}</span>
                       </p>
+                      {categoryBudgets[category] && (
+                        <p className="text-[9px] font-bold uppercase mt-0.5" style={{ color: data.total > categoryBudgets[category] ? '#ef4444' : '#64748b' }}>
+                          / {categoryBudgets[category].toLocaleString()} {currency}
+                        </p>
+                      )}
                     </div>
                     <div className={`p-1 rounded-full transition-transform duration-300 ${isExpanded ? 'rotate-180 bg-slate-100 dark:bg-white/10' : ''}`}>
                       <ChevronDown size={18} className="text-slate-400" />
                     </div>
                   </div>
                 </button>
+
+                {categoryBudgets[category] && (
+                  <div className="px-6 pb-4">
+                    <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ 
+                          width: `${Math.min((data.total / categoryBudgets[category]) * 100, 100)}%`,
+                          backgroundColor: data.total > categoryBudgets[category] ? '#ef4444' : style.color 
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
 
                 <AnimatePresence>
                   {isExpanded && (
@@ -175,6 +196,24 @@ export default function Statistics({ transactions, currency, language, isDarkMod
                       className="overflow-hidden bg-slate-50/50 dark:bg-slate-900/40 border-t border-slate-100 dark:border-white/5"
                     >
                       <div className="p-4 space-y-2">
+                        {onUpdateBudget && (
+                          <div className="flex items-center gap-2 mb-4 px-2">
+                            <input 
+                              type="number" 
+                              placeholder="Budget limite..."
+                              className="flex-1 bg-white dark:bg-slate-800 border-none rounded-xl text-xs font-bold px-3 py-2 outline-none w-24"
+                              defaultValue={categoryBudgets[category] || ''}
+                              onBlur={(e) => {
+                                const val = parseFloat(e.target.value);
+                                if (!isNaN(val)) onUpdateBudget(category, val);
+                                else if (e.target.value === '') onUpdateBudget(category, 0); // clear
+                              }}
+                            />
+                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                              Configuration
+                            </span>
+                          </div>
+                        )}
                         {Object.entries(data.articles).map(([article, amount]) => (
                           <div key={article} className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-white dark:hover:bg-white/5 transition-colors">
                             <div className="flex items-center gap-3">

@@ -190,6 +190,7 @@ export default function App() {
     translations["Français"];
   const isRtl = language === "العربية";
   const [reminders, setReminders] = useLocalStorage<Reminder[]>("reminders", []);
+  const [categoryBudgets, setCategoryBudgets] = useLocalStorage<Record<string, number>>("categoryBudgets", {});
 
   useEffect(() => {
     async function syncNotifications() {
@@ -518,6 +519,8 @@ export default function App() {
             currency={currency}
             language={language}
             isDarkMode={isDarkMode}
+            categoryBudgets={categoryBudgets}
+            onUpdateBudget={(cat, limit) => setCategoryBudgets(prev => ({...prev, [cat]: limit}))}
           />
         );
       case "credits":

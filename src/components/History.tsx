@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Virtuoso } from 'react-virtuoso';
 import { 
   CalendarCheck,
   CalendarDays,
@@ -517,9 +518,12 @@ export default function History({ transactions, language, currency, onDelete, on
       </AnimatePresence>
 
       {/* List */}
-      <div className="space-y-4 pb-8">
-        <AnimatePresence mode="popLayout">
-          {filteredTransactions.slice(0, visibleCount).map((tx, index) => {
+      <div className="space-y-4 pb-8" style={{ height: "calc(100vh - 210px)" }}>
+        <Virtuoso
+          className="w-full h-full"
+          data={filteredTransactions}
+          totalCount={filteredTransactions.length}
+          itemContent={(index, tx) => {
             // Case-insensitive matching to handle "TRANSPORT" vs "Transport"
             const isExpense = tx.type === 'EXPENSE';
             const isCreditPlus = tx.category === t.owedToMe || tx.category === 'Crédit +';
@@ -558,12 +562,13 @@ export default function History({ transactions, language, currency, onDelete, on
             if (isCreditPlus || isCreditMinus) {
               const isReceive = isCreditPlus;
               return (
+                <div className="py-2">
                 <motion.div
                   key={tx.id}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ delay: index * 0.03 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.05 }}
                   className={`group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm ${
                     isReceive
                       ? "bg-indigo-50/30 border-indigo-100/50 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10"
@@ -681,10 +686,12 @@ export default function History({ transactions, language, currency, onDelete, on
                     </div>
                   </div>
                 </motion.div>
+                </div>
               );
             }
 
             return (
+              <div className="py-2">
               <motion.div 
                 key={tx.id}
                 initial={{ opacity: 0, y: 15 }}
@@ -796,18 +803,10 @@ export default function History({ transactions, language, currency, onDelete, on
                   </div>
                 </div>
               </motion.div>
+              </div>
             );
-          })}
-        </AnimatePresence>
-
-        {visibleCount < filteredTransactions.length && (
-          <button
-            onClick={() => setVisibleCount(v => v + 30)}
-            className="w-full py-4 rounded-2xl bg-white border border-slate-100 text-slate-500 font-bold uppercase tracking-widest text-[10px] hover:bg-slate-50 transition-colors shadow-sm mt-4"
-          >
-            {language === 'العربية' ? 'عرض المزيد' : (language === 'English' ? 'Load more' : 'Voir plus')}
-          </button>
-        )}
+          }}
+        />
 
         {/* Inline Edit Modal */}
         <AnimatePresence>

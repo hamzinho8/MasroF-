@@ -54,3 +54,8 @@ export interface InventoryItem {
   color?: string;
   bg?: string;
 }
+
+export interface CategoryBudget {
+  category: string;
+  limit: number;
+}

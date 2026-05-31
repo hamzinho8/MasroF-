@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Lock, Delete } from "lucide-react";
+import { Lock, Delete, Fingerprint } from "lucide-react";
 import MasrofLogo from "./Logo";
 import { motion, AnimatePresence } from "motion/react";
+import { NativeBiometric } from "@capgo/capacitor-native-biometric";
 
 interface LockScreenProps {
   onUnlock: () => void;
@@ -11,6 +12,40 @@ interface LockScreenProps {
 export default function LockScreen({ onUnlock, correctPin }: LockScreenProps) {
   const [pin, setPin] = useState("");
   const [error, setError] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+
+  useEffect(() => {
+    const checkBiometric = async () => {
+      try {
+        const result = await NativeBiometric.isAvailable();
+        if (result.isAvailable) setBiometricAvailable(true);
+      } catch (e) {
+        console.log("Biometric checks failed", e);
+      }
+    };
+    checkBiometric();
+  }, []);
+
+  const handleBiometricAuth = async () => {
+    try {
+      const verified = await NativeBiometric.verifyIdentity({
+        title: "Connexion Masrof",
+        subtitle: "Utilisez votre empreinte digitale pour déverrouiller",
+        reason: "Sécurisation de vos données financières",
+      });
+      if (verified) {
+        onUnlock();
+      }
+    } catch (e) {
+      console.log("Biometric auth failed", e);
+    }
+  };
+
+  useEffect(() => {
+    if (biometricAvailable) {
+      handleBiometricAuth();
+    }
+  }, [biometricAvailable]);
 
   useEffect(() => {
     if (pin.length === 4) {
@@ -106,6 +141,10 @@ export default function LockScreen({ onUnlock, correctPin }: LockScreenProps) {
           </button>
           <button
             onClick={handleDelete}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              if (biometricAvailable) handleBiometricAuth();
+            }}
             className="h-16 w-16 mx-auto rounded-full bg-transparent text-[#050B39]/60 hover:text-[#669A13] hover:bg-white/40 active:scale-90 transition-all flex items-center justify-center"
           >
             <Delete size={28} />
@@ -113,6 +152,18 @@ export default function LockScreen({ onUnlock, correctPin }: LockScreenProps) {
         </div>
         
         <AnimatePresence>
+          {biometricAvailable && (
+            <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              onClick={handleBiometricAuth}
+              className="absolute -bottom-16 text-teal-700/80 hover:text-teal-900 transition-colors bg-teal-100/50 p-3 rounded-full flex flex-col items-center justify-center backdrop-blur-md border border-teal-200/50"
+            >
+              <Fingerprint size={32} />
+               <span className="text-[10px] font-bold uppercase mt-1">Biométrie</span>
+            </motion.button>
+          )}
           {error && (
             <motion.p 
               initial={{ opacity: 0, y: 10 }}
