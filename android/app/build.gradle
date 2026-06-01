@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace 'com.hamza.masrof'
-    compileSdk 35
+    compileSdk rootProject.ext.compileSdk
 
     defaultConfig {
         applicationId "com.hamza.masrof"
         minSdk 24
-        targetSdk 35
+        targetSdk rootProject.ext.targetSdk
         versionCode 14
         versionName "1.12"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
