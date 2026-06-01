@@ -42,6 +42,13 @@ interface AddTransactionModalProps {
   predefinedItems: PredefinedItem[];
 }
 
+interface ScannedItem {
+  id: string;
+  title: string;
+  amount: number;
+  category: string;
+}
+
 export default function AddTransactionModal({ isOpen, onClose, onAdd, initialType, currency, predefinedItems }: AddTransactionModalProps) {
   const [label, setLabel] = useState('');
   const [amount, setAmount] = useState('');
@@ -52,6 +59,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
   const [addToInventory, setAddToInventory] = useState(false);
   const [inventoryQty, setInventoryQty] = useState('1');
   const [isScanning, setIsScanning] = useState(false);
+  const [scannedItems, setScannedItems] = useState<ScannedItem[] | null>(null);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -63,6 +71,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
       setPaidByBank(false);
       setAddToInventory(false);
       setInventoryQty('1');
+      setScannedItems(null);
     }
   }, [isOpen, initialType]);
 
@@ -92,7 +101,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
 
       // Try server first, fallback to mock/error
       try {
-        const response = await fetch('/api/scan-receipt', {
+        const response = await fetch('/api/scan-items', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -123,13 +132,13 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                     }
                   },
                   {
-                    text: "Extract the total amount, expense category, title and date from this receipt. Note: category must be one of ['Alimentation', 'Nourriture', 'Transport', 'Logement', 'Factures', 'Santé', 'Éducation', 'Shopping', 'Loisirs', 'Voyage', 'Autres']. Respond purely in a JSON object format like: {\"amount\": 12.50, \"category\": \"Nourriture\", \"title\": \"Supermarché\", \"date\": \"DD/MM/YYYY\"}. If you can't read it, just return empty values or reasonable defaults. Return ONLY valid JSON, no markdown blocks."
+                    text: "Analyze this image (which could be a receipt or photo of multiple items) and extract all items purchased. For each item, estimate or read the price, category, and title. Note: category must be strictly one of ['Nourriture', 'Shopping', 'Transport', 'Loisirs', 'Autres']. Respond purely with a JSON array format like: [{\"amount\": 12.50, \"category\": \"Nourriture\", \"title\": \"Pizza\"}, ...]. If you can't identify any items, return an empty array []. Return ONLY valid JSON array, no markdown blocks."
                   }
                 ]
               }
             ]
           });
-          const text = genResponse.text || "{}";
+          const text = genResponse.text || "[]";
           const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
           data = JSON.parse(cleanText);
         } else {
@@ -138,13 +147,25 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         }
       }
 
-      if (data) {
-        if (data.amount) setAmount(data.amount.toString());
-        if (data.title) setLabel(data.title);
-        if (data.category && CATEGORIES.some(c => c.id === data.category)) {
-           setSelectedCategory(data.category);
-           setShowFrequent(false);
+      if (data && Array.isArray(data)) {
+        if (data.length > 0) {
+          setScannedItems(data.map((item: any, index: number) => ({
+            id: index.toString(),
+            title: item.title || 'Achat',
+            amount: item.amount || 0,
+            category: CATEGORIES.some(c => c.id === item.category) ? item.category : 'Autres'
+          })));
+        } else {
+          alert("Aucun article n'a été détecté dans l'image.");
         }
+      } else if (data) {
+        // Fallback if returned an object instead of array
+        setScannedItems([{
+          id: '0',
+          title: data.title || 'Achat',
+          amount: data.amount || 0,
+          category: CATEGORIES.some(c => c.id === data.category) ? data.category : 'Autres'
+        }]);
       }
     } catch (e: any) {
       console.log('Camera error / OCR failed:', e);
@@ -158,6 +179,34 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
     setLabel(name);
     setAmount(price.toString());
     setSelectedCategory(category);
+  };
+
+  const handleScanItemChange = (id: string, field: keyof ScannedItem, value: any) => {
+    setScannedItems(prev => prev ? prev.map(i => i.id === id ? { ...i, [field]: value } : i) : null);
+  };
+
+  const handleConfirmScannedItem = (item: ScannedItem) => {
+    if (!item.amount || item.amount <= 0) return;
+    onAdd(item.title || 'Achat', item.amount, 'EXPENSE', item.category, paidByBank, false);
+    setScannedItems(prev => {
+      const remaining = prev ? prev.filter(i => i.id !== item.id) : null;
+      if (remaining && remaining.length === 0) {
+        setTimeout(onClose, 300); // close modal if last item
+        return null;
+      }
+      return remaining;
+    });
+  };
+
+  const handleRejectScannedItem = (id: string) => {
+    setScannedItems(prev => {
+      const remaining = prev ? prev.filter(i => i.id !== id) : null;
+      if (remaining && remaining.length === 0) {
+        setTimeout(onClose, 300);
+        return null;
+      }
+      return remaining;
+    });
   };
 
   const filteredItems = useMemo(() => {
@@ -215,10 +264,10 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           >
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-black text-slate-800 tracking-tight">
-                {type === 'INCOME' ? 'Retrait Banque' : 'Nouvel Achat'}
+                {scannedItems !== null ? 'Articles Scannés' : (type === 'INCOME' ? 'Retrait Banque' : 'Nouvel Achat')}
               </h2>
               <div className="flex items-center gap-2">
-                {type === 'EXPENSE' && (
+                {type === 'EXPENSE' && scannedItems === null && (
                   <button 
                     onClick={handleScanReceipt} 
                     disabled={isScanning}
@@ -234,6 +283,70 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
               </div>
             </div>
 
+            {scannedItems !== null ? (
+              <div className="space-y-4">
+                {scannedItems.length === 0 ? (
+                  <div className="text-center py-10 opacity-60">
+                    <p className="text-slate-600 font-bold mb-4">Aucun article détecté.</p>
+                    <button onClick={() => setScannedItems(null)} className="h-12 px-6 bg-slate-200 rounded-full font-black text-slate-700">Retour</button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Bulk options could go here, like paying by bank flag */}
+                    <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 p-4 rounded-2xl cursor-pointer mb-4" onClick={() => setPaidByBank(!paidByBank)}>
+                      <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${paidByBank ? 'bg-teal-500 text-white' : 'bg-slate-200 text-transparent'}`}>
+                        <Check size={16} strokeWidth={3} />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-black text-slate-800 tracking-tight">Payer par solde bancaire</span>
+                        <span className="text-[10px] uppercase font-black text-slate-400 tracking-widest">S'applique à tous les articles valides</span>
+                      </div>
+                    </div>
+
+                    {scannedItems.map((item) => (
+                      <div key={item.id} className="bg-white border rounded-2xl p-4 shadow-sm space-y-3 relative overflow-hidden">
+                         <div className="grid grid-cols-[1fr_80px] gap-3">
+                           <div>
+                              <input 
+                                value={item.title} 
+                                onChange={(e) => handleScanItemChange(item.id, 'title', e.target.value)}
+                                className="w-full text-sm font-black text-slate-800 bg-transparent outline-none border-b border-transparent focus:border-teal-200 transition-colors"
+                                placeholder="Nom de l'article"
+                              />
+                           </div>
+                           <div>
+                              <input 
+                                type="number" 
+                                step="0.1"
+                                value={item.amount || ''}
+                                onChange={(e) => handleScanItemChange(item.id, 'amount', parseFloat(e.target.value))}
+                                className="w-full text-sm font-black text-teal-700 bg-teal-50 rounded-lg px-2 py-1 outline-none text-right"
+                                placeholder={`0.0 ${currency}`}
+                              />
+                           </div>
+                         </div>
+                         <div className="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                            {CATEGORIES.map(cat => (
+                              <button 
+                                key={cat.id} 
+                                type="button" 
+                                onClick={() => handleScanItemChange(item.id, 'category', cat.id)}
+                                className={`flex-shrink-0 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-full border transition-all ${item.category === cat.id ? 'bg-teal-500 text-white border-teal-500' : 'bg-slate-50 text-slate-500 border-slate-200'}`}
+                              >
+                                {cat.label}
+                              </button>
+                            ))}
+                         </div>
+                         <div className="flex gap-2">
+                           <button onClick={() => handleConfirmScannedItem(item)} className="flex-1 bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 rounded-xl text-sm transition-colors">Valider</button>
+                           <button onClick={() => handleRejectScannedItem(item.id)} className="px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold py-2 rounded-xl text-sm transition-colors"><X size={18} /></button>
+                         </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-5">
                 {type === 'EXPENSE' && (
@@ -409,6 +522,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                 <span>Confirmer</span>
               </button>
             </form>
+            )}
           </motion.div>
         </>
       )}

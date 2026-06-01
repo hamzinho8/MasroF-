@@ -30,6 +30,44 @@ async function startServer() {
   const app = (0, import_express.default)();
   const PORT = 3e3;
   app.use(import_express.default.json({ limit: "50mb" }));
+  app.post("/api/scan-items", async (req, res) => {
+    try {
+      const { imageBase64 } = req.body;
+      if (!imageBase64) {
+        return res.status(400).json({ error: "No image provided" });
+      }
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ error: "Gemini API key is not configured on the server." });
+      }
+      const ai = new import_genai.GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                inlineData: {
+                  data: imageBase64,
+                  mimeType: "image/jpeg"
+                }
+              },
+              {
+                text: `Analyze this image (which could be a receipt or photo of multiple items) and extract all items purchased. For each item, estimate or read the price, category, and title. Note: category must be strictly one of ['Nourriture', 'Shopping', 'Transport', 'Loisirs', 'Autres']. Respond purely with a JSON array format like: [{"amount": 12.50, "category": "Nourriture", "title": "Pizza"}, ...]. If you can't identify any items, return an empty array []. Return ONLY valid JSON array, no markdown blocks.`
+              }
+            ]
+          }
+        ]
+      });
+      const text = response.text || "[]";
+      const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
+      const data = JSON.parse(cleanText);
+      res.json(data);
+    } catch (e) {
+      console.error("OCR Items Error:", e);
+      res.status(500).json({ error: e.message || "Failed to scan items" });
+    }
+  });
   app.post("/api/scan-receipt", async (req, res) => {
     try {
       const { imageBase64 } = req.body;
