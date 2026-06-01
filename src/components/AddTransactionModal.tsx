@@ -47,6 +47,7 @@ interface ScannedItem {
   title: string;
   amount: number;
   category: string;
+  addToInventory?: boolean;
 }
 
 export default function AddTransactionModal({ isOpen, onClose, onAdd, initialType, currency, predefinedItems }: AddTransactionModalProps) {
@@ -60,6 +61,8 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
   const [inventoryQty, setInventoryQty] = useState('1');
   const [isScanning, setIsScanning] = useState(false);
   const [scannedItems, setScannedItems] = useState<ScannedItem[] | null>(null);
+  const [receiptTotal, setReceiptTotal] = useState<number | null>(null);
+  const [detectedPaymentGroup, setDetectedPaymentGroup] = useState<string | null>(null);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -72,6 +75,8 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
       setAddToInventory(false);
       setInventoryQty('1');
       setScannedItems(null);
+      setReceiptTotal(null);
+      setDetectedPaymentGroup(null);
     }
   }, [isOpen, initialType]);
 
@@ -132,13 +137,13 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                     }
                   },
                   {
-                    text: "Analyze this image (which could be a receipt or photo of multiple items) and extract all items purchased. For each item, estimate or read the price, category, and title. Note: category must be strictly one of ['Nourriture', 'Shopping', 'Transport', 'Loisirs', 'Autres']. Respond purely with a JSON array format like: [{\"amount\": 12.50, \"category\": \"Nourriture\", \"title\": \"Pizza\"}, ...]. If you can't identify any items, return an empty array []. Return ONLY valid JSON array, no markdown blocks."
+                    text: "Analyze this receipt or image. Extract:\n1. 'items': an array of items purchased. For each, give 'amount' (number), 'category' (strictly from ['Nourriture', 'Shopping', 'Transport', 'Loisirs', 'Autres']), 'title' (string), and 'isStorable' (true if it's a physical good that can be put in an inventory/stock, false for services or restaurants).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {\"totalReceiptAmount\": 100.50, \"paymentMethod\": \"CARD\", \"items\": [{\"title\": \"Pizza\", \"amount\": 12.50, \"category\": \"Nourriture\", \"isStorable\": false}]}. Return ONLY valid JSON."
                   }
                 ]
               }
             ]
           });
-          const text = genResponse.text || "[]";
+          const text = genResponse.text || "{}";
           const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
           data = JSON.parse(cleanText);
         } else {
@@ -147,25 +152,31 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         }
       }
 
-      if (data && Array.isArray(data)) {
-        if (data.length > 0) {
-          setScannedItems(data.map((item: any, index: number) => ({
+      if (data) {
+        let itemsToSet: any[] = [];
+        if (Array.isArray(data)) {
+          itemsToSet = data;
+        } else if (data.items && Array.isArray(data.items)) {
+          itemsToSet = data.items;
+          if (data.totalReceiptAmount) setReceiptTotal(data.totalReceiptAmount);
+          if (data.paymentMethod === 'CARD') setPaidByBank(true);
+          if (data.paymentMethod === 'CASH') setPaidByBank(false);
+          setDetectedPaymentGroup(data.paymentMethod);
+        } else {
+           itemsToSet = [data]; // Fallback for single object
+        }
+
+        if (itemsToSet.length > 0) {
+          setScannedItems(itemsToSet.map((item: any, index: number) => ({
             id: index.toString(),
             title: item.title || 'Achat',
             amount: item.amount || 0,
-            category: CATEGORIES.some(c => c.id === item.category) ? item.category : 'Autres'
+            category: CATEGORIES.some(c => c.id === item.category) ? item.category : 'Autres',
+            addToInventory: !!item.isStorable
           })));
         } else {
           alert("Aucun article n'a été détecté dans l'image.");
         }
-      } else if (data) {
-        // Fallback if returned an object instead of array
-        setScannedItems([{
-          id: '0',
-          title: data.title || 'Achat',
-          amount: data.amount || 0,
-          category: CATEGORIES.some(c => c.id === data.category) ? data.category : 'Autres'
-        }]);
       }
     } catch (e: any) {
       console.log('Camera error / OCR failed:', e);
@@ -187,7 +198,27 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
 
   const handleConfirmScannedItem = (item: ScannedItem) => {
     if (!item.amount || item.amount <= 0) return;
-    onAdd(item.title || 'Achat', item.amount, 'EXPENSE', item.category, paidByBank, false);
+    
+    let invReq = undefined;
+    if (item.addToInventory) {
+      const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES[4];
+      let iconName = 'Box';
+      if (cat.id === 'Nourriture') iconName = 'Utensils';
+      else if (cat.id === 'Shopping') iconName = 'ShoppingBag';
+      else if (cat.id === 'Transport') iconName = 'Car';
+      else if (cat.id === 'Loisirs') iconName = 'Gamepad2';
+      else if (cat.id === 'Autres') iconName = 'MoreHorizontal';
+      
+      invReq = {
+        quantity: 1, // Defaulting scan items quantities to 1
+        color: cat.color,
+        bg: cat.bgColor,
+        iconName
+      };
+    }
+
+    onAdd(item.title || 'Achat', item.amount, 'EXPENSE', item.category, paidByBank, false, invReq);
+    
     setScannedItems(prev => {
       const remaining = prev ? prev.filter(i => i.id !== item.id) : null;
       if (remaining && remaining.length === 0) {
@@ -292,6 +323,33 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    {/* Summary & Gap check */}
+                    {receiptTotal !== null && (
+                      <div className={`p-4 rounded-xl border ${Math.abs(scannedItems.reduce((acc, i) => acc + (i.amount || 0), 0) - receiptTotal) > 0.1 ? 'bg-amber-50 border-amber-200' : 'bg-teal-50 border-teal-200'}`}>
+                        <div className="flex justify-between items-center text-sm font-bold">
+                           <span className="text-slate-600">Total Ticket:</span>
+                           <span className="text-slate-900">{receiptTotal.toFixed(2)} {currency}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm font-bold mt-1">
+                           <span className="text-slate-600">Somme Articles:</span>
+                           <span className="text-slate-900">{scannedItems.reduce((acc, i) => acc + (i.amount || 0), 0).toFixed(2)} {currency}</span>
+                        </div>
+                        {Math.abs(scannedItems.reduce((acc, i) => acc + (i.amount || 0), 0) - receiptTotal) > 0.1 && (
+                          <p className="text-xs text-amber-600 mt-2 font-semibold font-sans">
+                            Attention: La somme des articles ne correspond pas au total détecté.
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {detectedPaymentGroup && (
+                       <div className="flex justify-center -mb-2">
+                         <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 bg-slate-100 text-slate-500 rounded-full border border-slate-200 shadow-sm">
+                           Paiement Détecté: {detectedPaymentGroup === 'CARD' ? 'Carte Bancaire' : detectedPaymentGroup === 'CASH' ? 'Espèces' : 'Inconnu'}
+                         </span>
+                       </div>
+                    )}
+
                     {/* Bulk options could go here, like paying by bank flag */}
                     <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 p-4 rounded-2xl cursor-pointer mb-4" onClick={() => setPaidByBank(!paidByBank)}>
                       <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${paidByBank ? 'bg-teal-500 text-white' : 'bg-slate-200 text-transparent'}`}>
@@ -337,7 +395,13 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                               </button>
                             ))}
                          </div>
-                         <div className="flex gap-2">
+                         
+                         <label className="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer pt-1">
+                           <input type="checkbox" checked={item.addToInventory || false} onChange={e => handleScanItemChange(item.id, 'addToInventory', e.target.checked)} className="rounded text-teal-500 focus:ring-teal-500 border-slate-300 w-4 h-4" />
+                           Ajouter au stock d'inventaire
+                         </label>
+
+                         <div className="flex gap-2 pt-2 border-t mt-1 border-slate-100">
                            <button onClick={() => handleConfirmScannedItem(item)} className="flex-1 bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 rounded-xl text-sm transition-colors">Valider</button>
                            <button onClick={() => handleRejectScannedItem(item.id)} className="px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold py-2 rounded-xl text-sm transition-colors"><X size={18} /></button>
                          </div>

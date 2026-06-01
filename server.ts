@@ -35,7 +35,7 @@ async function startServer() {
                 }
               },
               {
-                text: "Analyze this image (which could be a receipt or photo of multiple items) and extract all items purchased. For each item, estimate or read the price, category, and title. Note: category must be strictly one of ['Nourriture', 'Shopping', 'Transport', 'Loisirs', 'Autres']. Respond purely with a JSON array format like: [{\"amount\": 12.50, \"category\": \"Nourriture\", \"title\": \"Pizza\"}, ...]. If you can't identify any items, return an empty array []. Return ONLY valid JSON array, no markdown blocks."
+                text: "Analyze this receipt or image. Extract:\n1. 'items': an array of items purchased. For each, give 'amount' (number), 'category' (strictly from ['Nourriture', 'Shopping', 'Transport', 'Loisirs', 'Autres']), 'title' (string), and 'isStorable' (true if it's a physical good that can be put in an inventory/stock, false for services or restaurants).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {\"totalReceiptAmount\": 100.50, \"paymentMethod\": \"CARD\", \"items\": [{\"title\": \"Pizza\", \"amount\": 12.50, \"category\": \"Nourriture\", \"isStorable\": false}]}. Return ONLY valid JSON."
               }
             ]
           }
