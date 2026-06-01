@@ -7,15 +7,17 @@ import { NativeBiometric } from "@capgo/capacitor-native-biometric";
 interface LockScreenProps {
   onUnlock: () => void;
   correctPin: string;
+  allowBiometric: boolean;
 }
 
-export default function LockScreen({ onUnlock, correctPin }: LockScreenProps) {
+export default function LockScreen({ onUnlock, correctPin, allowBiometric }: LockScreenProps) {
   const [pin, setPin] = useState("");
   const [error, setError] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
 
   useEffect(() => {
     const checkBiometric = async () => {
+      if (!allowBiometric) return;
       try {
         const result = await NativeBiometric.isAvailable();
         if (result.isAvailable) setBiometricAvailable(true);
@@ -24,7 +26,7 @@ export default function LockScreen({ onUnlock, correctPin }: LockScreenProps) {
       }
     };
     checkBiometric();
-  }, []);
+  }, [allowBiometric]);
 
   const handleBiometricAuth = async () => {
     try {

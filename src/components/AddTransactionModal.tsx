@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Camera, Camera as CameraIcon } from '@capacitor/camera'; // capacitor camera
 import { CameraResultType, CameraSource } from '@capacitor/camera';
+import { GoogleGenAI } from '@google/genai';
 import { 
   X, 
   Check, 
@@ -85,30 +86,70 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         return;
       }
 
-      // Try server first, fallback to mock/error
-      const response = await fetch('/api/scan-receipt', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          imageBase64: image.format 
-            ? `data:image/${image.format};base64,${image.base64String}`
-            : `data:image/jpeg;base64,${image.base64String}`
-        })
-      });
+      let data: any = null;
+      let usedFallback = false;
 
-      if (response.ok) {
-        const data = await response.json();
+      // Try server first, fallback to mock/error
+      try {
+        const response = await fetch('/api/scan-receipt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imageBase64: image.format 
+              ? `data:image/${image.format};base64,${image.base64String}`
+              : `data:image/jpeg;base64,${image.base64String}`
+          })
+        });
+
+        if (response.ok) {
+          data = await response.json();
+        } else {
+          throw new Error("Server OCR failed");
+        }
+      } catch (err) {
+        // Fallback for Android standalone APK without backend
+        if (import.meta.env.VITE_GEMINI_API_KEY) {
+          usedFallback = true;
+          const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+          const genResponse = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: [
+              {
+                role: "user",
+                parts: [
+                  {
+                    inlineData: {
+                      data: image.base64String,
+                      mimeType: image.format ? `image/${image.format}` : "image/jpeg"
+                    }
+                  },
+                  {
+                    text: "Extract the total amount, expense category, title and date from this receipt. Note: category must be one of ['Alimentation', 'Nourriture', 'Transport', 'Logement', 'Factures', 'Santé', 'Éducation', 'Shopping', 'Loisirs', 'Voyage', 'Autres']. Respond purely in a JSON object format like: {\"amount\": 12.50, \"category\": \"Nourriture\", \"title\": \"Supermarché\", \"date\": \"DD/MM/YYYY\"}. If you can't read it, just return empty values or reasonable defaults. Return ONLY valid JSON, no markdown blocks."
+                  }
+                ]
+              }
+            ]
+          });
+          const text = genResponse.text || "{}";
+          const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
+          data = JSON.parse(cleanText);
+        } else {
+          alert("L'API OCR est inaccessible. Veuillez configurer le backend ou la clé API.");
+          return;
+        }
+      }
+
+      if (data) {
         if (data.amount) setAmount(data.amount.toString());
         if (data.title) setLabel(data.title);
         if (data.category && CATEGORIES.some(c => c.id === data.category)) {
            setSelectedCategory(data.category);
            setShowFrequent(false);
         }
-      } else {
-        alert("OCR API Error. Ensure VITE_GEMINI_API_KEY is active or backend is reachable.");
       }
     } catch (e: any) {
       console.log('Camera error / OCR failed:', e);
+      alert("Erreur lors de la numérisation : " + e.message);
     } finally {
       setIsScanning(false);
     }

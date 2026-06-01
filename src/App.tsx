@@ -70,6 +70,7 @@ export default function App() {
   const [isDarkMode, setIsDarkMode] = useLocalStorage("isDarkMode", false);
   const [currency, setCurrency] = useLocalStorage("currency", "DH");
   const [appPin, setAppPin] = useLocalStorage<string | null>("appPin", null);
+  const [appBiometric, setAppBiometric] = useLocalStorage<boolean>("appBiometric", true);
   const [isLocked, setIsLocked] = useState<boolean>(true);
 
   useEffect(() => {
@@ -610,6 +611,8 @@ export default function App() {
             onBalanceThresholdChange={setBalanceThreshold}
             appPin={appPin}
             onAppPinChange={setAppPin}
+            appBiometric={appBiometric}
+            onAppBiometricChange={setAppBiometric}
           />
         );
       default:
@@ -694,6 +697,7 @@ export default function App() {
       <div className={`h-screen ${isDarkMode ? "bg-slate-900" : "bg-slate-50"} flex flex-col max-w-md mx-auto relative overflow-hidden font-sans`}>
         <LockScreen 
           correctPin={appPin} 
+          allowBiometric={appBiometric}
           onUnlock={() => setIsLocked(false)} 
         />
       </div>
