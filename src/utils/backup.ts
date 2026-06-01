@@ -1,8 +1,7 @@
-import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import CryptoJS from 'crypto-js';
 
-const BACKUP_FILE_NAME = 'budget_app_backup.dat';
-const ENCRYPTION_KEY = 'budget-app-secure-backup-key-2024'; // In a real app we'd securely generate this on first run and ask user to keep it, but for our simple case we hardcode a static key or derive from device.
+const BACKUP_FILE_NAME = `masrof_backup_${new Date().toISOString().split("T")[0]}.dat`;
+const ENCRYPTION_KEY = 'budget-app-secure-backup-key-2024'; 
 
 export const exportDataToFile = async () => {
     try {
@@ -17,50 +16,80 @@ export const exportDataToFile = async () => {
         const jsonData = JSON.stringify(data);
         const encryptedData = CryptoJS.AES.encrypt(jsonData, ENCRYPTION_KEY).toString();
 
-        await Filesystem.writeFile({
-            path: BACKUP_FILE_NAME,
-            data: encryptedData,
-            directory: Directory.Documents,
-            encoding: Encoding.UTF8,
-        });
-        console.log('Backup successful');
+        const blob = new Blob([encryptedData], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = BACKUP_FILE_NAME;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        console.log('Backup prompt opened');
     } catch (e) {
         console.error('Failed to export data', e);
+        alert("Erreur lors de la création de la sauvegarde.");
     }
 };
 
 export const importDataFromFile = async (): Promise<boolean> => {
-    try {
-        const result = await Filesystem.readFile({
-            path: BACKUP_FILE_NAME,
-            directory: Directory.Documents,
-            encoding: Encoding.UTF8,
-        });
-
-        if (result.data) {
-            const decryptedBytes = CryptoJS.AES.decrypt(result.data.toString(), ENCRYPTION_KEY);
-            const decryptedString = decryptedBytes.toString(CryptoJS.enc.Utf8);
-            
-            if (!decryptedString) {
-                console.error("Failed to decrypt data, possibly wrong key or corrupted file.");
-                return false; 
+    return new Promise((resolve) => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.dat,application/octet-stream';
+        
+        input.onchange = (e: Event) => {
+            const target = e.target as HTMLInputElement;
+            const file = target.files?.[0];
+            if (!file) {
+                resolve(false);
+                return;
             }
 
-            const data = JSON.parse(decryptedString) as Record<string, string | null>;
-            for (const key in data) {
-                const val = data[key];
-                if (val !== null) {
-                    window.localStorage.setItem(key, val);
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const result = event.target?.result as string;
+                    const decryptedBytes = CryptoJS.AES.decrypt(result, ENCRYPTION_KEY);
+                    const decryptedString = decryptedBytes.toString(CryptoJS.enc.Utf8);
+                    
+                    if (!decryptedString) {
+                        alert("Le fichier de sauvegarde est invalide, corrompu, ou a été créé avec une ancienne clé.");
+                        resolve(false);
+                        return;
+                    }
+
+                    const data = JSON.parse(decryptedString) as Record<string, string | null>;
+                    for (const key in data) {
+                        const val = data[key];
+                        if (val !== null) {
+                            window.localStorage.setItem(key, val);
+                        }
+                    }
+                    resolve(true);
+                } catch (err) {
+                    console.error('Failed to decrypt data', err);
+                    alert("Impossible de lire ce fichier de sauvegarde.");
+                    resolve(false);
                 }
-            }
-            return true;
-        }
-    } catch (e: any) {
-        if (e?.message?.includes('File does not exist')) {
-            console.log('No backup file found, starting fresh.');
-        } else {
-            console.error('Failed to import data', e);
-        }
-    }
-    return false;
+            };
+            
+            reader.onerror = () => {
+                alert("Erreur lors de la lecture du fichier.");
+                resolve(false);
+            };
+
+            reader.readAsText(file);
+        };
+        
+        input.onerror = () => {
+             resolve(false);
+        };
+        
+        // Trigger file picker
+        input.click();
+    });
 };
+

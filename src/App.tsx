@@ -74,10 +74,10 @@ export default function App() {
   const [isLocked, setIsLocked] = useState<boolean>(true);
 
   useEffect(() => {
-    if (!appPin) {
+    if (!appPin && !appBiometric) {
       setIsLocked(false);
     }
-  }, [appPin]);
+  }, [appPin, appBiometric]);
 
   const [language, setLanguage] = useLocalStorage<"Français" | "العربية" | "English">(
     "language",
@@ -692,11 +692,11 @@ export default function App() {
     );
   }
 
-  if (isLocked && appPin) {
+  if (isLocked && (appPin || appBiometric)) {
     return (
       <div className={`h-screen ${isDarkMode ? "bg-slate-900" : "bg-slate-50"} flex flex-col max-w-md mx-auto relative overflow-hidden font-sans`}>
         <LockScreen 
-          correctPin={appPin} 
+          correctPin={appPin || ""} 
           allowBiometric={appBiometric}
           onUnlock={() => setIsLocked(false)} 
         />

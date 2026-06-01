@@ -77,11 +77,12 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
       const image = await Camera.getPhoto({
         quality: 60,
         allowEditing: false,
-        resultType: CameraResultType.Base64,
-        source: CameraSource.Camera
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Prompt,
+        saveToGallery: true
       });
 
-      if (!image.base64String) {
+      if (!image.dataUrl) {
         setIsScanning(false);
         return;
       }
@@ -95,9 +96,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            imageBase64: image.format 
-              ? `data:image/${image.format};base64,${image.base64String}`
-              : `data:image/jpeg;base64,${image.base64String}`
+            imageBase64: image.dataUrl
           })
         });
 
@@ -119,8 +118,8 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                 parts: [
                   {
                     inlineData: {
-                      data: image.base64String,
-                      mimeType: image.format ? `image/${image.format}` : "image/jpeg"
+                      data: image.dataUrl!.split(',')[1],
+                      mimeType: image.dataUrl!.split(';')[0].split(':')[1] || "image/jpeg"
                     }
                   },
                   {

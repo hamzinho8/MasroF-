@@ -30,16 +30,19 @@ export default function LockScreen({ onUnlock, correctPin, allowBiometric }: Loc
 
   const handleBiometricAuth = async () => {
     try {
-      const verified = await NativeBiometric.verifyIdentity({
+      await NativeBiometric.verifyIdentity({
         title: "Connexion Masrof",
         subtitle: "Utilisez votre empreinte digitale pour déverrouiller",
         reason: "Sécurisation de vos données financières",
       });
-      if (verified) {
-        onUnlock();
-      }
-    } catch (e) {
+      // Capgo NativeBiometric either resolves if successful, or throws if failure/cancelled
+      onUnlock();
+    } catch (e: any) {
       console.log("Biometric auth failed", e);
+      if (e?.code === 'biometryNotAvailable' && !correctPin) {
+         // Failsafe if biometrics completely unavailable and no PIN
+         onUnlock();
+      }
     }
   };
 
@@ -103,58 +106,67 @@ export default function LockScreen({ onUnlock, correctPin, allowBiometric }: Loc
             </h2>
           </div>
           <p className="text-[10px] font-bold text-[#050B39]/60 uppercase tracking-widest text-center mt-2">
-            Entrez votre code PIN
+            {correctPin ? "Entrez votre code PIN" : "Verrouillage Biométrique"}
           </p>
         </div>
 
-        <div className="flex items-center gap-6 mb-10">
-          {[0, 1, 2, 3].map((i) => (
-            <motion.div
-              key={i}
-              animate={
-                error 
-                  ? { x: [-5, 5, -5, 5, 0], backgroundColor: "#ef4444" }
-                  : pin.length > i 
-                    ? { scale: [1, 1.2, 1], backgroundColor: "#669A13" }
-                    : { scale: 1, backgroundColor: "rgba(102,154,19,0.2)" }
-              }
-              transition={{ duration: 0.3 }}
-              className={`w-4 h-4 rounded-full ${pin.length > i && !error ? 'shadow-[0_0_12px_rgba(102,154,19,0.6)]' : ''}`}
-            />
-          ))}
-        </div>
+        {correctPin ? (
+          <>
+            <div className="flex items-center gap-6 mb-10">
+              {[0, 1, 2, 3].map((i) => (
+                <motion.div
+                  key={i}
+                  animate={
+                    error 
+                      ? { x: [-5, 5, -5, 5, 0], backgroundColor: "#ef4444" }
+                      : pin.length > i 
+                        ? { scale: [1, 1.2, 1], backgroundColor: "#669A13" }
+                        : { scale: 1, backgroundColor: "rgba(102,154,19,0.2)" }
+                  }
+                  transition={{ duration: 0.3 }}
+                  className={`w-4 h-4 rounded-full ${pin.length > i && !error ? 'shadow-[0_0_12px_rgba(102,154,19,0.6)]' : ''}`}
+                />
+              ))}
+            </div>
 
-        <div className="grid grid-cols-3 gap-y-4 gap-x-6 w-full px-2 relative">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-            <button
-              key={num}
-              onClick={() => handleKeyPress(num)}
-              className="h-16 w-16 mx-auto rounded-full bg-white/70 text-[#050B39] text-2xl font-black shadow-sm border border-white/80 hover:bg-white active:bg-white active:scale-90 transition-all flex items-center justify-center backdrop-blur-md"
-            >
-              {num}
-            </button>
-          ))}
-          <div />
-          <button
-            onClick={() => handleKeyPress(0)}
-            className="h-16 w-16 mx-auto rounded-full bg-white/70 text-[#050B39] text-2xl font-black shadow-sm border border-white/80 hover:bg-white active:bg-white active:scale-90 transition-all flex items-center justify-center backdrop-blur-md"
-          >
-            0
-          </button>
-          <button
-            onClick={handleDelete}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              if (biometricAvailable) handleBiometricAuth();
-            }}
-            className="h-16 w-16 mx-auto rounded-full bg-transparent text-[#050B39]/60 hover:text-[#669A13] hover:bg-white/40 active:scale-90 transition-all flex items-center justify-center"
-          >
-            <Delete size={28} />
-          </button>
-        </div>
+            <div className="grid grid-cols-3 gap-y-4 gap-x-6 w-full px-2 relative">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                <button
+                  key={num}
+                  onClick={() => handleKeyPress(num)}
+                  className="h-16 w-16 mx-auto rounded-full bg-white/70 text-[#050B39] text-2xl font-black shadow-sm border border-white/80 hover:bg-white active:bg-white active:scale-90 transition-all flex items-center justify-center backdrop-blur-md"
+                >
+                  {num}
+                </button>
+              ))}
+              <div />
+              <button
+                onClick={() => handleKeyPress(0)}
+                className="h-16 w-16 mx-auto rounded-full bg-white/70 text-[#050B39] text-2xl font-black shadow-sm border border-white/80 hover:bg-white active:bg-white active:scale-90 transition-all flex items-center justify-center backdrop-blur-md"
+              >
+                0
+              </button>
+              <button
+                onClick={handleDelete}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  if (biometricAvailable) handleBiometricAuth();
+                }}
+                className="h-16 w-16 mx-auto rounded-full bg-transparent text-[#050B39]/60 hover:text-[#669A13] hover:bg-white/40 active:scale-90 transition-all flex items-center justify-center"
+              >
+                <Delete size={28} />
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-10 w-full px-6 text-center">
+             <Fingerprint size={48} className="text-[#669A13]/50 mb-4 animate-pulse" />
+             <p className="text-sm font-bold text-[#050B39]/70">Toucher le capteur d'empreinte pour déverrouiller Masrof.</p>
+          </div>
+        )}
         
         <AnimatePresence>
-          {biometricAvailable && (
+          {biometricAvailable && correctPin && (
             <motion.button
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}

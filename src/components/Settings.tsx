@@ -408,29 +408,27 @@ export default function Settings({
               </div>
             </div>
 
-            {appPin && (
-              <div className="px-6 py-4 flex items-center justify-between bg-white/40 border-b border-[#2D8B96]/5">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full border border-[#2D8B96]/30 flex items-center justify-center text-[#2D8B96] shadow-[0_0_10px_rgba(45,139,150,0.1)]">
-                    <Sparkles size={18} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-[#1B5E66] uppercase tracking-tight">
-                      Empreinte / Biométrie
-                    </p>
-                    <p className="text-[10px] font-black text-[#2D8B96] tracking-widest uppercase">
-                      {appBiometric ? "Activée" : "Désactivée"}
-                    </p>
-                  </div>
+            <div className="px-6 py-4 flex items-center justify-between bg-white/40 border-b border-[#2D8B96]/5">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full border border-[#2D8B96]/30 flex items-center justify-center text-[#2D8B96] shadow-[0_0_10px_rgba(45,139,150,0.1)]">
+                  <Sparkles size={18} />
                 </div>
-                <div className="flex items-center gap-4">
-                  <Switch
-                    active={appBiometric}
-                    onToggle={() => onAppBiometricChange(!appBiometric)}
-                  />
+                <div>
+                  <p className="text-sm font-bold text-[#1B5E66] uppercase tracking-tight">
+                    Empreinte / Biométrie
+                  </p>
+                  <p className="text-[10px] font-black text-[#2D8B96] tracking-widest uppercase">
+                    {appBiometric ? "Activée" : "Désactivée"}
+                  </p>
                 </div>
               </div>
-            )}
+              <div className="flex items-center gap-4">
+                <Switch
+                  active={appBiometric}
+                  onToggle={() => onAppBiometricChange(!appBiometric)}
+                />
+              </div>
+            </div>
           </div>
 
           {/* Final Actions */}
