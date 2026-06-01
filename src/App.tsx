@@ -36,18 +36,7 @@ export default function App() {
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
-    const initBackup = async () => {
-      // Check if it looks like a fresh install (no transactions key in localStorage)
-      if (!window.localStorage.getItem("transactions")) {
-        const restored = await importDataFromFile();
-        if (restored) {
-          window.location.reload();
-          return;
-        }
-      }
-      setIsInitializing(false);
-    };
-    initBackup();
+    setIsInitializing(false);
   }, []);
 
   const [activeTab, setActiveTab] = useLocalStorage<Tab>("activeTab", "home");
