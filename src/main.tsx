@@ -2,6 +2,9 @@ import {StrictMode, Component, ErrorInfo, ReactNode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
+import { defineCustomElements } from '@ionic/pwa-elements/loader';
+
+defineCustomElements(window);
 
 class ErrorBoundary extends Component<{children: ReactNode}, {hasError: boolean, error: string}> {
   constructor(props: {children: ReactNode}) {

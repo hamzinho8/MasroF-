@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Camera, Camera as CameraIcon } from '@capacitor/camera'; // capacitor camera
+import { CameraResultType, CameraSource } from '@capacitor/camera';
 import { 
   X, 
   Check, 
@@ -7,7 +9,9 @@ import {
   ShoppingBag, 
   Car, 
   Gamepad2, 
-  MoreHorizontal
+  MoreHorizontal,
+  ScanText,
+  Loader2
 } from 'lucide-react';
 import { PredefinedItem } from '../types';
 import { ICON_MAP } from '../constants';
@@ -46,6 +50,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
   const [paidByBank, setPaidByBank] = useState(false);
   const [addToInventory, setAddToInventory] = useState(false);
   const [inventoryQty, setInventoryQty] = useState('1');
+  const [isScanning, setIsScanning] = useState(false);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -63,6 +68,50 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
   const handleCategoryClick = (catId: string) => {
     setSelectedCategory(catId);
     setShowFrequent(false);
+  };
+
+  const handleScanReceipt = async () => {
+    try {
+      setIsScanning(true);
+      const image = await Camera.getPhoto({
+        quality: 60,
+        allowEditing: false,
+        resultType: CameraResultType.Base64,
+        source: CameraSource.Camera
+      });
+
+      if (!image.base64String) {
+        setIsScanning(false);
+        return;
+      }
+
+      // Try server first, fallback to mock/error
+      const response = await fetch('/api/scan-receipt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageBase64: image.format 
+            ? `data:image/${image.format};base64,${image.base64String}`
+            : `data:image/jpeg;base64,${image.base64String}`
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.amount) setAmount(data.amount.toString());
+        if (data.title) setLabel(data.title);
+        if (data.category && CATEGORIES.some(c => c.id === data.category)) {
+           setSelectedCategory(data.category);
+           setShowFrequent(false);
+        }
+      } else {
+        alert("OCR API Error. Ensure VITE_GEMINI_API_KEY is active or backend is reachable.");
+      }
+    } catch (e: any) {
+      console.log('Camera error / OCR failed:', e);
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   const handleItemSelect = (name: string, price: number, category: string) => {
@@ -128,9 +177,21 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
               <h2 className="text-2xl font-black text-slate-800 tracking-tight">
                 {type === 'INCOME' ? 'Retrait Banque' : 'Nouvel Achat'}
               </h2>
-              <button onClick={onClose} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors">
-                <X size={20} />
-              </button>
+              <div className="flex items-center gap-2">
+                {type === 'EXPENSE' && (
+                  <button 
+                    onClick={handleScanReceipt} 
+                    disabled={isScanning}
+                    className="h-10 px-4 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center gap-2 font-black text-xs uppercase tracking-widest hover:bg-teal-100 transition-colors"
+                  >
+                    {isScanning ? <Loader2 size={16} className="animate-spin" /> : <ScanText size={16} />}
+                    <span className="hidden sm:inline">Scanner</span>
+                  </button>
+                )}
+                <button onClick={onClose} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
