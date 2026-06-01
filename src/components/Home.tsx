@@ -26,9 +26,13 @@ import {
   X,
   Landmark,
   Check,
+  Settings,
+  Target,
+  AlertTriangle
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Transaction, CreditEntry } from "../types";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 
 interface HomeProps {
   balance: number;
@@ -70,6 +74,8 @@ export default function Home({
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
   const [showCalculator, setShowCalculator] = useState(false);
   const [showBankModal, setShowBankModal] = useState(false);
+  const [showBudgetModal, setShowBudgetModal] = useState(false);
+  const [categoryBudgets, setCategoryBudgets] = useLocalStorage<{category: string; limit: number}[]>('categoryBudgets', []);
 
   const translations = {
     Français: {
@@ -99,6 +105,8 @@ export default function Home({
       autres: "Autres",
       owedToMe: "On me doit",
       owedByMe: "Je dois",
+      budgetsTitle: "Budgets par Catégorie",
+      noBudgetsYet: "Aucun budget défini. Appuyez sur l'icône de réglage pour commencer.",
     },
     العربية: {
       bonjour: "مرحباً",
@@ -127,6 +135,8 @@ export default function Home({
       autres: "أخرى",
       owedToMe: "مستحقات لي",
       owedByMe: "ديون علي",
+      budgetsTitle: "ميزانيات الفئات",
+      noBudgetsYet: "لم يتم تحديد ميزانية. اضغط على أيقونة الإعداد للبدء.",
     },
     English: {
       bonjour: "Hello",
@@ -155,6 +165,8 @@ export default function Home({
       autres: "Others",
       owedToMe: "Owed to me",
       owedByMe: "I owe",
+      budgetsTitle: "Category Budgets",
+      noBudgetsYet: "No budgets defined. Tap the settings icon to start.",
     },
   };
 
@@ -267,6 +279,22 @@ export default function Home({
 
     return { totalExpense, totalIncome };
   }, [transactions, timeframe]);
+
+  const currentMonthExpenses = React.useMemo(() => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    const spends = new Map<string, number>();
+
+    transactions.forEach((tx) => {
+      if (tx.type === "EXPENSE" && tx.timestamp >= startOfMonth.getTime()) {
+        const cat = (tx.category || "Autres").toLowerCase();
+        spends.set(cat, (spends.get(cat) || 0) + tx.amount);
+      }
+    });
+    
+    return spends;
+  }, [transactions]);
 
   const handleSaveEdit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -643,367 +671,79 @@ export default function Home({
         </div>
       </div>
 
-      {/* Recent Activity */}
-      <div onClick={() => setActiveMenuId(null)}>
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-slate-900 font-black tracking-tight">
-            {t.grandLivre}
+      {/* Category Budgets Activity Instead of History */}
+      <div>
+        <div className="flex justify-between items-center mb-4 px-1">
+          <h3 className="text-slate-900 font-black tracking-tight flex items-center gap-2">
+            {t.budgetsTitle}
           </h3>
           <button
-            onClick={onViewAll}
-            className="text-[10px] font-black text-rose-600 uppercase tracking-widest bg-rose-50 px-3 py-1.5 rounded-lg hover:bg-rose-100 transition-colors"
+            onClick={() => setShowBudgetModal(true)}
+            className="w-8 h-8 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:bg-slate-50 transition-colors shadow-sm"
           >
-            {t.voirTout}
+            <Settings size={14} />
           </button>
         </div>
+        
         <div className="space-y-4">
-          {transactions.slice(0, 3).map((tx, index) => {
-            const isExpense = tx.type === "EXPENSE";
-            const isCreditPlus =
-              tx.category === t.owedToMe || tx.category === "Crédit +";
-            const isCreditMinus =
-              tx.category === t.owedByMe || tx.category === "Crédit --";
+          {categoryBudgets.length === 0 ? (
+            <div className="text-center bg-white border border-dashed border-slate-200 rounded-3xl p-8 flex flex-col items-center">
+               <Target size={32} className="text-slate-200 mb-3" />
+               <p className="text-xs text-slate-400 font-medium">{t.noBudgetsYet}</p>
+            </div>
+          ) : (
+            categoryBudgets.map((b) => {
+              const spent = currentMonthExpenses.get(b.category.toLowerCase()) || 0;
+              const limit = b.limit;
+              const percent = Math.min((spent / limit) * 100, 100);
+              const isOver = spent > limit;
+              const isClose = !isOver && percent > 80;
 
-            // Case-insensitive matching to handle "TRANSPORT" vs "Transport"
-            const categoryMatch = (CATEGORY_MAP || []).find(
-              (c) =>
-                c.label &&
-                c.label.toLowerCase() === (tx.category || "").toLowerCase(),
-            ) || {
-              icon: isCreditPlus ? (
-                <TrendingUp size={24} />
-              ) : isCreditMinus ? (
-                <TrendingDown size={24} />
-              ) : isExpense ? (
-                <ShoppingCart size={24} />
-              ) : (
-                <ArrowDownToLine size={24} />
-              ),
-              color: isCreditPlus
-                ? "indigo"
-                : isCreditMinus
-                  ? "amber"
-                  : isExpense
-                    ? "slate"
-                    : "emerald",
-              bg: isCreditPlus
-                ? "bg-indigo-600"
-                : isCreditMinus
-                  ? "bg-amber-500"
-                  : isExpense
-                    ? "bg-slate-100"
-                    : "bg-emerald-500",
-              text: isCreditPlus
-                ? "text-white"
-                : isCreditMinus
-                  ? "text-white"
-                  : isExpense
-                    ? "text-slate-600"
-                    : "text-white",
-              glow: isCreditPlus
-                ? "bg-indigo-400"
-                : isCreditMinus
-                  ? "bg-amber-400"
-                  : isExpense
-                    ? "bg-slate-400"
-                    : "bg-emerald-400",
-            };
+              const categoryMatch = CATEGORY_MAP.find(
+                 (c) => c.label.toLowerCase() === b.category.toLowerCase()
+              ) || CATEGORY_MAP[0];
 
-            const getCardStyle = () => {
-              if (isCreditPlus)
-                return "bg-indigo-50/30 border-indigo-100/50 hover:border-indigo-200 hover:shadow-indigo-500/5";
-              if (isCreditMinus)
-                return "bg-amber-50/30 border-amber-100/50 hover:border-amber-200 hover:shadow-amber-500/5";
-              if (!isExpense)
-                return "bg-emerald-50/30 border-emerald-100/50 hover:border-emerald-200 hover:shadow-emerald-500/5 text-emerald-600";
-              return `bg-white border-slate-100 shadow-sm ${getHoverColor(categoryMatch.color)}`;
-            };
-
-            const getHoverColor = (color: string) => {
-              const colors: Record<string, string> = {
-                amber: "hover:border-amber-200 hover:shadow-amber-500/10",
-                rose: "hover:border-rose-200 hover:shadow-rose-500/10",
-                sky: "hover:border-sky-200 hover:shadow-sky-500/10",
-                purple: "hover:border-purple-200 hover:shadow-purple-500/10",
-                slate: "hover:border-slate-200 hover:shadow-slate-500/10",
-                emerald: "hover:border-emerald-200 hover:shadow-emerald-500/10",
-                indigo: "hover:border-indigo-200 hover:shadow-indigo-500/10",
-                teal: "hover:border-teal-200 hover:shadow-teal-500/10",
-              };
-              return colors[color] || "hover:border-slate-200";
-            };
-
-            if (isCreditPlus || isCreditMinus) {
-              const isReceive = isCreditPlus;
               return (
-                <motion.div
-                  key={tx.id}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ delay: index * 0.03 }}
-                  className={`group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative bg-opacity-95 shadow-sm ${
-                    isReceive
-                      ? "bg-indigo-50/30 border-indigo-100/50 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10"
-                      : "bg-amber-50/30 border-amber-100/50 hover:border-amber-200 hover:shadow-xl hover:shadow-amber-500/10"
-                  }`}
-                  style={{
-                    overflow: activeMenuId === tx.id ? "visible" : "hidden",
-                    zIndex: activeMenuId === tx.id ? 50 : 1,
-                  }}
-                >
-                  <div
-                    className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${
-                      isReceive
-                        ? "bg-indigo-600 text-white shadow-indigo-600/20"
-                        : "bg-amber-500 text-white shadow-amber-500/20"
-                    }`}
-                  >
-                    {isReceive ? (
-                      <TrendingUp size={24} />
-                    ) : (
-                      <TrendingDown size={24} />
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0 flex flex-col justify-center py-1">
-                    <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1 italic select-none">
-                      {tx.label.replace(/Prêt à |Emprunt de /i, '')}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
-                      <span className="text-[9px] flex items-center gap-1 font-bold uppercase tracking-wider text-slate-400 shrink-0">
-                        <Calendar
-                          size={10}
-                          className={
-                            isReceive ? "text-indigo-500" : "text-amber-500"
-                          }
-                        />
-                        {tx.date}
-                      </span>
-                      <span
-                        className={`text-[9px] font-black uppercase tracking-[0.1em] truncate max-w-[100px] ${isReceive ? "text-indigo-600" : "text-amber-600"}`}
-                      >
-                        {isReceive ? t.owedToMe : t.owedByMe}
-                      </span>
+                <div key={b.category} className={`bg-white rounded-3xl p-5 border shadow-sm ${isOver ? 'border-rose-200 shadow-rose-100' : isClose ? 'border-amber-200 shadow-amber-100' : 'border-slate-100'}`}>
+                  <div className="flex items-center gap-4 mb-1">
+                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center border border-white shadow-sm ${categoryMatch.bg} ${categoryMatch.text}`}>
+                      {categoryMatch.icon}
+                    </div>
+                    <div className="flex-1">
+                       <div className="flex justify-between items-center">
+                          <h4 className="font-bold text-slate-800 tracking-tight text-sm">{b.category}</h4>
+                          <span className={`text-xs font-black tracking-tighter ${isOver ? 'text-rose-600' : 'text-slate-500'}`}>
+                            {spent.toLocaleString("fr-FR")} / <span className="text-slate-400">{limit.toLocaleString("fr-FR")} {currency}</span>
+                          </span>
+                       </div>
+                       <div className="w-full h-2 bg-slate-100 rounded-full mt-2 overflow-hidden shadow-inner">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${percent}%` }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            className={`h-full rounded-full ${isOver ? 'bg-rose-500' : isClose ? 'bg-amber-500' : 'bg-teal-500'}`}
+                          />
+                       </div>
                     </div>
                   </div>
-
-                  <div className="shrink-0 flex items-center gap-2 pl-2 border-l border-slate-100">
-                    <div className="flex flex-col items-end">
-                      <p
-                        className={`font-black tracking-tighter text-base leading-none ${isReceive ? "text-indigo-600" : "text-amber-600"}`}
-                      >
-                        {tx.amount.toLocaleString("fr-FR")}
-                      </p>
-                      <span className="text-[9px] font-bold uppercase text-slate-400 mt-0.5">
-                        {currency}
-                      </span>
+                  {isOver && (
+                    <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-rose-500 mt-3 bg-rose-50 px-2 py-1.5 rounded-lg w-fit border border-rose-100/50">
+                      <AlertTriangle size={10} />
+                      Dépassement de {Math.abs(limit - spent).toLocaleString("fr-FR")} {currency}
                     </div>
-
-                    <div className="relative">
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setActiveMenuId(
-                            activeMenuId === tx.id ? null : tx.id,
-                          );
-                        }}
-                        className="w-10 h-10 flex items-center justify-center hover:bg-white rounded-xl transition-colors text-slate-300 group-hover:text-slate-500 relative z-[60]"
-                      >
-                        <MoreVertical size={20} />
-                      </button>
-
-                      <AnimatePresence>
-                        {activeMenuId === tx.id && (
-                          <>
-                            <div
-                              className="fixed inset-0 z-[80]"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setActiveMenuId(null);
-                              }}
-                            />
-                            <motion.div
-                              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                              animate={{ opacity: 1, scale: 1, y: 0 }}
-                              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                              className="absolute right-0 top-12 bg-white border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-2xl py-2 w-48 z-[150] overflow-hidden"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <button
-                                onClick={() => {
-                                  setEditingTx(tx);
-                                  setActiveMenuId(null);
-                                }}
-                                className="w-full px-5 py-3.5 text-left text-xs font-black text-slate-600 hover:bg-slate-50 hover:text-teal-600 flex items-center gap-3 transition-colors uppercase tracking-widest whitespace-nowrap active:bg-slate-100"
-                              >
-                                <Pencil size={15} />
-                                Modifier
-                              </button>
-                              <div className="h-px bg-slate-50 mx-4 my-1" />
-                              <button
-                                onClick={() => {
-                                  if (window.confirm('Supprimer cette transaction ?')) {
-                                    onDelete(tx.id);
-                                    setActiveMenuId(null);
-                                  }
-                                }}
-                                className="w-full px-5 py-3.5 text-left text-xs font-black text-rose-500 hover:bg-rose-50 flex items-center gap-3 transition-colors uppercase tracking-widest whitespace-nowrap active:bg-rose-100"
-                              >
-                                <Trash2 size={15} />
-                                Supprimer
-                              </button>
-                            </motion.div>
-                          </>
-                        )}
-                      </AnimatePresence>
+                  )}
+                  {isClose && (
+                    <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-amber-500 mt-3 bg-amber-50 px-2 py-1.5 rounded-lg w-fit border border-amber-100/50">
+                      Reste {Math.abs(limit - spent).toLocaleString("fr-FR")} {currency}
                     </div>
-                  </div>
-                </motion.div>
-              );
-            }
-
-            return (
-              <motion.div
-                key={tx.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className={`flex items-center gap-4 p-5 rounded-[32px] border transition-transform group relative bg-opacity-95 shadow-sm ${getCardStyle()}`}
-                style={{
-                  overflow: activeMenuId === tx.id ? "visible" : "hidden",
-                  zIndex: activeMenuId === tx.id ? 50 : 1,
-                }}
-              >
-                {/* Visual Category Ornament */}
-                {isExpense && (
-                  <div
-                    className={`absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 rounded-full blur-3xl opacity-0 group-hover:opacity-15 transition-opacity pointer-events-none ${categoryMatch.glow}`}
-                  />
-                )}
-
-                <div
-                  className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${
-                    !isExpense && !isCreditPlus && !isCreditMinus
-                      ? "bg-emerald-500 text-white shadow-emerald-500/20"
-                      : `${categoryMatch.bg} ${categoryMatch.text}`
-                  }`}
-                >
-                  {isExpense || isCreditPlus || isCreditMinus ? (
-                    categoryMatch.icon
-                  ) : (
-                    <ArrowDownToLine size={24} />
                   )}
                 </div>
-
-                <div className="flex-1 min-w-0">
-                  <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1">
-                    {tx.label}
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <span className="text-[10px] flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-400">
-                      <Calendar size={12} className="text-slate-300" />
-                      {tx.date}
-                    </span>
-                    {!isCreditPlus && !isCreditMinus && (
-                      <span
-                        className={`text-[10px] font-black uppercase tracking-[0.1em] ${!isExpense ? "text-emerald-500" : categoryMatch.text}`}
-                      >
-                        {tx.category || (!isExpense ? t.retraits : t.achats)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="shrink-0 text-right flex items-center gap-3">
-                  <div className="flex flex-col items-end">
-                    <p
-                      className={`font-black tracking-tighter text-lg leading-none ${!isExpense ? "text-emerald-600" : isCreditMinus ? "text-amber-600" : isCreditPlus ? "text-indigo-600" : "text-slate-900"}`}
-                    >
-                      {!isExpense ? "+" : "-"}
-                      {tx.amount.toLocaleString("fr-FR")}
-                      <span className="text-[11px] ml-1 font-bold uppercase text-slate-400">
-                        {currency}
-                      </span>
-                    </p>
-                    {(isCreditPlus || isCreditMinus) && (
-                      <span
-                        className={`text-[10px] font-black uppercase tracking-[0.1em] mt-1 ${isCreditPlus ? "text-indigo-600" : "text-amber-600"}`}
-                      >
-                        {tx.category}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="relative">
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setActiveMenuId(activeMenuId === tx.id ? null : tx.id);
-                      }}
-                      className="w-10 h-10 flex items-center justify-center hover:bg-slate-50 rounded-xl transition-colors text-slate-300 group-hover:text-slate-500 relative z-[60]"
-                    >
-                      <MoreVertical size={20} />
-                    </button>
-
-                    <AnimatePresence>
-                      {activeMenuId === tx.id && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-[80]"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setActiveMenuId(null);
-                            }}
-                          />
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            className="absolute right-0 top-12 bg-white border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-2xl py-2 w-48 z-[150] overflow-hidden"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <button
-                              onClick={() => {
-                                setEditingTx(tx);
-                                setActiveMenuId(null);
-                              }}
-                              className="w-full px-5 py-3.5 text-left text-xs font-black text-slate-600 hover:bg-slate-50 hover:text-teal-600 flex items-center gap-3 transition-colors uppercase tracking-widest whitespace-nowrap active:bg-slate-100"
-                            >
-                              <Pencil size={15} />
-                              Modifier
-                            </button>
-                            <div className="h-px bg-slate-50 mx-4 my-1" />
-                            <button
-                              onClick={() => {
-                                if (
-                                  window.confirm(
-                                    "Supprimer cette transaction ?",
-                                  )
-                                ) {
-                                  onDelete(tx.id);
-                                  setActiveMenuId(null);
-                                }
-                              }}
-                              className="w-full px-5 py-3.5 text-left text-xs font-black text-rose-500 hover:bg-rose-50 flex items-center gap-3 transition-colors uppercase tracking-widest whitespace-nowrap active:bg-rose-100"
-                            >
-                              <Trash2 size={15} />
-                              Supprimer
-                            </button>
-                          </motion.div>
-                        </>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
+              )
+            })
+          )}
         </div>
+      </div>
+
 
         {/* Inline Edit Modal */}
         <AnimatePresence>
@@ -1081,7 +821,121 @@ export default function Home({
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+
+        <AnimatePresence>
+          {showBudgetModal && (
+            <BudgetSettingsModal 
+              onClose={() => setShowBudgetModal(false)}
+              categoryBudgets={categoryBudgets}
+              setCategoryBudgets={setCategoryBudgets}
+              categories={CATEGORY_MAP}
+              currency={currency}
+            />
+          )}
+        </AnimatePresence>
+    </motion.div>
+  );
+}
+
+function BudgetSettingsModal({ 
+  onClose, 
+  categoryBudgets, 
+  setCategoryBudgets, 
+  categories,
+  currency
+}: { 
+  onClose: () => void, 
+  categoryBudgets: {category: string, limit: number}[], 
+  setCategoryBudgets: (b: {category: string, limit: number}[]) => void,
+  categories: any[],
+  currency: string
+}) {
+  const [budgets, setBudgets] = useState<{category: string; limit: number}[]>(categoryBudgets);
+
+  const handleSave = () => {
+    setCategoryBudgets(budgets.filter(b => b.limit > 0));
+    onClose();
+  };
+
+  const handleBudgetChange = (category: string, amountStr: string) => {
+    const val = parseFloat(amountStr);
+    const limit = isNaN(val) ? 0 : val;
+    setBudgets(prev => {
+      const existing = prev.find(p => p.category === category);
+      if (existing) {
+        return prev.map(p => p.category === category ? { ...p, limit } : p);
+      }
+      return [...prev, { category, limit }];
+    });
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-900/60"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 20 }}
+        className="bg-white rounded-[32px] w-full max-w-sm p-6 shadow-2xl relative max-h-[90vh] overflow-hidden flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-6 shrink-0">
+          <h3 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <Settings size={20} className="text-teal-600" />
+            Réglage Limites
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-2 bg-slate-50 rounded-full text-slate-400"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="space-y-4 overflow-y-auto pr-2 pb-4 flex-1">
+          {categories.map((c) => {
+            const currentBudget = budgets.find(b => b.category === c.label)?.limit || "";
+            return (
+              <div key={c.label} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${c.bg} ${c.text}`}>
+                  {c.icon}
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-slate-800 mb-1">{c.label}</p>
+                  <div className="relative">
+                    <input 
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={currentBudget}
+                      onChange={(e) => handleBudgetChange(c.label, e.target.value)}
+                      placeholder="0"
+                      className="w-full bg-white border border-slate-200 rounded-lg py-2 pl-3 pr-10 text-sm font-black text-slate-800 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all font-mono"
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 uppercase pointer-events-none">
+                      {currency}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        <div className="shrink-0 pt-4 mt-2 border-t border-slate-100 bg-white">
+          <button
+            onClick={handleSave}
+            className="w-full py-4 bg-teal-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-teal-600/20 active:scale-95 transition-all text-sm"
+          >
+            Enregistrer
+          </button>
+        </div>
+      </motion.div>
     </motion.div>
   );
 }
