@@ -19,6 +19,7 @@
     "@capacitor/filesystem": "^8.1.2",
     "@capacitor/local-notifications": "^8.2.0",
     "@capacitor/preferences": "^8.0.1",
+    "@capacitor/share": "^8.0.1",
     "@capgo/capacitor-native-biometric": "^8.4.5",
     "@google/genai": "^1.29.0",
     "@ionic/pwa-elements": "^3.4.0",

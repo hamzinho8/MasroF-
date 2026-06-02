@@ -1,4 +1,7 @@
 import CryptoJS from 'crypto-js';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 
 const BACKUP_FILE_NAME = `masrof_backup_${new Date().toISOString().split("T")[0]}.dat`;
 const ENCRYPTION_KEY = 'budget-app-secure-backup-key-2024'; 
@@ -16,16 +19,31 @@ export const exportDataToFile = async () => {
         const jsonData = JSON.stringify(data);
         const encryptedData = CryptoJS.AES.encrypt(jsonData, ENCRYPTION_KEY).toString();
 
-        const blob = new Blob([encryptedData], { type: 'application/octet-stream' });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = BACKUP_FILE_NAME;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        if (Capacitor.isNativePlatform()) {
+            const result = await Filesystem.writeFile({
+                path: BACKUP_FILE_NAME,
+                data: encryptedData,
+                directory: Directory.Cache,
+                encoding: Encoding.UTF8,
+            });
+            
+            await Share.share({
+                title: 'Sauvegarde Masrof',
+                text: 'Fichier de sauvegarde des données Masrof.',
+                url: result.uri,
+                dialogTitle: 'Enregistrer la sauvegarde'
+            });
+        } else {
+            const blob = new Blob([encryptedData], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = BACKUP_FILE_NAME;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
         
         console.log('Backup prompt opened');
     } catch (e) {

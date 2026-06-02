@@ -122,11 +122,13 @@ export default function Settings({
     | "LANGUAGE"
     | "WIDGET_SETTINGS"
     | "PIN_SETUP"
+    | "API_SETTINGS"
     | null
   >(null);
   const [pinSetupStep, setPinSetupStep] = useState<1 | 2>(1);
   const [tempPin, setTempPin] = useState("");
   const [pinError, setPinError] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState(() => localStorage.getItem("userGeminiApiKey") || "");
   const [soundType, setSoundType] = useState(() => localStorage.getItem("notificationSoundType") || "checkout");
   const [showArticleManager, setShowArticleManager] = useState(false);
   const [showReminderManager, setShowReminderManager] = useState(false);
@@ -293,6 +295,13 @@ export default function Settings({
               title="LANGUE"
               subtitle={language}
               onClick={() => setShowSelector("LANGUAGE")}
+              showArrow={true}
+            />
+            <SettingsItem
+              icon={<Brain />}
+              title="CLÉ API IA"
+              subtitle={apiKeyInput ? "Clé configurée" : "Non configurée (Requise pour scan OCR)"}
+              onClick={() => setShowSelector("API_SETTINGS")}
               showArrow={true}
             />
             <SettingsItem
@@ -534,13 +543,39 @@ export default function Settings({
               <h3 className="text-xl font-black text-[#1B5E66] mb-6 italic uppercase tracking-tighter">
                 {showSelector === "WIDGET_SETTINGS" ? "Réglages Widget" : 
                  showSelector === "PIN_SETUP" ? "Configurer Code PIN" :
+                 showSelector === "API_SETTINGS" ? "Clé API IA" :
                  `Sélection ${
                   showSelector === "CURRENCY" ? "Devise" :
                   showSelector === "LANGUAGE" ? "Langue" : ""
                 }`}
               </h3>
               <div className="space-y-3">
-                {showSelector === "PIN_SETUP" ? (
+                {showSelector === "API_SETTINGS" ? (
+                  <div className="flex flex-col py-2">
+                    <p className="text-xs text-[#1B5E66]/70 mb-4 font-bold">
+                      Saisissez votre clé API Google Gemini :
+                    </p>
+                    <input
+                      type="text"
+                      className="w-full bg-[#1B5E66]/5 border border-[#1B5E66]/10 rounded-2xl px-4 py-3 text-sm font-bold text-[#1B5E66] focus:outline-none focus:ring-2 focus:ring-[#2D8B96]/50 mb-4"
+                      placeholder="AIzaSy..."
+                      value={apiKeyInput}
+                      onChange={(e) => setApiKeyInput(e.target.value)}
+                    />
+                    <button
+                      className="w-full bg-[#2D8B96] hover:bg-[#1B5E66] text-white font-black italic uppercase tracking-wider py-4 rounded-2xl transition-colors shadow-lg shadow-[#2D8B96]/20"
+                      onClick={() => {
+                        window.localStorage.setItem("userGeminiApiKey", apiKeyInput);
+                        setShowSelector(null);
+                      }}
+                    >
+                      Enregistrer
+                    </button>
+                    <p className="text-[10px] text-[#1B5E66]/50 mt-4 text-center font-bold">
+                      Nécessaire pour le scan des factures. Stocké localement.
+                    </p>
+                  </div>
+                ) : showSelector === "PIN_SETUP" ? (
                   <div className="flex flex-col items-center py-6">
                     <p className="text-sm font-bold text-[#1B5E66]/60 mb-8 uppercase tracking-widest text-center">
                       {pinSetupStep === 1 

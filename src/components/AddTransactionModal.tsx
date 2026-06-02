@@ -91,19 +91,20 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
       const image = await Camera.getPhoto({
         quality: 60,
         allowEditing: false,
-        resultType: CameraResultType.DataUrl,
+        resultType: CameraResultType.Base64,
         source: CameraSource.Prompt,
         saveToGallery: false,
         width: 1024
       });
 
-      if (!image.dataUrl) {
+      if (!image.base64String) {
         setIsScanning(false);
         return;
       }
 
       let data: any = null;
       let usedFallback = false;
+      const apiKeyValue = window.localStorage.getItem('userGeminiApiKey');
 
       // Try server first, fallback to mock/error
       try {
@@ -111,7 +112,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            imageBase64: image.dataUrl
+            imageBase64: 'data:image/jpeg;base64,' + image.base64String
           })
         });
 
@@ -122,9 +123,9 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         }
       } catch (err) {
         // Fallback for Android standalone APK without backend
-        if (import.meta.env.VITE_GEMINI_API_KEY) {
+        if (apiKeyValue) {
           usedFallback = true;
-          const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+          const ai = new GoogleGenAI({ apiKey: apiKeyValue });
           const genResponse = await ai.models.generateContent({
             model: "gemini-2.5-flash",
             contents: [
@@ -133,8 +134,8 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                 parts: [
                   {
                     inlineData: {
-                      data: image.dataUrl!.split(',')[1],
-                      mimeType: image.dataUrl!.split(';')[0].split(':')[1] || "image/jpeg"
+                      data: image.base64String,
+                      mimeType: "image/jpeg"
                     }
                   },
                   {
@@ -148,7 +149,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
           data = JSON.parse(cleanText);
         } else {
-          alert("L'API OCR est inaccessible. Veuillez configurer le backend ou la clé API.");
+          alert("L'API OCR est inaccessible. Veuillez configurer le backend ou la clé API depuis les paramètres.");
           return;
         }
       }
