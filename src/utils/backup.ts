@@ -3,36 +3,33 @@ import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 
-const BACKUP_FILE_NAME = `masrof_backup_${new Date().toISOString().split("T")[0]}.dat`;
+const BACKUP_FILE_NAME = `masrof_backup_latest.dat`;
 const ENCRYPTION_KEY = 'budget-app-secure-backup-key-2024'; 
+
+const getBackupData = () => {
+    const data: Record<string, string | null> = {};
+    for (let i = 0; i < window.localStorage.length; i++) {
+        const key = window.localStorage.key(i);
+        if (key) {
+            data[key] = window.localStorage.getItem(key);
+        }
+    }
+    const jsonData = JSON.stringify(data);
+    return CryptoJS.AES.encrypt(jsonData, ENCRYPTION_KEY).toString();
+};
 
 export const exportDataToFile = async () => {
     try {
-        const data: Record<string, string | null> = {};
-        for (let i = 0; i < window.localStorage.length; i++) {
-            const key = window.localStorage.key(i);
-            if (key) {
-                data[key] = window.localStorage.getItem(key);
-            }
-        }
-
-        const jsonData = JSON.stringify(data);
-        const encryptedData = CryptoJS.AES.encrypt(jsonData, ENCRYPTION_KEY).toString();
+        const encryptedData = getBackupData();
 
         if (Capacitor.isNativePlatform()) {
-            const result = await Filesystem.writeFile({
+            await Filesystem.writeFile({
                 path: BACKUP_FILE_NAME,
                 data: encryptedData,
-                directory: Directory.Cache,
+                directory: Directory.Documents,
                 encoding: Encoding.UTF8,
             });
-            
-            await Share.share({
-                title: 'Sauvegarde Masrof',
-                text: 'Fichier de sauvegarde des données Masrof.',
-                url: result.uri,
-                dialogTitle: 'Enregistrer la sauvegarde'
-            });
+            alert(`Sauvegarde réussie dans le dossier Documents sous le nom: ${BACKUP_FILE_NAME}`);
         } else {
             const blob = new Blob([encryptedData], { type: 'application/octet-stream' });
             const url = URL.createObjectURL(blob);
@@ -44,11 +41,28 @@ export const exportDataToFile = async () => {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
-        
-        console.log('Backup prompt opened');
     } catch (e) {
         console.error('Failed to export data', e);
         alert("Erreur lors de la création de la sauvegarde.");
+    }
+};
+
+export const autoBackup = async () => {
+    try {
+        const encryptedData = getBackupData();
+        if (Capacitor.isNativePlatform()) {
+            await Filesystem.writeFile({
+                path: BACKUP_FILE_NAME,
+                data: encryptedData,
+                directory: Directory.Documents,
+                encoding: Encoding.UTF8,
+            });
+            console.log('Auto-backup completed successfully.');
+        } else {
+            window.localStorage.setItem('web_auto_backup', encryptedData);
+        }
+    } catch (e) {
+        console.error('Failed to auto backup data', e);
     }
 };
 

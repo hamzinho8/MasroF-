@@ -3,7 +3,8 @@ import { useLocalStorage } from "./hooks/useLocalStorage";
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Preferences } from '@capacitor/preferences';
 import { registerPlugin, Capacitor } from '@capacitor/core';
-import { importDataFromFile } from "./utils/backup";
+import { App as CapacitorApp } from '@capacitor/app';
+import { importDataFromFile, autoBackup } from "./utils/backup";
 
 const WidgetUpdater = registerPlugin<any>('WidgetUpdater');
 
@@ -37,6 +38,18 @@ export default function App() {
 
   useEffect(() => {
     setIsInitializing(false);
+
+    // Setup auto-backup on app going to background
+    if (Capacitor.isNativePlatform()) {
+      const listener = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+        if (!isActive) {
+          autoBackup();
+        }
+      });
+      return () => {
+        listener.then(l => l.remove()).catch(() => {});
+      };
+    }
   }, []);
 
   const [activeTab, setActiveTab] = useLocalStorage<Tab>("activeTab", "home");
