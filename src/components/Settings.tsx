@@ -36,7 +36,7 @@ import { Reminder, PredefinedItem } from "../types";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { ICON_MAP } from "../constants";
-import { importDataFromFile } from "../utils/backup";
+import { importDataFromFile, exportDataToFile } from "../utils/backup";
 import {
   Utensils,
   Car,
@@ -324,9 +324,18 @@ export default function Settings({
             />
             <SettingsItem
               icon={<Download />}
-              title="EXPORTER MES DONNÉES"
+              title="RAPPORT PDF"
               subtitle="Télécharger un rapport PDF"
               onClick={exportToPDF}
+              showArrow={true}
+            />
+            <SettingsItem
+              icon={<Download />}
+              title="SAUVEGARDER MES DONNÉES"
+              subtitle="Créer un fichier de sauvegarde (.dat)"
+              onClick={async () => {
+                await exportDataToFile();
+              }}
               showArrow={true}
             />
             <SettingsItem

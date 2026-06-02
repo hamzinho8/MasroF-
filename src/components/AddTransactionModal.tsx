@@ -93,7 +93,8 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         allowEditing: false,
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Prompt,
-        saveToGallery: true
+        saveToGallery: false,
+        width: 1024
       });
 
       if (!image.dataUrl) {
@@ -180,6 +181,9 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
       }
     } catch (e: any) {
       console.log('Camera error / OCR failed:', e);
+      if (e.message && (e.message.toLowerCase().includes('user cancelled') || e.message.toLowerCase().includes('canceled'))) {
+         return; // silently ignore
+      }
       alert("Erreur lors de la numérisation : " + e.message);
     } finally {
       setIsScanning(false);
