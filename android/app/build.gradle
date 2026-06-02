@@ -11,8 +11,8 @@ android {
         applicationId "com.hamza.masrof"
         minSdk 24
         targetSdk rootProject.ext.targetSdk
-        versionCode 14
-        versionName "1.12"
+        versionCode 15
+        versionName "1.13"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 

@@ -14,6 +14,8 @@ export default function LockScreen({ onUnlock, correctPin, allowBiometric }: Loc
   const [pin, setPin] = useState("");
   const [error, setError] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricAttempts, setBiometricAttempts] = useState(0);
+  const MAX_ATTEMPTS = 3;
 
   useEffect(() => {
     const checkBiometric = async () => {
@@ -29,25 +31,27 @@ export default function LockScreen({ onUnlock, correctPin, allowBiometric }: Loc
   }, [allowBiometric]);
 
   const handleBiometricAuth = async () => {
+    if (biometricAttempts >= MAX_ATTEMPTS) return;
+
     try {
       await NativeBiometric.verifyIdentity({
         title: "Connexion Masrof",
-        subtitle: "Utilisez votre empreinte digitale pour déverrouiller",
-        reason: "Sécurisation de vos données financières",
+        subtitle: `Tentative ${biometricAttempts + 1}/${MAX_ATTEMPTS}`,
+        reason: "Utilisez votre empreinte digitale pour déverrouiller",
       });
-      // Capgo NativeBiometric either resolves if successful, or throws if failure/cancelled
       onUnlock();
     } catch (e: any) {
       console.log("Biometric auth failed", e);
+      setBiometricAttempts(prev => prev + 1);
+      
       if (e?.code === 'biometryNotAvailable' && !correctPin) {
-         // Failsafe if biometrics completely unavailable and no PIN
          onUnlock();
       }
     }
   };
 
   useEffect(() => {
-    if (biometricAvailable) {
+    if (biometricAvailable && biometricAttempts === 0) {
       handleBiometricAuth();
     }
   }, [biometricAvailable]);
@@ -160,8 +164,23 @@ export default function LockScreen({ onUnlock, correctPin, allowBiometric }: Loc
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-10 w-full px-6 text-center">
-             <Fingerprint size={48} className="text-[#669A13]/50 mb-4 animate-pulse" />
-             <p className="text-sm font-bold text-[#050B39]/70">Toucher le capteur d'empreinte pour déverrouiller Masrof.</p>
+             <button
+                onClick={handleBiometricAuth}
+                disabled={biometricAttempts >= MAX_ATTEMPTS}
+                className="flex items-center justify-center bg-teal-50 hover:bg-teal-100 p-6 rounded-full transition-colors mb-4 border border-teal-100 disabled:opacity-50 disabled:cursor-not-allowed"
+             >
+                <Fingerprint size={48} className={`${biometricAttempts >= MAX_ATTEMPTS ? "text-red-500" : "text-[#669A13]"} ${biometricAttempts === 0 ? "animate-pulse" : ""}`} />
+             </button>
+             {biometricAttempts >= MAX_ATTEMPTS ? (
+               <p className="text-sm font-bold text-red-500">Trop de tentatives. Veuillez réessayer plus tard.</p>
+             ) : (
+               <>
+                 <p className="text-sm font-bold text-[#050B39]/70 mb-2">Toucher le capteur d'empreinte pour déverrouiller Masrof.</p>
+                 {biometricAttempts > 0 && (
+                   <p className="text-xs font-bold text-amber-600">Essais restants : {MAX_ATTEMPTS - biometricAttempts}</p>
+                 )}
+               </>
+             )}
           </div>
         )}
         
@@ -172,10 +191,13 @@ export default function LockScreen({ onUnlock, correctPin, allowBiometric }: Loc
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               onClick={handleBiometricAuth}
-              className="absolute -bottom-16 text-teal-700/80 hover:text-teal-900 transition-colors bg-teal-100/50 p-3 rounded-full flex flex-col items-center justify-center backdrop-blur-md border border-teal-200/50"
+              disabled={biometricAttempts >= MAX_ATTEMPTS}
+              className={`absolute -bottom-16 ${biometricAttempts >= MAX_ATTEMPTS ? 'text-red-500 bg-red-50 border-red-200' : 'text-teal-700/80 hover:text-teal-900 bg-teal-100/50 hover:bg-teal-200/50 border-teal-200/50'} transition-colors p-3 rounded-full flex flex-col items-center justify-center backdrop-blur-md border disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               <Fingerprint size={32} />
-               <span className="text-[10px] font-bold uppercase mt-1">Biométrie</span>
+               <span className="text-[10px] font-bold uppercase mt-1">
+                 {biometricAttempts >= MAX_ATTEMPTS ? 'Bloqué' : 'Biométrie'}
+               </span>
             </motion.button>
           )}
           {error && (
