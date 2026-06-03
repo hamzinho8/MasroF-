@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Camera, Camera as CameraIcon } from '@capacitor/camera'; // capacitor camera
 import { CameraResultType, CameraSource } from '@capacitor/camera';
