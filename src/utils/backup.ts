@@ -54,11 +54,11 @@ export const exportDataToFile = async () => {
         }
     } catch (e: any) {
         console.error('Failed to export data', e);
-        if (e && e.message && e.message.includes('cancel')) {
+        if (e && e.message && (e.message.toLowerCase().includes('cancel') || e.message.toLowerCase().includes('abort'))) {
             // Log ignored cancel error
             console.log('User cancelled share');
         } else {
-            alert("Erreur lors de la création de la sauvegarde.");
+            alert("Erreur lors de la création de la sauvegarde. (" + (e?.message || JSON.stringify(e)) + ")");
         }
     }
 };

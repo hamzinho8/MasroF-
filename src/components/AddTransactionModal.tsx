@@ -87,6 +87,52 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
     setShowFrequent(false);
   };
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFallbackImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setIsScanning(false);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const result = e.target?.result as string;
+      if (result) {
+        try {
+          let data: any = null;
+          const response = await fetch('/api/scan-items', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              imageBase64: result
+            })
+          });
+
+          if (response.ok) {
+            data = await response.json();
+            if (data.items) {
+               setScannedItems(data.items.map((i: any) => ({ ...i, categoryId: i.categoryId || 'other' })));
+               setReceiptTotal(data.total);
+               setDetectedPaymentGroup(data.paymentMethod === 'CASH' ? 'cash' : 'bank');
+               setShowFrequent(false);
+            }
+          }
+        } catch (error) {
+          console.error("Scanning error", error);
+        }
+      }
+      setIsScanning(false);
+    };
+    reader.onerror = () => {
+      setIsScanning(false);
+    };
+    reader.readAsDataURL(file);
+    // Reset file input
+    event.target.value = '';
+  };
+
   const handleScanReceipt = async () => {
     try {
       setIsScanning(true);
@@ -200,7 +246,12 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
       if (e.message && (e.message.toLowerCase().includes('user cancelled') || e.message.toLowerCase().includes('canceled'))) {
          return; // silently ignore
       }
-      alert("Erreur lors de la numérisation : " + e.message);
+      console.log("Triggering fallback file input due to error...");
+      if (fileInputRef.current) {
+        fileInputRef.current.click();
+      } else {
+        alert("Erreur lors de la numérisation : " + e.message);
+      }
     } finally {
       setIsScanning(false);
     }
@@ -610,6 +661,14 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           </motion.div>
         </>
       )}
+      <input
+        type="file"
+        ref={fileInputRef}
+        hidden
+        accept="image/*"
+        capture="environment"
+        onChange={handleFallbackImageSelection}
+      />
     </AnimatePresence>
   );
 }
