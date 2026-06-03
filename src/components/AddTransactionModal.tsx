@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Camera, Camera as CameraIcon } from '@capacitor/camera'; // capacitor camera
 import { CameraResultType, CameraSource } from '@capacitor/camera';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Capacitor } from '@capacitor/core';
 import { GoogleGenAI } from '@google/genai';
 import { 
   X, 
@@ -88,6 +90,17 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
   const handleScanReceipt = async () => {
     try {
       setIsScanning(true);
+      if (Capacitor.isNativePlatform()) {
+        try {
+          await Filesystem.mkdir({
+            path: 'Pictures',
+            directory: Directory.External,
+            recursive: true
+          });
+        } catch (e) {
+          // ignore if it exists
+        }
+      }
       await Camera.requestPermissions();
 
       const image = await Camera.getPhoto({

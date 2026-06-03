@@ -23,17 +23,24 @@ export const exportDataToFile = async () => {
         const encryptedData = getBackupData();
 
         if (Capacitor.isNativePlatform()) {
-            // Demander les permissions avant d'écrire
-            await Filesystem.requestPermissions();
-            
             await Filesystem.writeFile({
                 path: BACKUP_FILE_NAME,
                 data: encryptedData,
-                directory: Directory.Documents,
+                directory: Directory.Cache,
                 encoding: Encoding.UTF8,
             });
             
-            alert(`Sauvegarde réussie dans le dossier Documents sous le nom: ${BACKUP_FILE_NAME}`);
+            const result = await Filesystem.getUri({
+                path: BACKUP_FILE_NAME,
+                directory: Directory.Cache,
+            });
+
+            await Share.share({
+                title: 'Sauvegarde Masrof',
+                text: 'Fichier de sauvegarde des données Masrof.',
+                url: result.uri,
+                dialogTitle: 'Enregistrer la sauvegarde'
+            });
         } else {
             const blob = new Blob([encryptedData], { type: 'application/octet-stream' });
             const url = URL.createObjectURL(blob);
@@ -45,30 +52,13 @@ export const exportDataToFile = async () => {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
-    } catch (e) {
+    } catch (e: any) {
         console.error('Failed to export data', e);
-        
-        // Si ça échoue (problème permission), fallback sur le système de partage
-        if (Capacitor.isNativePlatform()) {
-             try {
-                 const encryptedData = getBackupData();
-                 const result = await Filesystem.writeFile({
-                     path: BACKUP_FILE_NAME,
-                     data: encryptedData,
-                     directory: Directory.Cache,
-                     encoding: Encoding.UTF8,
-                 });
-                 await Share.share({
-                     title: 'Sauvegarde Masrof',
-                     text: 'Fichier de sauvegarde des données Masrof.',
-                     url: result.uri,
-                     dialogTitle: 'Enregistrer la sauvegarde'
-                 });
-             } catch(err) {
-                 alert("Erreur lors de la création de la sauvegarde.");
-             }
+        if (e && e.message && e.message.includes('cancel')) {
+            // Log ignored cancel error
+            console.log('User cancelled share');
         } else {
-             alert("Erreur lors de la création de la sauvegarde.");
+            alert("Erreur lors de la création de la sauvegarde.");
         }
     }
 };
