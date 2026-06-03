@@ -88,12 +88,15 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
   const handleScanReceipt = async () => {
     try {
       setIsScanning(true);
+      await Camera.requestPermissions();
+
       const image = await Camera.getPhoto({
         quality: 60,
         allowEditing: false,
         resultType: CameraResultType.Base64,
         source: CameraSource.Prompt,
-        saveToGallery: true
+        saveToGallery: false,
+        width: 1024
       });
 
       if (!image.base64String) {

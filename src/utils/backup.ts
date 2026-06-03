@@ -23,12 +23,16 @@ export const exportDataToFile = async () => {
         const encryptedData = getBackupData();
 
         if (Capacitor.isNativePlatform()) {
+            // Demander les permissions avant d'écrire
+            await Filesystem.requestPermissions();
+            
             await Filesystem.writeFile({
                 path: BACKUP_FILE_NAME,
                 data: encryptedData,
                 directory: Directory.Documents,
                 encoding: Encoding.UTF8,
             });
+            
             alert(`Sauvegarde réussie dans le dossier Documents sous le nom: ${BACKUP_FILE_NAME}`);
         } else {
             const blob = new Blob([encryptedData], { type: 'application/octet-stream' });
@@ -43,7 +47,29 @@ export const exportDataToFile = async () => {
         }
     } catch (e) {
         console.error('Failed to export data', e);
-        alert("Erreur lors de la création de la sauvegarde.");
+        
+        // Si ça échoue (problème permission), fallback sur le système de partage
+        if (Capacitor.isNativePlatform()) {
+             try {
+                 const encryptedData = getBackupData();
+                 const result = await Filesystem.writeFile({
+                     path: BACKUP_FILE_NAME,
+                     data: encryptedData,
+                     directory: Directory.Cache,
+                     encoding: Encoding.UTF8,
+                 });
+                 await Share.share({
+                     title: 'Sauvegarde Masrof',
+                     text: 'Fichier de sauvegarde des données Masrof.',
+                     url: result.uri,
+                     dialogTitle: 'Enregistrer la sauvegarde'
+                 });
+             } catch(err) {
+                 alert("Erreur lors de la création de la sauvegarde.");
+             }
+        } else {
+             alert("Erreur lors de la création de la sauvegarde.");
+        }
     }
 };
 
@@ -51,13 +77,24 @@ export const autoBackup = async () => {
     try {
         const encryptedData = getBackupData();
         if (Capacitor.isNativePlatform()) {
-            await Filesystem.writeFile({
-                path: BACKUP_FILE_NAME,
-                data: encryptedData,
-                directory: Directory.Documents,
-                encoding: Encoding.UTF8,
-            });
-            console.log('Auto-backup completed successfully.');
+            try {
+                await Filesystem.writeFile({
+                    path: BACKUP_FILE_NAME,
+                    data: encryptedData,
+                    directory: Directory.Documents,
+                    encoding: Encoding.UTF8,
+                });
+                console.log('Auto-backup to Documents completed successfully.');
+            } catch(e) {
+                // Silently fallback to internal data if Documents is unavailable/no permission
+                await Filesystem.writeFile({
+                    path: BACKUP_FILE_NAME,
+                    data: encryptedData,
+                    directory: Directory.Data,
+                    encoding: Encoding.UTF8,
+                });
+                console.log('Auto-backup to internal Data completed.');
+            }
         } else {
             window.localStorage.setItem('web_auto_backup', encryptedData);
         }
