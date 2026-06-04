@@ -2,6 +2,7 @@ import CryptoJS from 'crypto-js';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 const BACKUP_FILE_NAME = `masrof_backup_latest.dat`;
 const ENCRYPTION_KEY = 'budget-app-secure-backup-key-2024'; 
@@ -41,6 +42,13 @@ export const exportDataToFile = async () => {
                 url: result.uri,
                 dialogTitle: 'Enregistrer la sauvegarde'
             });
+            
+            // Cancel backup reminder when backup is successfully generated
+            const pending = await LocalNotifications.getPending();
+            const existing = pending.notifications.find((n: any) => n.id === 2005);
+            if (existing) {
+                await LocalNotifications.cancel({ notifications: [existing] });
+            }
         } else {
             const blob = new Blob([encryptedData], { type: 'application/octet-stream' });
             const url = URL.createObjectURL(blob);

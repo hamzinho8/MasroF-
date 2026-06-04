@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import MasrofLogo from "./Logo";
-import { Reminder, PredefinedItem } from "../types";
+import { Reminder, PredefinedItem, AlertConfig } from "../types";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { ICON_MAP } from "../constants";
@@ -67,8 +67,8 @@ interface SettingsProps {
   transactions: any[];
   predefinedItems: PredefinedItem[];
   onPredefinedItemsChange: (items: PredefinedItem[]) => void;
-  balanceThreshold: number | null;
-  onBalanceThresholdChange: (threshold: number | null) => void;
+  alertConfig: AlertConfig;
+  onAlertConfigChange: (config: AlertConfig) => void;
   appPin: string | null;
   onAppPinChange: (pin: string | null) => void;
   appBiometric: boolean;
@@ -106,8 +106,8 @@ export default function Settings({
   transactions,
   predefinedItems,
   onPredefinedItemsChange,
-  balanceThreshold,
-  onBalanceThresholdChange,
+  alertConfig,
+  onAlertConfigChange,
   appPin,
   onAppPinChange,
   appBiometric,
@@ -123,6 +123,7 @@ export default function Settings({
     | "WIDGET_SETTINGS"
     | "PIN_SETUP"
     | "API_SETTINGS"
+    | "SOUND"
     | null
   >(null);
   const [pinSetupStep, setPinSetupStep] = useState<1 | 2>(1);
@@ -132,6 +133,7 @@ export default function Settings({
   const [soundType, setSoundType] = useState(() => localStorage.getItem("notificationSoundType") || "checkout");
   const [showArticleManager, setShowArticleManager] = useState(false);
   const [showReminderManager, setShowReminderManager] = useState(false);
+  const [showAlertsManager, setShowAlertsManager] = useState(false);
 
   const handleReset = () => {
     setIsResetting(true);
@@ -316,6 +318,13 @@ export default function Settings({
               title="GESTION DES RAPPELS"
               subtitle={`${reminders.length} RAPPELS ACTIFS`}
               onClick={() => setShowReminderManager(true)}
+              showArrow={true}
+            />
+            <SettingsItem
+              icon={<AlertTriangle />}
+              title="SYSTÈME D'ALERTES"
+              subtitle="Configuration des seuils de notification"
+              onClick={() => setShowAlertsManager(true)}
               showArrow={true}
             />
             <SettingsItem
@@ -519,6 +528,18 @@ export default function Settings({
             onClose={() => setShowReminderManager(false)}
             reminders={reminders}
             onRemindersChange={onRemindersChange}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Alerts Manager Modal */}
+      <AnimatePresence>
+        {showAlertsManager && (
+          <AlertsManagerModal
+            onClose={() => setShowAlertsManager(false)}
+            alertConfig={alertConfig}
+            onConfigChange={onAlertConfigChange}
+            currency={currency}
           />
         )}
       </AnimatePresence>
@@ -1752,7 +1773,7 @@ function SettingsItem({
       className={`flex items-center gap-5 p-7 hover:bg-[#2D8B96]/5 transition-all cursor-pointer group border-b border-[#2D8B96]/10 last:border-none ${onClick ? "active:scale-[0.98]" : ""}`}
     >
       <div className="w-12 h-12 rounded-2xl border-2 border-[#2D8B96]/20 flex items-center justify-center text-[#2D8B96] shadow-[0_4px_12px_rgba(45,139,150,0.1)] group-hover:bg-[#2D8B96] group-hover:text-white transition-all duration-300">
-        {React.cloneElement(icon as React.ReactElement, {
+        {React.cloneElement(icon as any, {
           size: 22,
           strokeWidth: 1.5,
         })}
@@ -1774,5 +1795,137 @@ function SettingsItem({
         />
       )}
     </div>
+  );
+}
+
+function AlertsManagerModal({
+  onClose,
+  alertConfig,
+  onConfigChange,
+  currency
+}: {
+  onClose: () => void;
+  alertConfig: AlertConfig;
+  onConfigChange: (config: AlertConfig) => void;
+  currency: string;
+}) {
+  const [localConfig, setLocalConfig] = useState(alertConfig);
+
+  const updateConfig = (key: keyof AlertConfig, value: string) => {
+    const parsed = value === '' ? null : Number(value);
+    setLocalConfig(prev => ({ ...prev, [key]: parsed }));
+  };
+
+  const handleSave = () => {
+    onConfigChange(localConfig);
+    onClose();
+  };
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[110] max-w-md mx-auto"
+      />
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        className="fixed inset-x-0 bottom-0 z-[120] bg-white rounded-t-[40px] p-8 max-w-md mx-auto shadow-2xl max-h-[90vh] overflow-y-auto"
+      >
+        <div className="flex justify-between items-center mb-8">
+          <h3 className="text-xl font-black text-teal-brand tracking-tight uppercase italic">
+            Système d'Alertes
+          </h3>
+          <button
+            onClick={onClose}
+            className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="space-y-6">
+          {/* Cash Alerte */}
+          <div className="bg-slate-50 border border-teal-brand/10 p-4 rounded-3xl">
+            <label className="text-sm font-black text-[#1B5E66] uppercase mb-2 block">Alerte Argent Poche</label>
+            <p className="text-xs text-slate-500 mb-3 block opacity-80">Notifie lorsque le montant dans la poche atteint le seuil (ex. 50 {currency}).</p>
+            <input 
+              title="Alerte d'argent en poche" 
+              type="number" 
+              placeholder={`ex. 50`}
+              value={localConfig.cashLimit === null ? '' : localConfig.cashLimit}
+              onChange={(e) => updateConfig('cashLimit', e.target.value)}
+              className="w-full bg-white border border-slate-200 px-4 py-3 rounded-2xl text-sm font-bold text-slate-900" 
+            />
+          </div>
+
+          {/* Bank Alerte */}
+          <div className="bg-slate-50 border border-teal-brand/10 p-4 rounded-3xl">
+            <label className="text-sm font-black text-[#1B5E66] uppercase mb-2 block">Alerte Compte Bancaire</label>
+            <p className="text-xs text-slate-500 mb-3 block opacity-80">Notifie lorsque le solde bancaire est trop bas (ex. 500 {currency}).</p>
+            <input 
+              title="Alerte compte bancaire" 
+              type="number" 
+              placeholder={`ex. 500`}
+              value={localConfig.bankLimit === null ? '' : localConfig.bankLimit}
+              onChange={(e) => updateConfig('bankLimit', e.target.value)}
+              className="w-full bg-white border border-slate-200 px-4 py-3 rounded-2xl text-sm font-bold text-slate-900" 
+            />
+          </div>
+
+          {/* Inventory Alerte */}
+          <div className="bg-slate-50 border border-teal-brand/10 p-4 rounded-3xl">
+            <label className="text-sm font-black text-[#1B5E66] uppercase mb-2 block">Alerte d'Article en Stock</label>
+            <p className="text-xs text-slate-500 mb-3 block opacity-80">Notifie lorsqu'un article dans votre inventaire atteint un stock critique (ex. 3).</p>
+            <input 
+              title="Alerte stock" 
+              type="number" 
+              placeholder={`ex. 3`}
+              value={localConfig.inventoryLimit === null ? '' : localConfig.inventoryLimit}
+              onChange={(e) => updateConfig('inventoryLimit', e.target.value)}
+              className="w-full bg-white border border-slate-200 px-4 py-3 rounded-2xl text-sm font-bold text-slate-900" 
+            />
+          </div>
+
+          {/* Budget Alerte */}
+          <div className="bg-slate-50 border border-teal-brand/10 p-4 rounded-3xl">
+            <label className="text-sm font-black text-[#1B5E66] uppercase mb-2 block">Alerte de Budget Catégorie</label>
+            <p className="text-xs text-slate-500 mb-3 block opacity-80">Notifie lorsque les dépenses d'une catégorie atteignent le seuil fixé en pourcentage (ex. 90%).</p>
+            <input 
+              title="Alerte budget" 
+              type="number"
+              max="100"
+              placeholder={`ex. 90`}
+              value={localConfig.categoryBudgetPercent === null ? '' : localConfig.categoryBudgetPercent}
+              onChange={(e) => updateConfig('categoryBudgetPercent', e.target.value)}
+              className="w-full bg-white border border-slate-200 px-4 py-3 rounded-2xl text-sm font-bold text-slate-900" 
+            />
+          </div>
+
+          <div className="bg-slate-50 border border-teal-brand/10 p-4 rounded-3xl flex items-center justify-between">
+            <div>
+              <label className="text-sm font-black text-[#1B5E66] uppercase block">Rappel de Sauvegarde</label>
+              <p className="text-xs text-slate-500 block opacity-80 mt-1">Notifie si des modifications ne sont pas sauvegardées.</p>
+            </div>
+            <button
+              onClick={() => {
+                setLocalConfig(prev => ({ ...prev, backupReminderEnabled: !prev.backupReminderEnabled }));
+              }}
+              className={`w-14 h-8 rounded-full transition-colors relative ${localConfig.backupReminderEnabled ? 'bg-teal-brand' : 'bg-slate-300'}`}
+            >
+              <div className={`w-6 h-6 bg-white rounded-full absolute top-1 transition-transform ${localConfig.backupReminderEnabled ? 'translate-x-7' : 'translate-x-1'}`} />
+            </button>
+          </div>
+
+          <button onClick={handleSave} className="w-full bg-[#1B5E66] hover:bg-[#2D8B96] transition-colors text-white font-black italic tracking-widest text-sm p-4 rounded-full shadow-lg">
+            ENREGISTRER
+          </button>
+        </div>
+      </motion.div>
+    </>
   );
 }

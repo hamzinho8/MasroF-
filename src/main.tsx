@@ -1,4 +1,4 @@
-import {StrictMode, Component, ErrorInfo, ReactNode} from 'react';
+import React, {StrictMode, ErrorInfo, ReactNode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
@@ -6,7 +6,7 @@ import { defineCustomElements } from '@ionic/pwa-elements/loader';
 
 defineCustomElements(window);
 
-class ErrorBoundary extends Component<{children: ReactNode}, {hasError: boolean, error: string}> {
+class ErrorBoundary extends React.Component<{children: ReactNode}, {hasError: boolean, error: string}> {
   constructor(props: {children: ReactNode}) {
     super(props);
     this.state = { hasError: false, error: '' };

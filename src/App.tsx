@@ -27,7 +27,7 @@ import LockScreen from "./components/LockScreen";
 import Inventory from "./components/Inventory"; // newly added
 import MasrofLogo from "./components/Logo";
 import AddTransactionModal from "./components/AddTransactionModal";
-import { Transaction, Reminder, CreditEntry, PredefinedItem, InventoryItem } from "./types";
+import { Transaction, Reminder, CreditEntry, PredefinedItem, InventoryItem, AlertConfig } from "./types";
 import { INITIAL_PREDEFINED_ITEMS } from "./constants";
 import { useSwipeable } from "react-swipeable";
 
@@ -68,7 +68,13 @@ export default function App() {
   >("widgetColor", "default");
   const [widgetTextColor, setWidgetTextColor] = useLocalStorage<string>("widgetTextColor", "#FFFFFF");
   const [aiNotifications, setAiNotifications] = useLocalStorage("aiNotifications", true);
-  const [balanceThreshold, setBalanceThreshold] = useLocalStorage<number | null>("balanceThreshold", 500);
+  const [alertConfig, setAlertConfig] = useLocalStorage<AlertConfig>("alertConfig", {
+    bankLimit: 500,
+    cashLimit: 50,
+    inventoryLimit: 3,
+    categoryBudgetPercent: 90,
+    backupReminderEnabled: true
+  });
   const [isDarkMode, setIsDarkMode] = useLocalStorage("isDarkMode", false);
   const [currency, setCurrency] = useLocalStorage("currency", "DH");
   const [appPin, setAppPin] = useLocalStorage<string | null>("appPin", null);
@@ -284,19 +290,136 @@ export default function App() {
   }, [reminders]);
 
   const [balance, setBalance] = useLocalStorage("balance", 0);
+  const [bankBalance, setBankBalance] = useLocalStorage("bankBalance", 0);
+  const [transactions, setTransactions] = useLocalStorage<Transaction[]>("transactions", []);
+
   const prevBalanceRef = React.useRef(balance);
+  const prevBankBalanceRef = React.useRef(bankBalance);
+  const prevInventoryRef = React.useRef(inventoryItems);
+  const prevTransactionsRef = React.useRef(transactions);
+
+  const scheduleBackupReminder = async () => {
+    if (!Capacitor.isNativePlatform()) return;
+    try {
+      const pending = await LocalNotifications.getPending();
+      const existing = pending.notifications.find(n => n.id === 2005);
+      if (existing) {
+        await LocalNotifications.cancel({ notifications: [existing] });
+      }
+
+      if (!alertConfig.backupReminderEnabled) return;
+
+      let permStatus = await LocalNotifications.checkPermissions();
+      if (permStatus.display !== 'granted') {
+         permStatus = await LocalNotifications.requestPermissions();
+      }
+      if (permStatus.display === 'granted') {
+        // Schedule for 12 hours from now
+        await LocalNotifications.schedule({
+          notifications: [
+            {
+              title: "Sauvegarde Recommandée",
+              body: "Vous avez effectué des modifications. N'oubliez pas d'exporter une sauvegarde de vos données !",
+              id: 2005, // unique ID for backup reminder
+              smallIcon: "ic_notification",
+              schedule: { at: new Date(Date.now() + 12 * 60 * 60 * 1000) },
+            }
+          ]
+        });
+      }
+    } catch (e) {
+      console.error("Backup reminder scheduling failed", e);
+    }
+  };
+
+  const checkAlerts = async (title: string, body: string, id: number) => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        let permStatus = await LocalNotifications.checkPermissions();
+        if (permStatus.display !== 'granted') {
+           permStatus = await LocalNotifications.requestPermissions();
+        }
+        if (permStatus.display === 'granted') {
+          await LocalNotifications.schedule({
+            notifications: [
+              {
+                title,
+                body,
+                id,
+                smallIcon: "ic_notification",
+                schedule: { at: new Date(Date.now() + 1000) },
+              }
+            ]
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+      alert(`${title}\n\n${body}`);
+    }
+  };
 
   React.useEffect(() => {
+    // 1. Cash Balance Alert
     if (
-      balanceThreshold !== null &&
-      balance < balanceThreshold &&
-      prevBalanceRef.current >= balanceThreshold
+      alertConfig.cashLimit !== null &&
+      balance <= alertConfig.cashLimit &&
+      prevBalanceRef.current > alertConfig.cashLimit
     ) {
-      alert(
-        `Attention ! Votre solde (${balance.toFixed(2)} ${currency}) est passé en dessous du seuil configuré (${balanceThreshold} ${currency}).`,
-      );
+      checkAlerts("Alerte de poche", `Votre montant dans votre poche a atteint ${balance.toFixed(2)} ${currency}.`, 1001);
     }
     prevBalanceRef.current = balance;
+
+    // 2. Bank Balance Alert
+    if (
+      alertConfig.bankLimit !== null &&
+      bankBalance <= alertConfig.bankLimit &&
+      prevBankBalanceRef.current > alertConfig.bankLimit
+    ) {
+      checkAlerts("Alerte Bancaire", `Le montant de votre compte bancaire a atteint ${bankBalance.toFixed(2)} ${currency}.`, 1002);
+    }
+    prevBankBalanceRef.current = bankBalance;
+
+    // 3. Inventory Item Alert
+    if (alertConfig.inventoryLimit !== null) {
+      const alertedItems = new Set<string>();
+      inventoryItems.forEach(item => {
+        const prevItem = prevInventoryRef.current?.find(p => p.id === item.id);
+        if (
+          item.quantity <= alertConfig.inventoryLimit! &&
+          (!prevItem || prevItem.quantity > alertConfig.inventoryLimit!)
+        ) {
+          alertedItems.add(item.name);
+        }
+      });
+      if (alertedItems.size > 0) {
+         checkAlerts("Alerte de Stock", `L'article(s) ${Array.from(alertedItems).join(', ')} a atteint un niveau bas (${alertConfig.inventoryLimit}).`, 1003);
+      }
+    }
+    prevInventoryRef.current = inventoryItems;
+
+    // 4. Category Budget Alert
+    if (alertConfig.categoryBudgetPercent !== null) {
+       Object.entries(categoryBudgets).forEach(([category, limit]) => {
+         // calculate spent
+         const spent = transactions
+           .filter(t => t.type === 'EXPENSE' && t.category === category)
+           .reduce((acc, t) => acc + t.amount, 0);
+
+         const prevSpent = prevTransactionsRef.current
+           .filter(t => t.type === 'EXPENSE' && t.category === category)
+           .reduce((acc, t) => acc + t.amount, 0);
+
+         const percentNow = (spent / limit) * 100;
+         const percentBefore = (prevSpent / limit) * 100;
+
+         if (percentNow >= alertConfig.categoryBudgetPercent! && percentBefore < alertConfig.categoryBudgetPercent!) {
+            checkAlerts("Alerte de Budget", `Le budget pour ${category} a atteint ${alertConfig.categoryBudgetPercent}% !`, 1004);
+         }
+       });
+    }
+    prevTransactionsRef.current = transactions;
 
     async function updateWidget() {
       await Preferences.set({ key: 'widget_balance', value: balance.toString() });
@@ -307,10 +430,8 @@ export default function App() {
       }
     }
     updateWidget();
-  }, [balance, balanceThreshold, currency, widgetTextColor]);
-
-  const [bankBalance, setBankBalance] = useLocalStorage("bankBalance", 0);
-  const [transactions, setTransactions] = useLocalStorage<Transaction[]>("transactions", []);
+    scheduleBackupReminder();
+  }, [balance, bankBalance, inventoryItems, transactions, categoryBudgets, alertConfig, currency, widgetTextColor]);
 
   const addTransaction = (
     label: string,
@@ -609,8 +730,8 @@ export default function App() {
             transactions={transactions}
             predefinedItems={predefinedItems}
             onPredefinedItemsChange={setPredefinedItems}
-            balanceThreshold={balanceThreshold}
-            onBalanceThresholdChange={setBalanceThreshold}
+            alertConfig={alertConfig}
+            onAlertConfigChange={setAlertConfig}
             appPin={appPin}
             onAppPinChange={setAppPin}
             appBiometric={appBiometric}

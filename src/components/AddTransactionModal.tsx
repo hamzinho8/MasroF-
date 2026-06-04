@@ -153,7 +153,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         quality: 60,
         allowEditing: false,
         resultType: CameraResultType.Base64,
-        source: CameraSource.Prompt,
+        source: CameraSource.Camera,
         saveToGallery: false,
         width: 1024
       });

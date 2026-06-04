@@ -59,3 +59,11 @@ export interface CategoryBudget {
   category: string;
   limit: number;
 }
+
+export interface AlertConfig {
+  bankLimit: number | null;
+  cashLimit: number | null;
+  inventoryLimit: number | null;
+  categoryBudgetPercent: number | null;
+  backupReminderEnabled: boolean;
+}
