@@ -2,12 +2,15 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.hamza.masrof',
-  appName: 'Masrof',
+  appName: 'MasroF',
   webDir: 'dist',
+  server: {
+    androidScheme: 'https'
+  },
   plugins: {
     LocalNotifications: {
       smallIcon: "ic_notification",
-      iconColor: "#488AFF",
+      iconColor: "#2D8B96"
     },
   },
 };
