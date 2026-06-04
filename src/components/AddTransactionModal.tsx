@@ -14,7 +14,9 @@ import {
   Gamepad2, 
   MoreHorizontal,
   ScanText,
-  Loader2
+  Loader2,
+  Mic,
+  MicOff
 } from 'lucide-react';
 import { PredefinedItem } from '../types';
 import { ICON_MAP } from '../constants';
@@ -62,6 +64,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
   const [addToInventory, setAddToInventory] = useState(false);
   const [inventoryQty, setInventoryQty] = useState('1');
   const [isScanning, setIsScanning] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const [scannedItems, setScannedItems] = useState<ScannedItem[] | null>(null);
   const [receiptTotal, setReceiptTotal] = useState<number | null>(null);
   const [detectedPaymentGroup, setDetectedPaymentGroup] = useState<string | null>(null);
@@ -79,8 +82,74 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
       setScannedItems(null);
       setReceiptTotal(null);
       setDetectedPaymentGroup(null);
+      setIsListening(false);
     }
   }, [isOpen, initialType]);
+
+  const startListening = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Votre navigateur ne supporte pas la reconnaissance vocale.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'fr-FR';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = async (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      try {
+           setIsListening(false);
+           setIsScanning(true); // show loader on scanner button momentarily or handle UI
+           const response = await fetch('/api/parse-voice', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: transcript })
+           });
+
+           if (response.ok) {
+              const data = await response.json();
+              if (data.amount) setAmount(data.amount.toString());
+              if (data.label) {
+                setLabel(data.label);
+              } else {
+                setLabel(transcript);
+              }
+              if (data.category) {
+                  const mappedCat = CATEGORIES.find(c => c.label.toLowerCase() === data.category.toLowerCase() || c.id === data.category);
+                  if (mappedCat) {
+                      setSelectedCategory(mappedCat.id);
+                      setShowFrequent(false);
+                  }
+              }
+           } else {
+              setLabel(transcript);
+           }
+      } catch (e) {
+          console.error("Voice parse error", e);
+          setLabel(transcript);
+      } finally {
+          setIsScanning(false);
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error", event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  };
 
   const handleCategoryClick = (catId: string) => {
     setSelectedCategory(catId);
@@ -153,7 +222,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         quality: 60,
         allowEditing: false,
         resultType: CameraResultType.Base64,
-        source: CameraSource.Camera,
+        source: CameraSource.Prompt,
         saveToGallery: false,
         width: 1024
       });
@@ -370,14 +439,23 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
               </h2>
               <div className="flex items-center gap-2">
                 {type === 'EXPENSE' && scannedItems === null && (
-                  <button 
-                    onClick={handleScanReceipt} 
-                    disabled={isScanning}
-                    className="h-10 px-4 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center gap-2 font-black text-xs uppercase tracking-widest hover:bg-teal-100 transition-colors"
-                  >
-                    {isScanning ? <Loader2 size={16} className="animate-spin" /> : <ScanText size={16} />}
-                    <span className="hidden sm:inline">Scanner</span>
-                  </button>
+                  <>
+                    <button 
+                      onClick={startListening} 
+                      disabled={isListening || isScanning}
+                      className={`h-10 w-10 ${isListening ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-slate-100 text-slate-500'} rounded-full flex items-center justify-center hover:bg-slate-200 transition-colors`}
+                    >
+                      {isListening ? <Mic size={16} className="animate-pulse" /> : <Mic size={16} />}
+                    </button>
+                    <button 
+                      onClick={handleScanReceipt} 
+                      disabled={isScanning || isListening}
+                      className="h-10 px-4 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center gap-2 font-black text-xs uppercase tracking-widest hover:bg-teal-100 transition-colors"
+                    >
+                      {isScanning ? <Loader2 size={16} className="animate-spin" /> : <ScanText size={16} />}
+                      <span className="hidden sm:inline">Scanner</span>
+                    </button>
+                  </>
                 )}
                 <button onClick={onClose} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors">
                   <X size={20} />

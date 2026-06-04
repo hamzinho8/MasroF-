@@ -166,7 +166,7 @@ export default function Credits({
       setEditingId(null);
     } else {
       const newEntry: CreditEntry = {
-        id: Date.now().toString(),
+        id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
         name: newName,
         amount: parseFloat(newAmount),
         type: newType,
@@ -578,14 +578,14 @@ export default function Credits({
           </div>
         ) : (
           <div className="space-y-4">
-            {entries.map((entry) => {
+            {entries.map((entry, index) => {
               const isReceive = entry.type === "OWE_ME";
               return (
                 <motion.div
                   layout
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  key={entry.id}
+                  key={`${entry.id}-${index}`}
                   className={`group flex items-center gap-4 p-5 rounded-[32px] border transition-all relative backdrop-blur-sm shadow-sm ${
                     isReceive
                       ? "bg-indigo-50/30 border-indigo-100/50 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10"
@@ -966,7 +966,7 @@ export default function Credits({
 
               return (
                 <motion.div
-                  key={tx.id}
+                  key={`${tx.id}-${index}`}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}

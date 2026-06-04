@@ -564,7 +564,7 @@ export default function History({ transactions, language, currency, onDelete, on
               return (
                 <div className="py-2">
                 <motion.div
-                  key={tx.id}
+                  key={`${tx.id}-${index}`}
                   initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -693,7 +693,7 @@ export default function History({ transactions, language, currency, onDelete, on
             return (
               <div className="py-2">
               <motion.div 
-                key={tx.id}
+                key={`${tx.id}-${index}`}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}

@@ -72,7 +72,7 @@ export default function Inventory({ items, onItemsChange, language }: InventoryP
 
   const handleAddItem = (name: string, quantity: number) => {
     const newItem: InventoryItem = {
-      id: Date.now().toString(),
+      id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
       name,
       quantity,
       addedAt: Date.now(),
@@ -98,7 +98,7 @@ export default function Inventory({ items, onItemsChange, language }: InventoryP
     ).replace(',', '');
     
     const newAction: InventoryDecreaseAction = {
-      id: Date.now().toString(),
+      id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
       timestamp: Date.now(),
       dateStr
     };
@@ -411,8 +411,8 @@ function ItemDetailsModal({ item, onClose, onDecrease, onDelete, t, language }: 
             </div>
           ) : (
             <div className="space-y-3 pb-4">
-              {item.history.map((action: any) => (
-                <div key={action.id} className="flex justify-between items-center p-3 rounded-2xl bg-white border-2 border-slate-50 shadow-sm">
+              {item.history.map((action: any, index: number) => (
+                <div key={`${action.id}-${index}`} className="flex justify-between items-center p-3 rounded-2xl bg-white border-2 border-slate-50 shadow-sm">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-[14px] bg-rose-50 text-rose-500 flex items-center justify-center">
                       <Minus size={18} strokeWidth={3} />
