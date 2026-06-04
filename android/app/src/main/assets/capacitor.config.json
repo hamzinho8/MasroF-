@@ -1,14 +1,11 @@
 {
 	"appId": "com.hamza.masrof",
-	"appName": "MasroF",
+	"appName": "Masrof",
 	"webDir": "dist",
-	"server": {
-		"androidScheme": "https"
-	},
 	"plugins": {
 		"LocalNotifications": {
 			"smallIcon": "ic_notification",
-			"iconColor": "#2D8B96"
+			"iconColor": "#488AFF"
 		}
 	}
 }
