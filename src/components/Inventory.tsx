@@ -1,25 +1,34 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Package, PackageOpen, Plus, Minus, X, Info, Search, History as HistoryIcon, User } from 'lucide-react';
-import { InventoryItem, InventoryDecreaseAction } from '../types';
+import { Package, PackageOpen, Plus, Minus, X, Info, Search, History as HistoryIcon, User, ListTodo, ShoppingCart } from 'lucide-react';
+import { InventoryItem, InventoryDecreaseAction, ShoppingListItem } from '../types';
 import { ICON_MAP } from '../constants';
 
 interface InventoryProps {
   items: InventoryItem[];
   onItemsChange: (items: InventoryItem[]) => void;
   language: 'Français' | 'العربية' | 'English';
+  shoppingList: ShoppingListItem[];
+  onShoppingListChange: (list: ShoppingListItem[]) => void;
+  onAddShoppingItem: () => void;
+  onCheckoutShoppingItem: (item: ShoppingListItem) => void;
+  currency: string;
 }
 
-export default function Inventory({ items, onItemsChange, language }: InventoryProps) {
+export default function Inventory({ items, onItemsChange, language, shoppingList, onShoppingListChange, onAddShoppingItem, onCheckoutShoppingItem, currency }: InventoryProps) {
+  const [activeTab, setActiveTab] = useState<'inventory' | 'shoppingList'>('inventory');
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [selectedItemInfo, setSelectedItemInfo] = useState<InventoryItem | null>(null);
   
   const translations = {
     Français: {
       title: "Stock",
-      add: "Ajouter Article",
+      shoppingList: "Liste d'achats",
+      add: "Ajouter",
+      addShopping: "Programmer Achat",
       search: "Rechercher...",
       empty: "Aucun article dans le stock",
+      emptyShoppingList: "Votre liste d'achats est vide",
       name: "Nom de l'article",
       quantity: "Quantité initiale",
       save: "Enregistrer",
@@ -34,9 +43,12 @@ export default function Inventory({ items, onItemsChange, language }: InventoryP
     },
     العربية: {
       title: "المخزون",
-      add: "إضافة عنصر",
+      shoppingList: "قائمة التسوق",
+      add: "إضافة",
+      addShopping: "برمجة شراء",
       search: "بحث...",
       empty: "لا توجد عناصر في المخزون",
+      emptyShoppingList: "قائمة التسوق فارغة",
       name: "اسم العنصر",
       quantity: "الكمية الأولية",
       save: "حفظ",
@@ -51,9 +63,12 @@ export default function Inventory({ items, onItemsChange, language }: InventoryP
     },
     English: {
       title: "Stock",
-      add: "Add Item",
+      shoppingList: "Shopping List",
+      add: "Add",
+      addShopping: "Schedule Buy",
       search: "Search...",
       empty: "No items in stock",
+      emptyShoppingList: "Your shopping list is empty",
       name: "Item Name",
       quantity: "Initial Quantity",
       save: "Save",
@@ -143,24 +158,59 @@ export default function Inventory({ items, onItemsChange, language }: InventoryP
       <div className="flex justify-between items-center mb-6 px-1">
         <h2 className="text-2xl font-black text-slate-900 tracking-tight">{t.title}</h2>
         <button
-          onClick={() => setIsAddItemModalOpen(true)}
+          onClick={() => activeTab === 'inventory' ? setIsAddItemModalOpen(true) : onAddShoppingItem()}
           className="flex items-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-5 py-2.5 rounded-2xl text-sm font-bold shadow-md shadow-indigo-500/20 hover:from-violet-500 hover:to-indigo-500 active:scale-95 transition-all"
         >
           <Plus size={18} strokeWidth={3} />
-          {t.add}
+          {activeTab === 'inventory' ? t.add : t.addShopping}
         </button>
       </div>
 
-      {items.length === 0 ? (
-        <div className="text-center py-16 px-6 rounded-[40px] border-2 border-dashed border-slate-200 bg-slate-50/50">
-          <div className="w-20 h-20 rounded-full bg-slate-200/50 flex items-center justify-center mx-auto mb-5 text-slate-400">
-            <PackageOpen size={40} />
-          </div>
-          <p className="text-slate-500 font-bold text-lg">{t.empty}</p>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-6">
-          {activeItems.length > 0 && (
+      <div className="flex bg-slate-100 p-1.5 rounded-2xl mb-6">
+        <button
+          onClick={() => setActiveTab('inventory')}
+          className={`flex-1 py-2.5 text-sm font-black uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 ${
+            activeTab === 'inventory' 
+              ? 'bg-white text-violet-700 shadow-sm' 
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <Package size={16} />
+          {t.inventory}
+        </button>
+        <button
+          onClick={() => setActiveTab('shoppingList')}
+          className={`flex-1 py-2.5 text-sm font-black uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 ${
+            activeTab === 'shoppingList' 
+              ? 'bg-white text-indigo-700 shadow-sm' 
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <ListTodo size={16} />
+          {t.shoppingList}
+        </button>
+      </div>
+
+      <div className="relative">
+      <AnimatePresence mode="wait">
+        {activeTab === 'inventory' ? (
+          <motion.div 
+            key="inventory-content"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 10 }}
+            className="flex flex-col gap-6"
+          >
+            {items.length === 0 ? (
+              <div className="text-center py-16 px-6 rounded-[40px] border-2 border-dashed border-slate-200 bg-slate-50/50">
+                <div className="w-20 h-20 rounded-full bg-slate-200/50 flex items-center justify-center mx-auto mb-5 text-slate-400">
+                  <PackageOpen size={40} />
+                </div>
+                <p className="text-slate-500 font-bold text-lg">{t.empty}</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-6">
+                {activeItems.length > 0 && (
             <div className="flex flex-col gap-3">
               {activeItems.map(item => {
                 const IconComponent = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : PackageOpen;
@@ -252,8 +302,73 @@ export default function Inventory({ items, onItemsChange, language }: InventoryP
               </div>
             </div>
           )}
-        </div>
-      )}
+          </div>
+        )}
+        </motion.div>
+        ) : (
+          <motion.div 
+            key="shoppingList-content"
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            className="flex flex-col gap-6"
+          >
+            {shoppingList.length === 0 ? (
+              <div className="text-center py-16 px-6 rounded-[40px] border-2 border-dashed border-slate-200 bg-slate-50/50">
+                <div className="w-20 h-20 rounded-full bg-slate-200/50 flex items-center justify-center mx-auto mb-5 text-slate-400">
+                  <ListTodo size={40} />
+                </div>
+                <p className="text-slate-500 font-bold text-lg">{t.emptyShoppingList}</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {shoppingList.map(item => {
+                  const IconComp = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : PackageOpen;
+                  return (
+                    <motion.div
+                      key={item.id}
+                      onClick={() => onCheckoutShoppingItem(item)}
+                      className="group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm bg-slate-50/90 border-slate-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10 cursor-pointer overflow-hidden"
+                    >
+                      <div className="shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm bg-indigo-100 text-indigo-600 relative z-10 opacity-90">
+                        <IconComp size={24} />
+                      </div>
+
+                      <div className="flex-1 min-w-0 flex flex-col justify-center py-1 relative z-10">
+                        <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1 italic select-none">
+                          {item.name}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{item.category}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-end shrink-0 pl-2 relative z-10">
+                        {item.expectedPrice ? (
+                          <span className="text-sm font-black text-slate-700 leading-none">{item.expectedPrice} {currency}</span>
+                        ) : null}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onShoppingListChange(shoppingList.filter((sItem) => sItem.id !== item.id));
+                          }}
+                          className="mt-2 w-8 h-8 rounded-full bg-slate-200 hover:bg-rose-100 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-colors"
+                        >
+                          <X size={14} strokeWidth={3} />
+                        </button>
+                      </div>
+                      <div className="absolute -right-4 -bottom-4 opacity-[0.02] transform group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500 pointer-events-none text-slate-900 z-0">
+                        <ShoppingCart size={100} />
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      </div>
 
       {/* Add Item Modal */}
       <AnimatePresence>

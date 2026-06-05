@@ -55,6 +55,15 @@ export interface InventoryItem {
   bg?: string;
 }
 
+export interface ShoppingListItem {
+  id: string;
+  name: string;
+  expectedPrice?: number;
+  category: string;
+  iconName?: string;
+  addedAt: number;
+}
+
 export interface CategoryBudget {
   category: string;
   limit: number;

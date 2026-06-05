@@ -28,7 +28,7 @@ import LockScreen from "./components/LockScreen";
 import Inventory from "./components/Inventory"; // newly added
 import MasrofLogo from "./components/Logo";
 import AddTransactionModal from "./components/AddTransactionModal";
-import { Transaction, Reminder, CreditEntry, PredefinedItem, InventoryItem } from "./types";
+import { Transaction, Reminder, CreditEntry, PredefinedItem, InventoryItem, ShoppingListItem } from "./types";
 import { INITIAL_PREDEFINED_ITEMS } from "./constants";
 import { useSwipeable } from "react-swipeable";
 
@@ -126,6 +126,7 @@ export default function App() {
 
   const [creditEntries, setCreditEntries] = useLocalStorage<CreditEntry[]>("creditEntries", []);
   const [inventoryItems, setInventoryItems] = useLocalStorage<InventoryItem[]>("inventoryItems", []);
+  const [shoppingList, setShoppingList] = useLocalStorage<ShoppingListItem[]>("shoppingList", []);
 
   const [predefinedItems, setPredefinedItems] = useState<PredefinedItem[]>(
     () => {
@@ -533,8 +534,39 @@ export default function App() {
     setBankBalance(0);
   };
 
+  const [modalIsShoppingMode, setModalIsShoppingMode] = useState(false);
+  const [modalInitialLabel, setModalInitialLabel] = useState('');
+  const [modalInitialCategory, setModalInitialCategory] = useState('');
+  const [modalInitialAmount, setModalInitialAmount] = useState<number | undefined>(undefined);
+  const [shoppingItemSelectedId, setShoppingItemSelectedId] = useState<string | null>(null);
+
   const openModal = (type: "INCOME" | "EXPENSE") => {
     setModalType(type);
+    setModalIsShoppingMode(false);
+    setModalInitialLabel('');
+    setModalInitialCategory('');
+    setModalInitialAmount(undefined);
+    setShoppingItemSelectedId(null);
+    setIsModalOpen(true);
+  };
+
+  const openShoppingListAddModal = () => {
+    setModalType("EXPENSE");
+    setModalIsShoppingMode(true);
+    setModalInitialLabel('');
+    setModalInitialCategory('');
+    setModalInitialAmount(undefined);
+    setShoppingItemSelectedId(null);
+    setIsModalOpen(true);
+  };
+
+  const openShoppingListCheckoutModal = (item: ShoppingListItem) => {
+    setModalType("EXPENSE");
+    setModalIsShoppingMode(false);
+    setModalInitialLabel(item.name);
+    setModalInitialCategory(item.category);
+    setModalInitialAmount(item.expectedPrice);
+    setShoppingItemSelectedId(item.id);
     setIsModalOpen(true);
   };
 
@@ -679,6 +711,11 @@ export default function App() {
             items={inventoryItems}
             onItemsChange={setInventoryItems}
             language={language}
+            shoppingList={shoppingList}
+            onShoppingListChange={setShoppingList}
+            onAddShoppingItem={openShoppingListAddModal}
+            onCheckoutShoppingItem={openShoppingListCheckoutModal}
+            currency={currency}
           />
         );
       case "settings":
@@ -882,10 +919,31 @@ export default function App() {
       <AddTransactionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onAdd={addTransaction}
+        onAdd={(label, amount, type, category, paidByBank, isPureInflow, inventoryData) => {
+          if (modalIsShoppingMode) {
+             const newItem: ShoppingListItem = {
+               id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+               name: label,
+               category: category || 'Autres',
+               expectedPrice: amount,
+               addedAt: Date.now(),
+               iconName: inventoryData?.iconName || 'ShoppingBag'
+             };
+             setShoppingList(prev => [...prev, newItem]);
+          } else {
+             addTransaction(label, amount, type, category, paidByBank, isPureInflow, inventoryData);
+             if (shoppingItemSelectedId) {
+                setShoppingList(prev => prev.filter(i => i.id !== shoppingItemSelectedId));
+             }
+          }
+        }}
         initialType={modalType}
         currency={currency}
         predefinedItems={predefinedItems}
+        isShoppingMode={modalIsShoppingMode}
+        initialLabel={modalInitialLabel}
+        initialAmount={modalInitialAmount}
+        initialCategory={modalInitialCategory}
       />
     </div>
   );

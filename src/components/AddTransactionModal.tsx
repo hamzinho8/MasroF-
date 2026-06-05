@@ -44,6 +44,10 @@ interface AddTransactionModalProps {
   initialType: 'INCOME' | 'EXPENSE';
   currency: string;
   predefinedItems: PredefinedItem[];
+  isShoppingMode?: boolean;
+  initialLabel?: string;
+  initialAmount?: number;
+  initialCategory?: string;
 }
 
 interface ScannedItem {
@@ -54,11 +58,11 @@ interface ScannedItem {
   addToInventory?: boolean;
 }
 
-export default function AddTransactionModal({ isOpen, onClose, onAdd, initialType, currency, predefinedItems }: AddTransactionModalProps) {
-  const [label, setLabel] = useState('');
-  const [amount, setAmount] = useState('');
+export default function AddTransactionModal({ isOpen, onClose, onAdd, initialType, currency, predefinedItems, isShoppingMode, initialLabel, initialAmount, initialCategory }: AddTransactionModalProps) {
+  const [label, setLabel] = useState(initialLabel || '');
+  const [amount, setAmount] = useState(initialAmount ? initialAmount.toString() : '');
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>(initialType);
-  const [selectedCategory, setSelectedCategory] = useState<string>('Autres');
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory || 'Autres');
   const [showFrequent, setShowFrequent] = useState(true);
   const [paidByBank, setPaidByBank] = useState(false);
   const [addToInventory, setAddToInventory] = useState(false);
@@ -72,9 +76,9 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
   React.useEffect(() => {
     if (isOpen) {
       setType(initialType);
-      setLabel('');
-      setAmount('');
-      setSelectedCategory('Autres');
+      setLabel(initialLabel || '');
+      setAmount(initialAmount ? initialAmount.toString() : '');
+      setSelectedCategory(initialCategory || 'Autres');
       setShowFrequent(true);
       setPaidByBank(false);
       setAddToInventory(false);
@@ -182,7 +186,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           if (response.ok) {
             data = await response.json();
             if (data.items) {
-               setScannedItems(data.items.map((i: any) => ({ ...i, categoryId: i.categoryId || 'other' })));
+               setScannedItems(data.items.map((i: any, index: number) => ({ ...i, id: i.id || index.toString(), categoryId: i.categoryId || 'other' })));
                setReceiptTotal(data.total);
                setDetectedPaymentGroup(data.paymentMethod === 'CASH' ? 'cash' : 'bank');
                setShowFrequent(false);
@@ -389,11 +393,12 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (amount) {
+    if (amount || isShoppingMode) {
       const finalLabel = type === 'INCOME' ? 'Retrait Banque' : (label.trim() || 'Achat');
+      const finalAmount = amount ? parseFloat(amount) : 0;
       let invReq = undefined;
       
-      if (type === 'EXPENSE' && addToInventory) {
+      if (type === 'EXPENSE' && addToInventory && !isShoppingMode) {
         const cat = CATEGORIES.find(c => c.id === selectedCategory) || CATEGORIES[4];
         let iconName = 'Box'; // fallback
         if (cat.id === 'Nourriture') iconName = 'Utensils';
@@ -410,7 +415,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         };
       }
       
-      onAdd(finalLabel, parseFloat(amount), type, type === 'EXPENSE' ? selectedCategory : undefined, paidByBank, false, invReq);
+      onAdd(finalLabel, finalAmount, type, type === 'EXPENSE' ? selectedCategory : undefined, paidByBank, false, invReq);
       onClose();
     }
   };
@@ -665,21 +670,23 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                   </>
                 )}
 
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Montant ({currency})</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    required
-                    autoFocus={type === 'INCOME'}
-                    placeholder="0.0"
-                    className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-5 font-black text-slate-800 text-3xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all text-center font-mono"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                  />
-                </div>
+                {!isShoppingMode && (
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Montant ({currency})</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      required
+                      autoFocus={type === 'INCOME'}
+                      placeholder="0.0"
+                      className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-5 font-black text-slate-800 text-3xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all text-center font-mono"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                    />
+                  </div>
+                )}
 
-                {type === 'EXPENSE' && (
+                {type === 'EXPENSE' && !isShoppingMode && (
                   <>
                     <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 p-4 rounded-2xl cursor-pointer" onClick={() => setPaidByBank(!paidByBank)}>
                       <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${paidByBank ? 'bg-teal-500 text-white' : 'bg-slate-200 text-transparent'}`}>
