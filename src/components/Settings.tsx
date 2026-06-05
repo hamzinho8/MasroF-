@@ -69,6 +69,14 @@ interface SettingsProps {
   onPredefinedItemsChange: (items: PredefinedItem[]) => void;
   balanceThreshold: number | null;
   onBalanceThresholdChange: (threshold: number | null) => void;
+  bankBalanceThreshold: number | null;
+  onBankBalanceThresholdChange: (threshold: number | null) => void;
+  inventoryAlertThreshold: number | null;
+  onInventoryAlertThresholdChange: (threshold: number | null) => void;
+  budgetAlertThreshold: number | null;
+  onBudgetAlertThresholdChange: (threshold: number | null) => void;
+  backupAlertInterval: number | null;
+  onBackupAlertIntervalChange: (interval: number | null) => void;
   appPin: string | null;
   onAppPinChange: (pin: string | null) => void;
   appBiometric: boolean;
@@ -108,6 +116,14 @@ export default function Settings({
   onPredefinedItemsChange,
   balanceThreshold,
   onBalanceThresholdChange,
+  bankBalanceThreshold,
+  onBankBalanceThresholdChange,
+  inventoryAlertThreshold,
+  onInventoryAlertThresholdChange,
+  budgetAlertThreshold,
+  onBudgetAlertThresholdChange,
+  backupAlertInterval,
+  onBackupAlertIntervalChange,
   appPin,
   onAppPinChange,
   appBiometric,
@@ -134,6 +150,7 @@ export default function Settings({
   const [soundType, setSoundType] = useState(() => localStorage.getItem("notificationSoundType") || "checkout");
   const [showArticleManager, setShowArticleManager] = useState(false);
   const [showReminderManager, setShowReminderManager] = useState(false);
+  const [showAlarmManager, setShowAlarmManager] = useState(false);
   const [backupReminder, setBackupReminder] = useState(() => localStorage.getItem("backupReminderEnabled") === "true");
 
   const handleReset = () => {
@@ -315,10 +332,17 @@ export default function Settings({
               showArrow={true}
             />
             <SettingsItem
-              icon={<Bell />}
+              icon={<Bell  />}
               title="GESTION DES RAPPELS"
               subtitle={`${reminders.length} RAPPELS ACTIFS`}
               onClick={() => setShowReminderManager(true)}
+              showArrow={true}
+            />
+            <SettingsItem
+              icon={<Bell />}
+              title="SEUILS D'ALERTES ET ALARMES"
+              subtitle="Compte Bancaire, Poche, Stock, Budget"
+              onClick={() => setShowAlarmManager(true)}
               showArrow={true}
             />
             <SettingsItem
@@ -538,6 +562,25 @@ export default function Settings({
             items={predefinedItems}
             onItemsChange={onPredefinedItemsChange}
             currency={currency}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Alarm Settings Modal */}
+      <AnimatePresence>
+        {showAlarmManager && (
+          <AlarmSettingsModal
+            onClose={() => setShowAlarmManager(false)}
+            balanceThreshold={balanceThreshold}
+            onBalanceThresholdChange={onBalanceThresholdChange}
+            bankBalanceThreshold={bankBalanceThreshold}
+            onBankBalanceThresholdChange={onBankBalanceThresholdChange}
+            inventoryAlertThreshold={inventoryAlertThreshold}
+            onInventoryAlertThresholdChange={onInventoryAlertThresholdChange}
+            budgetAlertThreshold={budgetAlertThreshold}
+            onBudgetAlertThresholdChange={onBudgetAlertThresholdChange}
+            backupAlertInterval={backupAlertInterval}
+            onBackupAlertIntervalChange={onBackupAlertIntervalChange}
           />
         )}
       </AnimatePresence>
@@ -910,6 +953,141 @@ function Switch({
         className="absolute top-1 w-4 h-4 rounded-full shadow-sm"
       />
     </button>
+  );
+}
+
+function AlarmSettingsModal({
+  onClose,
+  balanceThreshold,
+  onBalanceThresholdChange,
+  bankBalanceThreshold,
+  onBankBalanceThresholdChange,
+  inventoryAlertThreshold,
+  onInventoryAlertThresholdChange,
+  budgetAlertThreshold,
+  onBudgetAlertThresholdChange,
+  backupAlertInterval,
+  onBackupAlertIntervalChange,
+}: {
+  onClose: () => void;
+  balanceThreshold: number | null;
+  onBalanceThresholdChange: (threshold: number | null) => void;
+  bankBalanceThreshold: number | null;
+  onBankBalanceThresholdChange: (threshold: number | null) => void;
+  inventoryAlertThreshold: number | null;
+  onInventoryAlertThresholdChange: (threshold: number | null) => void;
+  budgetAlertThreshold: number | null;
+  onBudgetAlertThresholdChange: (threshold: number | null) => void;
+  backupAlertInterval: number | null;
+  onBackupAlertIntervalChange: (interval: number | null) => void;
+}) {
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 bg-[#00FFFF]/5 backdrop-blur-md z-[110] max-w-md mx-auto"
+      />
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        className="fixed inset-x-0 bottom-0 z-[120] bg-white/95 backdrop-blur-2xl border-t border-[#2D8B96]/30 rounded-t-[40px] max-h-[90vh] overflow-y-auto max-w-md mx-auto shadow-[0_-10px_40px_rgba(45,139,150,0.15)] pb-safe"
+      >
+        <div className="sticky top-0 bg-white/95 backdrop-blur-xl z-10 px-8 py-6 border-b border-[#2D8B96]/10 flex items-center justify-between">
+          <h3 className="text-xl font-black text-[#1B5E66] italic uppercase tracking-tighter">
+            Seuils d'Alertes
+          </h3>
+          <button
+            onClick={onClose}
+            className="w-10 h-10 rounded-full bg-[#2D8B96]/10 text-[#2D8B96] flex items-center justify-center hover:bg-[#2D8B96] hover:text-white transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="p-8 space-y-6">
+          <div className="space-y-4">
+            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
+              Solde Compte Bancaire
+            </label>
+            <div className="flex gap-4">
+              <input
+                type="number"
+                placeholder="Ex: 500"
+                value={bankBalanceThreshold ?? ""}
+                onChange={(e) => onBankBalanceThresholdChange(e.target.value ? Number(e.target.value) : null)}
+                className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
+              Argent dans ma Poche
+            </label>
+            <div className="flex gap-4">
+              <input
+                type="number"
+                placeholder="Ex: 50"
+                value={balanceThreshold ?? ""}
+                onChange={(e) => onBalanceThresholdChange(e.target.value ? Number(e.target.value) : null)}
+                className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
+              Quantité Stock Article
+            </label>
+            <div className="flex gap-4">
+              <input
+                type="number"
+                placeholder="Ex: 3"
+                value={inventoryAlertThreshold ?? ""}
+                onChange={(e) => onInventoryAlertThresholdChange(e.target.value ? Number(e.target.value) : null)}
+                className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
+              Budget de Catégorie (%)
+            </label>
+            <div className="flex gap-4">
+              <input
+                type="number"
+                placeholder="Ex: 90"
+                min={0}
+                max={100}
+                value={budgetAlertThreshold ?? ""}
+                onChange={(e) => onBudgetAlertThresholdChange(e.target.value ? Number(e.target.value) : null)}
+                className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
+              Intervalle Alarme Sauvegarde (Min)
+            </label>
+            <div className="flex gap-4">
+              <input
+                type="number"
+                placeholder="Ex: 30"
+                value={backupAlertInterval ?? ""}
+                onChange={(e) => onBackupAlertIntervalChange(e.target.value ? Number(e.target.value) : null)}
+                className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
+              />
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </>
   );
 }
 

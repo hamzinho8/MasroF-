@@ -69,7 +69,11 @@ export default function App() {
   >("widgetColor", "default");
   const [widgetTextColor, setWidgetTextColor] = useLocalStorage<string>("widgetTextColor", "#FFFFFF");
   const [aiNotifications, setAiNotifications] = useLocalStorage("aiNotifications", true);
-  const [balanceThreshold, setBalanceThreshold] = useLocalStorage<number | null>("balanceThreshold", 500);
+  const [balanceThreshold, setBalanceThreshold] = useLocalStorage<number | null>("balanceThreshold", 50);
+  const [bankBalanceThreshold, setBankBalanceThreshold] = useLocalStorage<number | null>("bankBalanceThreshold", 500);
+  const [inventoryAlertThreshold, setInventoryAlertThreshold] = useLocalStorage<number | null>("inventoryAlertThreshold", 3);
+  const [budgetAlertThreshold, setBudgetAlertThreshold] = useLocalStorage<number | null>("budgetAlertThreshold", 90);
+  const [backupAlertInterval, setBackupAlertInterval] = useLocalStorage<number | null>("backupAlertInterval", 30);
   const [isDarkMode, setIsDarkMode] = useLocalStorage("isDarkMode", false);
   const [currency, setCurrency] = useLocalStorage("currency", "DH");
   const [appPin, setAppPin] = useLocalStorage<string | null>("appPin", null);
@@ -285,7 +289,94 @@ export default function App() {
   }, [reminders]);
 
   const [balance, setBalance] = useLocalStorage("balance", 0);
+  const [bankBalance, setBankBalance] = useLocalStorage("bankBalance", 0);
+  const [transactions, setTransactions] = useLocalStorage<Transaction[]>("transactions", []);
   const prevBalanceRef = React.useRef(balance);
+
+  const alertedBankRef = React.useRef(false);
+  const alertedPocketRef = React.useRef(false);
+  const alertedInventoryRef = React.useRef<Record<string, boolean>>({});
+  const alertedCategoriesRef = React.useRef<Record<string, boolean>>({});
+  const lastBackupAlertRef = React.useRef(Date.now());
+
+  React.useEffect(() => {
+    // 1. Bank Balance == 500 DH
+    if (bankBalanceThreshold !== null && bankBalance <= bankBalanceThreshold && !alertedBankRef.current) {
+        alert(`Alarme: Votre solde du compte bancaire a atteint le seuil critique (${bankBalance} ${currency}).`);
+        alertedBankRef.current = true;
+    } else if (bankBalanceThreshold !== null && bankBalance > bankBalanceThreshold) {
+        alertedBankRef.current = false;
+    }
+
+    // 2. Pocket Balance == 50 DH
+    if (balanceThreshold !== null && balance <= balanceThreshold && !alertedPocketRef.current) {
+        alert(`Alarme: Le montant dans votre poche a atteint le seuil critique (${balance} ${currency}).`);
+        alertedPocketRef.current = true;
+    } else if (balanceThreshold !== null && balance > balanceThreshold) {
+        alertedPocketRef.current = false;
+    }
+
+    // 3. Inventory Item == 3
+    inventoryItems.forEach((item: any) => {
+        if (inventoryAlertThreshold !== null && item.quantity === inventoryAlertThreshold && !alertedInventoryRef.current[item.id]) {
+            alert(`Alarme Stock: La quantité de l'article "${item.name}" est ${inventoryAlertThreshold}.`);
+            alertedInventoryRef.current[item.id] = true;
+        } else if (inventoryAlertThreshold !== null && item.quantity !== inventoryAlertThreshold) {
+            alertedInventoryRef.current[item.id] = false;
+        }
+    });
+
+  }, [bankBalance, balance, inventoryItems, currency, bankBalanceThreshold, balanceThreshold, inventoryAlertThreshold]);
+
+  React.useEffect(() => {
+    // 4. Category Budget >= 90%
+    const now = new Date();
+    const startOfPeriod = new Date();
+    startOfPeriod.setDate(1);
+    startOfPeriod.setHours(0, 0, 0, 0);
+
+    const expenses = transactions.filter(t => {
+      const isCredit = (t.category && ["on me doit","je dois","مستحقات لي","ديون علي","owed to me","i owe","loans","debts","crédit +","crédit --"].includes(t.category.toLowerCase()));
+      const isExpense = (t.type === 'EXPENSE' || (t.type as any) === 'expense') && !isCredit;
+      return isExpense && t.timestamp >= startOfPeriod.getTime();
+    });
+
+    const categoryTotals: Record<string, number> = {};
+    expenses.forEach(t => {
+      let category = t.category || 'Autres';
+      if (category === 'Food') category = 'Nourriture';
+      else if (category === 'Leisure') category = 'Loisirs';
+      else if (category === 'Others') category = 'Autres';
+      categoryTotals[category] = (categoryTotals[category] || 0) + t.amount;
+    });
+
+    Object.entries(categoryBudgets).forEach(([cat, limit]) => {
+      const total = categoryTotals[cat] || 0;
+      const budgetThresholdRatio = budgetAlertThreshold !== null ? budgetAlertThreshold / 100 : 0.9;
+      if (budgetAlertThreshold !== null && total >= limit * budgetThresholdRatio && !alertedCategoriesRef.current[cat]) {
+         alert(`Alarme Budget: Vous avez atteint ou dépassé ${budgetAlertThreshold}% du budget pour la catégorie "${cat}" (${total.toFixed(2)} / ${limit} ${currency}).`);
+         alertedCategoriesRef.current[cat] = true;
+      } else if (budgetAlertThreshold !== null && total < limit * budgetThresholdRatio) {
+         alertedCategoriesRef.current[cat] = false;
+      }
+    });
+  }, [transactions, categoryBudgets, currency, budgetAlertThreshold]);
+
+  React.useEffect(() => {
+    // 5. Backup Alarm
+    if (!backupAlertInterval) return;
+    
+    const checkBackupInterval = setInterval(() => {
+      const hasUnbacked = localStorage.getItem('hasUnbackedChanges') === 'true';
+      // Trigger if unbacked changes exist and interval passed since last alert
+      if (hasUnbacked && Date.now() - lastBackupAlertRef.current > backupAlertInterval * 60 * 1000) {
+          alert("Alarme Sauvegarde: Vous avez des modifications non enregistrées. Pensez à faire une sauvegarde de vos données !");
+          lastBackupAlertRef.current = Date.now();
+      }
+    }, 60000); // check every minute
+
+    return () => clearInterval(checkBackupInterval);
+  }, [backupAlertInterval]);
 
   React.useEffect(() => {
     if (
@@ -309,9 +400,6 @@ export default function App() {
     }
     updateWidget();
   }, [balance, balanceThreshold, currency, widgetTextColor]);
-
-  const [bankBalance, setBankBalance] = useLocalStorage("bankBalance", 0);
-  const [transactions, setTransactions] = useLocalStorage<Transaction[]>("transactions", []);
 
   const markUnbackedChanges = () => {
     localStorage.setItem('hasUnbackedChanges', 'true');
@@ -620,6 +708,14 @@ export default function App() {
             onPredefinedItemsChange={setPredefinedItems}
             balanceThreshold={balanceThreshold}
             onBalanceThresholdChange={setBalanceThreshold}
+            bankBalanceThreshold={bankBalanceThreshold}
+            onBankBalanceThresholdChange={setBankBalanceThreshold}
+            inventoryAlertThreshold={inventoryAlertThreshold}
+            onInventoryAlertThresholdChange={setInventoryAlertThreshold}
+            budgetAlertThreshold={budgetAlertThreshold}
+            onBudgetAlertThresholdChange={setBudgetAlertThreshold}
+            backupAlertInterval={backupAlertInterval}
+            onBackupAlertIntervalChange={setBackupAlertInterval}
             appPin={appPin}
             onAppPinChange={setAppPin}
             appBiometric={appBiometric}
