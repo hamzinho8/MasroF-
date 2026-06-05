@@ -186,7 +186,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           if (response.ok) {
             data = await response.json();
             if (data.items) {
-               setScannedItems(data.items.map((i: any, index: number) => ({ ...i, id: i.id || index.toString(), categoryId: i.categoryId || 'other' })));
+               setScannedItems(data.items.map((i: any, index: number) => ({ ...i, id: index.toString() + Math.random().toString(36).substring(2, 9), categoryId: i.categoryId || 'other' })));
                setReceiptTotal(data.total);
                setDetectedPaymentGroup(data.paymentMethod === 'CASH' ? 'cash' : 'bank');
                setShowFrequent(false);
@@ -304,7 +304,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
 
         if (itemsToSet.length > 0) {
           setScannedItems(itemsToSet.map((item: any, index: number) => ({
-            id: index.toString(),
+            id: index.toString() + Math.random().toString(36).substring(2, 9),
             title: item.title || 'Achat',
             amount: item.amount || 0,
             category: CATEGORIES.some(c => c.id === item.category) ? item.category : 'Autres',
