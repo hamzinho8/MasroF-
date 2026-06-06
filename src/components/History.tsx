@@ -562,7 +562,7 @@ export default function History({ transactions, language, currency, onDelete, on
             if (isCreditPlus || isCreditMinus) {
               const isReceive = isCreditPlus;
               return (
-                <div key={`${tx.id}-${index}`} className="py-2">
+                <div key={tx.id} className="py-2">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -690,7 +690,7 @@ export default function History({ transactions, language, currency, onDelete, on
             }
 
             return (
-              <div key={`${tx.id}-${index}`} className="py-2">
+              <div key={tx.id} className="py-2">
               <motion.div 
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}

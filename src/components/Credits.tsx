@@ -585,7 +585,7 @@ export default function Credits({
                   layout
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  key={`${entry.id}-${index}`}
+                  key={entry.id}
                   className={`group flex items-center gap-4 p-5 rounded-[32px] border transition-all relative backdrop-blur-sm shadow-sm ${
                     isReceive
                       ? "bg-indigo-50/30 border-indigo-100/50 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10"
@@ -966,7 +966,7 @@ export default function Credits({
 
               return (
                 <motion.div
-                  key={`${tx.id}-${index}`}
+                  key={tx.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}

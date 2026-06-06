@@ -1,6 +1,8 @@
 import { LocalNotifications } from '@capacitor/local-notifications';
+import { Capacitor } from '@capacitor/core';
 
 export const scheduleBackupReminder = async () => {
+    if (!Capacitor.isNativePlatform()) return;
     try {
         const enabled = localStorage.getItem('backupReminderEnabled') === 'true';
         const hasUnbackedChanges = localStorage.getItem('hasUnbackedChanges') === 'true';

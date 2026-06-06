@@ -398,14 +398,20 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
       const finalAmount = amount ? parseFloat(amount) : 0;
       let invReq = undefined;
       
-      if (type === 'EXPENSE' && addToInventory && !isShoppingMode) {
+      if (type === 'EXPENSE' && (addToInventory || isShoppingMode)) {
         const cat = CATEGORIES.find(c => c.id === selectedCategory) || CATEGORIES[4];
+        const matchedItem = predefinedItems.find(p => p.name.toLowerCase() === finalLabel.toLowerCase());
+        
         let iconName = 'Box'; // fallback
-        if (cat.id === 'Nourriture') iconName = 'Utensils';
-        else if (cat.id === 'Shopping') iconName = 'ShoppingBag';
-        else if (cat.id === 'Transport') iconName = 'Car';
-        else if (cat.id === 'Loisirs') iconName = 'Gamepad2';
-        else if (cat.id === 'Autres') iconName = 'MoreHorizontal';
+        if (matchedItem) {
+          iconName = matchedItem.iconName || 'Box';
+        } else {
+          if (cat.id === 'Nourriture') iconName = 'Utensils';
+          else if (cat.id === 'Shopping') iconName = 'ShoppingBag';
+          else if (cat.id === 'Transport') iconName = 'Car';
+          else if (cat.id === 'Loisirs') iconName = 'Gamepad2';
+          else if (cat.id === 'Autres') iconName = 'MoreHorizontal';
+        }
         
         invReq = {
           quantity: parseInt(inventoryQty) || 1,
@@ -440,10 +446,10 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           >
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-black text-slate-800 tracking-tight">
-                {scannedItems !== null ? 'Articles Scannés' : (type === 'INCOME' ? 'Retrait Banque' : 'Nouvel Achat')}
+                {isShoppingMode ? 'Programmer Achat' : (scannedItems !== null ? 'Articles Scannés' : (type === 'INCOME' ? 'Retrait Banque' : 'Nouvel Achat'))}
               </h2>
               <div className="flex items-center gap-2">
-                {type === 'EXPENSE' && scannedItems === null && (
+                {type === 'EXPENSE' && scannedItems === null && !isShoppingMode && (
                   <>
                     <button 
                       onClick={startListening} 
@@ -624,7 +630,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                           </button>
                         )}
                       </div>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full">
                         <AnimatePresence mode="popLayout">
                           {filteredItems.map((item) => {
                             const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES[4];
@@ -638,14 +644,14 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                                 exit={{ opacity: 0, scale: 0.8 }}
                                 type="button"
                                 onClick={() => handleItemSelect(item.name, item.price, item.category)}
-                                className={`flex items-center gap-2 px-3 py-2 rounded-full border border-slate-100 shadow-sm transition-all active:scale-95 bg-white hover:border-teal-500/30 ${label === item.name ? 'ring-2 ring-teal-500/20 border-teal-500/50' : ''}`}
+                                className={`flex items-center gap-2 pr-2 pl-1 py-1 rounded-2xl border border-slate-100 shadow-sm transition-all active:scale-95 bg-white hover:border-teal-500/30 ${label === item.name ? 'ring-2 ring-teal-500/20 border-teal-500/50' : ''}`}
                               >
-                                <div className={`w-6 h-6 rounded-full flex items-center justify-center ${cat.bgColor} ${cat.color}`}>
+                                <div className={`shrink-0 w-8 h-8 rounded-xl flex items-center justify-center shadow-sm ${cat.bgColor} ${cat.color}`}>
                                   <IconComponent size={14} />
                                 </div>
-                                <div className="flex flex-col items-start leading-none">
-                                  <span className="text-[11px] font-black text-slate-700">{item.name}</span>
-                                  <span className="text-[9px] font-bold text-slate-400">{item.price} {currency}</span>
+                                <div className="flex flex-col items-start justify-center overflow-hidden">
+                                  <span className="text-[10px] font-black text-slate-700 leading-tight truncate w-full flex-1 text-left">{item.name}</span>
+                                  <span className="text-[9px] font-bold text-slate-400 leading-none">{item.price} {currency}</span>
                                 </div>
                               </motion.button>
                             );

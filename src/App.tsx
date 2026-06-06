@@ -642,6 +642,8 @@ export default function App() {
             currency={currency}
             creditEntries={creditEntries}
             onNavigateToCredits={() => setActiveTab("credits")}
+            reminders={reminders}
+            shoppingList={shoppingList}
           />
         );
       case "stats":
@@ -803,6 +805,8 @@ export default function App() {
             currency={currency}
             creditEntries={creditEntries}
             onNavigateToCredits={() => setActiveTab("credits")}
+            reminders={reminders}
+            shoppingList={shoppingList}
           />
         );
     }

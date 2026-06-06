@@ -212,7 +212,7 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
               <div className="flex flex-col gap-6">
                 {activeItems.length > 0 && (
             <div className="flex flex-col gap-3">
-              {activeItems.map(item => {
+              {activeItems.map((item) => {
                 const IconComponent = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : PackageOpen;
                 const iconColorClass = item.color ? item.color : "text-white";
                 const bgClass = item.bg ? item.bg : "bg-violet-600";
@@ -265,7 +265,7 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
                 {t.consumed}
               </h3>
               <div className="flex flex-col gap-3">
-                {consumedItems.map(item => {
+                {consumedItems.map((item) => {
                   const IconComponent = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : PackageOpen;
                   return (
                     <motion.div
@@ -322,15 +322,24 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
               </div>
             ) : (
               <div className="flex flex-col gap-3">
-                {shoppingList.map(item => {
+                {shoppingList.map((item) => {
                   const IconComp = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : PackageOpen;
+                  const getCatStyle = (cat: string) => {
+                    const c = cat.toLowerCase();
+                    if (c.includes('nourri')) return { bg: 'bg-teal-100', text: 'text-teal-700' };
+                    if (c.includes('shop')) return { bg: 'bg-rose-100', text: 'text-rose-600' };
+                    if (c.includes('trans')) return { bg: 'bg-sky-100', text: 'text-sky-600' };
+                    if (c.includes('loisi')) return { bg: 'bg-purple-100', text: 'text-purple-600' };
+                    return { bg: 'bg-slate-100', text: 'text-slate-600' };
+                  };
+                  const catStyle = getCatStyle(item.category || '');
                   return (
                     <motion.div
                       key={item.id}
                       onClick={() => onCheckoutShoppingItem(item)}
-                      className="group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm bg-slate-50/90 border-slate-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10 cursor-pointer overflow-hidden"
+                      className={`group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm hover:shadow-xl cursor-pointer overflow-hidden ${catStyle.bg.replace('100', '50')} border-slate-100`}
                     >
-                      <div className="shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm bg-indigo-100 text-indigo-600 relative z-10 opacity-90">
+                      <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${catStyle.bg} ${catStyle.text} relative z-10 opacity-90`}>
                         <IconComp size={24} />
                       </div>
 
@@ -526,8 +535,8 @@ function ItemDetailsModal({ item, onClose, onDecrease, onDelete, t, language }: 
             </div>
           ) : (
             <div className="space-y-3 pb-4">
-              {item.history.map((action: any, index: number) => (
-                <div key={`${action.id}-${index}`} className="flex justify-between items-center p-3 rounded-2xl bg-white border-2 border-slate-50 shadow-sm">
+              {item.history.map((action: any) => (
+                <div key={action.id} className="flex justify-between items-center p-3 rounded-2xl bg-white border-2 border-slate-50 shadow-sm">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-[14px] bg-rose-50 text-rose-500 flex items-center justify-center">
                       <Minus size={18} strokeWidth={3} />
