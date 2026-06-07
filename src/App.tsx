@@ -395,12 +395,39 @@ export default function App() {
       await Preferences.set({ key: 'widget_balance', value: balance.toString() });
       await Preferences.set({ key: 'widget_currency', value: currency });
       await Preferences.set({ key: 'widget_text_color', value: widgetTextColor });
+
+      const newsItems: string[] = [];
+      const activeReminders = (reminders || []).filter(r => r.enabled);
+      activeReminders.forEach(r => {
+         newsItems.push(`<b><font color="#F43F5E">⚠ ${r.title}</font></b>`);
+      });
+
+      (shoppingList || []).forEach((s) => {
+        const catLabel = (s.category || '').toLowerCase();
+        let colorHex = "#64748B"; // slate
+        let icon = "📦";
+        
+        if (catLabel.includes("nourri")) { colorHex = "#14B8A6"; icon = "🍽️"; }
+        else if (catLabel.includes("shop")) { colorHex = "#F43F5E"; icon = "🛍️"; }
+        else if (catLabel.includes("trans")) { colorHex = "#0EA5E9"; icon = "🚕"; }
+        else if (catLabel.includes("loisi")) { colorHex = "#A855F7"; icon = "🎮"; }
+        
+        newsItems.push(`<b><font color="${colorHex}">${icon} ${s.name}</font></b>`);
+      });
+
+      let newsHtml = newsItems.join("<br><br>");
+      if (!newsHtml) {
+          newsHtml = "<i>Aucune notification.</i>";
+      }
+      
+      await Preferences.set({ key: 'widget_news_html', value: newsHtml });
+
       if (typeof window !== "undefined") {
         WidgetUpdater.update().catch((err: any) => console.log('WidgetUpdater skip:', err));
       }
     }
     updateWidget();
-  }, [balance, balanceThreshold, currency, widgetTextColor]);
+  }, [balance, balanceThreshold, currency, widgetTextColor, reminders, shoppingList]);
 
   const markUnbackedChanges = () => {
     localStorage.setItem('hasUnbackedChanges', 'true');

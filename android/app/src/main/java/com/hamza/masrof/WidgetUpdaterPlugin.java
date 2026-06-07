@@ -15,12 +15,17 @@ public class WidgetUpdaterPlugin extends Plugin {
     public void update(PluginCall call) {
         Intent intent = new Intent(getContext(), MasrofWidgetProvider.class);
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-        
         AppWidgetManager widgetManager = AppWidgetManager.getInstance(getContext());
         int[] ids = widgetManager.getAppWidgetIds(new ComponentName(getContext(), MasrofWidgetProvider.class));
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
-        
         getContext().sendBroadcast(intent);
+
+        Intent intentNews = new Intent(getContext(), NewsWidgetProvider.class);
+        intentNews.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        int[] idsNews = widgetManager.getAppWidgetIds(new ComponentName(getContext(), NewsWidgetProvider.class));
+        intentNews.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, idsNews);
+        getContext().sendBroadcast(intentNews);
+
         call.resolve();
     }
 }

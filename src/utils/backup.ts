@@ -23,46 +23,87 @@ export const exportDataToFile = async () => {
         const encryptedData = getBackupData();
 
         if (Capacitor.isNativePlatform()) {
-            await Filesystem.writeFile({
-                path: BACKUP_FILE_NAME,
-                data: encryptedData,
-                directory: Directory.Cache,
-                encoding: Encoding.UTF8,
-            });
-            
-            const result = await Filesystem.getUri({
-                path: BACKUP_FILE_NAME,
-                directory: Directory.Cache,
-            });
-
-            await Share.share({
-                title: 'Sauvegarde Masrof',
-                text: 'Fichier de sauvegarde des données Masrof.',
-                url: result.uri,
-                dialogTitle: 'Enregistrer la sauvegarde'
-            });
+            try {
+                const writeResult = await Filesystem.writeFile({
+                    path: BACKUP_FILE_NAME,
+                    data: encryptedData,
+                    directory: Directory.Documents,
+                    encoding: Encoding.UTF8,
+                });
+                try {
+                    await Share.share({
+                        title: 'Sauvegarde Masrof',
+                        text: 'Fichier de sauvegarde des données Masrof.',
+                        url: writeResult.uri,
+                        dialogTitle: 'Enregistrer la sauvegarde'
+                    });
+                } catch (shareErr: any) {
+                    // Si le partage échoue, on previent où c'est sauvegardé.
+                    if (shareErr.name !== 'AbortError' && !shareErr.message?.toLowerCase().includes('cancel')) {
+                        alert("Sauvegarde créée dans le dossier Documents sous " + BACKUP_FILE_NAME + ". (Le partage direct a échoué)");
+                    }
+                }
+            } catch (fsErr: any) {
+                 // Fallback to cache + share if Documents fails
+                 const writeResult = await Filesystem.writeFile({
+                     path: BACKUP_FILE_NAME,
+                     data: encryptedData,
+                     directory: Directory.Cache,
+                     encoding: Encoding.UTF8,
+                 });
+                 await Share.share({
+                    title: 'Sauvegarde Masrof',
+                    text: 'Fichier de sauvegarde des données Masrof.',
+                    url: writeResult.uri,
+                    dialogTitle: 'Enregistrer la sauvegarde'
+                 });
+            }
         } else {
             const blob = new Blob([encryptedData], { type: 'application/octet-stream' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = BACKUP_FILE_NAME;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            // For PWA or mobile web preview where Blob download might fail
+            if (navigator.share && navigator.canShare) {
+                const file = new File([blob], BACKUP_FILE_NAME, { type: 'application/octet-stream' });
+                if (navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: 'Sauvegarde Masrof',
+                            text: 'Fichier de sauvegarde des données Masrof.'
+                        });
+                    } catch (shareErr: any) {
+                        if (shareErr.name !== 'AbortError' && !shareErr.message?.toLowerCase().includes('cancel')) {
+                            throw shareErr;
+                        }
+                    }
+                } else {
+                    forceBlobDownload(blob);
+                }
+            } else {
+                forceBlobDownload(blob);
+            }
         }
         localStorage.setItem('lastBackupTimestamp', Date.now().toString());
         localStorage.setItem('hasUnbackedChanges', 'false');
     } catch (e: any) {
         console.error('Failed to export data', e);
-        if (e && e.message && (e.message.toLowerCase().includes('cancel') || e.message.toLowerCase().includes('abort'))) {
+        if (e && (e.name === 'AbortError' || (e.message && (e.message.toLowerCase().includes('cancel') || e.message.toLowerCase().includes('abort'))))) {
             // Log ignored cancel error
             console.log('User cancelled share');
         } else {
             alert("Erreur lors de la création de la sauvegarde. (" + (e?.message || JSON.stringify(e)) + ")");
         }
     }
+};
+
+const forceBlobDownload = (blob: Blob) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = BACKUP_FILE_NAME;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 };
 
 export const autoBackup = async () => {

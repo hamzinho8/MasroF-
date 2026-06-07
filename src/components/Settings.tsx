@@ -151,6 +151,7 @@ export default function Settings({
   const [showArticleManager, setShowArticleManager] = useState(false);
   const [showReminderManager, setShowReminderManager] = useState(false);
   const [showAlarmManager, setShowAlarmManager] = useState(false);
+  const [showNotificationCenter, setShowNotificationCenter] = useState(false);
   const [backupReminder, setBackupReminder] = useState(() => localStorage.getItem("backupReminderEnabled") === "true");
 
   const handleReset = () => {
@@ -332,17 +333,10 @@ export default function Settings({
               showArrow={true}
             />
             <SettingsItem
-              icon={<Bell  />}
-              title="GESTION DES RAPPELS"
-              subtitle={`${reminders.length} RAPPELS ACTIFS`}
-              onClick={() => setShowReminderManager(true)}
-              showArrow={true}
-            />
-            <SettingsItem
               icon={<Bell />}
-              title="SEUILS D'ALERTES ET ALARMES"
-              subtitle="Compte Bancaire, Poche, Stock, Budget"
-              onClick={() => setShowAlarmManager(true)}
+              title="NOTIFICATIONS & ALERTES"
+              subtitle="Rappels, alarmes et sauvegarde"
+              onClick={() => setShowNotificationCenter(true)}
               showArrow={true}
             />
             <SettingsItem
@@ -381,33 +375,6 @@ export default function Settings({
               onClick={handleRestoreData}
               showArrow={true}
             />
-            
-            <div className="px-6 py-4 flex items-center gap-4 bg-white/40 border-y border-[#2D8B96]/5">
-              <div className="w-10 h-10 rounded-full border border-[#2D8B96]/30 flex items-center justify-center text-[#2D8B96] shadow-[0_0_10px_rgba(45,139,150,0.1)]">
-                <Bell size={18} />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-bold text-[#1B5E66] uppercase tracking-tight">
-                  RAPPEL DE SAUVEGARDE
-                </p>
-                <p className="text-[10px] font-black text-slate-500 uppercase">
-                  Notifie si des modifications ne sont pas sauvegardées
-                </p>
-              </div>
-              <Switch
-                active={backupReminder}
-                onToggle={async () => {
-                   const newValue = !backupReminder;
-                   setBackupReminder(newValue);
-                   localStorage.setItem("backupReminderEnabled", newValue.toString());
-                   const extSync = await import("../utils/notifications");
-                   if (newValue) {
-                       extSync.scheduleBackupReminder();
-                   }
-                }}
-              />
-            </div>
-
           </div>
 
           <div className="py-2 px-0">
@@ -581,6 +548,19 @@ export default function Settings({
             onBudgetAlertThresholdChange={onBudgetAlertThresholdChange}
             backupAlertInterval={backupAlertInterval}
             onBackupAlertIntervalChange={onBackupAlertIntervalChange}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showNotificationCenter && (
+          <NotificationCenterModal
+            onClose={() => setShowNotificationCenter(false)}
+            remindersCount={reminders.length}
+            onOpenReminderManager={() => setShowReminderManager(true)}
+            onOpenAlarmManager={() => setShowAlarmManager(true)}
+            backupReminder={backupReminder}
+            setBackupReminder={setBackupReminder}
           />
         )}
       </AnimatePresence>
@@ -1938,6 +1918,94 @@ function SupportModal({ onClose }: { onClose: () => void }) {
         </div>
       </motion.div>
     </>
+  );
+}
+
+function NotificationCenterModal({
+  onClose,
+  remindersCount,
+  onOpenReminderManager,
+  onOpenAlarmManager,
+  backupReminder,
+  setBackupReminder,
+}: {
+  onClose: () => void;
+  remindersCount: number;
+  onOpenReminderManager: () => void;
+  onOpenAlarmManager: () => void;
+  backupReminder: boolean;
+  setBackupReminder: (v: boolean) => void;
+}) {
+  return (
+    <motion.div
+      initial={{ x: "100%" }}
+      animate={{ x: 0 }}
+      exit={{ x: "100%" }}
+      transition={{ type: "spring", damping: 25, stiffness: 200 }}
+      className="fixed inset-0 z-[70] bg-slate-50 flex flex-col font-sans"
+    >
+      <div className="pt-12 pb-4 px-6 bg-white shrink-0 border-b border-slate-100 flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-display font-black text-slate-800 tracking-tight">NOTIFICATIONS</h2>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Alertes & Rappels</p>
+        </div>
+        <button
+          onClick={onClose}
+          className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200"
+        >
+          <X size={20} />
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto pb-20 p-4 space-y-4">
+        
+        <div className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm flex flex-col divide-y divide-slate-50">
+          <SettingsItem
+            icon={<AlarmClock />}
+            title="GESTION DES RAPPELS"
+            subtitle={`${remindersCount} RAPPELS ACTIFS`}
+            onClick={onOpenReminderManager}
+            showArrow={true}
+          />
+          <SettingsItem
+            icon={<AlertTriangle />}
+            title="SEUILS D'ALERTES ET ALARMES"
+            subtitle="Compte Bancaire, Poche, Stock, Budget"
+            onClick={onOpenAlarmManager}
+            showArrow={true}
+          />
+        </div>
+
+        <div className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm">
+            <div className="px-6 py-4 flex items-center gap-4 border-[#2D8B96]/5">
+              <div className="w-10 h-10 rounded-full border border-sky-100 flex items-center justify-center text-sky-500 bg-sky-50 shadow-sm">
+                <Bell size={18} />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-[#1B5E66] uppercase tracking-tight">
+                  RAPPEL DE SAUVEGARDE
+                </p>
+                <p className="text-[10px] font-black text-slate-500 uppercase leading-snug mt-0.5">
+                  Notifie si des modifications ne sont pas sauvegardées
+                </p>
+              </div>
+              <Switch
+                active={backupReminder}
+                onToggle={async () => {
+                   const newValue = !backupReminder;
+                   setBackupReminder(newValue);
+                   localStorage.setItem("backupReminderEnabled", newValue.toString());
+                   const extSync = await import("../utils/notifications");
+                   if (newValue) {
+                       extSync.scheduleBackupReminder();
+                   }
+                }}
+              />
+            </div>
+        </div>
+
+      </div>
+    </motion.div>
   );
 }
 

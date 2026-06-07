@@ -630,7 +630,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                           </button>
                         )}
                       </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full">
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 w-full">
                         <AnimatePresence mode="popLayout">
                           {filteredItems.map((item) => {
                             const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES[4];
