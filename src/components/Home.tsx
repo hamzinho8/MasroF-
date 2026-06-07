@@ -28,7 +28,10 @@ import {
   Check,
   Settings,
   Target,
-  AlertTriangle
+  AlertTriangle,
+  Home as HomeIcon,
+  HeartPulse,
+  Heart
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Transaction, CreditEntry, Reminder, ShoppingListItem } from "../types";
@@ -181,7 +184,7 @@ export default function Home({
 
   const CATEGORY_MAP = [
     {
-      label: t.nourriture,
+      label: "Nourriture",
       icon: <Utensils size={24} />,
       color: "teal",
       bg: "bg-teal-100",
@@ -189,15 +192,15 @@ export default function Home({
       glow: "bg-teal-400",
     },
     {
-      label: t.shopping,
-      icon: <ShoppingBag size={24} />,
-      color: "rose",
-      bg: "bg-rose-100",
-      text: "text-rose-600",
-      glow: "bg-rose-400",
+      label: "Logement",
+      icon: <HomeIcon size={24} />,
+      color: "indigo",
+      bg: "bg-indigo-100",
+      text: "text-indigo-600",
+      glow: "bg-indigo-400",
     },
     {
-      label: t.transport,
+      label: "Transport",
       icon: <Car size={24} />,
       color: "sky",
       bg: "bg-sky-100",
@@ -205,15 +208,39 @@ export default function Home({
       glow: "bg-sky-400",
     },
     {
-      label: t.loisirs,
-      icon: <Gamepad2 size={24} />,
+      label: "Santé",
+      icon: <HeartPulse size={24} />,
+      color: "rose",
+      bg: "bg-rose-100",
+      text: "text-rose-600",
+      glow: "bg-rose-400",
+    },
+    {
+      label: "Shopping",
+      icon: <ShoppingBag size={24} />,
       color: "purple",
       bg: "bg-purple-100",
       text: "text-purple-600",
       glow: "bg-purple-400",
     },
     {
-      label: t.autres,
+      label: "Loisirs",
+      icon: <Gamepad2 size={24} />,
+      color: "amber",
+      bg: "bg-amber-100",
+      text: "text-amber-600",
+      glow: "bg-amber-400",
+    },
+    {
+      label: "Famille",
+      icon: <Heart size={24} />,
+      color: "orange",
+      bg: "bg-orange-100",
+      text: "text-orange-600",
+      glow: "bg-orange-400",
+    },
+    {
+      label: "Autres",
       icon: <MoreHorizontal size={24} />,
       color: "slate",
       bg: "bg-slate-100",

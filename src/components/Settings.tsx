@@ -42,6 +42,9 @@ import {
   Car,
   Gamepad2,
   MoreHorizontal,
+  Home as HomeLucide,
+  HeartPulse,
+  Heart
 } from "lucide-react";
 
 interface SettingsProps {
@@ -85,9 +88,12 @@ interface SettingsProps {
 
 const CATEGORIES = [
   { id: "Nourriture", icon: <Utensils size={18} /> },
-  { id: "Shopping", icon: <ShoppingBag size={18} /> },
+  { id: "Logement", icon: <HomeLucide size={18} /> },
   { id: "Transport", icon: <Car size={18} /> },
+  { id: "Santé", icon: <HeartPulse size={18} /> },
+  { id: "Shopping", icon: <ShoppingBag size={18} /> },
   { id: "Loisirs", icon: <Gamepad2 size={18} /> },
+  { id: "Famille", icon: <Heart size={18} /> },
   { id: "Autres", icon: <MoreHorizontal size={18} /> },
 ];
 

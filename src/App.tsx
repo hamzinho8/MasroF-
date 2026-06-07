@@ -133,7 +133,6 @@ export default function App() {
       const saved = localStorage.getItem("predefinedItems");
       if (saved) {
         let items = JSON.parse(saved);
-        // Migration: Rename Cisset to Sucette and update icons
         let migrated = false;
         items = items.map((item: any) => {
           if (item.name === "Cisset") {
@@ -149,15 +148,21 @@ export default function App() {
             return { ...item, iconName: "Bean" };
           }
           if (
-            (item.name === "Gaz" || item.name === "gaz") &&
-            item.iconName !== "Cylinder"
+            item.name.toLowerCase() === "gaz" &&
+            (item.iconName !== "Cylinder" || item.category !== "Logement")
           ) {
             migrated = true;
-            return { ...item, name: "Gaz", iconName: "Cylinder" };
+            return { ...item, name: "Gaz", iconName: "Cylinder", category: "Logement" };
+          }
+          if (
+            item.name.toLowerCase() === "bampers" && item.category !== "Santé"
+          ) {
+            migrated = true;
+            return { ...item, category: "Santé" };
           }
           if (
             item.name === "Cigarette" &&
-            (item.iconName !== "Cigarette" || item.price !== 30)
+            item.iconName !== "Cigarette"
           ) {
             migrated = true;
             return {
@@ -165,21 +170,27 @@ export default function App() {
               frequent: true,
               category: "Loisirs",
               iconName: "Cigarette",
-              price: 30,
             };
           }
           return item;
         });
 
-        // Ensure Gaz exists if not present (as it's a new default)
-        const hasGaz = items.some((item: any) => item.name === "Gaz");
-        if (!hasGaz) {
-          migrated = true;
-          const gazItem = INITIAL_PREDEFINED_ITEMS.find(
-            (i) => i.name === "Gaz",
-          );
-          if (gazItem) items.push(gazItem);
-        }
+        const ensureItem = (name: string) => {
+          const hasItem = items.some((item: any) => item.name === name);
+          if (!hasItem) {
+            migrated = true;
+            const targetItem = INITIAL_PREDEFINED_ITEMS.find(
+              (i) => i.name === name,
+            );
+            if (targetItem) items.push(targetItem);
+          }
+        };
+
+        ensureItem("Gaz");
+        ensureItem("Location");
+        ensureItem("Électricité");
+        ensureItem("Produits Sanitaires");
+        ensureItem("Aide Famille");
 
         if (migrated) {
           localStorage.setItem("predefinedItems", JSON.stringify(items));
