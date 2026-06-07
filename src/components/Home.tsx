@@ -321,73 +321,12 @@ export default function Home({
       ? gradients[widgetColor] || gradients["default"]
       : "linear-gradient(90deg, #F9B29B 0%, #C8E6C9 100%)";
 
-  let tickerItems: React.ReactNode[] = [
-    ...(reminders || []).filter((r) => r.enabled).map((r) => (
-      <div key={`rem-${r.id}`} className="flex items-center gap-1.5 text-sm font-black text-rose-500 uppercase tracking-widest leading-none">
-        <AlertTriangle size={14} className="mb-0.5" />
-        <span>{r.title}</span>
-      </div>
-    )),
-    ...(shoppingList || []).map((s) => {
-      const cat = CATEGORY_MAP.find(c => c.label.toLowerCase() === (s.category || '').toLowerCase()) || CATEGORY_MAP[4];
-      const IconComp = (s.iconName && ICON_MAP[s.iconName]) ? ICON_MAP[s.iconName] as React.ElementType : ShoppingBag;
-      return (
-        <div key={`shop-${s.id}`} className={`flex items-center gap-1.5 text-sm font-black uppercase tracking-widest leading-none ${cat.text.replace('text-', 'text-').split(' ')[0]}`}>
-          <IconComp size={14} className="mb-0.5" />
-          <span>{s.name}</span>
-        </div>
-      );
-    }),
-  ];
-
-  if (tickerItems.length === 0) {
-    tickerItems = [
-      <span key="empty-1" className="text-sm font-black text-slate-600 uppercase tracking-widest leading-none">
-        {language === "العربية"
-          ? "💡 أضف مشترياتك الأولى"
-          : language === "English"
-            ? "💡 Add your first purchases!"
-            : "💡 Ajoutez vos premiers achats !"}
-      </span>,
-      <span key="empty-2" className="text-sm font-black text-slate-600 uppercase tracking-widest leading-none">
-        {language === "العربية"
-          ? "💳 تتبع نفقاتك بسهولة"
-          : language === "English"
-            ? "💳 Track your expenses easily"
-            : "💳 Suivez vos dépenses facilement"}
-      </span>,
-    ];
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
     >
-      {tickerItems.length > 0 && (
-        <div className="w-full overflow-hidden bg-transparent mb-4 relative flex items-center">
-          <div className="absolute left-0 w-8 h-full bg-gradient-to-r from-slate-50 to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 w-8 h-full bg-gradient-to-l from-slate-50 to-transparent z-10 pointer-events-none" />
-          <motion.div
-            className="flex whitespace-nowrap gap-8 items-center py-2 min-w-fit"
-            animate={{ x: [0, "-50%"] }}
-            transition={{ repeat: Infinity, duration: 15, ease: "linear" }}
-          >
-            <div className="flex gap-8 items-center pl-8">
-              {tickerItems.map((node, i) => (
-                <div key={`ticker-1-${i}`} className="flex items-center min-w-fit">{node}</div>
-              ))}
-            </div>
-            <div className="flex gap-8 items-center pl-8">
-              {tickerItems.map((node, i) => (
-                <div key={`ticker-2-${i}`} className="flex items-center min-w-fit">{node}</div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      )}
-
       {/* Main Widget Card */}
       <div
         className="relative min-h-[12rem] h-auto rounded-[24px] overflow-hidden shadow-lg mb-8 transition-all hover:scale-[1.01] cursor-pointer"
