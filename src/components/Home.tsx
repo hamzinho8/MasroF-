@@ -736,7 +736,7 @@ export default function Home({
               ) || CATEGORY_MAP[0];
 
               return (
-                <div key={b.category} className={`bg-white rounded-3xl p-5 border shadow-sm ${isOver ? 'border-rose-200 shadow-rose-100' : isClose ? 'border-amber-200 shadow-amber-100' : 'border-slate-100'}`}>
+                <div key={`${b.category}-${index}`} className={`bg-white rounded-3xl p-5 border shadow-sm ${isOver ? 'border-rose-200 shadow-rose-100' : isClose ? 'border-amber-200 shadow-amber-100' : 'border-slate-100'}`}>
                   <div className="flex items-center gap-4 mb-1">
                     <div className={`w-10 h-10 rounded-2xl flex items-center justify-center border border-white shadow-sm ${categoryMatch.bg} ${categoryMatch.text}`}>
                       {categoryMatch.icon}

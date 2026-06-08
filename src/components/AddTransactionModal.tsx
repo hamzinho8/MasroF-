@@ -131,7 +131,9 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
     };
 
     recognition.onerror = (event: any) => {
-      console.error("Speech recognition error", event.error);
+      if (event.error !== 'not-allowed') {
+        console.error("Speech recognition error", event.error);
+      }
       setIsListening(false);
     };
 
@@ -665,12 +667,12 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                       </div>
                       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 w-full">
                         <AnimatePresence mode="popLayout">
-                          {filteredItems.map((item) => {
+                          {filteredItems.map((item, index) => {
                             const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES[4];
                             const IconComponent = (ICON_MAP[item.iconName] || ICON_MAP['Box']) as React.ElementType;
                             return (
                               <motion.button
-                                key={item.id}
+                                key={`${item.id}-${index}`}
                                 layout
                                 initial={{ opacity: 0, scale: 0.8 }}
                                 animate={{ opacity: 1, scale: 1 }}
