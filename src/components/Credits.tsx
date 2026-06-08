@@ -703,312 +703,51 @@ export default function Credits({
         )}
       </div>
 
-      {/* SECTION: Historique du compteur bancaire */}
-      <div className="space-y-4 pt-8 mt-8 border-t-[3px] border-slate-100 border-dashed">
-        <h3 className="text-slate-800 text-xl font-bold flex items-center gap-3 px-1 mb-6">
-          <Wallet size={24} className="text-teal-600" />
-          {language === "Français"
-            ? "Historique Bancaire"
-            : language === "العربية"
-              ? "سجل البنك"
-              : "Bank History"}
-        </h3>
-
-        <AnimatePresence>
-          {settlingId && (
+      <AnimatePresence>
+        {settlingId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+            onClick={() => setSettlingId(null)}
+          >
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
-              onClick={() => setSettlingId(null)}
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-[32px] p-6 w-full max-w-sm shadow-2xl border border-slate-100 flex flex-col gap-6"
             >
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0, y: 10 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                onClick={(e) => e.stopPropagation()}
-                className="bg-white rounded-[32px] p-6 w-full max-w-sm shadow-2xl border border-slate-100 flex flex-col gap-6"
-              >
-                <div className="flex flex-col gap-2">
-                  <h3 className="text-xl font-black text-slate-800 tracking-tight text-center">
-                    {language === "Français" ? "Choisir la destination" : language === "العربية" ? "اختر الوجهة" : "Choose destination"}
-                  </h3>
-                  <p className="text-sm font-medium text-slate-500 text-center">
-                    {language === "Français" ? "Où voulez-vous solder ce crédit ?" : language === "العربية" ? "أين تريد تسوية هذا الرصيد؟" : "Where do you want to settle this credit?"}
-                  </p>
-                </div>
-                
-                <div className="flex flex-col gap-3">
-                  <button
-                    onClick={() => handleSettleEntry(settlingId, "poche")}
-                    className="w-full h-16 rounded-[24px] bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900 font-black flex items-center justify-center gap-3 active:scale-95 transition-all text-sm uppercase tracking-widest"
-                  >
-                    <Wallet size={20} />
-                    {language === "Français" ? "Ma poche" : language === "العربية" ? "جيبي" : "Pocket"}
-                  </button>
-                  <button
-                    onClick={() => handleSettleEntry(settlingId, "compte")}
-                    className="w-full h-16 rounded-[24px] bg-indigo-600 text-white shadow-xl shadow-indigo-600/20 active:scale-95 transition-all text-sm uppercase tracking-widest font-black flex items-center justify-center gap-3"
-                  >
-                    <Landmark size={20} />
-                    {language === "Français" ? "Mon compte" : language === "العربية" ? "حسابي" : "Bank Account"}
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {showBankModal && (
-            <AddBankBalanceModal
-              onClose={() => setShowBankModal(false)}
-              onAdd={(amount) => {
-                if (onAddBankBalance) {
-                  onAddBankBalance(amount);
-                }
-              }}
-              currency={currency}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Premium Summary Card (Bank) */}
-        <div className="relative overflow-hidden rounded-[38px] shadow-xl shadow-slate-200/40 border border-white mb-6">
-          <div className="absolute inset-0 bg-gradient-to-br from-teal-50 via-white to-sky-50 z-0" />
-          <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-teal-400/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-[-20%] left-[-10%] w-64 h-64 bg-sky-400/10 rounded-full blur-3xl" />
-
-          <div className="relative z-10 p-5">
-            <div className="flex bg-white/40 backdrop-blur-md p-1 rounded-3xl shadow-sm border border-white/50 mb-8">
-              <button
-                onClick={() => setBankTimeframe("day")}
-                className={`flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 ${bankTimeframe === "day" ? "bg-slate-900 text-white shadow-xl" : "text-slate-500 hover:bg-white/40"}`}
-              >
-                <CalendarCheck
-                  size={18}
-                  strokeWidth={bankTimeframe === "day" ? 2.5 : 2}
-                />
-                <span className="text-[10px] font-black uppercase tracking-wider">
-                  {getTimeframeLabel("day")}
-                </span>
-              </button>
-              <button
-                onClick={() => setBankTimeframe("week")}
-                className={`flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 ${bankTimeframe === "week" ? "bg-slate-900 text-white shadow-xl" : "text-slate-500 hover:bg-white/40"}`}
-              >
-                <CalendarRange
-                  size={18}
-                  strokeWidth={bankTimeframe === "week" ? 2.5 : 2}
-                />
-                <span className="text-[10px] font-black uppercase tracking-wider">
-                  {getTimeframeLabel("week")}
-                </span>
-              </button>
-              <button
-                onClick={() => setBankTimeframe("month")}
-                className={`flex-1 py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 ${bankTimeframe === "month" ? "bg-slate-900 text-white shadow-xl" : "text-slate-500 hover:bg-white/40"}`}
-              >
-                <CalendarDays
-                  size={18}
-                  strokeWidth={bankTimeframe === "month" ? 2.5 : 2}
-                />
-                <span className="text-[10px] font-black uppercase tracking-wider">
-                  {getTimeframeLabel("month")}
-                </span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-6 relative px-2 mb-2">
-              <div className="absolute left-1/2 top-4 bottom-4 w-px bg-slate-200/50" />
-
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-teal-500/10 flex items-center justify-center text-teal-600">
-                    <TrendingUp size={16} strokeWidth={2.5} />
-                  </div>
-                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                    {language === "Français"
-                      ? "Dépôts"
-                      : language === "العربية"
-                        ? "إيداعات"
-                        : "Deposits"}
-                  </span>
-                </div>
-                <p className="text-2xl font-black text-teal-600 tracking-tighter">
-                  {filteredBankTotals.totalIncome.toLocaleString("fr-FR")}
-                  <span className="text-xs ml-1 font-bold text-slate-400 uppercase">
-                    {currency}
-                  </span>
+              <div className="flex flex-col gap-2">
+                <h3 className="text-xl font-black text-slate-800 tracking-tight text-center">
+                  {language === "Français" ? "Choisir la destination" : language === "العربية" ? "اختر الوجهة" : "Choose destination"}
+                </h3>
+                <p className="text-sm font-medium text-slate-500 text-center">
+                  {language === "Français" ? "Où voulez-vous solder ce crédit ?" : language === "العربية" ? "أين تريد تسوية هذا الرصيد؟" : "Where do you want to settle this credit?"}
                 </p>
               </div>
-
-              <div className="space-y-1 pl-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-slate-500/10 flex items-center justify-center text-slate-600">
-                    <TrendingDown size={16} strokeWidth={2.5} />
-                  </div>
-                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                    {language === "Français"
-                      ? "Sorties"
-                      : language === "العربية"
-                        ? "نفقات"
-                        : "Outflows"}
-                  </span>
-                </div>
-                <p className="text-2xl font-black text-slate-600 tracking-tighter">
-                  {filteredBankTotals.totalExpense.toLocaleString("fr-FR")}
-                  <span className="text-xs ml-1 font-bold text-slate-400 uppercase">
-                    {currency}
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions - Identical to Home & History style */}
-        <div className="grid grid-cols-2 gap-4 px-1 mb-6">
-          <button
-            onClick={() => setShowBankModal(true)}
-            className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-emerald-100 hover:bg-emerald-50/30 active:scale-95 shadow-sm"
-          >
-            <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
-              <Landmark size={24} strokeWidth={2.5} />
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-emerald-600 transition-colors">
-              {language === "Français"
-                ? "Ajouter Salaire"
-                : language === "العربية"
-                  ? "إضافة راتب"
-                  : "Add Salary"}
-            </span>
-          </button>
-          <button
-            onClick={() => onAddClick && onAddClick("INCOME")}
-            className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-teal-100 hover:bg-teal-50/30 active:scale-95 shadow-sm"
-          >
-            <div className="w-12 h-12 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
-              <ArrowDownToLine size={24} strokeWidth={2.5} />
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-teal-600 transition-colors">
-              {language === "Français"
-                ? "Ajouter Retrait"
-                : language === "العربية"
-                  ? "إضافة سحب"
-                  : "Add Withdrawal"}
-            </span>
-          </button>
-        </div>
-
-        {/* Bank Transactions List */}
-        {bankTransactions.length === 0 ? (
-          <div className="text-center py-12 text-slate-400 font-medium italic">
-            {language === "Français"
-              ? "Aucune transaction bancaire"
-              : language === "العربية"
-                ? "لا توجد معاملات بنكية"
-                : "No bank transactions"}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {bankTransactions.map((tx, index) => {
-              const isIncome = tx.type === "INCOME" && tx.paidByBank; // Salaire / Dépôt
-              const isExpense = tx.type === "EXPENSE"; // Achat carte
-              const isRetrait = tx.type === "INCOME" && !tx.paidByBank; // Retrait poche
-
-              const categoryMatch = getCategoryMap().find(
-                (c) =>
-                  c.label &&
-                  c.label.toLowerCase() === (tx.category || "").toLowerCase(),
-              ) || {
-                icon: isIncome ? (
-                  <TrendingUp size={24} />
-                ) : isRetrait ? (
-                  <ArrowDownToLine size={24} />
-                ) : (
-                  <ShoppingBag size={24} />
-                ),
-                color: isIncome ? "teal" : isRetrait ? "emerald" : "slate",
-                bg: isIncome
-                  ? "bg-teal-100"
-                  : isRetrait
-                    ? "bg-emerald-500"
-                    : "bg-slate-100",
-                text: isIncome
-                  ? "text-teal-600"
-                  : isRetrait
-                    ? "text-white"
-                    : "text-slate-600",
-                glow: isIncome
-                  ? "bg-teal-400"
-                  : isRetrait
-                    ? "bg-emerald-400"
-                    : "bg-slate-400",
-              };
-
-              // Use exact identical card visual style as History page items
-              const getCardStyle = () => {
-                const colors: Record<string, string> = {
-                  rose: "hover:border-rose-200 hover:shadow-rose-500/10",
-                  sky: "hover:border-sky-200 hover:shadow-sky-500/10",
-                  indigo: "hover:border-indigo-200 hover:shadow-indigo-500/10",
-                  amber: "hover:border-amber-200 hover:shadow-amber-500/10",
-                  purple: "hover:border-purple-200 hover:shadow-purple-500/10",
-                  slate: "hover:border-slate-200 hover:shadow-slate-500/10",
-                  emerald:
-                    "hover:border-emerald-200 hover:shadow-emerald-500/10",
-                  teal: "hover:border-teal-200 hover:shadow-teal-500/10",
-                };
-                return colors[categoryMatch.color] || "hover:border-slate-200";
-              };
-
-              return (
-                <motion.div
-                  key={tx.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={`flex items-center gap-4 p-4 rounded-[32px] border transition-all relative backdrop-blur-sm bg-white shadow-sm group ${getCardStyle()}`}
+              
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => handleSettleEntry(settlingId, "poche")}
+                  className="w-full h-16 rounded-[24px] bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900 font-black flex items-center justify-center gap-3 active:scale-95 transition-all text-sm uppercase tracking-widest"
                 >
-                  <div
-                    className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all shadow-sm ${categoryMatch.bg} ${categoryMatch.text}`}
-                  >
-                    {categoryMatch.icon}
-                  </div>
-
-                  <div className="flex-1 min-w-0 py-1">
-                    <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1">
-                      {tx.label}
-                    </p>
-                    <div className="flex items-center gap-4">
-                      <span className="text-[10px] flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-400">
-                        <Calendar size={12} className="text-slate-300" />
-                        {tx.date}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="shrink-0 flex items-center gap-2 pl-2 border-l border-slate-100">
-                    <div className="flex flex-col items-end">
-                      <p
-                        className={`font-black tracking-tighter text-base leading-none ${isIncome ? "text-teal-600" : "text-slate-800"}`}
-                      >
-                        {isIncome ? "+" : "-"}
-                        {tx.amount.toLocaleString("fr-FR")}
-                      </p>
-                      <span className="text-[9px] font-bold uppercase text-slate-400 mt-0.5">
-                        {currency}
-                      </span>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
+                  <Wallet size={20} />
+                  {language === "Français" ? "Ma poche" : language === "العربية" ? "جيبي" : "Pocket"}
+                </button>
+                <button
+                  onClick={() => handleSettleEntry(settlingId, "compte")}
+                  className="w-full h-16 rounded-[24px] bg-indigo-600 text-white shadow-xl shadow-indigo-600/20 active:scale-95 transition-all text-sm uppercase tracking-widest font-black flex items-center justify-center gap-3"
+                >
+                  <Landmark size={20} />
+                  {language === "Français" ? "Mon compte" : language === "العربية" ? "حسابي" : "Bank Account"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </motion.div>
   );
 }

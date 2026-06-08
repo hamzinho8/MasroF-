@@ -15,12 +15,14 @@ import {
   Wallet as HomeIcon,
   Handshake,
   Package,
-  PackageOpen // newly added
+  PackageOpen,
+  Landmark
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Home from "./components/Home";
 import Statistics from "./components/Statistics";
 import Credits from "./components/Credits";
+import Bank from "./components/Bank";
 import HistoryView from "./components/History";
 import SettingsView from "./components/Settings";
 import { scheduleBackupReminder } from "./utils/notifications";
@@ -32,7 +34,7 @@ import { Transaction, Reminder, CreditEntry, PredefinedItem, InventoryItem, Shop
 import { INITIAL_PREDEFINED_ITEMS } from "./constants";
 import { useSwipeable } from "react-swipeable";
 
-type Tab = "home" | "stats" | "history" | "credits" | "inventory" | "settings";
+type Tab = "home" | "stats" | "history" | "credits" | "bank" | "inventory" | "settings";
 
 export default function App() {
   const [isInitializing, setIsInitializing] = useState(true);
@@ -698,6 +700,34 @@ export default function App() {
     setCreditEntries((prev) => prev.filter((e) => e.id !== id));
   };
 
+  const handleAddBankBalance = (amount: number) => {
+    setBankBalance((prev) => prev + amount);
+    const tx = {
+      id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+      label:
+        language === "Français"
+          ? "Salaire / Dépôt"
+          : language === "العربية"
+            ? "راتب / إيداع"
+            : "Salary / Deposit",
+      amount,
+      type: "INCOME",
+      category: "Banque",
+      date: new Date()
+        .toLocaleString("fr-FR", {
+          day: "2-digit",
+          month: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+        .replace(",", ""),
+      timestamp: Date.now(),
+      paidByBank: true,
+      isPureInflow: true,
+    } as Transaction;
+    setTransactions((prev) => [tx, ...prev]);
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case "home":
@@ -705,33 +735,7 @@ export default function App() {
           <Home
             balance={balance}
             bankBalance={bankBalance}
-            onAddBankBalance={(amount) => {
-              setBankBalance((prev) => prev + amount);
-              const tx = {
-                id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
-                label:
-                  language === "Français"
-                    ? "Salaire / Dépôt"
-                    : language === "العربية"
-                      ? "راتب / إيداع"
-                      : "Salary / Deposit",
-                amount,
-                type: "INCOME",
-                category: "Banque",
-                date: new Date()
-                  .toLocaleString("fr-FR", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                  .replace(",", ""),
-                timestamp: Date.now(),
-                paidByBank: true,
-                isPureInflow: true,
-              } as Transaction;
-              setTransactions((prev) => [tx, ...prev]);
-            }}
+            onAddBankBalance={handleAddBankBalance}
             transactions={transactions}
             onAddClick={openModal}
             onViewAll={() => setActiveTab("history")}
@@ -770,32 +774,7 @@ export default function App() {
             transactions={transactions}
             onAddClick={openModal}
             onAddTransaction={addTransaction}
-            onAddBankBalance={(amount) => {
-              setBankBalance((prev) => prev + amount);
-              const tx = {
-                id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
-                label:
-                  language === "Français"
-                    ? "Salaire / Dépôt"
-                    : language === "العربية"
-                      ? "راتب / إيداع"
-                      : "Salary / Deposit",
-                amount,
-                type: "INCOME",
-                date: new Intl.DateTimeFormat("fr-FR", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-                  .format(new Date())
-                  .replace(",", ""),
-                timestamp: Date.now(),
-                paidByBank: true,
-                isPureInflow: true,
-              } as Transaction;
-              setTransactions((prev) => [tx, ...prev]);
-            }}
+            onAddBankBalance={handleAddBankBalance}
           />
         );
       case "history":
@@ -807,6 +786,16 @@ export default function App() {
             onDelete={deleteTransaction}
             onUpdate={updateTransaction}
             onAddClick={openModal}
+          />
+        );
+      case "bank":
+        return (
+          <Bank
+            language={language}
+            currency={currency}
+            transactions={transactions}
+            onAddClick={(type) => openModal(type)}
+            onAddBankBalance={handleAddBankBalance}
           />
         );
       case "inventory":
@@ -869,33 +858,7 @@ export default function App() {
           <Home
             balance={balance}
             bankBalance={bankBalance}
-            onAddBankBalance={(amount) => {
-              setBankBalance((prev) => prev + amount);
-              const tx = {
-                id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
-                label:
-                  language === "Français"
-                    ? "Salaire / Dépôt"
-                    : language === "العربية"
-                      ? "راتب / إيداع"
-                      : "Salary / Deposit",
-                amount,
-                type: "INCOME",
-                category: "Banque",
-                date: new Date()
-                  .toLocaleString("fr-FR", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                  .replace(",", ""),
-                timestamp: Date.now(),
-                paidByBank: true,
-                isPureInflow: true,
-              } as Transaction;
-              setTransactions((prev) => [tx, ...prev]);
-            }}
+            onAddBankBalance={handleAddBankBalance}
             transactions={transactions}
             onAddClick={openModal}
             onViewAll={() => setActiveTab("history")}
@@ -915,7 +878,7 @@ export default function App() {
     }
   };
 
-  const TABS: Tab[] = ["home", "history", "credits", "stats", "inventory", "settings"];
+  const TABS: Tab[] = ["home", "history", "bank", "credits", "stats", "inventory", "settings"];
   
   const handleSwipe = (dir: "Left" | "Right") => {
     const currentIndex = TABS.indexOf(activeTab);
@@ -986,6 +949,13 @@ export default function App() {
             onClick={() => setActiveTab("credits")}
             icon={<Handshake size={28} strokeWidth={2.5} />}
             color="credits"
+            isDarkMode={isDarkMode}
+          />
+          <TabButton
+            active={activeTab === "bank"}
+            onClick={() => setActiveTab("bank")}
+            icon={<Landmark size={28} strokeWidth={2.5} />}
+            color="teal"
             isDarkMode={isDarkMode}
           />
           <TabButton
