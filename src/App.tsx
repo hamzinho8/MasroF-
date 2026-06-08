@@ -155,10 +155,17 @@ export default function App() {
             return { ...item, name: "Gaz", iconName: "Cylinder", category: "Logement" };
           }
           if (
-            item.name.toLowerCase() === "bampers" && item.category !== "Santé"
+            (item.name.toLowerCase() === "bampers" || item.name.toLowerCase() === "bambers") && 
+            (item.category !== "Sanitaire" || item.name !== "Bambers" || item.price !== 4.5 || !item.frequent)
           ) {
             migrated = true;
-            return { ...item, category: "Santé" };
+            return { ...item, name: "Bambers", category: "Sanitaire", price: 4.5, iconName: "Baby", frequent: true };
+          }
+          if (
+            ["Fairy", "Tide", "Champo", "Aide Famille", "Inconnu"].includes(item.name) && !item.frequent
+          ) {
+            migrated = true;
+            return { ...item, frequent: true };
           }
           if (
             item.name === "Cigarette" &&
@@ -191,6 +198,17 @@ export default function App() {
         ensureItem("Électricité");
         ensureItem("Produits Sanitaires");
         ensureItem("Aide Famille");
+        // Sanitaire items
+        ensureItem("Savon");
+        ensureItem("Fairy");
+        ensureItem("Tide");
+        ensureItem("Champo");
+        ensureItem("Bambers");
+        // Devoir items
+        ensureItem("Parents");
+        ensureItem("Enfants");
+        ensureItem("Femme");
+        ensureItem("Inconnu");
 
         if (migrated) {
           localStorage.setItem("predefinedItems", JSON.stringify(items));
@@ -407,7 +425,42 @@ export default function App() {
       await Preferences.set({ key: 'widget_currency', value: currency });
       await Preferences.set({ key: 'widget_text_color', value: widgetTextColor });
 
-      const newsItems: string[] = [];
+      const alarms: string[] = [];
+      const alarmColor = "#EF4444"; // red for high priority alarms
+      const warnColor = "#F97316"; // orange for warnings like stock
+
+      if (bankBalanceThreshold !== null && bankBalance <= bankBalanceThreshold) {
+        alarms.push(`<b><font color="${alarmColor}">🏦 Solde Compte: ${bankBalance.toFixed(2)} ${currency}</font></b>`);
+      }
+
+      if (balanceThreshold !== null && balance <= balanceThreshold) {
+        alarms.push(`<b><font color="${alarmColor}">👛 Argent Poche: ${balance.toFixed(2)} ${currency}</font></b>`);
+      }
+
+      if (inventoryAlertThreshold !== null) {
+        inventoryItems.forEach(item => {
+          if (item.quantity <= inventoryAlertThreshold) {
+            alarms.push(`<b><font color="${warnColor}">📦 Stock bas: ${item.name} (${item.quantity})</font></b>`);
+          }
+        });
+      }
+
+      if (budgetAlertThreshold !== null) {
+        const categoryTotals: Record<string, number> = {};
+        transactions.forEach(t => {
+           if (t.type === 'EXPENSE' && t.category) {
+             categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
+           }
+        });
+        Object.entries(categoryBudgets).forEach(([cat, limit]) => {
+           const total = categoryTotals[cat] || 0;
+           if (total >= limit * (budgetAlertThreshold / 100)) {
+             alarms.push(`<b><font color="${alarmColor}">📊 Budget dépassé: ${cat}</font></b>`);
+           }
+        });
+      }
+
+      const newsItems: string[] = [...alarms];
 
       const UNICODE_ICONS: Record<string, string> = {
           Utensils: "🍽️", ShoppingBag: "🛍️", Car: "🚗", Gamepad2: "🎮", MoreHorizontal: "⋯",
@@ -415,7 +468,8 @@ export default function App() {
           CupSoda: "🥤", Candy: "🍬", Zap: "⚡", CircleDot: "🎯", Soup: "🥣", TrainFront: "🚆",
           Fuel: "⛽", Flame: "🔥", Tv: "📺", Search: "🔍", Baby: "👶", Bean: "🫘", Cylinder: "🛢️",
           Cigarette: "🚬", Home: "🏠", HeartPulse: "💓", Heart: "❤️", Bath: "🛁", Lightbulb: "💡",
-          Users: "👥", Sparkles: "✨", Shirt: "👕", Wind: "💨", HelpCircle: "❓", User: "👤"
+          Users: "👥", Sparkles: "✨", Shirt: "👕", Wind: "💨", HelpCircle: "❓", User: "👤",
+          WashingMachine: "🧼"
       };
 
       (shoppingList || []).forEach((s) => {
@@ -448,7 +502,7 @@ export default function App() {
       }
     }
     updateWidget();
-  }, [balance, balanceThreshold, currency, widgetTextColor, reminders, shoppingList]);
+  }, [balance, balanceThreshold, bankBalance, bankBalanceThreshold, inventoryItems, inventoryAlertThreshold, transactions, categoryBudgets, budgetAlertThreshold, currency, widgetTextColor, reminders, shoppingList]);
 
   const markUnbackedChanges = () => {
     localStorage.setItem('hasUnbackedChanges', 'true');
