@@ -3,20 +3,10 @@
     android:id="@+id/widget_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_bg"
-    android:orientation="vertical"
-    android:padding="12dp">
-
-    <TextView
-        android:id="@+id/widget_news_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="La Bande de News"
-        android:textColor="#94A3B8"
-        android:textAllCaps="true"
-        android:textSize="10sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
+    android:background="@android:color/transparent"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="8dp">
 
     <TextView
         android:id="@+id/widget_news_text"
@@ -25,7 +15,11 @@
         android:textColor="#334155"
         android:textSize="14sp"
         android:lineSpacingExtra="4dp"
-        android:maxLines="8"
-        android:ellipsize="end" />
+        android:maxLines="3"
+        android:ellipsize="end"
+        android:shadowColor="#FFFFFF"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="3" />
 
 </LinearLayout>

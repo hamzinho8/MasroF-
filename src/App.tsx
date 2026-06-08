@@ -408,27 +408,28 @@ export default function App() {
       await Preferences.set({ key: 'widget_text_color', value: widgetTextColor });
 
       const newsItems: string[] = [];
-      const activeReminders = (reminders || []).filter(r => r.enabled);
-      activeReminders.forEach(r => {
-         newsItems.push(`<b><font color="#F43F5E">⚠ ${r.title}</font></b>`);
-      });
 
       (shoppingList || []).forEach((s) => {
-        const catLabel = (s.category || '').toLowerCase();
         let colorHex = "#64748B"; // slate
         let icon = "📦";
         
-        if (catLabel.includes("nourri")) { colorHex = "#14B8A6"; icon = "🍽️"; }
-        else if (catLabel.includes("shop")) { colorHex = "#F43F5E"; icon = "🛍️"; }
-        else if (catLabel.includes("trans")) { colorHex = "#0EA5E9"; icon = "🚕"; }
-        else if (catLabel.includes("loisi")) { colorHex = "#A855F7"; icon = "🎮"; }
+        switch (s.category) {
+            case "Nourriture": colorHex = "#0D9488"; icon = "🍽️"; break;
+            case "Logement": colorHex = "#4F46E5"; icon = "🏠"; break;
+            case "Transport": colorHex = "#0284C7"; icon = "🚗"; break;
+            case "Santé": colorHex = "#E11D48"; icon = "❤️"; break;
+            case "Shopping": colorHex = "#9333EA"; icon = "🛍️"; break;
+            case "Loisirs": colorHex = "#D97706"; icon = "🎮"; break;
+            case "Famille": colorHex = "#EA580C"; icon = "👨‍👩‍👧"; break;
+            default: colorHex = "#475569"; icon = "📦"; break;
+        }
         
         newsItems.push(`<b><font color="${colorHex}">${icon} ${s.name}</font></b>`);
       });
 
-      let newsHtml = newsItems.join("<br><br>");
+      let newsHtml = newsItems.join("&nbsp;&nbsp;•&nbsp;&nbsp;");
       if (!newsHtml) {
-          newsHtml = "<i>Aucune notification.</i>";
+          newsHtml = "<i>Aucun achat programmé.</i>";
       }
       
       await Preferences.set({ key: 'widget_news_html', value: newsHtml });
