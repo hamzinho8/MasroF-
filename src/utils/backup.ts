@@ -38,11 +38,12 @@ export const exportDataToFile = async () => {
                         dialogTitle: 'Enregistrer la sauvegarde'
                     });
                 } catch (shareErr: any) {
-                    // Si le partage échoue, on previent où c'est sauvegardé.
-                    if (shareErr.name !== 'AbortError' && !shareErr.message?.toLowerCase().includes('cancel')) {
-                        alert("Sauvegarde créée dans le dossier Documents sous " + BACKUP_FILE_NAME + ". (Le partage direct a échoué)");
-                    }
+                    // Si le partage échoue, ce n'est pas grave car le fichier est déjà dans Documents
+                    console.log('Share prompt failed or was cancelled', shareErr);
                 }
+                setTimeout(() => {
+                    alert("Sauvegarde réussie !\nLe fichier 'masrof_backup_latest.dat' se trouve dans le dossier 'Documents' de votre téléphone.");
+                }, 500);
             } catch (fsErr: any) {
                  // Fallback to cache + share if Documents fails
                  const writeResult = await Filesystem.writeFile({

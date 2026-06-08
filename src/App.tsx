@@ -411,20 +411,19 @@ export default function App() {
 
       (shoppingList || []).forEach((s) => {
         let colorHex = "#64748B"; // slate
-        let icon = "📦";
         
         switch (s.category) {
-            case "Nourriture": colorHex = "#0D9488"; icon = "🍽️"; break;
-            case "Logement": colorHex = "#4F46E5"; icon = "🏠"; break;
-            case "Transport": colorHex = "#0284C7"; icon = "🚗"; break;
-            case "Santé": colorHex = "#E11D48"; icon = "❤️"; break;
-            case "Shopping": colorHex = "#9333EA"; icon = "🛍️"; break;
-            case "Loisirs": colorHex = "#D97706"; icon = "🎮"; break;
-            case "Famille": colorHex = "#EA580C"; icon = "👨‍👩‍👧"; break;
-            default: colorHex = "#475569"; icon = "📦"; break;
+            case "Nourriture": colorHex = "#0D9488"; break;
+            case "Logement": colorHex = "#4F46E5"; break;
+            case "Transport": colorHex = "#0284C7"; break;
+            case "Santé": colorHex = "#E11D48"; break;
+            case "Shopping": colorHex = "#9333EA"; break;
+            case "Loisirs": colorHex = "#D97706"; break;
+            case "Famille": colorHex = "#EA580C"; break;
+            default: colorHex = "#475569"; break;
         }
         
-        newsItems.push(`<b><font color="${colorHex}">${icon} ${s.name}</font></b>`);
+        newsItems.push(`<b><font color="${colorHex}">${s.name}</font></b>`);
       });
 
       let newsHtml = newsItems.join("&nbsp;&nbsp;•&nbsp;&nbsp;");
