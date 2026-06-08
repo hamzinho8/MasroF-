@@ -22,7 +22,7 @@ import {
   Heart
 } from 'lucide-react';
 import { PredefinedItem } from '../types';
-import { ICON_MAP, CATEGORIES } from '../constants';
+import { ICON_MAP, CATEGORIES, INITIAL_PREDEFINED_ITEMS } from '../constants';
 
 interface AddTransactionModalProps {
   isOpen: boolean;
@@ -173,8 +173,30 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           if (response.ok) {
             data = await response.json();
             if (data.items) {
-               setScannedItems(data.items.map((i: any, index: number) => ({ ...i, id: index.toString() + Math.random().toString(36).substring(2, 9), categoryId: i.categoryId || 'other' })));
-               setReceiptTotal(data.total);
+               const groupedItemsSet: Record<string, any> = {};
+               data.items.forEach((item: any) => {
+                 const tempTitle = (item.title || 'Achat').toLowerCase();
+                 if (groupedItemsSet[tempTitle]) {
+                   groupedItemsSet[tempTitle].amount = (groupedItemsSet[tempTitle].amount || 0) + (item.amount || 0);
+                   groupedItemsSet[tempTitle].originalCount = (groupedItemsSet[tempTitle].originalCount || 1) + 1;
+                 } else {
+                   groupedItemsSet[tempTitle] = { ...item, originalCount: 1 };
+                 }
+               });
+               const deduplicatedItems = Object.values(groupedItemsSet);
+
+               setScannedItems(deduplicatedItems.map((item: any, index: number) => {
+                 let amount = item.amount || 0;
+                 const title = item.title || 'Achat';
+                 if (amount === 0) {
+                   const matchedPredefined = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === title.toLowerCase());
+                   if (matchedPredefined) {
+                     amount = matchedPredefined.price * (item.originalCount || 1);
+                   }
+                 }
+                 return { ...item, amount, title, id: index.toString() + Math.random().toString(36).substring(2, 9), categoryId: item.categoryId || 'other', category: CATEGORIES.some(c => c.id === item.category) ? item.category : 'Autres' };
+               }));
+               setReceiptTotal(data.total || data.totalReceiptAmount || null);
                setDetectedPaymentGroup(data.paymentMethod === 'CASH' ? 'cash' : 'bank');
                setShowFrequent(false);
             }
@@ -260,7 +282,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                     }
                   },
                   {
-                    text: "Analyze this receipt or image. Extract:\n1. 'items': an array of items purchased. For each, give 'amount' (number), 'category' (strictly from ['Nourriture', 'Shopping', 'Transport', 'Loisirs', 'Autres']), 'title' (string), and 'isStorable' (true if it's a physical good that can be put in an inventory/stock, false for services or restaurants).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {\"totalReceiptAmount\": 100.50, \"paymentMethod\": \"CARD\", \"items\": [{\"title\": \"Pizza\", \"amount\": 12.50, \"category\": \"Nourriture\", \"isStorable\": false}]}. Return ONLY valid JSON."
+                    text: "Analyze this receipt or image of purchased goods from Morocco (prices use Dirham, labels might be French/Arabic). Extract:\n1. 'items': an array of UNIQUE items purchased. If the image has identical items, group them into a single item and sum their prices. Try to map item titles strictly to these predefined articles if they match: Cafe, Taxi, Danone, Bambers, Farine, Sucette, Pisquet, Gaz, Location, Électricité, Savon, Fairy, Tide, Champo, Huile, Thé 1, Thé 2, Blé, Sucre, Épices, Sel, Endomi, Tram, Essence, Cigarette. For each item, give 'amount' (number, representing the total price for that grouped item), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string, use predefined names where possible), and 'isStorable' (boolean, true for physical goods).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {\"totalReceiptAmount\": 100.50, \"paymentMethod\": \"CARD\", \"items\": [{\"title\": \"Danone\", \"amount\": 12.50, \"category\": \"Nourriture\", \"isStorable\": true}]}. Return ONLY valid JSON."
                   }
                 ]
               }
@@ -290,13 +312,37 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         }
 
         if (itemsToSet.length > 0) {
-          setScannedItems(itemsToSet.map((item: any, index: number) => ({
-            id: index.toString() + Math.random().toString(36).substring(2, 9),
-            title: item.title || 'Achat',
-            amount: item.amount || 0,
-            category: CATEGORIES.some(c => c.id === item.category) ? item.category : 'Autres',
-            addToInventory: !!item.isStorable
-          })));
+          // Deduplicate items by title
+          const groupedItemsSet: Record<string, any> = {};
+          itemsToSet.forEach((item: any) => {
+            const tempTitle = (item.title || 'Achat').toLowerCase();
+            if (groupedItemsSet[tempTitle]) {
+              groupedItemsSet[tempTitle].amount = (groupedItemsSet[tempTitle].amount || 0) + (item.amount || 0);
+              groupedItemsSet[tempTitle].originalCount = (groupedItemsSet[tempTitle].originalCount || 1) + 1;
+            } else {
+              groupedItemsSet[tempTitle] = { ...item, originalCount: 1 };
+            }
+          });
+          const deduplicatedItems = Object.values(groupedItemsSet);
+
+          setScannedItems(deduplicatedItems.map((item: any, index: number) => {
+            let amount = item.amount || 0;
+            const title = item.title || 'Achat';
+            if (amount === 0) {
+              const matchedPredefined = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === title.toLowerCase());
+              if (matchedPredefined) {
+                // If it was parsed as duplicate but amount was 0, multiply predefined price by the number of instances found
+                amount = matchedPredefined.price * (item.originalCount || 1);
+              }
+            }
+            return {
+              id: index.toString() + Math.random().toString(36).substring(2, 9),
+              title: title,
+              amount: amount,
+              category: CATEGORIES.some(c => c.id === item.category) ? item.category : 'Autres',
+              addToInventory: !!item.isStorable
+            };
+          }));
         } else {
           alert("Aucun article n'a été détecté dans l'image.");
         }
