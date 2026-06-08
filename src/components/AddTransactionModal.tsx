@@ -22,26 +22,7 @@ import {
   Heart
 } from 'lucide-react';
 import { PredefinedItem } from '../types';
-import { ICON_MAP } from '../constants';
-
-interface Category {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-  color: string;
-  bgColor: string;
-}
-
-const CATEGORIES: Category[] = [
-  { id: 'Nourriture', label: 'Nourriture', icon: <Utensils size={18} />, color: 'text-teal-700', bgColor: 'bg-teal-100' },
-  { id: 'Logement', label: 'Logement', icon: <HomeIcon size={18} />, color: 'text-indigo-600', bgColor: 'bg-indigo-100' },
-  { id: 'Transport', label: 'Transport', icon: <Car size={18} />, color: 'text-sky-600', bgColor: 'bg-sky-100' },
-  { id: 'Santé', label: 'Santé', icon: <HeartPulse size={18} />, color: 'text-rose-600', bgColor: 'bg-rose-100' },
-  { id: 'Shopping', label: 'Shopping', icon: <ShoppingBag size={18} />, color: 'text-purple-600', bgColor: 'bg-purple-100' },
-  { id: 'Loisirs', label: 'Loisirs', icon: <Gamepad2 size={18} />, color: 'text-amber-600', bgColor: 'bg-amber-100' },
-  { id: 'Famille', label: 'Famille', icon: <Heart size={18} />, color: 'text-orange-600', bgColor: 'bg-orange-100' },
-  { id: 'Autres', label: 'Autres', icon: <MoreHorizontal size={18} />, color: 'text-slate-600', bgColor: 'bg-slate-100' },
-];
+import { ICON_MAP, CATEGORIES } from '../constants';
 
 interface AddTransactionModalProps {
   isOpen: boolean;

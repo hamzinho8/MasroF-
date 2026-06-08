@@ -8,7 +8,7 @@ android {
     compileSdk rootProject.ext.compileSdk
 
     defaultConfig {
-        applicationId "com.hamza2.masrof2"
+        applicationId "com.hamza.masrof"
         minSdk 24
         targetSdk rootProject.ext.targetSdk
         versionCode 20

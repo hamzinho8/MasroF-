@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Package, PackageOpen, Plus, Minus, X, Info, Search, History as HistoryIcon, User, ListTodo, ShoppingCart } from 'lucide-react';
-import { InventoryItem, InventoryDecreaseAction, ShoppingListItem } from '../types';
-import { ICON_MAP } from '../constants';
+import { InventoryItem, InventoryDecreaseAction, ShoppingListItem, PredefinedItem } from '../types';
+import { ICON_MAP, CATEGORIES } from '../constants';
 
 interface InventoryProps {
   items: InventoryItem[];
@@ -13,9 +13,10 @@ interface InventoryProps {
   onAddShoppingItem: () => void;
   onCheckoutShoppingItem: (item: ShoppingListItem) => void;
   currency: string;
+  predefinedItems: PredefinedItem[];
 }
 
-export default function Inventory({ items, onItemsChange, language, shoppingList, onShoppingListChange, onAddShoppingItem, onCheckoutShoppingItem, currency }: InventoryProps) {
+export default function Inventory({ items, onItemsChange, language, shoppingList, onShoppingListChange, onAddShoppingItem, onCheckoutShoppingItem, currency, predefinedItems }: InventoryProps) {
   const [activeTab, setActiveTab] = useState<'inventory' | 'shoppingList'>('inventory');
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [selectedItemInfo, setSelectedItemInfo] = useState<InventoryItem | null>(null);
@@ -387,6 +388,7 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
             onAdd={handleAddItem}
             t={t}
             language={language}
+            predefinedItems={predefinedItems}
           />
         )}
       </AnimatePresence>
@@ -408,16 +410,32 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
   );
 }
 
-function AddItemModal({ onClose, onAdd, t, language }: any) {
+function AddItemModal({ onClose, onAdd, t, language, predefinedItems }: any) {
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('Nourriture');
+  const [showFrequent, setShowFrequent] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim() && quantity && parseInt(quantity, 10) >= 0) {
-      onAdd(name.trim(), parseInt(quantity, 10));
+      onAdd(name.trim(), parseInt(quantity, 10)); // We could pass category too if InventoryItem takes it in the future
     }
   };
+
+  const handleCategoryClick = (catId: string) => {
+    setSelectedCategory(catId);
+    setShowFrequent(false);
+  };
+
+  const handleItemClick = (item: any) => {
+    setName(item.name);
+    setQuantity(item.quantity ? item.quantity.toString() : '1');
+  };
+
+  const displayedItems = showFrequent 
+    ? (predefinedItems || []).filter((item: any) => item.frequent)
+    : (predefinedItems || []).filter((item: any) => item.category === selectedCategory);
 
   return (
     <motion.div
@@ -432,17 +450,93 @@ function AddItemModal({ onClose, onAdd, t, language }: any) {
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="bg-white w-full max-w-md rounded-[32px] p-6 shadow-2xl"
+        className="bg-white w-full max-w-md rounded-[32px] p-6 shadow-2xl overflow-y-auto max-h-[90vh]"
         onClick={e => e.stopPropagation()}
         dir={language === 'العربية' ? 'rtl' : 'ltr'}
       >
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-black text-slate-800">{t.add}</h3>
+          <h3 className="text-xl items-center font-black text-slate-800">{t.add}</h3>
           <button onClick={onClose} className="p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 transition-colors">
             <X size={20} />
           </button>
         </div>
         
+        <div className="space-y-6 mb-6">
+          {/* Categories Grid */}
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">
+              Catégorie
+            </label>
+            <div className="grid grid-cols-4 sm:grid-cols-4 gap-2">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => handleCategoryClick(cat.id)}
+                  className={`flex flex-col items-center gap-1.5 p-2 px-1 rounded-2xl border transition-all ${
+                    selectedCategory === cat.id && !showFrequent
+                      ? `bg-white shadow-md scale-105 border-transparent ring-2 ring-violet-500/20` 
+                      : 'border-slate-100 bg-slate-50 opacity-60'
+                  }`}
+                >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${cat.bgColor} ${cat.color} ${(selectedCategory === cat.id && !showFrequent) ? 'scale-110' : ''} transition-transform`}>
+                    {cat.icon}
+                  </div>
+                  <span className={`text-[8px] font-black uppercase tracking-tight text-center truncate w-full ${
+                    (selectedCategory === cat.id && !showFrequent) ? 'text-violet-600' : 'text-slate-400'
+                  }`}>
+                    {cat.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Predefined Items Quick Select */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between px-1">
+              <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest">
+                {showFrequent ? 'Achats Fréquents' : `Articles: ${selectedCategory}`}
+              </label>
+              {!showFrequent && (
+                <button 
+                  type="button" 
+                  onClick={() => setShowFrequent(true)}
+                  className="text-[9px] font-black text-violet-600 uppercase tracking-widest hover:underline"
+                >
+                  Voir Fréquents
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-3 gap-2 w-full">
+              <AnimatePresence mode="popLayout">
+                {displayedItems.map((item: any, index: number) => {
+                  const Icon = ICON_MAP[item.iconName] || Package;
+                  return (
+                    <motion.button
+                      key={`${item.id}-${index}`}
+                      type="button"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.15, delay: index * 0.02 }}
+                      className="flex items-center gap-2 p-2 bg-slate-50 rounded-2xl border border-slate-100 active:scale-95 transition-all text-left group hover:border-violet-200"
+                      onClick={() => handleItemClick(item)}
+                    >
+                      <div className="w-8 h-8 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600 shrink-0 group-active:scale-90 transition-transform">
+                        <Icon size={16} />
+                      </div>
+                      <div className="flex flex-col min-w-0 pr-1">
+                        <span className="text-[11px] font-bold text-slate-700 truncate">{item.name}</span>
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-bold text-slate-600 mb-2">{t.name}</label>

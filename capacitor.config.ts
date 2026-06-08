@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.hamza2.masrof2',
+  appId: 'com.hamza.masrof',
   appName: 'MasroF',
   webDir: 'dist',
   server: {

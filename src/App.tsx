@@ -409,6 +409,15 @@ export default function App() {
 
       const newsItems: string[] = [];
 
+      const UNICODE_ICONS: Record<string, string> = {
+          Utensils: "🍽️", ShoppingBag: "🛍️", Car: "🚗", Gamepad2: "🎮", MoreHorizontal: "⋯",
+          Coffee: "☕", Milk: "🥛", Wheat: "🌾", Box: "📦", Cookie: "🍪", Droplets: "💧",
+          CupSoda: "🥤", Candy: "🍬", Zap: "⚡", CircleDot: "🎯", Soup: "🥣", TrainFront: "🚆",
+          Fuel: "⛽", Flame: "🔥", Tv: "📺", Search: "🔍", Baby: "👶", Bean: "🫘", Cylinder: "🛢️",
+          Cigarette: "🚬", Home: "🏠", HeartPulse: "💓", Heart: "❤️", Bath: "🛁", Lightbulb: "💡",
+          Users: "👥", Sparkles: "✨", Shirt: "👕", Wind: "💨", HelpCircle: "❓", User: "👤"
+      };
+
       (shoppingList || []).forEach((s) => {
         let colorHex = "#64748B"; // slate
         
@@ -416,14 +425,15 @@ export default function App() {
             case "Nourriture": colorHex = "#0D9488"; break;
             case "Logement": colorHex = "#4F46E5"; break;
             case "Transport": colorHex = "#0284C7"; break;
-            case "Santé": colorHex = "#E11D48"; break;
+            case "Sanitaire": colorHex = "#E11D48"; break;
             case "Shopping": colorHex = "#9333EA"; break;
             case "Loisirs": colorHex = "#D97706"; break;
-            case "Famille": colorHex = "#EA580C"; break;
+            case "Devoir": colorHex = "#EA580C"; break;
             default: colorHex = "#475569"; break;
         }
         
-        newsItems.push(`<b><font color="${colorHex}">${s.name}</font></b>`);
+        const iconStr = s.iconName ? (UNICODE_ICONS[s.iconName] || "📦") : "📦";
+        newsItems.push(`<b><font color="${colorHex}">${iconStr} ${s.name}</font></b>`);
       });
 
       let newsHtml = newsItems.join("&nbsp;&nbsp;•&nbsp;&nbsp;");
@@ -756,6 +766,7 @@ export default function App() {
             onAddShoppingItem={openShoppingListAddModal}
             onCheckoutShoppingItem={openShoppingListCheckoutModal}
             currency={currency}
+            predefinedItems={predefinedItems}
           />
         );
       case "settings":

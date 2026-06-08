@@ -8,38 +8,30 @@
     android:orientation="horizontal"
     android:padding="8dp">
 
-    <LinearLayout
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="#D32F2F"
-        android:padding="6dp"
-        android:gravity="center_vertical">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="ACHATS"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-    </LinearLayout>
+        android:text="🛒"
+        android:textSize="18sp"
+        android:layout_marginEnd="6dp" />
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/widget_news_text"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#FAFAFA"
-        android:padding="6dp"
-        android:gravity="center_vertical">
-        
-        <TextView
-            android:id="@+id/widget_news_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#334155"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:singleLine="true"
-            android:ellipsize="marquee"
-            android:marqueeRepeatLimit="marquee_forever" />
-    </LinearLayout>
+        android:layout_height="wrap_content"
+        android:textColor="#334155"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:singleLine="true"
+        android:ellipsize="marquee"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:freezesText="true"
+        android:scrollHorizontally="true"
+        android:shadowColor="#FFFFFF"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="3" />
 
 </LinearLayout>
