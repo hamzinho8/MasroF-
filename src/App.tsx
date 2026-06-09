@@ -436,7 +436,7 @@ export default function App() {
       }
 
       if (balanceThreshold !== null && balance <= balanceThreshold) {
-        alarms.push(`<b><font color="${alarmColor}">👛 ${balance.toFixed(2)} ${currency}</font></b>`);
+        alarms.push(`<b><font color="${alarmColor}">💵 ${balance.toFixed(2)} ${currency}</font></b>`);
       }
 
       if (inventoryAlertThreshold !== null) {
