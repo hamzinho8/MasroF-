@@ -888,14 +888,16 @@ export default function Home({
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0, y: 20 }}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-md relative"
+                className="w-full max-w-md relative flex flex-col gap-4"
               >
-                <button
-                  onClick={() => setShowCalendarModal(false)}
-                  className="absolute top-8 right-8 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"
-                >
-                  <X size={16} />
-                </button>
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setShowCalendarModal(false)}
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 text-white shadow-lg hover:bg-slate-700 transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
                 <CalendarView transactions={transactions} currency={currency} />
               </motion.div>
             </motion.div>

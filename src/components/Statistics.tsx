@@ -10,10 +10,13 @@ import {
   Car, 
   Gamepad2, 
   CreditCard,
-  Target
+  Target,
+  X
 } from 'lucide-react';
 
 import { Transaction } from '../types';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { createPortal } from 'react-dom';
 
 interface StatisticsProps {
   transactions: Transaction[];
@@ -43,6 +46,7 @@ const CATEGORY_STYLES: Record<string, { color: string; icon: React.ReactNode; bg
 export default function Statistics({ transactions, currency, language, isDarkMode, categoryBudgets = {}, onUpdateBudget }: StatisticsProps) {
   const [period, setPeriod] = useState<'day' | 'week' | 'month'>('week');
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+  const [selectedPieCategory, setSelectedPieCategory] = useState<string | null>(null);
 
   const toggleCategory = (cat: string) => {
     setExpandedCategories(prev => 
@@ -95,8 +99,53 @@ export default function Statistics({ transactions, currency, language, isDarkMod
     { id: 'month', label: language === 'Français' ? 'Mois' : 'Month', icon: <BarChart3 size={14} /> },
   ];
 
+  const pieData = useMemo(() => {
+    return Object.entries(periodStats)
+      .filter(([_, data]) => data.total > 0)
+      .map(([category, data]) => ({
+        name: category,
+        value: data.total,
+        color: CATEGORY_STYLES[category]?.color || '#64748B'
+      }));
+  }, [periodStats]);
+
+  const selectedCategoryTransactions = useMemo(() => {
+    if (!selectedPieCategory) return [];
+    
+    const now = new Date();
+    const startOfPeriod = new Date();
+    if (period === 'day') startOfPeriod.setHours(0, 0, 0, 0);
+    else if (period === 'week') {
+      const d = now.getDay();
+      const diff = now.getDate() - d + (d === 0 ? -6 : 1);
+      startOfPeriod.setDate(diff);
+      startOfPeriod.setHours(0, 0, 0, 0);
+    } else if (period === 'month') {
+      startOfPeriod.setDate(1);
+      startOfPeriod.setHours(0, 0, 0, 0);
+    }
+
+    return transactions.filter(t => {
+      const isCredit = (t.category && ["on me doit","je dois","مستحقات لي","ديون علي","owed to me","i owe","loans","debts","crédit +","crédit --"].includes(t.category.toLowerCase()));
+      const isExpense = (t.type === 'EXPENSE' || (t.type as any) === 'expense') && !isCredit;
+      if (!isExpense || t.timestamp < startOfPeriod.getTime()) return false;
+      let category = t.category || 'Autres';
+      if (category === 'Food') category = 'Nourriture';
+      else if (category === 'Leisure') category = 'Loisirs';
+      else if (category === 'Others') category = 'Autres';
+      return category === selectedPieCategory;
+    }).sort((a, b) => b.timestamp - a.timestamp);
+  }, [transactions, selectedPieCategory, period]);
+
+  const handlePieClick = (data: any) => {
+    const categoryName = data?.name || data?.payload?.name;
+    if (categoryName) {
+      setSelectedPieCategory(categoryName);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full bg-transparent px-4 pb-24 overflow-y-auto">
+    <div className="flex flex-col h-full bg-transparent px-4 pb-24 overflow-y-auto relative">
       {/* Title 1 */}
       <div className="mt-6 mb-2">
         <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#1B7C86] ml-1">
@@ -121,6 +170,39 @@ export default function Statistics({ transactions, currency, language, isDarkMod
           </button>
         ))}
       </div>
+
+      {/* Pie Chart */}
+      {pieData.length > 0 && (
+        <div className={`rounded-[32px] overflow-hidden border ${isDarkMode ? 'bg-slate-800/40 border-slate-700' : 'bg-white border-slate-100 shadow-sm'} mb-6`}>
+          <div className="p-4 h-[250px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={90}
+                  paddingAngle={5}
+                  dataKey="value"
+                  stroke="none"
+                  onClick={handlePieClick}
+                  className="cursor-pointer"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  formatter={(value: any) => [`${Number(value).toLocaleString()} ${currency}`, '']}
+                  contentStyle={{ borderRadius: '16px', border: 'none', padding: '12px', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)', background: isDarkMode ? '#1e293b' : '#ffffff' }}
+                  itemStyle={{ color: isDarkMode ? '#ffffff' : '#0F172A', fontWeight: '900', fontSize: '14px' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
 
       {/* Stats Board (Category Table) */}
       <div className="space-y-3 mb-10">
@@ -330,6 +412,63 @@ export default function Statistics({ transactions, currency, language, isDarkMod
           })()}
         </div>
       </div>
+      {/* Budget Setup Modal (Optional if needed here, but usually handled in App/Home) */}
+      <AnimatePresence>
+        {selectedPieCategory !== null && createPortal(
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className={`fixed inset-0 z-[100] flex flex-col ${isDarkMode ? 'bg-slate-900' : 'bg-slate-50'}`}
+          >
+            <div className={`flex items-center gap-4 p-6 pt-10 sticky top-0 z-10 ${isDarkMode ? 'bg-slate-900/90' : 'bg-slate-50/90'} backdrop-blur-md`}>
+              <button 
+                onClick={() => setSelectedPieCategory(null)}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-transform active:scale-95 ${isDarkMode ? 'bg-slate-800 text-white' : 'bg-white text-slate-800 shadow-sm border border-slate-100'}`}
+              >
+                <X size={20} />
+              </button>
+              <h2 className="text-xl font-black uppercase tracking-widest">{selectedPieCategory}</h2>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto px-6 pb-24">
+              <div className="mb-6 mt-4">
+                 <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Total {selectedPieCategory}</div>
+                 <div className={`text-4xl font-black leading-none ${CATEGORY_STYLES[selectedPieCategory]?.color ? '' : 'text-slate-800 dark:text-white'}`} style={{ color: CATEGORY_STYLES[selectedPieCategory]?.color }}>
+                    {selectedCategoryTransactions.reduce((sum, t) => sum + t.amount, 0).toLocaleString('fr-FR')} <span className="text-2xl">{currency}</span>
+                 </div>
+              </div>
+
+              <div className="space-y-3">
+                {selectedCategoryTransactions.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 text-slate-400">
+                    <p className="font-bold text-xs uppercase tracking-widest">Aucune transaction</p>
+                  </div>
+                ) : (
+                  selectedCategoryTransactions.map((tx) => (
+                    <div key={tx.id} className={`p-4 rounded-2xl border flex items-center justify-between ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100 shadow-sm'}`}>
+                      <div>
+                        <p className={`font-bold text-sm ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                          {tx.label || tx.category}
+                        </p>
+                        <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-1">
+                          {new Date(tx.timestamp).toLocaleDateString()} • {new Date(tx.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-black text-rose-500">
+                          -{tx.amount.toLocaleString('fr-FR')} {currency}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </motion.div>,
+          document.body
+        )}
+      </AnimatePresence>
     </div>
   );
 }

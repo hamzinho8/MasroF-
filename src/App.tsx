@@ -136,81 +136,50 @@ export default function App() {
       if (saved) {
         let items = JSON.parse(saved);
         let migrated = false;
+        
+        // Target frequent items
+        const frequentNames = ["Taxi", "Cafe", "Pisquet", "Danone", "Sucette", "Farine", "Les Glaces", "Cigarette", "Bampers", "Tram"];
+        
         items = items.map((item: any) => {
-          if (item.name === "Cisset") {
-            migrated = true;
-            return { ...item, name: "Sucette", iconName: "Candy" };
+          let updatedItem = { ...item };
+
+          // Fix Bampers naming and category
+          if (updatedItem.name?.toLowerCase() === "bambers" || updatedItem.name?.toLowerCase() === "bampers") {
+            if (updatedItem.name !== "Bampers" || updatedItem.category !== "Autres" || updatedItem.iconName !== "Baby") {
+              updatedItem.name = "Bampers";
+              updatedItem.category = "Autres";
+              updatedItem.iconName = "Baby";
+              migrated = true;
+            }
           }
-          if (item.name === "Danone" && item.iconName !== "Milk") {
-            migrated = true;
-            return { ...item, iconName: "Milk" };
+
+          // Enforce frequency
+          const shouldBeFrequent = frequentNames.includes(updatedItem.name);
+          if (updatedItem.frequent !== shouldBeFrequent) {
+             updatedItem.frequent = shouldBeFrequent;
+             migrated = true;
           }
-          if (item.name === "Cafe grain" && item.iconName !== "Bean") {
-            migrated = true;
-            return { ...item, iconName: "Bean" };
+
+          // Merge any structural updates from constants
+          const constItem = INITIAL_PREDEFINED_ITEMS.find(p => p.name === updatedItem.name);
+          if (constItem) {
+             if (updatedItem.iconName !== constItem.iconName || updatedItem.category !== constItem.category) {
+                updatedItem.iconName = constItem.iconName;
+                updatedItem.category = constItem.category;
+                migrated = true;
+             }
           }
-          if (
-            item.name.toLowerCase() === "gaz" &&
-            (item.iconName !== "Cylinder" || item.category !== "Logement")
-          ) {
-            migrated = true;
-            return { ...item, name: "Gaz", iconName: "Cylinder", category: "Logement" };
-          }
-          if (
-            (item.name.toLowerCase() === "bampers" || item.name.toLowerCase() === "bambers") && 
-            (item.category !== "Sanitaire" || item.name !== "Bambers" || item.price !== 4.5 || !item.frequent)
-          ) {
-            migrated = true;
-            return { ...item, name: "Bambers", category: "Sanitaire", price: 4.5, iconName: "Baby", frequent: true };
-          }
-          if (
-            ["Fairy", "Tide", "Champo", "Aide Famille", "Inconnu"].includes(item.name) && !item.frequent
-          ) {
-            migrated = true;
-            return { ...item, frequent: true };
-          }
-          if (
-            item.name === "Cigarette" &&
-            item.iconName !== "Cigarette"
-          ) {
-            migrated = true;
-            return {
-              ...item,
-              frequent: true,
-              category: "Loisirs",
-              iconName: "Cigarette",
-            };
-          }
-          return item;
+
+          return updatedItem;
         });
 
-        const ensureItem = (name: string) => {
-          const hasItem = items.some((item: any) => item.name === name);
-          if (!hasItem) {
+        // Ensure missing items
+        INITIAL_PREDEFINED_ITEMS.forEach(targetItem => {
+          if (!items.some((i: any) => i.name === targetItem.name)) {
+            items.push(targetItem);
             migrated = true;
-            const targetItem = INITIAL_PREDEFINED_ITEMS.find(
-              (i) => i.name === name,
-            );
-            if (targetItem) items.push(targetItem);
           }
-        };
-
-        ensureItem("Gaz");
-        ensureItem("Location");
-        ensureItem("Électricité");
-        ensureItem("Produits Sanitaires");
-        ensureItem("Aide Famille");
-        // Sanitaire items
-        ensureItem("Savon");
-        ensureItem("Fairy");
-        ensureItem("Tide");
-        ensureItem("Champo");
-        ensureItem("Bambers");
-        // Devoir items
-        ensureItem("Parents");
-        ensureItem("Enfants");
-        ensureItem("Femme");
-        ensureItem("Inconnu");
+        });
 
         if (migrated) {
           localStorage.setItem("predefinedItems", JSON.stringify(items));

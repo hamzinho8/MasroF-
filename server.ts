@@ -21,7 +21,7 @@ async function startServer() {
         return res.status(500).json({ error: "Gemini API key is not configured on the server." });
       }
 
-      const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: Try strictly to match detected items with the ones in this JSON list. If an item matches exactly or closely, output its EXACT name and EXACT price from the json list, ignoring what is on the receipt.` : "";
+      const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: Try strictly to match detected items with the ones in this JSON list. If an item matches exactly or closely, output its EXACT name. For its 'amount', calculate (JSON price * quantity detected or listed). If there's no receipt and just an image of items, count the items to determine quantity.` : "";
 
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       const response = await ai.models.generateContent({
@@ -65,7 +65,7 @@ async function startServer() {
         return res.status(500).json({ error: "Gemini API key is not configured." });
       }
 
-      const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: If the user says an item that matches one in this list, output its EXACT name and EXACT price from the json list.` : "";
+      const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: If the user says an item that matches one in this list, output its EXACT name. For its 'amount', calculate (JSON price * quantity mentioned). If no quantity is mentioned, assume 1.` : "";
 
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       const response = await ai.models.generateContent({

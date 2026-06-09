@@ -92,7 +92,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         body: JSON.stringify({ 
           audioBase64: base64Audio,
           mimeType: mimeType,
-          predefinedItems: INITIAL_PREDEFINED_ITEMS
+          predefinedItems: predefinedItems
         })
       });
 
@@ -157,9 +157,11 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
          mappedCatId = matchedCat.id;
       }
 
-      const matchedPredefined = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === title.toLowerCase());
+      const matchedPredefined = predefinedItems.find(p => p.name.toLowerCase() === title.toLowerCase());
       if (matchedPredefined) {
-        amount = matchedPredefined.price * (item.originalCount || 1);
+        if (amount === 0 || !amount) {
+           amount = matchedPredefined.price * (item.originalCount || 1);
+        }
         title = matchedPredefined.name;
         category = matchedPredefined.category;
         mappedCatId = matchedPredefined.category;
@@ -194,7 +196,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               imageBase64: result,
-              predefinedItems: INITIAL_PREDEFINED_ITEMS
+              predefinedItems: predefinedItems
             })
           });
 
@@ -242,7 +244,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         allowEditing: false,
         resultType: CameraResultType.Base64,
         source: CameraSource.Prompt,
-        saveToGallery: false,
+        saveToGallery: true,
         width: 1024
       });
 
@@ -261,7 +263,8 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            imageBase64: 'data:image/jpeg;base64,' + image.base64String
+            imageBase64: 'data:image/jpeg;base64,' + image.base64String,
+            predefinedItems: predefinedItems
           })
         });
 
@@ -288,7 +291,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                     }
                   },
                   {
-                    text: "Analyze this receipt or image of purchased goods from Morocco (prices use Dirham, labels might be French/Arabic). Extract:\n1. 'items': an array of UNIQUE items purchased. If the image has identical items, group them into a single item and sum their prices. Try to map item titles strictly to these predefined articles if they match: Cafe, Taxi, Danone, Bambers, Farine, Sucette, Pisquet, Gaz, Location, Électricité, Savon, Fairy, Tide, Champo, Huile, Thé 1, Thé 2, Blé, Sucre, Épices, Sel, Endomi, Tram, Essence, Cigarette. For each item, give 'amount' (number, representing the total price for that grouped item), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string, use predefined names where possible), and 'isStorable' (boolean, true for physical goods).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {\"totalReceiptAmount\": 100.50, \"paymentMethod\": \"CARD\", \"items\": [{\"title\": \"Danone\", \"amount\": 12.50, \"category\": \"Nourriture\", \"isStorable\": true}]}. Return ONLY valid JSON."
+                    text: `Analyze this receipt or image of purchased goods from Morocco (prices use Dirham, labels might be French/Arabic). Extract:\n1. 'items': an array of UNIQUE items purchased. If the image has identical items, group them into a single item and sum their prices. Try to map item titles strictly to these predefined articles if they match: ${predefinedItems.map(p => p.name).join(', ')}. If they match, calculate their 'amount' as (the predefined list price * quantity detected or listed). For each item, give 'amount' (number, representing the total price for that grouped item), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string, use predefined names where possible), and 'isStorable' (boolean, true for physical goods).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "paymentMethod": "CARD", "items": [{"title": "Danone", "amount": 18, "category": "Nourriture", "isStorable": true}]}. Return ONLY valid JSON.`
                   }
                 ]
               }
@@ -333,20 +336,32 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
 
           setScannedItems(deduplicatedItems.map((item: any, index: number) => {
             let amount = item.amount || 0;
-            const title = item.title || 'Achat';
-            if (amount === 0) {
-              const matchedPredefined = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === title.toLowerCase());
-              if (matchedPredefined) {
-                // If it was parsed as duplicate but amount was 0, multiply predefined price by the number of instances found
+            let title = item.title || 'Achat';
+            let category = item.category || 'Autres';
+            let mappedCatId = 'other';
+            const matchedCat = CATEGORIES.find(c => c.id === category || c.label === category);
+            if (matchedCat) {
+               category = matchedCat.id;
+               mappedCatId = matchedCat.id;
+            }
+
+            const matchedPredefined = predefinedItems.find(p => p.name.toLowerCase() === title.toLowerCase());
+            if (matchedPredefined) {
+              if (amount === 0 || !amount) {
                 amount = matchedPredefined.price * (item.originalCount || 1);
               }
+              title = matchedPredefined.name;
+              category = matchedPredefined.category;
+              mappedCatId = matchedPredefined.category;
             }
+            
             return {
               id: index.toString() + Math.random().toString(36).substring(2, 9),
               title: title,
               amount: amount,
-              category: CATEGORIES.some(c => c.id === item.category) ? item.category : 'Autres',
-              addToInventory: !!item.isStorable
+              categoryId: mappedCatId,
+              category: category,
+              addToInventory: false
             };
           }));
         } else {
@@ -804,7 +819,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         ref={audioInputRef}
         hidden
         accept="audio/*"
-        capture="microphone"
+        capture
         onChange={handleVoiceFileSelection}
       />
     </AnimatePresence>
