@@ -78,70 +78,90 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
   }, [isOpen, initialType]);
 
   const startListening = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Votre navigateur ne supporte pas la reconnaissance vocale.");
+    audioInputRef.current?.click();
+  };
+
+  const handleVoiceFileSelection = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
       return;
     }
+    
+    setIsListening(true);
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const result = e.target?.result as string;
+      if (result) {
+        try {
+          const response = await fetch('/api/scan-voice', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              audioBase64: result,
+              mimeType: file.type,
+              predefinedItems: INITIAL_PREDEFINED_ITEMS
+            })
+          });
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'fr-FR';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => {
-      setIsListening(true);
-    };
-
-    recognition.onresult = async (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      try {
-           setIsListening(false);
-           setIsScanning(true); // show loader on scanner button momentarily or handle UI
-           const response = await fetch('/api/parse-voice', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: transcript })
-           });
-
-           if (response.ok) {
-              const data = await response.json();
-              if (data.amount) setAmount(data.amount.toString());
-              if (data.label) {
-                setLabel(data.label);
-              } else {
-                setLabel(transcript);
-              }
-              if (data.category) {
-                  const mappedCat = CATEGORIES.find(c => c.label.toLowerCase() === data.category.toLowerCase() || c.id === data.category);
-                  if (mappedCat) {
-                      setSelectedCategory(mappedCat.id);
-                      setShowFrequent(false);
-                  }
-              }
-           } else {
-              setLabel(transcript);
-           }
-      } catch (e) {
-          console.error("Voice parse error", e);
-          setLabel(transcript);
-      } finally {
-          setIsScanning(false);
-      }
-    };
-
-    recognition.onerror = (event: any) => {
-      if (event.error !== 'not-allowed') {
-        console.error("Speech recognition error", event.error);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.items) {
+               const deduplicatedItems = deduplicateItems(data.items);
+               setScannedItems(deduplicatedItems);
+               setReceiptTotal(data.totalReceiptAmount || null);
+               setDetectedPaymentGroup('cash'); // Default payment method for voice
+               setShowFrequent(false);
+            }
+          } else {
+             alert('Error processing voice');
+          }
+        } catch (error) {
+          console.error("Voice scanning error", error);
+        }
       }
       setIsListening(false);
     };
-
-    recognition.onend = () => {
+    reader.onerror = () => {
       setIsListening(false);
     };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+  };
 
-    recognition.start();
+  const deduplicateItems = (items: any[]) => {
+    const groupedItemsSet: Record<string, any> = {};
+    items.forEach((item: any) => {
+      const tempTitle = (item.title || 'Achat').toLowerCase();
+      if (groupedItemsSet[tempTitle]) {
+        groupedItemsSet[tempTitle].amount = (groupedItemsSet[tempTitle].amount || 0) + (item.amount || 0);
+        groupedItemsSet[tempTitle].originalCount = (groupedItemsSet[tempTitle].originalCount || 1) + 1;
+      } else {
+        groupedItemsSet[tempTitle] = { ...item, originalCount: 1 };
+      }
+    });
+    const deduplicatedItems = Object.values(groupedItemsSet);
+
+    return deduplicatedItems.map((item: any, index: number) => {
+      let amount = item.amount || 0;
+      let title = item.title || 'Achat';
+      let category = item.category || 'Autres';
+      let mappedCatId = 'other';
+      const matchedCat = CATEGORIES.find(c => c.id === category || c.label === category);
+      if (matchedCat) {
+         category = matchedCat.id;
+         mappedCatId = matchedCat.id;
+      }
+
+      const matchedPredefined = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === title.toLowerCase());
+      if (matchedPredefined) {
+        amount = matchedPredefined.price * (item.originalCount || 1);
+        title = matchedPredefined.name;
+        category = matchedPredefined.category;
+        mappedCatId = matchedPredefined.category;
+      }
+
+      return { ...item, amount, title, id: index.toString() + Math.random().toString(36).substring(2, 9), categoryId: mappedCatId, category };
+    });
   };
 
   const handleCategoryClick = (catId: string) => {
@@ -149,6 +169,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
     setShowFrequent(false);
   };
 
+  const audioInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFallbackImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,36 +189,15 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              imageBase64: result
+              imageBase64: result,
+              predefinedItems: INITIAL_PREDEFINED_ITEMS
             })
           });
 
           if (response.ok) {
             data = await response.json();
             if (data.items) {
-               const groupedItemsSet: Record<string, any> = {};
-               data.items.forEach((item: any) => {
-                 const tempTitle = (item.title || 'Achat').toLowerCase();
-                 if (groupedItemsSet[tempTitle]) {
-                   groupedItemsSet[tempTitle].amount = (groupedItemsSet[tempTitle].amount || 0) + (item.amount || 0);
-                   groupedItemsSet[tempTitle].originalCount = (groupedItemsSet[tempTitle].originalCount || 1) + 1;
-                 } else {
-                   groupedItemsSet[tempTitle] = { ...item, originalCount: 1 };
-                 }
-               });
-               const deduplicatedItems = Object.values(groupedItemsSet);
-
-               setScannedItems(deduplicatedItems.map((item: any, index: number) => {
-                 let amount = item.amount || 0;
-                 const title = item.title || 'Achat';
-                 if (amount === 0) {
-                   const matchedPredefined = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === title.toLowerCase());
-                   if (matchedPredefined) {
-                     amount = matchedPredefined.price * (item.originalCount || 1);
-                   }
-                 }
-                 return { ...item, amount, title, id: index.toString() + Math.random().toString(36).substring(2, 9), categoryId: item.categoryId || 'other', category: CATEGORIES.some(c => c.id === item.category) ? item.category : 'Autres' };
-               }));
+               setScannedItems(deduplicateItems(data.items));
                setReceiptTotal(data.total || data.totalReceiptAmount || null);
                setDetectedPaymentGroup(data.paymentMethod === 'CASH' ? 'cash' : 'bank');
                setShowFrequent(false);
@@ -794,6 +794,14 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         accept="image/*"
         capture="environment"
         onChange={handleFallbackImageSelection}
+      />
+      <input
+        type="file"
+        ref={audioInputRef}
+        hidden
+        accept="audio/*"
+        capture="microphone"
+        onChange={handleVoiceFileSelection}
       />
     </AnimatePresence>
   );

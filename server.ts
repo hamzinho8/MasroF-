@@ -12,7 +12,7 @@ async function startServer() {
   // API routes FIRST
   app.post("/api/scan-items", async (req, res) => {
     try {
-      const { imageBase64 } = req.body;
+      const { imageBase64, predefinedItems } = req.body;
       if (!imageBase64) {
         return res.status(400).json({ error: "No image provided" });
       }
@@ -20,6 +20,8 @@ async function startServer() {
       if (!process.env.GEMINI_API_KEY) {
         return res.status(500).json({ error: "Gemini API key is not configured on the server." });
       }
+
+      const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: Try strictly to match detected items with the ones in this JSON list. If an item matches exactly or closely, output its EXACT name and EXACT price from the json list, ignoring what is on the receipt.` : "";
 
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       const response = await ai.models.generateContent({
@@ -35,7 +37,7 @@ async function startServer() {
                 }
               },
               {
-                text: "Analyze this receipt or image of purchased goods from Morocco (prices use Dirham, labels might be French/Arabic). Extract:\n1. 'items': an array of UNIQUE items purchased. If the image has identical items, group them into a single item and sum their prices. Try to map item titles strictly to these predefined articles if they match: Cafe, Taxi, Danone, Bambers, Farine, Sucette, Pisquet, Gaz, Location, Électricité, Savon, Fairy, Tide, Champo, Huile, Thé 1, Thé 2, Blé, Sucre, Épices, Sel, Endomi, Tram, Essence, Cigarette. For each item, give 'amount' (number, representing the total price for that grouped item), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string, use predefined names where possible), and 'isStorable' (boolean, true for physical goods).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {\"totalReceiptAmount\": 100.50, \"paymentMethod\": \"CARD\", \"items\": [{\"title\": \"Danone\", \"amount\": 12.50, \"category\": \"Nourriture\", \"isStorable\": true}]}. Return ONLY valid JSON."
+                text: `Analyze this receipt or image of purchased goods from Morocco. Extract:\n1. 'items': an array of UNIQUE items purchased. If the image has identical items, group them into a single item and sum their prices. For each item, give 'amount' (number, representing the total price), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string), and 'isStorable' (boolean, true for physical goods).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "paymentMethod": "CARD", "items": [{"title": "Danone", "amount": 12.50, "category": "Nourriture", "isStorable": true}]}. Return ONLY valid JSON.${predefinedText}`
               }
             ]
           }
@@ -49,6 +51,50 @@ async function startServer() {
     } catch (e: any) {
       console.error("OCR Items Error:", e);
       res.status(500).json({ error: e.message || "Failed to scan items" });
+    }
+  });
+
+  app.post("/api/scan-voice", async (req, res) => {
+    try {
+      const { audioBase64, mimeType, predefinedItems } = req.body;
+      if (!audioBase64) {
+        return res.status(400).json({ error: "No audio provided" });
+      }
+
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ error: "Gemini API key is not configured." });
+      }
+
+      const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: If the user says an item that matches one in this list, output its EXACT name and EXACT price from the json list.` : "";
+
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                inlineData: {
+                  data: audioBase64,
+                  mimeType: mimeType || "audio/webm"
+                }
+              },
+              {
+                text: `Listen to this voice recording (probably Moroccan Arabic/French) describing bought articles. Extract:\n1. 'items': an array of UNIQUE items mentioned. Group identical items and sum their prices. For each item, give 'amount' (number), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string), and 'isStorable' (boolean).\n2. 'totalReceiptAmount': sum of the items (number).\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "items": [{"title": "Cafe", "amount": 10, "category": "Nourriture", "isStorable": true}]}. Return ONLY valid JSON.${predefinedText}`
+              }
+            ]
+          }
+        ]
+      });
+
+      const text = response.text || "[]";
+      const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
+      const data = JSON.parse(cleanText);
+      res.json(data);
+    } catch (e: any) {
+      console.error("Voice parse error:", e);
+      res.status(500).json({ error: e.message || "Failed to parse voice" });
     }
   });
 
