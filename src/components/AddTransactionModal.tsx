@@ -77,56 +77,14 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
     }
   }, [isOpen, initialType]);
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<BlobPart[]>([]);
+  const audioInputRef = useRef<HTMLInputElement>(null);
 
-  const startListening = async () => {
-    if (isListening) {
-      // Stop recording
-      mediaRecorderRef.current?.stop();
-      setIsListening(false);
-      return;
-    }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          audioChunksRef.current.push(e.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        
-        // Stop all tracks to release microphone
-        stream.getTracks().forEach(track => track.stop());
-
-        if (audioBlob.size > 0) {
-          setIsScanning(true);
-          const reader = new FileReader();
-          reader.onloadend = async () => {
-            const base64Audio = reader.result as string;
-            await processVoiceRecording(base64Audio, audioBlob.type);
-          };
-          reader.readAsDataURL(audioBlob);
-        }
-      };
-
-      mediaRecorder.start();
-      setIsListening(true);
-    } catch (err) {
-      console.error("Microphone permission denied or error:", err);
-      // Fallback if needed, but alert for now
-      alert("Erreur d'accès au microphone. Autorisez l'app.");
-    }
+  const startListening = () => {
+    audioInputRef.current?.click();
   };
 
   const processVoiceRecording = async (base64Audio: string, mimeType: string) => {
+    setIsScanning(true);
     try {
       const response = await fetch('/api/scan-voice', {
         method: 'POST',
@@ -152,8 +110,26 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
       }
     } catch (error) {
       console.error("Voice scanning error", error);
+      alert('Erreur lors de la reconnaissance vocale');
     }
     setIsScanning(false);
+  };
+
+  const handleVoiceFileSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Audio = reader.result as string;
+      await processVoiceRecording(base64Audio, file.type);
+    };
+    reader.readAsDataURL(file);
+    
+    // reset
+    if (audioInputRef.current) {
+        audioInputRef.current.value = '';
+    }
   };
 
 
@@ -822,6 +798,14 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         accept="image/*"
         capture="environment"
         onChange={handleFallbackImageSelection}
+      />
+      <input
+        type="file"
+        ref={audioInputRef}
+        hidden
+        accept="audio/*"
+        capture="microphone"
+        onChange={handleVoiceFileSelection}
       />
     </AnimatePresence>
   );

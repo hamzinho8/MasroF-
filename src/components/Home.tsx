@@ -37,6 +37,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Transaction, CreditEntry, Reminder, ShoppingListItem } from "../types";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { ICON_MAP } from "../constants";
+import CalendarView from "./CalendarView";
 
 interface HomeProps {
   balance: number;
@@ -83,6 +84,7 @@ export default function Home({
   const [showCalculator, setShowCalculator] = useState(false);
   const [showBankModal, setShowBankModal] = useState(false);
   const [showBudgetModal, setShowBudgetModal] = useState(false);
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [categoryBudgets, setCategoryBudgets] = useLocalStorage<{category: string; limit: number}[]>('categoryBudgets', []);
 
   const translations = {
@@ -672,7 +674,10 @@ export default function Home({
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="p-4 rounded-2xl border-2 border-danger-red/20 bg-danger-red/5 relative overflow-hidden group hover:border-danger-red/40 transition-all">
+          <button 
+            onClick={() => setShowCalendarModal(true)}
+            className="text-left p-4 rounded-2xl border-2 border-danger-red/20 bg-danger-red/5 relative overflow-hidden group hover:border-danger-red/40 transition-all cursor-pointer"
+          >
             <div className="relative z-10">
               <p className="text-xs text-slate-500 mb-1 font-medium">
                 {t.achatTotal}
@@ -685,8 +690,11 @@ export default function Home({
               className="absolute -right-2 -bottom-2 text-danger-red/10 rotate-12 group-hover:scale-110 transition-transform"
               size={48}
             />
-          </div>
-          <div className="p-4 rounded-2xl border-2 border-bank-blue/20 bg-bank-blue/5 relative overflow-hidden group hover:border-bank-blue/40 transition-all">
+          </button>
+          <button 
+            onClick={() => setShowCalendarModal(true)}
+            className="text-left p-4 rounded-2xl border-2 border-bank-blue/20 bg-bank-blue/5 relative overflow-hidden group hover:border-bank-blue/40 transition-all cursor-pointer"
+          >
             <div className="relative z-10">
               <p className="text-xs text-slate-500 mb-1 font-medium">
                 {t.retraits}
@@ -699,7 +707,7 @@ export default function Home({
               className="absolute -right-2 -bottom-2 text-bank-blue/10 rotate-12 group-hover:scale-110 transition-transform"
               size={48}
             />
-          </div>
+          </button>
         </div>
       </div>
 
@@ -863,6 +871,34 @@ export default function Home({
               categories={CATEGORY_MAP}
               currency={currency}
             />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showCalendarModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+              onClick={() => setShowCalendarModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                onClick={(e) => e.stopPropagation()}
+                className="w-full max-w-md relative"
+              >
+                <button
+                  onClick={() => setShowCalendarModal(false)}
+                  className="absolute top-8 right-8 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"
+                >
+                  <X size={16} />
+                </button>
+                <CalendarView transactions={transactions} currency={currency} />
+              </motion.div>
+            </motion.div>
           )}
         </AnimatePresence>
     </motion.div>
