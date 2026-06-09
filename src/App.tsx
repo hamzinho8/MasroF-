@@ -432,11 +432,11 @@ export default function App() {
       const warnColor = "#FDBA74"; // lighter orange for warnings like stock on dark bg
 
       if (bankBalanceThreshold !== null && bankBalance <= bankBalanceThreshold) {
-        alarms.push(`<b><font color="${alarmColor}">🏦 Solde Compte: ${bankBalance.toFixed(2)} ${currency}</font></b>`);
+        alarms.push(`<b><font color="${alarmColor}">🏦 ${bankBalance.toFixed(2)} ${currency}</font></b>`);
       }
 
       if (balanceThreshold !== null && balance <= balanceThreshold) {
-        alarms.push(`<b><font color="${alarmColor}">👛 Argent Poche: ${balance.toFixed(2)} ${currency}</font></b>`);
+        alarms.push(`<b><font color="${alarmColor}">👝 ${balance.toFixed(2)} ${currency}</font></b>`);
       }
 
       if (inventoryAlertThreshold !== null) {
