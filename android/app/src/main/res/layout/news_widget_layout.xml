@@ -6,27 +6,21 @@
     android:background="@drawable/news_widget_bg"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="8dp">
+    android:padding="12dp">
 
-    <FrameLayout
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:background="@drawable/red_circle_bg"
-        android:layout_marginEnd="8dp">
-        
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="🛒"
-            android:textSize="16sp"
-            android:layout_gravity="center" />
-    </FrameLayout>
+    <ImageView
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_notification"
+        android:layout_marginEnd="12dp"
+        android:scaleType="fitCenter"
+        android:tint="#FFFFFF" />
 
     <TextView
         android:id="@+id/widget_news_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="#334155"
+        android:textColor="#F8FAFC"
         android:textSize="14sp"
         android:textStyle="bold"
         android:singleLine="true"
@@ -35,10 +29,6 @@
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:freezesText="true"
-        android:scrollHorizontally="true"
-        android:shadowColor="#FFFFFF"
-        android:shadowDx="1"
-        android:shadowDy="1"
-        android:shadowRadius="3" />
+        android:scrollHorizontally="true" />
 
 </LinearLayout>

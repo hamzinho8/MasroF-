@@ -77,56 +77,85 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
     }
   }, [isOpen, initialType]);
 
-  const startListening = () => {
-    audioInputRef.current?.click();
-  };
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<BlobPart[]>([]);
 
-  const handleVoiceFileSelection = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
+  const startListening = async () => {
+    if (isListening) {
+      // Stop recording
+      mediaRecorderRef.current?.stop();
+      setIsListening(false);
       return;
     }
-    
-    setIsListening(true);
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const result = e.target?.result as string;
-      if (result) {
-        try {
-          const response = await fetch('/api/scan-voice', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              audioBase64: result,
-              mimeType: file.type,
-              predefinedItems: INITIAL_PREDEFINED_ITEMS
-            })
-          });
 
-          if (response.ok) {
-            const data = await response.json();
-            if (data.items) {
-               const deduplicatedItems = deduplicateItems(data.items);
-               setScannedItems(deduplicatedItems);
-               setReceiptTotal(data.totalReceiptAmount || null);
-               setDetectedPaymentGroup('cash'); // Default payment method for voice
-               setShowFrequent(false);
-            }
-          } else {
-             alert('Error processing voice');
-          }
-        } catch (error) {
-          console.error("Voice scanning error", error);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
         }
-      }
-      setIsListening(false);
-    };
-    reader.onerror = () => {
-      setIsListening(false);
-    };
-    reader.readAsDataURL(file);
-    event.target.value = '';
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        
+        // Stop all tracks to release microphone
+        stream.getTracks().forEach(track => track.stop());
+
+        if (audioBlob.size > 0) {
+          setIsScanning(true);
+          const reader = new FileReader();
+          reader.onloadend = async () => {
+            const base64Audio = reader.result as string;
+            await processVoiceRecording(base64Audio, audioBlob.type);
+          };
+          reader.readAsDataURL(audioBlob);
+        }
+      };
+
+      mediaRecorder.start();
+      setIsListening(true);
+    } catch (err) {
+      console.error("Microphone permission denied or error:", err);
+      // Fallback if needed, but alert for now
+      alert("Erreur d'accès au microphone. Autorisez l'app.");
+    }
   };
+
+  const processVoiceRecording = async (base64Audio: string, mimeType: string) => {
+    try {
+      const response = await fetch('/api/scan-voice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          audioBase64: base64Audio,
+          mimeType: mimeType,
+          predefinedItems: INITIAL_PREDEFINED_ITEMS
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.items) {
+           const deduplicatedItems = deduplicateItems(data.items);
+           setScannedItems(deduplicatedItems);
+           setReceiptTotal(data.totalReceiptAmount || null);
+           setDetectedPaymentGroup('cash'); // Default payment method for voice
+           setShowFrequent(false);
+        }
+      } else {
+         alert('Error processing voice');
+      }
+    } catch (error) {
+      console.error("Voice scanning error", error);
+    }
+    setIsScanning(false);
+  };
+
 
   const deduplicateItems = (items: any[]) => {
     const groupedItemsSet: Record<string, any> = {};
@@ -169,7 +198,6 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
     setShowFrequent(false);
   };
 
-  const audioInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFallbackImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -794,14 +822,6 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         accept="image/*"
         capture="environment"
         onChange={handleFallbackImageSelection}
-      />
-      <input
-        type="file"
-        ref={audioInputRef}
-        hidden
-        accept="audio/*"
-        capture="microphone"
-        onChange={handleVoiceFileSelection}
       />
     </AnimatePresence>
   );

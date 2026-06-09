@@ -334,7 +334,7 @@ export default function App() {
   React.useEffect(() => {
     // 1. Bank Balance == 500 DH
     if (bankBalanceThreshold !== null && bankBalance <= bankBalanceThreshold && !alertedBankRef.current) {
-        alert(`Alarme: Votre solde du compte bancaire a atteint le seuil critique (${bankBalance} ${currency}).`);
+        console.warn(`Alarme: Votre solde du compte bancaire a atteint le seuil critique (${bankBalance} ${currency}).`);
         alertedBankRef.current = true;
     } else if (bankBalanceThreshold !== null && bankBalance > bankBalanceThreshold) {
         alertedBankRef.current = false;
@@ -342,7 +342,7 @@ export default function App() {
 
     // 2. Pocket Balance == 50 DH
     if (balanceThreshold !== null && balance <= balanceThreshold && !alertedPocketRef.current) {
-        alert(`Alarme: Le montant dans votre poche a atteint le seuil critique (${balance} ${currency}).`);
+        console.warn(`Alarme: Le montant dans votre poche a atteint le seuil critique (${balance} ${currency}).`);
         alertedPocketRef.current = true;
     } else if (balanceThreshold !== null && balance > balanceThreshold) {
         alertedPocketRef.current = false;
@@ -351,7 +351,7 @@ export default function App() {
     // 3. Inventory Item == 3
     inventoryItems.forEach((item: any) => {
         if (inventoryAlertThreshold !== null && item.quantity === inventoryAlertThreshold && !alertedInventoryRef.current[item.id]) {
-            alert(`Alarme Stock: La quantité de l'article "${item.name}" est ${inventoryAlertThreshold}.`);
+            console.warn(`Alarme Stock: La quantité de l'article "${item.name}" est ${inventoryAlertThreshold}.`);
             alertedInventoryRef.current[item.id] = true;
         } else if (inventoryAlertThreshold !== null && item.quantity !== inventoryAlertThreshold) {
             alertedInventoryRef.current[item.id] = false;
@@ -386,7 +386,7 @@ export default function App() {
       const total = categoryTotals[cat] || 0;
       const budgetThresholdRatio = budgetAlertThreshold !== null ? budgetAlertThreshold / 100 : 0.9;
       if (budgetAlertThreshold !== null && total >= limit * budgetThresholdRatio && !alertedCategoriesRef.current[cat]) {
-         alert(`Alarme Budget: Vous avez atteint ou dépassé ${budgetAlertThreshold}% du budget pour la catégorie "${cat}" (${total.toFixed(2)} / ${limit} ${currency}).`);
+         console.warn(`Alarme Budget: Vous avez atteint ou dépassé ${budgetAlertThreshold}% du budget pour la catégorie "${cat}" (${total.toFixed(2)} / ${limit} ${currency}).`);
          alertedCategoriesRef.current[cat] = true;
       } else if (budgetAlertThreshold !== null && total < limit * budgetThresholdRatio) {
          alertedCategoriesRef.current[cat] = false;
@@ -402,7 +402,7 @@ export default function App() {
       const hasUnbacked = localStorage.getItem('hasUnbackedChanges') === 'true';
       // Trigger if unbacked changes exist and interval passed since last alert
       if (hasUnbacked && Date.now() - lastBackupAlertRef.current > backupAlertInterval * 60 * 1000) {
-          alert("Alarme Sauvegarde: Vous avez des modifications non enregistrées. Pensez à faire une sauvegarde de vos données !");
+          console.warn("Alarme Sauvegarde: Vous avez des modifications non enregistrées. Pensez à faire une sauvegarde de vos données !");
           lastBackupAlertRef.current = Date.now();
       }
     }, 60000); // check every minute
@@ -416,7 +416,7 @@ export default function App() {
       balance < balanceThreshold &&
       prevBalanceRef.current >= balanceThreshold
     ) {
-      alert(
+      console.warn(
         `Attention ! Votre solde (${balance.toFixed(2)} ${currency}) est passé en dessous du seuil configuré (${balanceThreshold} ${currency}).`,
       );
     }
@@ -428,8 +428,8 @@ export default function App() {
       await Preferences.set({ key: 'widget_text_color', value: widgetTextColor });
 
       const alarms: string[] = [];
-      const alarmColor = "#EF4444"; // red for high priority alarms
-      const warnColor = "#F97316"; // orange for warnings like stock
+      const alarmColor = "#FCA5A5"; // lighter red for high priority alarms on dark bg
+      const warnColor = "#FDBA74"; // lighter orange for warnings like stock on dark bg
 
       if (bankBalanceThreshold !== null && bankBalance <= bankBalanceThreshold) {
         alarms.push(`<b><font color="${alarmColor}">🏦 Solde Compte: ${bankBalance.toFixed(2)} ${currency}</font></b>`);
