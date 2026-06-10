@@ -33,6 +33,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 
 import { Transaction } from '../types';
+import { INITIAL_PREDEFINED_ITEMS, ICON_MAP } from '../constants';
 
 interface HistoryProps {
   transactions: Transaction[];
@@ -545,6 +546,9 @@ export default function History({ transactions, language, currency, onDelete, on
               glow: isCreditPlus ? 'bg-indigo-400' : (isCreditMinus ? 'bg-amber-400' : (isExpense ? 'bg-slate-400' : 'bg-emerald-400'))
             };
 
+            const articleInfo = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === tx.label.toLowerCase());
+            const CustomIconComp = articleInfo && articleInfo.iconName ? ICON_MAP[articleInfo.iconName] : null;
+
             const getCardStyle = () => {
               if (isCreditPlus) return 'bg-indigo-50/30 border-indigo-100/50 hover:border-indigo-200 hover:shadow-indigo-500/5';
               if (isCreditMinus) return 'bg-amber-50/30 border-amber-100/50 hover:border-amber-200 hover:shadow-amber-500/5';
@@ -714,7 +718,7 @@ export default function History({ transactions, language, currency, onDelete, on
                     ? 'bg-emerald-500 text-white shadow-emerald-500/20' 
                     : `${categoryMatch.bg} ${categoryMatch.text}`
                 }`}>
-                  {(isExpense || isCreditPlus || isCreditMinus) ? categoryMatch.icon : <ArrowDownToLine size={24} />}
+                  {(isExpense || isCreditPlus || isCreditMinus) ? (CustomIconComp ? <CustomIconComp size={24} /> : categoryMatch.icon) : <ArrowDownToLine size={24} />}
                 </div>
                 
                 {/* Content middle */}

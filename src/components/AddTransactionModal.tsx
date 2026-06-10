@@ -721,9 +721,9 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                                 exit={{ opacity: 0, scale: 0.8 }}
                                 type="button"
                                 onClick={() => handleItemSelect(item.name, item.price, item.category)}
-                                className={`flex items-center gap-2 pr-2 pl-1 py-1 rounded-2xl border border-slate-100 shadow-sm transition-all active:scale-95 bg-white hover:border-teal-500/30 ${label === item.name ? 'ring-2 ring-teal-500/20 border-teal-500/50' : ''}`}
+                                className={`flex items-center gap-2 pr-3 pl-1 py-1 rounded-full border border-slate-100 shadow-sm transition-all active:scale-95 bg-white hover:border-teal-500/30 ${label === item.name ? 'ring-2 ring-teal-500/20 border-teal-500/50' : ''}`}
                               >
-                                <div className={`shrink-0 w-8 h-8 rounded-xl flex items-center justify-center shadow-sm ${cat.bgColor} ${cat.color}`}>
+                                <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${cat.bgColor} ${cat.color}`}>
                                   <IconComponent size={14} />
                                 </div>
                                 <div className="flex flex-col items-start justify-center overflow-hidden">

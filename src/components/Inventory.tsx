@@ -512,6 +512,7 @@ function AddItemModal({ onClose, onAdd, t, language, predefinedItems }: any) {
               <AnimatePresence mode="popLayout">
                 {displayedItems.map((item: any, index: number) => {
                   const Icon = ICON_MAP[item.iconName] || Package;
+                  const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES[7];
                   return (
                     <motion.button
                       key={`${item.id}-${index}`}
@@ -520,10 +521,10 @@ function AddItemModal({ onClose, onAdd, t, language, predefinedItems }: any) {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
                       transition={{ duration: 0.15, delay: index * 0.02 }}
-                      className="flex items-center gap-2 p-2 bg-slate-50 rounded-2xl border border-slate-100 active:scale-95 transition-all text-left group hover:border-violet-200"
+                      className={`flex items-center gap-2 p-2 bg-white rounded-full border border-slate-100 shadow-sm active:scale-95 transition-all text-left group hover:border-${cat.color ? cat.color.replace('text-', '') : 'violet-200'}`}
                       onClick={() => handleItemClick(item)}
                     >
-                      <div className="w-8 h-8 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600 shrink-0 group-active:scale-90 transition-transform">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 group-active:scale-90 transition-transform ${cat.bgColor} ${cat.color}`}>
                         <Icon size={16} />
                       </div>
                       <div className="flex flex-col min-w-0 pr-1">

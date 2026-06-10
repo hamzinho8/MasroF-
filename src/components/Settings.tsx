@@ -35,7 +35,7 @@ import MasrofLogo from "./Logo";
 import { Reminder, PredefinedItem } from "../types";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { ICON_MAP } from "../constants";
+import { ICON_MAP, CATEGORIES as APP_CATEGORIES } from "../constants";
 import { importDataFromFile, exportDataToFile } from "../utils/backup";
 import {
   Utensils,
@@ -1735,14 +1735,15 @@ function ArticleManagerModal({
           {items.map((item) => {
             const IconComp = (ICON_MAP[item.iconName] ||
               ICON_MAP["Box"]) as React.ElementType;
+            const cat = APP_CATEGORIES.find(c => c.id === item.category) || APP_CATEGORIES[7];
             const isEditing = editingId === item.id;
 
             return (
               <div
                 key={item.id}
-                className="bg-white border border-slate-100 rounded-3xl p-4 flex items-center gap-4 transition-all hover:shadow-md group shadow-sm"
+                className={`bg-white border border-slate-100 rounded-full p-4 flex items-center gap-4 transition-all hover:bg-slate-50 group hover:border-${cat.color ? cat.color.replace('text-', '') : 'teal-500'}`}
               >
-                <div className="w-10 h-10 rounded-xl bg-teal-brand/5 flex items-center justify-center text-teal-brand">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${cat.bgColor} ${cat.color} group-active:scale-95 transition-transform`}>
                   <IconComp size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
