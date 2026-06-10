@@ -665,8 +665,10 @@ export default function App() {
       addTransaction(label, entry.amount, "EXPENSE", t.owedByMe, paidByBank, true);
     }
 
-    // Remove credit entry
-    setCreditEntries((prev) => prev.filter((e) => e.id !== id));
+    // Mark credit entry as settled instead of removing
+    setCreditEntries((prev) => 
+      prev.map(e => e.id === id ? { ...e, settled: true, settledDate: new Date().toLocaleDateString(language === "Français" ? "fr-FR" : "en-US") } : e)
+    );
   };
 
   const handleAddBankBalance = (amount: number) => {

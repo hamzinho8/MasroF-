@@ -19,7 +19,8 @@ import {
   MicOff,
   Home as HomeIcon,
   HeartPulse,
-  Heart
+  Heart,
+  ShoppingCart
 } from 'lucide-react';
 import { PredefinedItem } from '../types';
 import { ICON_MAP, CATEGORIES, INITIAL_PREDEFINED_ITEMS } from '../constants';
@@ -56,6 +57,8 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
   const [inventoryQty, setInventoryQty] = useState('1');
   const [isScanning, setIsScanning] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const [scannedItems, setScannedItems] = useState<ScannedItem[] | null>(null);
   const [receiptTotal, setReceiptTotal] = useState<number | null>(null);
   const [detectedPaymentGroup, setDetectedPaymentGroup] = useState<string | null>(null);
@@ -79,8 +82,47 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
 
   const audioInputRef = useRef<HTMLInputElement>(null);
 
-  const startListening = () => {
-    audioInputRef.current?.click();
+  const stopListening = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+    }
+    setIsListening(false);
+  };
+
+  const startListening = async () => {
+    if (isListening) {
+      stopListening();
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64Audio = reader.result as string;
+          processVoiceRecording(base64Audio, 'audio/webm');
+        };
+        reader.readAsDataURL(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsListening(true);
+    } catch (err) {
+      console.error("Microphone not available, using fallback", err);
+      audioInputRef.current?.click();
+    }
   };
 
   const processVoiceRecording = async (base64Audio: string, mimeType: string) => {
@@ -159,9 +201,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
 
       const matchedPredefined = predefinedItems.find(p => p.name.toLowerCase() === title.toLowerCase());
       if (matchedPredefined) {
-        if (amount === 0 || !amount) {
-           amount = matchedPredefined.price * (item.originalCount || 1);
-        }
+        amount = matchedPredefined.price;
         title = matchedPredefined.name;
         category = matchedPredefined.category;
         mappedCatId = matchedPredefined.category;
@@ -291,7 +331,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                     }
                   },
                   {
-                    text: `Analyze this receipt or image of purchased goods from Morocco (prices use Dirham, labels might be French/Arabic). Extract:\n1. 'items': an array of UNIQUE items purchased. If the image has identical items, group them into a single item and sum their prices. Try to map item titles strictly to these predefined articles if they match: ${predefinedItems.map(p => p.name).join(', ')}. If they match, calculate their 'amount' as (the predefined list price * quantity detected or listed). For each item, give 'amount' (number, representing the total price for that grouped item), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string, use predefined names where possible), and 'isStorable' (boolean, true for physical goods).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "paymentMethod": "CARD", "items": [{"title": "Danone", "amount": 18, "category": "Nourriture", "isStorable": true}]}. Return ONLY valid JSON.`
+                    text: `Analyze this receipt or image of purchased goods from Morocco (prices use Dirham, labels might be French/Arabic). Extract:\n1. 'items': an array of UNIQUE items purchased. Try to map item titles strictly to these predefined articles if they match: ${predefinedItems.map(p => p.name).join(', ')}. If they match, use their EXACT price from the predefined items list as 'amount'. Do NOT multiply by quantity. For each item, give 'amount' (number), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string, use predefined names where possible), and 'isStorable' (boolean, false by default).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "paymentMethod": "CARD", "items": [{"title": "Danone", "amount": 18, "category": "Nourriture", "isStorable": false}]}. Return ONLY valid JSON.`
                   }
                 ]
               }
@@ -321,49 +361,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         }
 
         if (itemsToSet.length > 0) {
-          // Deduplicate items by title
-          const groupedItemsSet: Record<string, any> = {};
-          itemsToSet.forEach((item: any) => {
-            const tempTitle = (item.title || 'Achat').toLowerCase();
-            if (groupedItemsSet[tempTitle]) {
-              groupedItemsSet[tempTitle].amount = (groupedItemsSet[tempTitle].amount || 0) + (item.amount || 0);
-              groupedItemsSet[tempTitle].originalCount = (groupedItemsSet[tempTitle].originalCount || 1) + 1;
-            } else {
-              groupedItemsSet[tempTitle] = { ...item, originalCount: 1 };
-            }
-          });
-          const deduplicatedItems = Object.values(groupedItemsSet);
-
-          setScannedItems(deduplicatedItems.map((item: any, index: number) => {
-            let amount = item.amount || 0;
-            let title = item.title || 'Achat';
-            let category = item.category || 'Autres';
-            let mappedCatId = 'other';
-            const matchedCat = CATEGORIES.find(c => c.id === category || c.label === category);
-            if (matchedCat) {
-               category = matchedCat.id;
-               mappedCatId = matchedCat.id;
-            }
-
-            const matchedPredefined = predefinedItems.find(p => p.name.toLowerCase() === title.toLowerCase());
-            if (matchedPredefined) {
-              if (amount === 0 || !amount) {
-                amount = matchedPredefined.price * (item.originalCount || 1);
-              }
-              title = matchedPredefined.name;
-              category = matchedPredefined.category;
-              mappedCatId = matchedPredefined.category;
-            }
-            
-            return {
-              id: index.toString() + Math.random().toString(36).substring(2, 9),
-              title: title,
-              amount: amount,
-              categoryId: mappedCatId,
-              category: category,
-              addToInventory: false
-            };
-          }));
+          setScannedItems(deduplicateItems(itemsToSet));
         } else {
           alert("Aucun article n'a été détecté dans l'image.");
         }
@@ -394,37 +392,16 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
     setScannedItems(prev => prev ? prev.map(i => i.id === id ? { ...i, [field]: value } : i) : null);
   };
 
-  const handleConfirmScannedItem = (item: ScannedItem) => {
-    if (!item.amount || item.amount <= 0) return;
+  const handleConfirmAllScannedItems = () => {
+    if (!scannedItems) return;
     
-    let invReq = undefined;
-    if (item.addToInventory) {
-      const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES[4];
-      let iconName = 'Box';
-      if (cat.id === 'Nourriture') iconName = 'Utensils';
-      else if (cat.id === 'Shopping') iconName = 'ShoppingBag';
-      else if (cat.id === 'Transport') iconName = 'Car';
-      else if (cat.id === 'Loisirs') iconName = 'Gamepad2';
-      else if (cat.id === 'Autres') iconName = 'MoreHorizontal';
-      
-      invReq = {
-        quantity: 1, // Defaulting scan items quantities to 1
-        color: cat.color,
-        bg: cat.bgColor,
-        iconName
-      };
-    }
-
-    onAdd(item.title || 'Achat', item.amount, 'EXPENSE', item.category, paidByBank, false, invReq);
-    
-    setScannedItems(prev => {
-      const remaining = prev ? prev.filter(i => i.id !== item.id) : null;
-      if (remaining && remaining.length === 0) {
-        setTimeout(onClose, 300); // close modal if last item
-        return null;
-      }
-      return remaining;
+    scannedItems.forEach(item => {
+      if (!item.amount || item.amount <= 0) return;
+      onAdd(item.title || 'Achat', item.amount, 'EXPENSE', item.category, paidByBank, false, undefined);
     });
+    
+    setScannedItems(null);
+    setTimeout(onClose, 300);
   };
 
   const handleRejectScannedItem = (id: string) => {
@@ -507,7 +484,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                   <>
                     <button 
                       onClick={startListening} 
-                      disabled={isListening || isScanning}
+                      disabled={isScanning}
                       className={`h-10 w-10 ${isListening ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-slate-100 text-slate-500'} rounded-full flex items-center justify-center hover:bg-slate-200 transition-colors`}
                     >
                       {isListening ? <Mic size={16} className="animate-pulse" /> : <Mic size={16} />}
@@ -575,52 +552,56 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                       </div>
                     </div>
 
-                    {scannedItems.map((item) => (
-                      <div key={item.id} className="bg-white border rounded-2xl p-4 shadow-sm space-y-3 relative overflow-hidden">
-                         <div className="grid grid-cols-[1fr_80px] gap-3">
-                           <div>
-                              <input 
-                                value={item.title} 
-                                onChange={(e) => handleScanItemChange(item.id, 'title', e.target.value)}
-                                className="w-full text-sm font-black text-slate-800 bg-transparent outline-none border-b border-transparent focus:border-teal-200 transition-colors"
-                                placeholder="Nom de l'article"
-                              />
-                           </div>
-                           <div>
-                              <input 
-                                type="number" 
-                                step="0.1"
-                                value={item.amount || ''}
-                                onChange={(e) => handleScanItemChange(item.id, 'amount', parseFloat(e.target.value))}
-                                className="w-full text-sm font-black text-teal-700 bg-teal-50 rounded-lg px-2 py-1 outline-none text-right"
-                                placeholder={`0.0 ${currency}`}
-                              />
-                           </div>
-                         </div>
-                         <div className="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
-                            {CATEGORIES.map(cat => (
-                              <button 
-                                key={cat.id} 
-                                type="button" 
-                                onClick={() => handleScanItemChange(item.id, 'category', cat.id)}
-                                className={`flex-shrink-0 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-full border transition-all ${item.category === cat.id ? 'bg-teal-500 text-white border-teal-500' : 'bg-slate-50 text-slate-500 border-slate-200'}`}
-                              >
-                                {cat.label}
-                              </button>
-                            ))}
-                         </div>
-                         
-                         <label className="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer pt-1">
-                           <input type="checkbox" checked={item.addToInventory || false} onChange={e => handleScanItemChange(item.id, 'addToInventory', e.target.checked)} className="rounded text-teal-500 focus:ring-teal-500 border-slate-300 w-4 h-4" />
-                           Ajouter au stock d'inventaire
-                         </label>
+                    {scannedItems.map((item) => {
+                      const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES[7];
+                      const articleInfo = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === (item.title || '').toLowerCase());
+                      const IconComp = articleInfo && articleInfo.iconName ? ICON_MAP[articleInfo.iconName] : cat.icon.type;
+                      
+                      // Using a light version of the category color by adding /10 to tailwind color or just rely on a standard very light color
+                      // Since we can't easily parse tailwind classes dynamically for bg, we'll use a very light generic or the specific bg 
+                      // Wait, cat.bgColor is like 'bg-teal-100'. The image uses an even lighter version 'bg-teal-50/50'.
+                      // We'll use a standard white-ish background for the card depending on the category.
+                      // Let's create a mapped light background:
+                      const lightBgMap: Record<string, string> = {
+                        'Nourriture': 'bg-teal-50',
+                        'Logement': 'bg-indigo-50',
+                        'Transport': 'bg-sky-50',
+                        'Sanitaire': 'bg-rose-50', // or stone-50 if preferred, but rose is standard
+                        'Shopping': 'bg-purple-50',
+                        'Loisirs': 'bg-amber-50',
+                        'Devoir': 'bg-orange-50', // Actually 'Parents' uses slate/stone in image, but let's stick to standard map
+                        'Autres': 'bg-slate-50'
+                      };
+                      const cardBg = lightBgMap[cat.id] || 'bg-slate-50';
 
-                         <div className="flex gap-2 pt-2 border-t mt-1 border-slate-100">
-                           <button onClick={() => handleConfirmScannedItem(item)} className="flex-1 bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 rounded-xl text-sm transition-colors">Valider</button>
-                           <button onClick={() => handleRejectScannedItem(item.id)} className="px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold py-2 rounded-xl text-sm transition-colors"><X size={18} /></button>
+                      return (
+                      <div key={item.id} className={`flex items-center p-3 rounded-[32px] ${cardBg} border border-white/50 backdrop-blur-sm relative overflow-hidden group`}>
+                         <ShoppingCart className="absolute -right-4 -bottom-4 w-24 h-24 text-slate-900/5 rotate-12 pointer-events-none" />
+                         
+                         <div className={`shrink-0 w-[52px] h-[52px] rounded-full flex items-center justify-center ${cat.bgColor} ${cat.color} shadow-sm z-10`}>
+                           <IconComp size={20} />
+                         </div>
+
+                         <div className="flex-1 min-w-0 ml-4 z-10">
+                           <h4 className="font-black text-slate-800 text-[15px] truncate capitalize">{item.title}</h4>
+                           <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{cat.label}</p>
+                         </div>
+
+                         <div className="shrink-0 flex flex-col items-center ml-2 z-10">
+                           <span className="font-black text-slate-800 text-sm">{item.amount} {currency}</span>
+                           <button onClick={() => handleRejectScannedItem(item.id)} className="w-8 h-8 rounded-full bg-slate-200/60 hover:bg-slate-300 flex items-center justify-center mt-1 text-slate-500 transition-colors">
+                             <X size={15} strokeWidth={3} />
+                           </button>
                          </div>
                       </div>
-                    ))}
+                    )})}
+                    
+                    <button 
+                      onClick={handleConfirmAllScannedItems}
+                      className="w-full mt-6 bg-slate-800 hover:bg-slate-900 text-white font-black py-4 rounded-2xl text-sm transition-all shadow-lg active:scale-[0.98]"
+                    >
+                      Valider {scannedItems.length} article{scannedItems.length > 1 ? 's' : ''}
+                    </button>
                   </div>
                 )}
               </div>

@@ -17,6 +17,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { Transaction } from "../types";
 import AddBankBalanceModal from "./AddBankBalanceModal";
+import { ICON_MAP, INITIAL_PREDEFINED_ITEMS } from '../constants';
 
 interface BankProps {
   language: string;
@@ -281,6 +282,9 @@ export default function Bank({
                 return colors[categoryMatch.color] || "hover:border-slate-200";
               };
 
+              const articleInfo = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === tx.label.toLowerCase());
+              const IconComp = articleInfo && articleInfo.iconName ? ICON_MAP[articleInfo.iconName] : null;
+
               return (
                 <motion.div
                   key={tx.id}
@@ -290,7 +294,7 @@ export default function Bank({
                   className={`flex items-center gap-4 p-4 rounded-[32px] border transition-all relative backdrop-blur-sm bg-white shadow-sm group ${getCardStyle()}`}
                 >
                   <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all shadow-sm ${categoryMatch.bg} ${categoryMatch.text}`}>
-                    {categoryMatch.icon}
+                    {IconComp ? <IconComp size={24} /> : categoryMatch.icon}
                   </div>
 
                   <div className="flex-1 min-w-0 py-1">

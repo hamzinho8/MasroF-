@@ -36,6 +36,8 @@ export interface CreditEntry {
   type: 'OWE_ME' | 'I_OWE';
   date: string;
   source?: 'poche' | 'compte' | 'rien';
+  settled?: boolean;
+  settledDate?: string;
 }
 
 export interface InventoryDecreaseAction {

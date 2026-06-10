@@ -80,6 +80,7 @@ export default function Credits({
       confirm: "Confirmer",
       noEntries: "Aucun crédit pour le moment",
       history: "Historique des Crédits",
+      active: "Crédits Actifs",
       owedToMe: "ON ME DOIT",
       owedByMe: "JE DOIS",
       settle: "Régler (Solder)",
@@ -99,6 +100,7 @@ export default function Credits({
       confirm: "تأكيد",
       noEntries: "لا توجد ديون حالياً",
       history: "سجل الديون",
+      active: "الديون النشطة",
       owedToMe: "مستحقات لي",
       owedByMe: "ديون علي",
       settle: "تسوية (سداد)",
@@ -118,6 +120,7 @@ export default function Credits({
       confirm: "Confirm",
       noEntries: "No credits at the moment",
       history: "Credits History",
+      active: "Active Credits",
       owedToMe: "Loans",
       owedByMe: "Debts",
       settle: "Settle (Delete)",
@@ -138,11 +141,14 @@ export default function Credits({
         : "Edit Credit"
     : t.addEntry;
 
-  const totalOweMe = entries
+  const activeEntries = entries.filter(e => !e.settled);
+  const settledEntries = entries.filter(e => e.settled);
+
+  const totalOweMe = activeEntries
     .filter((e) => e.type === "OWE_ME")
     .reduce((acc, e) => acc + e.amount, 0);
 
-  const totalIOwe = entries
+  const totalIOwe = activeEntries
     .filter((e) => e.type === "I_OWE")
     .reduce((acc, e) => acc + e.amount, 0);
 
@@ -569,16 +575,16 @@ export default function Credits({
       <div className="space-y-4 pt-6">
         <h3 className="text-slate-800 text-xl font-bold flex items-center gap-3 px-1">
           <History size={24} className="text-indigo-600" />
-          {t.history}
+          {t.active || t.history}
         </h3>
 
-        {entries.length === 0 ? (
+        {activeEntries.length === 0 ? (
           <div className="text-center py-12 text-slate-400 font-medium italic">
             {t.noEntries}
           </div>
         ) : (
           <div className="space-y-4">
-            {entries.map((entry, index) => {
+            {activeEntries.map((entry, index) => {
               const isReceive = entry.type === "OWE_ME";
               return (
                 <motion.div
@@ -702,6 +708,56 @@ export default function Credits({
           </div>
         )}
       </div>
+
+      {settledEntries.length > 0 && (
+        <div className="space-y-4 pt-6">
+          <h3 className="text-slate-800 text-xl font-bold flex items-center gap-3 px-1 opacity-60">
+            <History size={24} className="text-indigo-600" />
+            {t.history}
+          </h3>
+
+          <div className="space-y-4">
+            {settledEntries.map((entry, index) => {
+              const isReceive = entry.type === "OWE_ME";
+              return (
+                <div
+                  key={entry.id}
+                  className="flex items-center gap-4 p-5 rounded-[32px] border bg-slate-50/50 border-slate-100 opacity-60 grayscale"
+                >
+                  <div
+                    className="shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center bg-slate-200 text-slate-400"
+                  >
+                    <HandCoins size={24} />
+                  </div>
+
+                  <div className="flex-1 min-w-0 py-1">
+                    <p className="font-black text-slate-600 text-sm tracking-tight truncate mb-1 italic select-none line-through">
+                      {entry.name}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                      <span className="text-[9px] flex items-center gap-1 font-bold uppercase tracking-wider text-slate-400 shrink-0">
+                        <Calendar size={10} className="text-slate-400" />
+                        {entry.settledDate || entry.date}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 flex items-center gap-2 pl-2 border-l border-slate-100">
+                    <div className="flex flex-col items-end">
+                      <p className="font-black tracking-tighter text-base leading-none text-slate-500 line-through">
+                        {entry.amount.toLocaleString("fr-FR")}
+                      </p>
+                      <span className="text-[9px] font-bold uppercase text-slate-400 mt-0.5">
+                        {currency}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <AnimatePresence>
         {settlingId && (

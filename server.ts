@@ -21,7 +21,7 @@ async function startServer() {
         return res.status(500).json({ error: "Gemini API key is not configured on the server." });
       }
 
-      const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: Try strictly to match detected items with the ones in this JSON list. If an item matches exactly or closely, output its EXACT name. For its 'amount', calculate (JSON price * quantity detected or listed). If there's no receipt and just an image of items, count the items to determine quantity.` : "";
+      const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: Try strictly to match detected items with the ones in this JSON list. If an item matches exactly or closely, output its EXACT name. For its 'amount', use its EXACT json price. DO NOT multiply by quantity detected. Even if there are 3 Danones, 'amount' must be the exact price of 1 Danone.` : "";
 
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       const response = await ai.models.generateContent({
@@ -65,7 +65,7 @@ async function startServer() {
         return res.status(500).json({ error: "Gemini API key is not configured." });
       }
 
-      const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: If the user says an item that matches one in this list, output its EXACT name. For its 'amount', calculate (JSON price * quantity mentioned). If no quantity is mentioned, assume 1.` : "";
+      const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: If the user says an item that matches one in this list, output its EXACT name. For its 'amount', output its EXACT json price. DO NOT multiply by quantity.` : "";
 
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       const response = await ai.models.generateContent({

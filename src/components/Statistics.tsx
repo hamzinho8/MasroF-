@@ -17,6 +17,7 @@ import {
 import { Transaction } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { createPortal } from 'react-dom';
+import { ICON_MAP, INITIAL_PREDEFINED_ITEMS } from '../constants';
 
 interface StatisticsProps {
   transactions: Transaction[];
@@ -296,17 +297,28 @@ export default function Statistics({ transactions, currency, language, isDarkMod
                             </span>
                           </div>
                         )}
-                        {Object.entries(data.articles).map(([article, amount]) => (
+                        {Object.entries(data.articles).map(([article, amount]) => {
+                          const articleInfo = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === article.toLowerCase());
+                          const IconComp = articleInfo && articleInfo.iconName ? ICON_MAP[articleInfo.iconName] : null;
+
+                          return (
                           <div key={article} className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-white dark:hover:bg-white/5 transition-colors">
                             <div className="flex items-center gap-3">
-                              <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: style.color }} />
+                              {IconComp ? (
+                                <div className={`w-6 h-6 rounded-md flex items-center justify-center`} style={{ backgroundColor: style.bg, color: style.color }}>
+                                  <IconComp size={12} />
+                                </div>
+                              ) : (
+                                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: style.color }} />
+                              )}
                               <span className="text-xs font-bold text-slate-600 dark:text-slate-300 capitalize">{article}</span>
                             </div>
                             <span className="text-xs font-black text-slate-900 dark:text-white tabular-nums">
                               {amount.toLocaleString()} {currency}
                             </span>
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </motion.div>
                   )}
@@ -376,7 +388,10 @@ export default function Statistics({ transactions, currency, language, isDarkMod
                   <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Fréquence</span>
                 </div>
                 {topArticles.map((art, idx) => {
-                  const style = CATEGORY_STYLES[art.category] || { color: '#64748B' };
+                  const style = CATEGORY_STYLES[art.category] || { color: '#64748B', bg: 'bg-slate-100' };
+                  const articleInfo = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === art.name.toLowerCase());
+                  const IconComp = articleInfo && articleInfo.iconName ? ICON_MAP[articleInfo.iconName] : null;
+
                   return (
                     <motion.div 
                       key={art.name}
@@ -387,6 +402,11 @@ export default function Statistics({ transactions, currency, language, isDarkMod
                     >
                       <div className="flex items-center gap-4">
                         <span className="text-xs font-black text-slate-300 dark:text-white/20 w-4">{idx + 1}.</span>
+                        {IconComp && (
+                          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ backgroundColor: style.bg || '#f1f5f9', color: style.color }}>
+                            <IconComp size={16} />
+                          </div>
+                        )}
                         <div className="flex flex-col">
                           <span className="text-sm font-black capitalize" style={{ color: style.color }}>
                             {art.name}
