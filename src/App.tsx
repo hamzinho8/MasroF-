@@ -137,17 +137,35 @@ export default function App() {
         let items = JSON.parse(saved);
         let migrated = false;
         
-        // Target frequent items
-        const frequentNames = ["Taxi", "Cafe", "Pisquet", "Danone", "Sucette", "Farine", "Les Glaces", "Cigarette", "Bampers", "Tram"];
+        // Items to remove completely
+        const itemsToRemove = ["Produits Sanitaires", "Aide Famille"];
         
-        items = items.map((item: any) => {
+        let newItems = items.filter((item: any) => !itemsToRemove.includes(item.name));
+        if (newItems.length !== items.length) {
+          migrated = true;
+        }
+
+        // Rename Les Glaces
+        newItems = newItems.map((item: any) => {
+          let updatedItem = { ...item };
+          if (updatedItem.name === "Les Glaces") {
+            updatedItem.name = "Glaces";
+            migrated = true;
+          }
+          return updatedItem;
+        });
+
+        // Target frequent items
+        const frequentNames = ["Taxi", "Cafe", "Pisquet", "Danone", "Sucette", "Farine", "Glaces", "Cigarette", "Bampers", "Tram"];
+        
+        newItems = newItems.map((item: any) => {
           let updatedItem = { ...item };
 
           // Fix Bampers naming and category
           if (updatedItem.name?.toLowerCase() === "bambers" || updatedItem.name?.toLowerCase() === "bampers") {
-            if (updatedItem.name !== "Bampers" || updatedItem.category !== "Autres" || updatedItem.iconName !== "Baby") {
+            if (updatedItem.name !== "Bampers" || updatedItem.category !== "Sanitaire" || updatedItem.iconName !== "Baby") {
               updatedItem.name = "Bampers";
-              updatedItem.category = "Autres";
+              updatedItem.category = "Sanitaire";
               updatedItem.iconName = "Baby";
               migrated = true;
             }
@@ -175,16 +193,16 @@ export default function App() {
 
         // Ensure missing items
         INITIAL_PREDEFINED_ITEMS.forEach(targetItem => {
-          if (!items.some((i: any) => i.name === targetItem.name)) {
-            items.push(targetItem);
+          if (!newItems.some((i: any) => i.name === targetItem.name)) {
+            newItems.push(targetItem);
             migrated = true;
           }
         });
 
         if (migrated) {
-          localStorage.setItem("predefinedItems", JSON.stringify(items));
+          localStorage.setItem("predefinedItems", JSON.stringify(newItems));
         }
-        return items;
+        return newItems;
       }
       return INITIAL_PREDEFINED_ITEMS;
     },

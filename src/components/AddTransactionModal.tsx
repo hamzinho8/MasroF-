@@ -397,7 +397,22 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
     
     scannedItems.forEach(item => {
       if (!item.amount || item.amount <= 0) return;
-      onAdd(item.title || 'Achat', item.amount, 'EXPENSE', item.category, paidByBank, false, undefined);
+      
+      let invReq = undefined;
+      const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES[7];
+      if (addToInventory || item.addToInventory) {
+        const articleInfo = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === (item.title || '').toLowerCase());
+        const iconName = articleInfo && articleInfo.iconName ? articleInfo.iconName : 'Box';
+        
+        invReq = {
+          quantity: 1, // Defaulting scan items quantities to 1
+          color: cat.color,
+          bg: cat.bgColor,
+          iconName
+        };
+      }
+      
+      onAdd(item.title || 'Achat', item.amount, 'EXPENSE', item.category, paidByBank, !(addToInventory || item.addToInventory), invReq);
     });
     
     setScannedItems(null);
@@ -533,16 +548,15 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                       </div>
                     )}
 
-                    {detectedPaymentGroup && (
-                       <div className="flex justify-center -mb-2">
+                    {detectedPaymentGroup && !['UNKNOWN', 'INCONNU'].includes(detectedPaymentGroup.toUpperCase()) && (
+                       <div className="flex justify-center -mb-2 z-20 relative">
                          <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 bg-slate-100 text-slate-500 rounded-full border border-slate-200 shadow-sm">
-                           Paiement Détecté: {detectedPaymentGroup === 'CARD' ? 'Carte Bancaire' : detectedPaymentGroup === 'CASH' ? 'Espèces' : 'Inconnu'}
+                           Paiement Détecté: {['CARD', 'BANK'].includes(detectedPaymentGroup.toUpperCase()) ? 'Carte Bancaire' : 'Espèces'}
                          </span>
                        </div>
                     )}
 
-                    {/* Bulk options could go here, like paying by bank flag */}
-                    <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 p-4 rounded-2xl cursor-pointer mb-4" onClick={() => setPaidByBank(!paidByBank)}>
+                    <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 p-4 rounded-2xl cursor-pointer mb-2" onClick={() => setPaidByBank(!paidByBank)}>
                       <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${paidByBank ? 'bg-teal-500 text-white' : 'bg-slate-200 text-transparent'}`}>
                         <Check size={16} strokeWidth={3} />
                       </div>
@@ -552,53 +566,81 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                       </div>
                     </div>
 
-                    {scannedItems.map((item) => {
-                      const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES[7];
-                      const articleInfo = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === (item.title || '').toLowerCase());
-                      const IconComp = articleInfo && articleInfo.iconName ? ICON_MAP[articleInfo.iconName] : cat.icon.type;
-                      
-                      // Using a light version of the category color by adding /10 to tailwind color or just rely on a standard very light color
-                      // Since we can't easily parse tailwind classes dynamically for bg, we'll use a very light generic or the specific bg 
-                      // Wait, cat.bgColor is like 'bg-teal-100'. The image uses an even lighter version 'bg-teal-50/50'.
-                      // We'll use a standard white-ish background for the card depending on the category.
-                      // Let's create a mapped light background:
-                      const lightBgMap: Record<string, string> = {
-                        'Nourriture': 'bg-teal-50',
-                        'Logement': 'bg-indigo-50',
-                        'Transport': 'bg-sky-50',
-                        'Sanitaire': 'bg-rose-50', // or stone-50 if preferred, but rose is standard
-                        'Shopping': 'bg-purple-50',
-                        'Loisirs': 'bg-amber-50',
-                        'Devoir': 'bg-orange-50', // Actually 'Parents' uses slate/stone in image, but let's stick to standard map
-                        'Autres': 'bg-slate-50'
-                      };
-                      const cardBg = lightBgMap[cat.id] || 'bg-slate-50';
-
-                      return (
-                      <div key={item.id} className={`flex items-center p-3 rounded-[32px] ${cardBg} border border-white/50 backdrop-blur-sm relative overflow-hidden group`}>
-                         <ShoppingCart className="absolute -right-4 -bottom-4 w-24 h-24 text-slate-900/5 rotate-12 pointer-events-none" />
-                         
-                         <div className={`shrink-0 w-[52px] h-[52px] rounded-full flex items-center justify-center ${cat.bgColor} ${cat.color} shadow-sm z-10`}>
-                           <IconComp size={20} />
-                         </div>
-
-                         <div className="flex-1 min-w-0 ml-4 z-10">
-                           <h4 className="font-black text-slate-800 text-[15px] truncate capitalize">{item.title}</h4>
-                           <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{cat.label}</p>
-                         </div>
-
-                         <div className="shrink-0 flex flex-col items-center ml-2 z-10">
-                           <span className="font-black text-slate-800 text-sm">{item.amount} {currency}</span>
-                           <button onClick={() => handleRejectScannedItem(item.id)} className="w-8 h-8 rounded-full bg-slate-200/60 hover:bg-slate-300 flex items-center justify-center mt-1 text-slate-500 transition-colors">
-                             <X size={15} strokeWidth={3} />
-                           </button>
-                         </div>
+                    <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 p-4 rounded-2xl cursor-pointer mb-4" onClick={() => setAddToInventory(!addToInventory)}>
+                      <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${addToInventory ? 'bg-violet-500 text-white' : 'bg-slate-200 text-transparent'}`}>
+                        <Check size={16} strokeWidth={3} />
                       </div>
-                    )})}
+                      <div className="flex flex-col">
+                        <span className="text-sm font-black text-slate-800 tracking-tight">Ajouter au stockage</span>
+                        <span className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Enregistrer tous les articles dans l'inventaire</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      {scannedItems.map((item) => {
+                        const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES[7];
+                        const articleInfo = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === (item.title || '').toLowerCase());
+                        const IconComp = articleInfo && articleInfo.iconName ? ICON_MAP[articleInfo.iconName] : cat.icon.type;
+                        
+                        const lightBgMap: Record<string, string> = {
+                          'Nourriture': 'bg-teal-50/60',
+                          'Logement': 'bg-indigo-50/60',
+                          'Transport': 'bg-sky-50/60',
+                          'Sanitaire': 'bg-rose-50/60',
+                          'Shopping': 'bg-purple-50/60',
+                          'Loisirs': 'bg-amber-50/60',
+                          'Devoir': 'bg-orange-50/60',
+                          'Autres': 'bg-slate-50/60'
+                        };
+                        const cardBg = lightBgMap[cat.id] || 'bg-slate-50/60';
+
+                        return (
+                        <div key={item.id} className={`flex items-center p-3 rounded-[32px] ${cardBg} border border-white/60 backdrop-blur-sm relative overflow-hidden group shadow-sm transition-all hover:bg-white`}>
+                           <ShoppingCart className="absolute -right-4 -bottom-4 w-24 h-24 text-slate-900/5 rotate-12 pointer-events-none" />
+                           
+                           <div className={`shrink-0 w-[52px] h-[52px] rounded-[20px] flex items-center justify-center ${cat.bgColor} ${cat.color} shadow-sm z-10 bg-opacity-70`}>
+                             {IconComp ? <IconComp size={22} className="opacity-80" /> : <div className="opacity-80">{cat.icon}</div>}
+                           </div>
+
+                           <div className="flex-1 min-w-0 ml-4 z-10 flex flex-col justify-center">
+                             <input 
+                               value={item.title} 
+                               onChange={(e) => handleScanItemChange(item.id, 'title', e.target.value)}
+                               className="font-black text-slate-800 text-[15px] capitalize bg-white/40 focus:bg-white outline-none w-full placeholder:text-slate-400 px-2 py-0.5 rounded-lg border border-transparent focus:border-slate-200 transition-all"
+                               placeholder="Nom article"
+                             />
+                             
+                             <select 
+                                value={item.category}
+                                onChange={(e) => handleScanItemChange(item.id, 'category', e.target.value)}
+                                className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1 ml-1 bg-transparent hover:bg-white/50 px-1 py-0.5 rounded outline-none appearance-none cursor-pointer w-fit transition-colors truncate"
+                             >
+                               {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                             </select>
+                           </div>
+
+                           <div className="shrink-0 flex flex-col items-center ml-2 z-10">
+                             <div className="flex items-center justify-end w-24 bg-white/40 focus-within:bg-white rounded-lg px-2 py-0.5 border border-transparent focus-within:border-slate-200 transition-all">
+                               <input 
+                                 type="number" 
+                                 step="0.1"
+                                 value={item.amount || ''}
+                                 onChange={(e) => handleScanItemChange(item.id, 'amount', parseFloat(e.target.value))}
+                                 className="font-black text-slate-800 text-[15px] bg-transparent outline-none w-full text-right p-0 m-0"
+                               />
+                               <span className="font-black text-slate-800 text-[15px] ml-1">{currency}</span>
+                             </div>
+                             <button onClick={() => handleRejectScannedItem(item.id)} className="w-8 h-8 rounded-full bg-slate-200/50 hover:bg-slate-300 flex items-center justify-center mt-2 text-slate-500 transition-colors shadow-sm">
+                               <X size={14} strokeWidth={3} />
+                             </button>
+                           </div>
+                        </div>
+                      )})}
+                    </div>
                     
                     <button 
                       onClick={handleConfirmAllScannedItems}
-                      className="w-full mt-6 bg-slate-800 hover:bg-slate-900 text-white font-black py-4 rounded-2xl text-sm transition-all shadow-lg active:scale-[0.98]"
+                      className="w-full mt-4 bg-slate-800 hover:bg-slate-900 text-white font-black py-4 rounded-2xl text-sm transition-all shadow-lg active:scale-[0.98]"
                     >
                       Valider {scannedItems.length} article{scannedItems.length > 1 ? 's' : ''}
                     </button>
