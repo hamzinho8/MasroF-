@@ -146,30 +146,30 @@ export default function App() {
         }
 
         // Rename Les Glaces
+        newItems = newItems.filter((i: any) => 
+          i.name?.toLowerCase() !== "bampers" && 
+          i.name?.toLowerCase() !== "champo" &&
+          i.name?.toLowerCase() !== "bambers" 
+        );
+
         newItems = newItems.map((item: any) => {
           let updatedItem = { ...item };
           if (updatedItem.name === "Les Glaces") {
             updatedItem.name = "Glaces";
             migrated = true;
           }
+          if (updatedItem.name?.toLowerCase() === "bambo") {
+            updatedItem.name = "Bampers";
+            migrated = true;
+          }
           return updatedItem;
         });
 
         // Target frequent items
-        const frequentNames = ["Taxi", "Cafe", "Pisquet", "Danone", "Sucette", "Farine", "Glaces", "Cigarette", "Bampers", "Tram"];
+        const frequentNames = ["Taxi", "Cafe", "Pisquet", "Danone", "Sucette", "Farine", "Glaces", "Cigarette", "Bampers", "Tram", "Savon", "Fairy", "Tide", "Champoo"];
         
         newItems = newItems.map((item: any) => {
           let updatedItem = { ...item };
-
-          // Fix Bampers naming and category
-          if (updatedItem.name?.toLowerCase() === "bambers" || updatedItem.name?.toLowerCase() === "bampers") {
-            if (updatedItem.name !== "Bampers" || updatedItem.category !== "Sanitaire" || updatedItem.iconName !== "Baby") {
-              updatedItem.name = "Bampers";
-              updatedItem.category = "Sanitaire";
-              updatedItem.iconName = "Baby";
-              migrated = true;
-            }
-          }
 
           // Enforce frequency
           const shouldBeFrequent = frequentNames.includes(updatedItem.name);

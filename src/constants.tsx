@@ -33,7 +33,7 @@ const RAW_PREDEFINED_ITEMS: Omit<PredefinedItem, 'colorHex' | 'categoryColorHex'
   { id: '1', name: 'Cafe', price: 10, category: 'Nourriture', iconName: 'Coffee', frequent: true },
   { id: '2', name: 'Taxi', price: 5, category: 'Transport', iconName: 'Car', frequent: true },
   { id: '3', name: 'Danone', price: 5, category: 'Nourriture', iconName: 'Milk', frequent: true },
-  { id: '4', name: 'Bambo', price: 4.5, category: 'Sanitaire', iconName: 'Baby', frequent: true },
+  { id: '4', name: 'Bampers', price: 4.5, category: 'Sanitaire', iconName: 'Baby', frequent: true },
   { id: '5', name: 'Farine', price: 4, category: 'Nourriture', iconName: 'Wheat', frequent: true },
   { id: '6', name: 'Sucette', price: 0.5, category: 'Nourriture', iconName: 'Candy', frequent: true },
   { id: '7', name: 'Pisquet', price: 2, category: 'Nourriture', iconName: 'Cookie', frequent: true },
