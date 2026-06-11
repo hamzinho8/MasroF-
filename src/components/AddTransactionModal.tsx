@@ -23,7 +23,7 @@ import {
   ShoppingCart
 } from 'lucide-react';
 import { PredefinedItem } from '../types';
-import { ICON_MAP, CATEGORIES, INITIAL_PREDEFINED_ITEMS } from '../constants';
+import { ICON_MAP, CATEGORIES, INITIAL_PREDEFINED_ITEMS, getArticleInfo } from '../constants';
 
 interface AddTransactionModalProps {
   isOpen: boolean;
@@ -553,28 +553,18 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
 
                     <div className="space-y-3 mt-4">
                       {scannedItems.map((item) => {
-                        const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES[7];
-                        const articleInfo = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === (item.title || '').toLowerCase());
-                        const IconComp = articleInfo && articleInfo.iconName ? ICON_MAP[articleInfo.iconName] : (ICON_MAP[cat.iconName] || ICON_MAP['MoreHorizontal']);
+                        const info = getArticleInfo(item.title || '', item.category);
+                        const IconComp = info.iconName ? ICON_MAP[info.iconName] : ICON_MAP['MoreHorizontal'];
                         
-                        const lightBgMap: Record<string, string> = {
-                          'Nourriture': 'bg-teal-50/60',
-                          'Logement': 'bg-indigo-50/60',
-                          'Transport': 'bg-sky-50/60',
-                          'Sanitaire': 'bg-rose-50/60',
-                          'Shopping': 'bg-purple-50/60',
-                          'Loisirs': 'bg-amber-50/60',
-                          'Devoir': 'bg-orange-50/60',
-                          'Autres': 'bg-slate-50/60'
-                        };
-                        const cardBg = lightBgMap[cat.id] || 'bg-slate-50/60';
+                        const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES[7];
+                        const cardBg = cat.lightBg || 'bg-slate-50/60';
 
                         return (
                         <div key={item.id} className={`flex items-center p-3 rounded-[32px] ${cardBg} border border-white/60 backdrop-blur-sm relative overflow-hidden group shadow-sm transition-all hover:bg-white`}>
                            <ShoppingCart className="absolute -right-4 -bottom-4 w-24 h-24 text-slate-900/5 rotate-12 pointer-events-none" />
                            
-                           <div className={`shrink-0 w-[52px] h-[52px] rounded-[20px] flex items-center justify-center ${cat.bgColor} ${cat.color} shadow-sm z-10 bg-opacity-70`}>
-                             {IconComp && <IconComp size={22} className="opacity-80" />}
+                           <div className={`shrink-0 w-[52px] h-[52px] rounded-[20px] flex items-center justify-center shadow-sm z-10 bg-opacity-70 ${info.bgColor} ${info.color}`}>
+                             {IconComp && <IconComp size={22} />}
                            </div>
 
                            <div className="flex-1 min-w-0 ml-4 z-10 flex flex-col justify-center">
@@ -697,8 +687,8 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 w-full">
                         <AnimatePresence mode="popLayout">
                           {filteredItems.map((item, index) => {
-                            const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES[4];
-                            const IconComponent = (ICON_MAP[item.iconName] || ICON_MAP['Box']) as React.ElementType;
+                            const info = getArticleInfo(item.name, item.category);
+                            const IconComponent = (ICON_MAP[info.iconName] || ICON_MAP['Box']) as React.ElementType;
                             return (
                               <motion.button
                                 key={`${item.id}-${index}`}
@@ -710,7 +700,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                                 onClick={() => handleItemSelect(item.name, item.price, item.category)}
                                 className={`flex items-center gap-2 pr-3 pl-1 py-1 rounded-full border border-slate-100 shadow-sm transition-all active:scale-95 bg-white hover:border-teal-500/30 ${label === item.name ? 'ring-2 ring-teal-500/20 border-teal-500/50' : ''}`}
                               >
-                                <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${cat.bgColor} ${cat.color}`}>
+                                <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${info.bgColor} ${info.color}`}>
                                   <IconComponent size={14} />
                                 </div>
                                 <div className="flex flex-col items-start justify-center overflow-hidden">

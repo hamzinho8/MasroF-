@@ -17,7 +17,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { Transaction } from "../types";
 import AddBankBalanceModal from "./AddBankBalanceModal";
-import { ICON_MAP, INITIAL_PREDEFINED_ITEMS } from '../constants';
+import { ICON_MAP, INITIAL_PREDEFINED_ITEMS, getArticleInfo } from '../constants';
 
 interface BankProps {
   language: string;
@@ -282,8 +282,8 @@ export default function Bank({
                 return colors[categoryMatch.color] || "hover:border-slate-200";
               };
 
-              const articleInfo = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === tx.label.toLowerCase());
-              const IconComp = articleInfo && articleInfo.iconName ? ICON_MAP[articleInfo.iconName] : null;
+              const info = getArticleInfo(tx.label, tx.category);
+              const IconComp = info.iconName ? ICON_MAP[info.iconName] : null;
 
               return (
                 <motion.div

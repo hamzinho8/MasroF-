@@ -17,7 +17,7 @@ import {
 import { Transaction } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { createPortal } from 'react-dom';
-import { ICON_MAP, INITIAL_PREDEFINED_ITEMS, CATEGORIES as APP_CATEGORIES } from '../constants';
+import { ICON_MAP, INITIAL_PREDEFINED_ITEMS, CATEGORIES as APP_CATEGORIES, getArticleInfo } from '../constants';
 
 interface StatisticsProps {
   transactions: Transaction[];
@@ -293,18 +293,18 @@ export default function Statistics({ transactions, currency, language, isDarkMod
                           </div>
                         )}
                         {Object.entries(data.articles).map(([article, amount]) => {
-                          const articleInfo = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === article.toLowerCase());
-                          const IconComp = articleInfo && articleInfo.iconName ? ICON_MAP[articleInfo.iconName] : null;
+                          const info = getArticleInfo(article, category);
+                          const IconComp = info.iconName ? ICON_MAP[info.iconName] : null;
 
                           return (
                           <div key={article} className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-white dark:hover:bg-white/5 transition-colors">
                             <div className="flex items-center gap-3">
                               {IconComp ? (
-                                <div className={`w-6 h-6 rounded-md flex items-center justify-center`} style={{ backgroundColor: style.bg, color: style.color }}>
+                                <div className={`w-6 h-6 rounded-md flex items-center justify-center ${info.bgColor} ${info.color}`}>
                                   <IconComp size={12} />
                                 </div>
                               ) : (
-                                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: style.color }} />
+                                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: info.colorHex }} />
                               )}
                               <span className="text-xs font-bold text-slate-600 dark:text-slate-300 capitalize">{article}</span>
                             </div>
@@ -383,9 +383,8 @@ export default function Statistics({ transactions, currency, language, isDarkMod
                   <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Fréquence</span>
                 </div>
                 {topArticles.map((art, idx) => {
-                  const style = CATEGORY_STYLES[art.category] || { color: '#64748B', bg: 'bg-slate-100' };
-                  const articleInfo = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === art.name.toLowerCase());
-                  const IconComp = articleInfo && articleInfo.iconName ? ICON_MAP[articleInfo.iconName] : null;
+                  const info = getArticleInfo(art.name, art.category);
+                  const IconComp = info.iconName ? ICON_MAP[info.iconName] : null;
 
                   return (
                     <motion.div 
@@ -398,12 +397,12 @@ export default function Statistics({ transactions, currency, language, isDarkMod
                       <div className="flex items-center gap-4">
                         <span className="text-xs font-black text-slate-300 dark:text-white/20 w-4">{idx + 1}.</span>
                         {IconComp && (
-                          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ backgroundColor: style.bg || '#f1f5f9', color: style.color }}>
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${info.bgColor} ${info.color}`}>
                             <IconComp size={16} />
                           </div>
                         )}
                         <div className="flex flex-col">
-                          <span className="text-sm font-black capitalize" style={{ color: style.color }}>
+                          <span className="text-sm font-black capitalize" style={{ color: info.colorHex }}>
                             {art.name}
                           </span>
                           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">

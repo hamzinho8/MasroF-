@@ -19,17 +19,17 @@ export const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 export const CATEGORIES = [
-  { id: 'Nourriture', label: 'Nourriture', iconName: 'Utensils', color: 'text-teal-700', bgColor: 'bg-teal-100', colorString: 'teal', colorHex: '#0f766e' },
-  { id: 'Logement', label: 'Logement', iconName: 'Home', color: 'text-indigo-600', bgColor: 'bg-indigo-100', colorString: 'indigo', colorHex: '#4f46e5' },
-  { id: 'Transport', label: 'Transport', iconName: 'Car', color: 'text-sky-600', bgColor: 'bg-sky-100', colorString: 'sky', colorHex: '#0284c7' },
-  { id: 'Sanitaire', label: 'Sanitaire', iconName: 'WashingMachine', color: 'text-rose-600', bgColor: 'bg-rose-100', colorString: 'rose', colorHex: '#e11d48' },
-  { id: 'Shopping', label: 'Shopping', iconName: 'ShoppingBag', color: 'text-purple-600', bgColor: 'bg-purple-100', colorString: 'purple', colorHex: '#9333ea' },
-  { id: 'Loisirs', label: 'Loisirs', iconName: 'Gamepad2', color: 'text-amber-600', bgColor: 'bg-amber-100', colorString: 'amber', colorHex: '#d97706' },
-  { id: 'Devoir', label: 'Devoir', iconName: 'Heart', color: 'text-orange-600', bgColor: 'bg-orange-100', colorString: 'orange', colorHex: '#ea580c' },
-  { id: 'Autres', label: 'Autres', iconName: 'MoreHorizontal', color: 'text-slate-600', bgColor: 'bg-slate-100', colorString: 'slate', colorHex: '#475569' },
+  { id: 'Nourriture', label: 'Nourriture', iconName: 'Utensils', color: 'text-teal-700', bgColor: 'bg-teal-100', lightBg: 'bg-teal-50/60', colorString: 'teal', colorHex: '#0f766e' },
+  { id: 'Logement', label: 'Logement', iconName: 'Home', color: 'text-indigo-600', bgColor: 'bg-indigo-100', lightBg: 'bg-indigo-50/60', colorString: 'indigo', colorHex: '#4f46e5' },
+  { id: 'Transport', label: 'Transport', iconName: 'Car', color: 'text-sky-600', bgColor: 'bg-sky-100', lightBg: 'bg-sky-50/60', colorString: 'sky', colorHex: '#0284c7' },
+  { id: 'Sanitaire', label: 'Sanitaire', iconName: 'WashingMachine', color: 'text-rose-600', bgColor: 'bg-rose-100', lightBg: 'bg-rose-50/60', colorString: 'rose', colorHex: '#e11d48' },
+  { id: 'Shopping', label: 'Shopping', iconName: 'ShoppingBag', color: 'text-purple-600', bgColor: 'bg-purple-100', lightBg: 'bg-purple-50/60', colorString: 'purple', colorHex: '#9333ea' },
+  { id: 'Loisirs', label: 'Loisirs', iconName: 'Gamepad2', color: 'text-amber-600', bgColor: 'bg-amber-100', lightBg: 'bg-amber-50/60', colorString: 'amber', colorHex: '#d97706' },
+  { id: 'Devoir', label: 'Devoir', iconName: 'Heart', color: 'text-orange-600', bgColor: 'bg-orange-100', lightBg: 'bg-orange-50/60', colorString: 'orange', colorHex: '#ea580c' },
+  { id: 'Autres', label: 'Autres', iconName: 'MoreHorizontal', color: 'text-slate-600', bgColor: 'bg-slate-100', lightBg: 'bg-slate-50/60', colorString: 'slate', colorHex: '#475569' },
 ];
 
-export const INITIAL_PREDEFINED_ITEMS: PredefinedItem[] = [
+const RAW_PREDEFINED_ITEMS: Omit<PredefinedItem, 'colorHex' | 'categoryColorHex'>[] = [
   { id: '1', name: 'Cafe', price: 10, category: 'Nourriture', iconName: 'Coffee', frequent: true },
   { id: '2', name: 'Taxi', price: 5, category: 'Transport', iconName: 'Car', frequent: true },
   { id: '3', name: 'Danone', price: 5, category: 'Nourriture', iconName: 'Milk', frequent: true },
@@ -79,3 +79,40 @@ export const INITIAL_PREDEFINED_ITEMS: PredefinedItem[] = [
   { id: '20', name: 'Abonnement', price: 49, category: 'Loisirs', iconName: 'Tv', frequent: false },
   { id: '21', name: 'Recherche', price: 10, category: 'Loisirs', iconName: 'Search', frequent: false },
 ];
+
+export const INITIAL_PREDEFINED_ITEMS: PredefinedItem[] = RAW_PREDEFINED_ITEMS.map(item => {
+  const category = CATEGORIES.find(c => c.id === item.category) || CATEGORIES.find(c => c.id === 'Autres')!;
+  return {
+    ...item,
+    colorHex: category.colorHex,
+    categoryColorHex: category.colorHex
+  };
+});
+
+export const getArticleInfo = (name: string, categoryId?: string) => {
+  const predefined = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === name.toLowerCase());
+  
+  if (predefined) {
+    const category = CATEGORIES.find(c => c.id === predefined.category) || CATEGORIES.find(c => c.id === 'Autres')!;
+    return {
+      name: predefined.name,
+      iconName: predefined.iconName,
+      colorHex: predefined.colorHex,
+      categoryColorHex: predefined.categoryColorHex,
+      color: category.color,
+      bgColor: category.bgColor,
+      lightBg: category.lightBg
+    };
+  }
+
+  const category = CATEGORIES.find(c => c.id === categoryId) || CATEGORIES.find(c => c.id === 'Autres')!;
+  return {
+    name,
+    iconName: category.iconName,
+    colorHex: category.colorHex,
+    categoryColorHex: category.colorHex,
+    color: category.color,
+    bgColor: category.bgColor,
+    lightBg: category.lightBg
+  };
+};

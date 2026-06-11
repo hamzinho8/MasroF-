@@ -181,9 +181,11 @@ export default function App() {
           // Merge any structural updates from constants
           const constItem = INITIAL_PREDEFINED_ITEMS.find(p => p.name === updatedItem.name);
           if (constItem) {
-             if (updatedItem.iconName !== constItem.iconName || updatedItem.category !== constItem.category) {
+             if (updatedItem.iconName !== constItem.iconName || updatedItem.category !== constItem.category || updatedItem.colorHex !== constItem.colorHex || updatedItem.categoryColorHex !== constItem.categoryColorHex) {
                 updatedItem.iconName = constItem.iconName;
                 updatedItem.category = constItem.category;
+                updatedItem.colorHex = constItem.colorHex;
+                updatedItem.categoryColorHex = constItem.categoryColorHex;
                 migrated = true;
              }
           }

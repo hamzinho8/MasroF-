@@ -5,6 +5,8 @@ export interface PredefinedItem {
   category: string;
   iconName: string;
   frequent: boolean;
+  colorHex?: string;
+  categoryColorHex?: string;
 }
 
 export interface Transaction {
