@@ -60,6 +60,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const [scannedItems, setScannedItems] = useState<ScannedItem[] | null>(null);
+  const [editingCategoryItemId, setEditingCategoryItemId] = useState<string | null>(null);
   const [receiptTotal, setReceiptTotal] = useState<number | null>(null);
   const [detectedPaymentGroup, setDetectedPaymentGroup] = useState<string | null>(null);
 
@@ -107,11 +108,12 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const actualMimeType = mediaRecorder.mimeType || 'audio/webm';
+        const audioBlob = new Blob(audioChunksRef.current, { type: actualMimeType });
         const reader = new FileReader();
         reader.onloadend = () => {
           const base64Audio = reader.result as string;
-          processVoiceRecording(base64Audio, 'audio/webm');
+          processVoiceRecording(base64Audio, actualMimeType);
         };
         reader.readAsDataURL(audioBlob);
         stream.getTracks().forEach(track => track.stop());
@@ -148,11 +150,13 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
            setShowFrequent(false);
         }
       } else {
-         alert('Error processing voice');
+         const errorData = await response.text();
+         console.error('Server error processing voice:', errorData);
+         alert(`Erreur lors de la reconnaissance: ${errorData || 'Inconnue'}`);
       }
     } catch (error) {
       console.error("Voice scanning error", error);
-      alert('Erreur lors de la reconnaissance vocale');
+      alert(`Erreur lors de la reconnaissance vocale: ${error instanceof Error ? error.message : 'Inconnue'}`);
     }
     setIsScanning(false);
   };
@@ -529,25 +533,6 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {/* Summary & Gap check */}
-                    {receiptTotal !== null && (
-                      <div className={`p-4 rounded-xl border ${Math.abs(scannedItems.reduce((acc, i) => acc + (i.amount || 0), 0) - receiptTotal) > 0.1 ? 'bg-amber-50 border-amber-200' : 'bg-teal-50 border-teal-200'}`}>
-                        <div className="flex justify-between items-center text-sm font-bold">
-                           <span className="text-slate-600">Total Ticket:</span>
-                           <span className="text-slate-900">{receiptTotal.toFixed(2)} {currency}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm font-bold mt-1">
-                           <span className="text-slate-600">Somme Articles:</span>
-                           <span className="text-slate-900">{scannedItems.reduce((acc, i) => acc + (i.amount || 0), 0).toFixed(2)} {currency}</span>
-                        </div>
-                        {Math.abs(scannedItems.reduce((acc, i) => acc + (i.amount || 0), 0) - receiptTotal) > 0.1 && (
-                          <p className="text-xs text-amber-600 mt-2 font-semibold font-sans">
-                            Attention: La somme des articles ne correspond pas au total détecté.
-                          </p>
-                        )}
-                      </div>
-                    )}
-
                     {detectedPaymentGroup && !['UNKNOWN', 'INCONNU'].includes(detectedPaymentGroup.toUpperCase()) && (
                        <div className="flex justify-center -mb-2 z-20 relative">
                          <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 bg-slate-100 text-slate-500 rounded-full border border-slate-200 shadow-sm">
@@ -566,17 +551,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 p-4 rounded-2xl cursor-pointer mb-4" onClick={() => setAddToInventory(!addToInventory)}>
-                      <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${addToInventory ? 'bg-violet-500 text-white' : 'bg-slate-200 text-transparent'}`}>
-                        <Check size={16} strokeWidth={3} />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-black text-slate-800 tracking-tight">Ajouter au stockage</span>
-                        <span className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Enregistrer tous les articles dans l'inventaire</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
+                    <div className="space-y-3 mt-4">
                       {scannedItems.map((item) => {
                         const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES[7];
                         const articleInfo = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === (item.title || '').toLowerCase());
@@ -610,13 +585,25 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                                placeholder="Nom article"
                              />
                              
-                             <select 
-                                value={item.category}
-                                onChange={(e) => handleScanItemChange(item.id, 'category', e.target.value)}
-                                className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1 ml-1 bg-transparent hover:bg-white/50 px-1 py-0.5 rounded outline-none appearance-none cursor-pointer w-fit transition-colors truncate"
-                             >
-                               {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
-                             </select>
+                             <div className="flex flex-col gap-1.5 mt-1">
+                               <div className="flex items-center justify-between ml-1">
+                                 <button 
+                                    onClick={() => setEditingCategoryItemId(item.id)}
+                                    className={`text-[9px] font-bold uppercase tracking-widest bg-white/60 hover:bg-white px-2 py-0.5 rounded shadow-sm cursor-pointer w-fit transition-colors truncate border border-slate-100 ${cat.color}`}
+                                 >
+                                   {cat.label} ▾
+                                 </button>
+                               </div>
+                               <label className="flex items-center gap-2 cursor-pointer ml-1 mt-1">
+                                  <input 
+                                     type="checkbox" 
+                                     checked={!!item.addToInventory}
+                                     onChange={(e) => handleScanItemChange(item.id, 'addToInventory', e.target.checked)}
+                                     className="w-4 h-4 bg-white border-2 border-slate-300 text-violet-500 focus:ring-violet-500/20 rounded cursor-pointer accent-violet-500"
+                                  />
+                                  <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Ajouter au stock</span>
+                               </label>
+                             </div>
                            </div>
 
                            <div className="shrink-0 flex flex-col items-center ml-2 z-10">
@@ -845,6 +832,38 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         capture
         onChange={handleVoiceFileSelection}
       />
+
+      <AnimatePresence>
+      {editingCategoryItemId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4" onClick={() => setEditingCategoryItemId(null)}>
+           <motion.div 
+             initial={{ opacity: 0, scale: 0.95 }}
+             animate={{ opacity: 1, scale: 1 }}
+             exit={{ opacity: 0, scale: 0.95 }}
+             onClick={e => e.stopPropagation()}
+             className="bg-white rounded-[32px] p-6 w-full max-w-xs shadow-2xl relative"
+           >
+             <h3 className="font-black text-slate-800 text-lg mb-4 text-center">Choisir une catégorie</h3>
+             <div className="grid grid-cols-2 gap-3">
+               {CATEGORIES.map(cat => (
+                 <button
+                   key={cat.id}
+                   onClick={() => {
+                     handleScanItemChange(editingCategoryItemId, 'category', cat.id);
+                     setEditingCategoryItemId(null);
+                   }}
+                   className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all hover:scale-[1.03] active:scale-95 ${cat.bgColor} border-transparent shadow-sm`}
+                 >
+                   <div className={`${cat.color}`}>{cat.icon}</div>
+                   <span className={`text-[10px] font-black uppercase tracking-tight text-center ${cat.color}`}>{cat.label}</span>
+                 </button>
+               ))}
+             </div>
+             <button onClick={() => setEditingCategoryItemId(null)} className="mt-6 w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-2xl transition-colors">Annuler</button>
+           </motion.div>
+        </div>
+      )}
+      </AnimatePresence>
     </AnimatePresence>
   );
 }
