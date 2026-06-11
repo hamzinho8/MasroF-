@@ -477,23 +477,26 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] max-w-md mx-auto"
-          />
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 left-0 right-0 z-[120] bg-white rounded-t-[40px] p-8 max-w-md mx-auto shadow-2xl max-h-[90vh] overflow-y-auto"
-          >
+    <>
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <motion.div
+              key="modal-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={onClose}
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] max-w-md mx-auto"
+            />
+            <motion.div
+              key="modal-content"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed bottom-0 left-0 right-0 z-[120] bg-white rounded-t-[40px] p-8 max-w-md mx-auto shadow-2xl max-h-[90vh] overflow-y-auto"
+            >
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-black text-slate-800 tracking-tight">
                 {isShoppingMode ? 'Programmer Achat' : (scannedItems !== null ? 'Articles Scannés' : (type === 'INCOME' ? 'Retrait Banque' : 'Nouvel Achat'))}
@@ -578,6 +581,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                              <div className="flex flex-col gap-1.5 mt-1">
                                <div className="flex items-center justify-between ml-1">
                                  <button 
+                                    type="button"
                                     onClick={() => setEditingCategoryItemId(item.id)}
                                     className={`text-[9px] font-bold uppercase tracking-widest bg-white/60 hover:bg-white px-2 py-0.5 rounded shadow-sm cursor-pointer w-fit transition-colors truncate border border-slate-100 ${cat.color}`}
                                  >
@@ -619,7 +623,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                       onClick={handleConfirmAllScannedItems}
                       className="w-full mt-4 bg-slate-800 hover:bg-slate-900 text-white font-black py-4 rounded-2xl text-sm transition-all shadow-lg active:scale-[0.98]"
                     >
-                      Valider {scannedItems.length} article{scannedItems.length > 1 ? 's' : ''}
+                      Valider {scannedItems.length} article{scannedItems.length > 1 ? 's' : ''} • {scannedItems.reduce((acc, item) => acc + (item.amount || 0), 0).toFixed(2)} {currency}
                     </button>
                   </div>
                 )}
@@ -806,6 +810,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           </motion.div>
         </>
       )}
+      </AnimatePresence>
       <input
         type="file"
         ref={fileInputRef}
@@ -825,8 +830,9 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
 
       <AnimatePresence>
       {editingCategoryItemId && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4" onClick={() => setEditingCategoryItemId(null)}>
+        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4" onClick={() => setEditingCategoryItemId(null)}>
            <motion.div 
+             key="category-modal"
              initial={{ opacity: 0, scale: 0.95 }}
              animate={{ opacity: 1, scale: 1 }}
              exit={{ opacity: 0, scale: 0.95 }}
@@ -838,6 +844,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                {CATEGORIES.map(cat => (
                  <button
                    key={cat.id}
+                   type="button"
                    onClick={() => {
                      handleScanItemChange(editingCategoryItemId, 'category', cat.id);
                      setEditingCategoryItemId(null);
@@ -851,11 +858,11 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                  </button>
                ))}
              </div>
-             <button onClick={() => setEditingCategoryItemId(null)} className="mt-6 w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-2xl transition-colors">Annuler</button>
+             <button type="button" onClick={() => setEditingCategoryItemId(null)} className="mt-6 w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-2xl transition-colors">Annuler</button>
            </motion.div>
         </div>
       )}
       </AnimatePresence>
-    </AnimatePresence>
+    </>
   );
 }

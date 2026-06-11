@@ -480,7 +480,7 @@ function AddItemModal({ onClose, onAdd, t, language, predefinedItems }: any) {
                   }`}
                 >
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${cat.bgColor} ${cat.color} ${(selectedCategory === cat.id && !showFrequent) ? 'scale-110' : ''} transition-transform`}>
-                    {cat.icon}
+                    {(() => { const CatIcon = ICON_MAP[cat.iconName] || ICON_MAP['MoreHorizontal']; return <CatIcon size={20} />; })()}
                   </div>
                   <span className={`text-[8px] font-black uppercase tracking-tight text-center truncate w-full ${
                     (selectedCategory === cat.id && !showFrequent) ? 'text-violet-600' : 'text-slate-400'
