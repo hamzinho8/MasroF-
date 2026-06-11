@@ -36,7 +36,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { Transaction, CreditEntry, Reminder, ShoppingListItem } from "../types";
 import { useLocalStorage } from "../hooks/useLocalStorage";
-import { ICON_MAP } from "../constants";
+import { ICON_MAP, CATEGORIES as APP_CATEGORIES } from "../constants";
 import CalendarView from "./CalendarView";
 
 interface HomeProps {
@@ -184,72 +184,14 @@ export default function Home({
     translations[language as keyof typeof translations] ||
     translations["Français"];
 
-  const CATEGORY_MAP = [
-    {
-      label: "Nourriture",
-      icon: <Utensils size={24} />,
-      color: "teal",
-      bg: "bg-teal-100",
-      text: "text-teal-600",
-      glow: "bg-teal-400",
-    },
-    {
-      label: "Logement",
-      icon: <HomeIcon size={24} />,
-      color: "indigo",
-      bg: "bg-indigo-100",
-      text: "text-indigo-600",
-      glow: "bg-indigo-400",
-    },
-    {
-      label: "Transport",
-      icon: <Car size={24} />,
-      color: "sky",
-      bg: "bg-sky-100",
-      text: "text-sky-600",
-      glow: "bg-sky-400",
-    },
-    {
-      label: "Santé",
-      icon: <HeartPulse size={24} />,
-      color: "rose",
-      bg: "bg-rose-100",
-      text: "text-rose-600",
-      glow: "bg-rose-400",
-    },
-    {
-      label: "Shopping",
-      icon: <ShoppingBag size={24} />,
-      color: "purple",
-      bg: "bg-purple-100",
-      text: "text-purple-600",
-      glow: "bg-purple-400",
-    },
-    {
-      label: "Loisirs",
-      icon: <Gamepad2 size={24} />,
-      color: "amber",
-      bg: "bg-amber-100",
-      text: "text-amber-600",
-      glow: "bg-amber-400",
-    },
-    {
-      label: "Famille",
-      icon: <Heart size={24} />,
-      color: "orange",
-      bg: "bg-orange-100",
-      text: "text-orange-600",
-      glow: "bg-orange-400",
-    },
-    {
-      label: "Autres",
-      icon: <MoreHorizontal size={24} />,
-      color: "slate",
-      bg: "bg-slate-100",
-      text: "text-slate-600",
-      glow: "bg-slate-400",
-    },
-  ];
+  const CATEGORY_MAP = APP_CATEGORIES.map(cat => ({
+    label: cat.label,
+    icon: (() => { const IconComp = ICON_MAP[cat.iconName] || MoreHorizontal; return <IconComp size={24} />; })(),
+    color: cat.colorString,
+    bg: cat.bgColor,
+    text: cat.color,
+    glow: `bg-${cat.colorString}-400`
+  }));
 
   const getSummaryTitle = () => {
     if (timeframe === "day") return t.sommaireJour;

@@ -17,7 +17,7 @@ import {
 import { Transaction } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { createPortal } from 'react-dom';
-import { ICON_MAP, INITIAL_PREDEFINED_ITEMS } from '../constants';
+import { ICON_MAP, INITIAL_PREDEFINED_ITEMS, CATEGORIES as APP_CATEGORIES } from '../constants';
 
 interface StatisticsProps {
   transactions: Transaction[];
@@ -28,21 +28,16 @@ interface StatisticsProps {
   onUpdateBudget?: (category: string, limit: number) => void;
 }
 
-const CATEGORY_STYLES: Record<string, { color: string; icon: React.ReactNode; bg: string }> = {
-  'Nourriture': { color: '#1B7C86', icon: <Utensils size={18} />, bg: 'bg-[#1B7C86]/10' },
-  'Food': { color: '#1B7C86', icon: <Utensils size={18} />, bg: 'bg-[#1B7C86]/10' },
-  'أكل': { color: '#1B7C86', icon: <Utensils size={18} />, bg: 'bg-[#1B7C86]/10' },
-  'Shopping': { color: '#E11D48', icon: <ShoppingBag size={18} />, bg: 'bg-rose-100' },
-  'تسوق': { color: '#E11D48', icon: <ShoppingBag size={18} />, bg: 'bg-rose-100' },
-  'Transport': { color: '#0EA5E9', icon: <Car size={18} />, bg: 'bg-sky-100' },
-  'نقليات': { color: '#0EA5E9', icon: <Car size={18} />, bg: 'bg-sky-100' },
-  'Loisirs': { color: '#8B5CF6', icon: <Gamepad2 size={18} />, bg: 'bg-purple-100' },
-  'Leisure': { color: '#8B5CF6', icon: <Gamepad2 size={18} />, bg: 'bg-purple-100' },
-  'ترفيه': { color: '#8B5CF6', icon: <Gamepad2 size={18} />, bg: 'bg-purple-100' },
-  'Autres': { color: '#64748B', icon: <CreditCard size={18} />, bg: 'bg-slate-100' },
-  'Others': { color: '#64748B', icon: <CreditCard size={18} />, bg: 'bg-slate-100' },
-  'أخرى': { color: '#64748B', icon: <CreditCard size={18} />, bg: 'bg-slate-100' },
-};
+const CATEGORY_STYLES: Record<string, { color: string; icon: React.ReactNode; bg: string }> = Object.fromEntries(
+  APP_CATEGORIES.map(cat => [
+    cat.id,
+    { 
+      color: cat.colorHex, 
+      icon: (() => { const IconComp = ICON_MAP[cat.iconName] || ICON_MAP['MoreHorizontal']; return <IconComp size={18} />; })(), 
+      bg: cat.bgColor 
+    }
+  ])
+);
 
 export default function Statistics({ transactions, currency, language, isDarkMode, categoryBudgets = {}, onUpdateBudget }: StatisticsProps) {
   const [period, setPeriod] = useState<'day' | 'week' | 'month'>('week');

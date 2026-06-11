@@ -67,6 +67,8 @@ async function startServer() {
 
       const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: If the user says an item that matches one in this list, output its EXACT name. For its 'amount', output its EXACT json price. DO NOT multiply by quantity.` : "";
 
+      const actualBase64 = audioBase64.includes(',') ? audioBase64.split(',')[1] : audioBase64;
+      
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
@@ -76,7 +78,7 @@ async function startServer() {
             parts: [
               {
                 inlineData: {
-                  data: audioBase64,
+                  data: actualBase64,
                   mimeType: mimeType || "audio/webm"
                 }
               },

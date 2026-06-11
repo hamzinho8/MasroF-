@@ -555,7 +555,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                       {scannedItems.map((item) => {
                         const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES[7];
                         const articleInfo = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === (item.title || '').toLowerCase());
-                        const IconComp = articleInfo && articleInfo.iconName ? ICON_MAP[articleInfo.iconName] : cat.icon.type;
+                        const IconComp = articleInfo && articleInfo.iconName ? ICON_MAP[articleInfo.iconName] : (ICON_MAP[cat.iconName] || ICON_MAP['MoreHorizontal']);
                         
                         const lightBgMap: Record<string, string> = {
                           'Nourriture': 'bg-teal-50/60',
@@ -574,7 +574,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                            <ShoppingCart className="absolute -right-4 -bottom-4 w-24 h-24 text-slate-900/5 rotate-12 pointer-events-none" />
                            
                            <div className={`shrink-0 w-[52px] h-[52px] rounded-[20px] flex items-center justify-center ${cat.bgColor} ${cat.color} shadow-sm z-10 bg-opacity-70`}>
-                             {IconComp ? <IconComp size={22} className="opacity-80" /> : <div className="opacity-80">{cat.icon}</div>}
+                             {IconComp && <IconComp size={22} className="opacity-80" />}
                            </div>
 
                            <div className="flex-1 min-w-0 ml-4 z-10 flex flex-col justify-center">
@@ -660,7 +660,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                             }`}
                           >
                             <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${cat.bgColor} ${cat.color} ${(selectedCategory === cat.id && !showFrequent) ? 'scale-110' : ''} transition-transform`}>
-                              {cat.icon}
+                              {(() => { const CatIcon = ICON_MAP[cat.iconName] || ICON_MAP['MoreHorizontal']; return <CatIcon size={18} />; })()}
                             </div>
                             <span className={`text-[8px] font-black uppercase tracking-tight text-center truncate w-full ${
                               (selectedCategory === cat.id && !showFrequent)
@@ -854,7 +854,9 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                    }}
                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all hover:scale-[1.03] active:scale-95 ${cat.bgColor} border-transparent shadow-sm`}
                  >
-                   <div className={`${cat.color}`}>{cat.icon}</div>
+                   <div className={`${cat.color}`}>
+                     {(() => { const CatIcon = ICON_MAP[cat.iconName] || ICON_MAP['MoreHorizontal']; return <CatIcon size={24} />; })()}
+                   </div>
                    <span className={`text-[10px] font-black uppercase tracking-tight text-center ${cat.color}`}>{cat.label}</span>
                  </button>
                ))}
