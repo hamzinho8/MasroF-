@@ -741,6 +741,8 @@ export default function App() {
             onNavigateToCredits={() => setActiveTab("credits")}
             reminders={reminders}
             shoppingList={shoppingList}
+            inventoryItems={inventoryItems}
+            onInventoryItemsChange={setInventoryItems}
           />
         );
       case "stats":
@@ -864,6 +866,8 @@ export default function App() {
             onNavigateToCredits={() => setActiveTab("credits")}
             reminders={reminders}
             shoppingList={shoppingList}
+            inventoryItems={inventoryItems}
+            onInventoryItemsChange={setInventoryItems}
           />
         );
     }
@@ -872,19 +876,12 @@ export default function App() {
   const TABS: Tab[] = ["home", "history", "bank", "credits", "stats", "inventory", "settings"];
   
   const handleSwipe = (dir: "Left" | "Right") => {
-    const currentIndex = TABS.indexOf(activeTab);
-    if (dir === "Left") {
-      const nextIndex = isRtl ? currentIndex - 1 : currentIndex + 1;
-      if (nextIndex >= 0 && nextIndex < TABS.length) setActiveTab(TABS[nextIndex]);
-    } else if (dir === "Right") {
-      const prevIndex = isRtl ? currentIndex + 1 : currentIndex - 1;
-      if (prevIndex >= 0 && prevIndex < TABS.length) setActiveTab(TABS[prevIndex]);
-    }
+    // Swipe disabled as per user request
   };
 
   const swipeHandlers = useSwipeable({
-    onSwipedLeft: () => handleSwipe("Left"),
-    onSwipedRight: () => handleSwipe("Right"),
+    onSwipedLeft: () => {},
+    onSwipedRight: () => {},
     preventScrollOnSwipe: false,
     trackMouse: false
   });

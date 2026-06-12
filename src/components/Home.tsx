@@ -31,7 +31,8 @@ import {
   AlertTriangle,
   Home as HomeIcon,
   HeartPulse,
-  Heart
+  Heart,
+  PackageOpen
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Transaction, CreditEntry, Reminder, ShoppingListItem } from "../types";
@@ -57,6 +58,8 @@ interface HomeProps {
   onNavigateToCredits: () => void;
   reminders?: Reminder[];
   shoppingList?: ShoppingListItem[];
+  inventoryItems?: import("../types").InventoryItem[];
+  onInventoryItemsChange?: (items: import("../types").InventoryItem[]) => void;
 }
 
 export default function Home({
@@ -77,6 +80,8 @@ export default function Home({
   onNavigateToCredits,
   reminders = [],
   shoppingList = [],
+  inventoryItems = [],
+  onInventoryItemsChange,
 }: HomeProps) {
   const [timeframe, setTimeframe] = useState<"day" | "week" | "month">("week");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
@@ -86,6 +91,8 @@ export default function Home({
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [categoryBudgets, setCategoryBudgets] = useLocalStorage<{category: string; limit: number}[]>('categoryBudgets', []);
+  const [showRasSettingModal, setShowRasSettingModal] = useState(false);
+  const [rasHiddenItems, setRasHiddenItems] = useLocalStorage<string[]>('rasHiddenItems', []);
 
   const translations = {
     Français: {
@@ -271,6 +278,41 @@ export default function Home({
     
     return spends;
   }, [transactions]);
+
+  const handleDecreaseInventory = (item: import("../types").InventoryItem) => {
+    if (item.quantity <= 0 || !onInventoryItemsChange) return;
+    
+    const now = new Date();
+    const dateStr = now.toLocaleDateString(
+      language === 'Français' ? 'fr-FR' : (language === 'العربية' ? 'ar-MA' : 'en-US'), 
+      {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }
+    ).replace(',', '');
+    
+    const newAction: import("../types").InventoryDecreaseAction = {
+      id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+      timestamp: Date.now(),
+      dateStr
+    };
+
+    const updatedItems = inventoryItems.map(i => {
+      if (i.id === item.id) {
+        return {
+          ...i,
+          quantity: i.quantity - 1,
+          history: [...i.history, newAction]
+        };
+      }
+      return i;
+    });
+
+    onInventoryItemsChange(updatedItems);
+  };
 
   const handleSaveEdit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -653,6 +695,47 @@ export default function Home({
         </div>
       </div>
 
+      {/* Inventory Shortcuts */}
+      {inventoryItems && inventoryItems.filter(i => i.quantity > 0).length > 0 && (
+        <div className="mb-2 overflow-hidden -mx-1 px-1">
+          <div className="flex justify-between items-center mb-4 px-1">
+             <h3 className="text-slate-900 font-black tracking-tight flex items-center gap-2">RAS</h3>
+             <button
+                onClick={() => setShowRasSettingModal(true)}
+                className="w-8 h-8 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:bg-slate-50 transition-colors shadow-sm"
+              >
+                <Settings size={16} />
+              </button>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-4 hide-scrollbar snap-x px-1">
+            {inventoryItems.filter(i => i.quantity > 0 && !rasHiddenItems.includes(i.id)).map(item => {
+              const IconComponent = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : PackageOpen;
+              const bgClass = item.bg || "bg-violet-600";
+              const textClass = item.color || "text-slate-800";
+              
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleDecreaseInventory(item)}
+                  className={`snap-start shrink-0 w-[76px] h-[86px] rounded-[24px] flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-sm border border-white hover:border-slate-200 active:scale-95 group ${item.bg ? item.bg.replace('100', '50') : 'bg-slate-50'}`}
+                >
+                  {/* Plus/minus icon that appears on hover/active (optional visual cue) */}
+                  <div className={`absolute right-1 top-1 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 shadow-sm ${textClass}`}>
+                    <span className="text-xs font-black leading-none mb-0.5">-</span>
+                  </div>
+                  
+                  <div className={`z-10 relative flex items-center justify-center ${textClass} mb-1 mt-1`}>
+                    <span className="absolute -top-1.5 -left-1.5 text-[11px] font-black leading-none">{item.quantity}</span>
+                    <IconComponent size={26} strokeWidth={2.5} />
+                  </div>
+                  <span className={`z-10 text-[9px] font-bold ${textClass} uppercase truncate w-full px-2 text-center mt-1`}>{item.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Category Budgets Activity Instead of History */}
       <div>
         <div className="flex justify-between items-center mb-4 px-1">
@@ -805,6 +888,14 @@ export default function Home({
         </AnimatePresence>
 
         <AnimatePresence>
+          {showRasSettingModal && inventoryItems && (
+            <RasSettingsModal
+              onClose={() => setShowRasSettingModal(false)}
+              inventoryItems={inventoryItems}
+              rasHiddenItems={rasHiddenItems}
+              setRasHiddenItems={setRasHiddenItems}
+            />
+          )}
           {showBudgetModal && (
             <BudgetSettingsModal 
               onClose={() => setShowBudgetModal(false)}
@@ -1221,5 +1312,107 @@ function AddBankBalanceModal({
         </form>
       </motion.div>
     </>
+  );
+}
+
+function RasSettingsModal({
+  onClose,
+  inventoryItems,
+  rasHiddenItems,
+  setRasHiddenItems
+}: {
+  onClose: () => void;
+  inventoryItems: any[];
+  rasHiddenItems: string[];
+  setRasHiddenItems: (ids: string[]) => void;
+}) {
+  const [hiddenIds, setHiddenIds] = useState<string[]>(rasHiddenItems);
+
+  const handleToggle = (id: string) => {
+    setHiddenIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleSave = () => {
+    setRasHiddenItems(hiddenIds);
+    onClose();
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4 sm:p-6 bg-slate-900/60 transition-opacity"
+      onClick={onClose}
+    >
+      <motion.div
+        drag="y"
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={0.2}
+        onDragEnd={(e, info) => {
+          if (info.offset.y > 100) onClose();
+        }}
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white w-full max-w-md rounded-t-[32px] sm:rounded-3xl p-6 sm:p-8 flex flex-col max-h-[85vh] shadow-2xl relative"
+      >
+        <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 shrink-0" />
+        
+        <div className="flex items-center gap-3 mb-6 shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
+            <Settings size={20} className="text-slate-600" />
+          </div>
+          <div>
+            <h3 className="text-xl font-black text-slate-900">Paramètres RAS</h3>
+            <p className="text-sm font-medium text-slate-500 mt-0.5">Visibilité des articles</p>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto min-h-0 -mx-2 px-2 hide-scrollbar">
+          <div className="space-y-3 pb-2">
+            {inventoryItems.filter(item => item.quantity > 0).map(item => {
+              const IconComponent = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : PackageOpen;
+              const isVisible = !hiddenIds.includes(item.id);
+              const textClass = item.color || "text-slate-800";
+              const bgClass = item.bg ? item.bg.replace('100', '50') : "bg-slate-100";
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleToggle(item.id)}
+                  className="w-full flex items-center justify-between p-3 rounded-2xl border border-slate-100 active:bg-slate-50 transition-colors text-left group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${textClass} ${bgClass}`}>
+                      <IconComponent size={20} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-800">{item.name}</p>
+                      <p className="text-xs font-medium text-slate-400">{item.quantity} en stock</p>
+                    </div>
+                  </div>
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${isVisible ? 'bg-teal-500 text-white' : 'bg-slate-100 text-transparent'}`}>
+                    <Check size={14} strokeWidth={4} />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mt-6 pt-4 border-t border-slate-100 shrink-0">
+          <button
+            onClick={handleSave}
+            className="w-full py-4 rounded-2xl bg-teal-600 text-white font-bold flex items-center justify-center shadow-lg active:scale-95 transition-all text-sm uppercase tracking-widest"
+          >
+            Enregistrer
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }

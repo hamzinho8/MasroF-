@@ -129,6 +129,9 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
 
   const processVoiceRecording = async (base64Audio: string, mimeType: string) => {
     setIsScanning(true);
+    let data: any = null;
+    const apiKeyValue = window.localStorage.getItem('userGeminiApiKey');
+
     try {
       const response = await fetch('/api/scan-voice', {
         method: 'POST',
@@ -141,22 +144,55 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
       });
 
       if (response.ok) {
-        const data = await response.json();
-        if (data.items) {
-           const deduplicatedItems = deduplicateItems(data.items);
-           setScannedItems(deduplicatedItems);
-           setReceiptTotal(data.totalReceiptAmount || null);
-           setDetectedPaymentGroup('cash'); // Default payment method for voice
-           setShowFrequent(false);
-        }
+        data = await response.json();
       } else {
          const errorData = await response.text();
-         console.error('Server error processing voice:', errorData);
-         alert(`Erreur lors de la reconnaissance: ${errorData || 'Inconnue'}`);
+         throw new Error(errorData || 'Server error processing voice');
       }
     } catch (error) {
-      console.error("Voice scanning error", error);
-      alert(`Erreur lors de la reconnaissance vocale: ${error instanceof Error ? error.message : 'Inconnue'}`);
+      if (apiKeyValue) {
+        try {
+          const actualBase64 = base64Audio.includes(',') ? base64Audio.split(',')[1] : base64Audio;
+          const ai = new GoogleGenAI({ apiKey: apiKeyValue });
+          const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: If the user says an item that matches one in this list, output its EXACT name. For its 'amount', output its EXACT json price. DO NOT multiply by quantity.` : "";
+          const genResponse = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: [
+              {
+                role: "user",
+                parts: [
+                  {
+                    inlineData: {
+                      data: actualBase64,
+                      mimeType: mimeType || "audio/webm"
+                    }
+                  },
+                  {
+                    text: `Listen to this voice recording (probably Moroccan Arabic/French) describing bought articles. Extract:\n1. 'items': an array of UNIQUE items mentioned. Group identical items and sum their prices. For each item, give 'amount' (number), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string), and 'isStorable' (boolean).\n2. 'totalReceiptAmount': sum of the items (number).\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "items": [{"title": "Cafe", "amount": 10, "category": "Nourriture", "isStorable": true}]}. Return ONLY valid JSON.${predefinedText}`
+                  }
+                ]
+              }
+            ]
+          });
+          const rawText = genResponse.text || "{}";
+          const cleanText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+          data = JSON.parse(cleanText);
+        } catch (fallbackError: any) {
+           console.error("Voice scanning fallback error", fallbackError);
+           alert(`Erreur lors de la reconnaissance vocale: ${fallbackError.message}`);
+        }
+      } else {
+        console.error("Voice scanning error", error);
+        alert(`Erreur de connexion et clé API non configurée. Veuillez configurer la clé API dans les paramètres.`);
+      }
+    }
+
+    if (data && data.items) {
+       const deduplicatedItems = deduplicateItems(data.items);
+       setScannedItems(deduplicatedItems);
+       setReceiptTotal(data.totalReceiptAmount || null);
+       setDetectedPaymentGroup('cash'); // Default payment method for voice
+       setShowFrequent(false);
     }
     setIsScanning(false);
   };
