@@ -16,9 +16,17 @@
         android:textColor="#FACC15"
         android:textSize="14sp"
         android:textStyle="bold"
-        android:layout_marginEnd="12dp"
+        android:layout_marginEnd="6dp"
         android:maxLines="1"
         android:autoSizeTextType="uniform" />
+
+    <ImageView
+        android:id="@+id/widget_news_refresh"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@drawable/ic_refresh_light"
+        android:layout_marginEnd="8dp"
+        android:scaleType="fitCenter" />
 
     <TextView
         android:id="@+id/widget_news_text"
