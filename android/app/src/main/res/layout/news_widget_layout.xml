@@ -8,12 +8,17 @@
     android:orientation="horizontal"
     android:padding="12dp">
 
-    <ImageView
+    <TextView
+        android:id="@+id/widget_news_balance"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:src="@drawable/ic_info_gold"
+        android:gravity="center"
+        android:textColor="#FACC15"
+        android:textSize="14sp"
+        android:textStyle="bold"
         android:layout_marginEnd="12dp"
-        android:scaleType="fitCenter" />
+        android:maxLines="1"
+        android:autoSizeTextType="uniform" />
 
     <TextView
         android:id="@+id/widget_news_text"

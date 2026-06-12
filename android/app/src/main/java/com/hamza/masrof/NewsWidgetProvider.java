@@ -32,9 +32,25 @@ public class NewsWidgetProvider extends AppWidgetProvider {
             newsHtml = "<b>Dans ma Poche</b><br>Aucune notification.";
         }
 
+        String balance = prefs.getString("widget_balance", "0");
+        if (balance.startsWith("\"") && balance.endsWith("\"")) {
+            balance = balance.substring(1, balance.length() - 1);
+        }
+        
+        // Remove decimal part if zero or keep it, user wants simple number
+        try {
+            float bal = Float.parseFloat(balance);
+            if (bal == (long) bal) {
+                balance = String.format("%d", (long)bal);
+            } else {
+                balance = String.format("%.1f", bal);
+            }
+        } catch(Exception e) {}
+
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.news_widget_layout);
         
         views.setTextViewText(R.id.widget_news_text, Html.fromHtml(newsHtml, Html.FROM_HTML_MODE_COMPACT));
+        views.setTextViewText(R.id.widget_news_balance, balance);
         
         Intent intent = new Intent(context, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);

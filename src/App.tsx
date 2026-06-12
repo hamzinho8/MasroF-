@@ -44,6 +44,15 @@ export default function App() {
 
     // Setup auto-backup on app going to background
     if (Capacitor.isNativePlatform()) {
+      // Explicit microphone permission check on startup for voice scanning
+      try {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(stream => stream.getTracks().forEach(track => track.stop()))
+          .catch(err => console.log("Microphone permission check failed during startup:", err));
+      } catch (e) {
+        console.log("getUserMedia not supported for startup permission check", e);
+      }
+
       const listener = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
         if (!isActive) {
           autoBackup();
@@ -431,7 +440,7 @@ export default function App() {
       if (inventoryAlertThreshold !== null) {
         inventoryItems.forEach(item => {
           if (item.quantity <= inventoryAlertThreshold) {
-            alarms.push(`<b><font color="${warnColor}">📦 Stock bas: ${item.name} (${item.quantity})</font></b>`);
+            alarms.push(`<b><font color="${warnColor}">🪫 ⬇ ${item.name} (${item.quantity})</font></b>`);
           }
         });
       }
