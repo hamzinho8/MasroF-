@@ -37,9 +37,9 @@ public class NewsWidgetProvider extends AppWidgetProvider {
             balance = balance.substring(1, balance.length() - 1);
         }
         
-        // Remove decimal part if zero or keep it, user wants simple number
+        float bal = 0;
         try {
-            float bal = Float.parseFloat(balance);
+            bal = Float.parseFloat(balance);
             if (bal == (long) bal) {
                 balance = String.format("%d", (long)bal);
             } else {
@@ -51,6 +51,14 @@ public class NewsWidgetProvider extends AppWidgetProvider {
         
         views.setTextViewText(R.id.widget_news_text, Html.fromHtml(newsHtml, Html.FROM_HTML_MODE_COMPACT));
         views.setTextViewText(R.id.widget_news_balance, balance);
+
+        int color = android.graphics.Color.parseColor("#FBBF24"); // Orange
+        if (bal >= 200) {
+            color = android.graphics.Color.parseColor("#4ADE80"); // Green
+        } else if (bal <= 50) {
+            color = android.graphics.Color.parseColor("#F87171"); // Red
+        }
+        views.setTextColor(R.id.widget_news_balance, color);
         
         Intent intent = new Intent(context, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
@@ -60,7 +68,7 @@ public class NewsWidgetProvider extends AppWidgetProvider {
         refreshIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         refreshIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, new int[]{appWidgetId});
         PendingIntent refreshPendingIntent = PendingIntent.getBroadcast(context, appWidgetId, refreshIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        views.setOnClickPendingIntent(R.id.widget_news_refresh, refreshPendingIntent);
+        views.setOnClickPendingIntent(R.id.widget_news_balance, refreshPendingIntent);
 
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
