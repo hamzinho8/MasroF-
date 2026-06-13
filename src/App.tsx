@@ -439,8 +439,24 @@ export default function App() {
 
       if (inventoryAlertThreshold !== null) {
         inventoryItems.forEach(item => {
-          if (item.quantity <= inventoryAlertThreshold) {
-            alarms.push(`<b><font color="${warnColor}">🔋 ⬇ ${item.name} (${item.quantity})</font></b>`);
+          if (item.quantity > 0 && item.quantity <= inventoryAlertThreshold) {
+            let colorHex = warnColor;
+            const prefItem = predefinedItems.find((p: any) => p.name === item.name);
+            const category = prefItem?.category;
+            
+            if (category) {
+                switch (category) {
+                    case "Nourriture": colorHex = "#0D9488"; break;
+                    case "Logement": colorHex = "#4F46E5"; break;
+                    case "Transport": colorHex = "#0284C7"; break;
+                    case "Sanitaire": colorHex = "#E11D48"; break;
+                    case "Shopping": colorHex = "#9333EA"; break;
+                    case "Loisirs": colorHex = "#D97706"; break;
+                    case "Devoir": colorHex = "#EA580C"; break;
+                    default: colorHex = "#475569"; break;
+                }
+            }
+            alarms.push(`<b><font color="${colorHex}">🔋 ⬇ ${item.name} (${item.quantity})</font></b>`);
           }
         });
       }
@@ -753,6 +769,8 @@ export default function App() {
             shoppingList={shoppingList}
             inventoryItems={inventoryItems}
             onInventoryItemsChange={setInventoryItems}
+            predefinedItems={predefinedItems}
+            onAddPredefinedItem={(item) => setPredefinedItems([...predefinedItems, item])}
           />
         );
       case "stats":
@@ -878,6 +896,8 @@ export default function App() {
             shoppingList={shoppingList}
             inventoryItems={inventoryItems}
             onInventoryItemsChange={setInventoryItems}
+            predefinedItems={predefinedItems}
+            onAddPredefinedItem={(item) => setPredefinedItems([...predefinedItems, item])}
           />
         );
     }

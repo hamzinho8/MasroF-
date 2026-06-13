@@ -34,13 +34,16 @@ import {
   Heart,
   PackageOpen,
   Eye,
-  EyeOff
+  EyeOff,
+  Sparkles,
+  Camera
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Transaction, CreditEntry, Reminder, ShoppingListItem } from "../types";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { ICON_MAP, CATEGORIES as APP_CATEGORIES } from "../constants";
 import CalendarView from "./CalendarView";
+import ReceiptScannerModal from "./ReceiptScannerModal";
 
 interface HomeProps {
   balance: number;
@@ -62,6 +65,8 @@ interface HomeProps {
   shoppingList?: ShoppingListItem[];
   inventoryItems?: import("../types").InventoryItem[];
   onInventoryItemsChange?: (items: import("../types").InventoryItem[]) => void;
+  predefinedItems: import("../types").PredefinedItem[];
+  onAddPredefinedItem: (item: import("../types").PredefinedItem) => void;
 }
 
 export default function Home({
@@ -84,6 +89,8 @@ export default function Home({
   shoppingList = [],
   inventoryItems = [],
   onInventoryItemsChange,
+  predefinedItems,
+  onAddPredefinedItem,
 }: HomeProps) {
   const [timeframe, setTimeframe] = useState<"day" | "week" | "month">("week");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
@@ -92,10 +99,11 @@ export default function Home({
   const [showBankModal, setShowBankModal] = useState(false);
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [showReceiptScannerModal, setShowReceiptScannerModal] = useState(false);
   const [categoryBudgets, setCategoryBudgets] = useLocalStorage<{category: string; limit: number}[]>('categoryBudgets', []);
   const [showRasSettingModal, setShowRasSettingModal] = useState(false);
   const [rasHiddenItems, setRasHiddenItems] = useLocalStorage<string[]>('rasHiddenItems', []);
-  const [hideBankBalance, setHideBankBalance] = useLocalStorage<boolean>('hideBankBalance', false);
+  const [hideBankBalance, setHideBankBalance] = useLocalStorage<boolean>('hideBankBalance', true);
 
   const translations = {
     Français: {
@@ -357,18 +365,6 @@ export default function Home({
             transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
             className="relative z-10 py-5 px-6 h-full w-full flex flex-col justify-center"
           >
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setShowBankModal(true);
-              }}
-              className="absolute top-3 right-3 w-12 h-12 bg-white/40 rounded-xl flex items-center justify-center text-slate-800 active:bg-white/60 transition-colors shadow-sm border border-white/30 z-[100]"
-              style={{ touchAction: "manipulation" }}
-            >
-              <Plus size={22} strokeWidth={3} className="pointer-events-none" />
-            </button>
-
             {widgetMode === "balance" && widgetBalanceType === "bank" && (
               <div className="flex flex-col items-start mb-1 z-10 relative mt-1 w-full">
                 <div className="flex items-center justify-between w-full">
@@ -378,22 +374,24 @@ export default function Home({
                       Solde Bancaire
                     </h2>
                   </div>
+                </div>
+                <div className="flex items-center gap-3">
                   <button 
                     onClick={(e) => { e.stopPropagation(); setHideBankBalance(!hideBankBalance); }} 
-                    className="p-1 text-slate-800/40 hover:text-slate-800/60 transition-colors pointer-events-auto"
+                    className="flex items-center justify-center pointer-events-auto text-slate-800 active:scale-95 transition-transform"
                   >
-                    {hideBankBalance ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {hideBankBalance ? <EyeOff size={28} strokeWidth={2.5} /> : <Eye size={28} strokeWidth={2.5} />}
                   </button>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <div className="text-4xl font-black text-slate-900 tracking-tighter">
-                    {hideBankBalance ? "*********" : bankBalance.toLocaleString("fr-FR", {
-                      minimumFractionDigits: 2,
-                    })}
+                  <div className="flex items-baseline gap-2">
+                    <div className="text-4xl font-black text-slate-900 tracking-tighter">
+                      {hideBankBalance ? "****" : bankBalance.toLocaleString("fr-FR", {
+                        minimumFractionDigits: 2,
+                      })}
+                    </div>
+                    <span className="text-xl font-bold text-slate-900/40 uppercase">
+                      {currency}
+                    </span>
                   </div>
-                  <span className="text-xl font-bold text-slate-900/40 uppercase">
-                    {currency}
-                  </span>
                 </div>
               </div>
             )}
@@ -437,22 +435,24 @@ export default function Home({
                         Solde Bancaire
                       </h2>
                     </div>
+                  </div>
+                  <div className="flex items-center gap-3">
                     <button 
                       onClick={(e) => { e.stopPropagation(); setHideBankBalance(!hideBankBalance); }} 
-                      className="p-1 text-slate-800/40 hover:text-slate-800/60 transition-colors pointer-events-auto"
+                      className="flex items-center justify-center pointer-events-auto text-slate-800 active:scale-95 transition-transform"
                     >
-                      {hideBankBalance ? <EyeOff size={18} /> : <Eye size={18} />}
+                      {hideBankBalance ? <EyeOff size={28} strokeWidth={2.5} /> : <Eye size={28} strokeWidth={2.5} />}
                     </button>
-                  </div>
-                  <div className="flex items-baseline gap-2">
-                    <div className="text-4xl font-black text-slate-900 tracking-tighter">
-                      {hideBankBalance ? "*********" : bankBalance.toLocaleString("fr-FR", {
-                        minimumFractionDigits: 2,
-                      })}
+                    <div className="flex items-baseline gap-2">
+                      <div className="text-4xl font-black text-slate-900 tracking-tighter">
+                        {hideBankBalance ? "****" : bankBalance.toLocaleString("fr-FR", {
+                          minimumFractionDigits: 2,
+                        })}
+                      </div>
+                      <span className="text-xl font-bold text-slate-900/40 uppercase">
+                        {currency}
+                      </span>
                     </div>
-                    <span className="text-xl font-bold text-slate-900/40 uppercase">
-                      {currency}
-                    </span>
                   </div>
                 </div>
 
@@ -722,7 +722,7 @@ export default function Home({
                 <Settings size={16} />
               </button>
           </div>
-          <div className="flex gap-3 overflow-x-auto pb-4 hide-scrollbar snap-x px-1">
+          <div className="grid grid-cols-4 gap-2 pb-4 px-1">
             {inventoryItems.filter(i => i.quantity > 0 && !rasHiddenItems.includes(i.id)).map(item => {
               const IconComponent = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : PackageOpen;
               const bgClass = item.bg || "bg-violet-600";
@@ -732,7 +732,7 @@ export default function Home({
                 <button
                   key={item.id}
                   onClick={() => handleDecreaseInventory(item)}
-                  className={`snap-start shrink-0 w-[76px] h-[86px] rounded-[24px] flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-sm border border-white hover:border-slate-200 active:scale-95 group ${item.bg ? item.bg.replace('100', '50') : 'bg-slate-50'}`}
+                  className={`w-full h-[86px] rounded-[24px] flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-sm border border-white hover:border-slate-200 active:scale-95 group ${item.bg ? item.bg.replace('100', '50') : 'bg-slate-50'}`}
                 >
                   {/* Plus/minus icon that appears on hover/active (optional visual cue) */}
                   <div className={`absolute right-1 top-1 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 shadow-sm ${textClass}`}>
@@ -824,6 +824,13 @@ export default function Home({
         </div>
       </div>
 
+      {/* FAB AI Scanner */}
+      <button
+        onClick={() => setShowReceiptScannerModal(true)}
+        className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full shadow-lg shadow-blue-500/40 flex items-center justify-center text-white z-50 hover:scale-105 active:scale-95 transition-transform"
+      >
+        <Sparkles size={24} fill="currentColor" className="text-white" />
+      </button>
 
         {/* Inline Edit Modal */}
         <AnimatePresence>
@@ -949,6 +956,14 @@ export default function Home({
                 <CalendarView transactions={transactions} currency={currency} />
               </motion.div>
             </motion.div>
+          )}
+
+          {showReceiptScannerModal && (
+             <ReceiptScannerModal 
+               onClose={() => setShowReceiptScannerModal(false)}
+               predefinedItems={predefinedItems}
+               onAddPredefinedItem={onAddPredefinedItem}
+             />
           )}
         </AnimatePresence>
     </motion.div>
