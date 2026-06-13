@@ -594,7 +594,7 @@ export default function Home({
       {/* Credits Buttons - Matching summary card style exactly */}
       <div className="mb-8">
         <h3 className="text-slate-900 font-black tracking-tight mb-4 px-1">
-          Total Crédit
+          Mes Crédits
         </h3>
         <div className="grid grid-cols-2 gap-3">
           <div
