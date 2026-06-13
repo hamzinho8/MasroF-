@@ -305,10 +305,11 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
                     <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
                         <div className="flex items-center gap-4 mb-6 relative">
-                            <div className="w-20 h-20 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center text-slate-700 shadow-inner group">
+                            <div className={`w-20 h-20 shadow-inner rounded-2xl flex items-center justify-center group ${CATEGORIES.find(c => c.id === scannedItem.category)?.bgColor || 'bg-slate-50'}`}>
                                 {(()=>{ 
                                    const IconComponent = (ICON_MAP as Record<string, React.ElementType>)[scannedItem.iconName] || ICON_MAP['PackageOpen'];
-                                   return <IconComponent size={40} className="text-blue-600 transition-transform group-hover:scale-110" />
+                                   const cat = CATEGORIES.find(c => c.id === scannedItem.category) || CATEGORIES.find(c => c.id === 'Autres')!;
+                                   return <IconComponent size={40} className={`${cat.color} transition-transform group-hover:scale-110`} />
                                 })()}
                             </div>
                             <div className="flex-1 flex flex-col gap-2">
