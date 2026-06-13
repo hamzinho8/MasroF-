@@ -11,7 +11,7 @@ import { PredefinedItem } from './types';
 
 export const ICON_MAP: Record<string, React.ElementType> = {
   Utensils, ShoppingBag, Car, Gamepad2, MoreHorizontal,
-  Coffee, Milk, Wheat, Box: PackageOpen, Cookie, Droplets, CupSoda, Candy, Zap, 
+  Coffee, Milk, Wheat, PackageOpen, Box: PackageOpen, Cookie, Droplets, CupSoda, Candy, Zap, 
   CircleDot, Soup, TrainFront, Fuel, Flame, Tv, Search, Baby, Bean,
   Cylinder, Cigarette, Home, HeartPulse, Heart, Bath, Lightbulb, Users,
   Sparkles, Shirt, Wind, HelpCircle, User, WashingMachine,
