@@ -1,8 +1,9 @@
-import React, { useRef, useState } from "react";
-import { Camera, X, Plus, Image as ImageIcon, Loader2, Sparkles, RefreshCw } from "lucide-react";
-import { motion } from "motion/react";
+import React, { useRef, useState, useEffect } from "react";
+import { Camera, X, Plus, Image as ImageIcon, Loader2, Sparkles, RefreshCw, Barcode, Repeat, CheckCircle2, AlertTriangle } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { PredefinedItem } from "../types";
 import { CATEGORIES, ICON_MAP } from "../constants";
+import { Html5QrcodeScanner } from "html5-qrcode";
 
 interface ReceiptScannerModalProps {
   onClose: () => void;
@@ -13,11 +14,41 @@ interface ReceiptScannerModalProps {
 
 export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPredefinedItem, onUpdatePredefinedItem }: ReceiptScannerModalProps) {
   const [isScanning, setIsScanning] = useState(false);
-  const [scannedItem, setScannedItem] = useState<{name: string, price: number, category: string, iconName: string, matchedItemId?: string | null} | null>(null);
+  const [scannedItem, setScannedItem] = useState<{name: string, price: number, category: string, iconName: string, matchedItemId?: string | null, confidence?: number, barcode?: string | null} | null>(null);
   const [isRegeneratingIcon, setIsRegeneratingIcon] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isContinuousMode, setIsContinuousMode] = useState(false);
+  const [successToast, setSuccessToast] = useState(false);
+  const [isBarcodeReaderOpen, setIsBarcodeReaderOpen] = useState(false);
+  
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isBarcodeReaderOpen) {
+      const scanner = new Html5QrcodeScanner('reader', { qrbox: { width: 250, height: 100 }, fps: 10 }, false);
+      scanner.render((decodedText) => {
+         scanner.clear();
+         setIsBarcodeReaderOpen(false);
+         handleBarcodeFound(decodedText);
+      }, (error) => {});
+      return () => {
+         scanner.clear().catch(e => console.error(e));
+      };
+    }
+  }, [isBarcodeReaderOpen]);
+
+  const handleBarcodeFound = (code: string) => {
+    // Basic fallback: just auto-fill the barcode and wait for user to add name/price
+    setScannedItem({
+      name: `Article (${code})`,
+      price: 0,
+      category: 'Autres',
+      iconName: 'PackageOpen',
+      barcode: code,
+      confidence: 100
+    });
+  };
 
   const handleImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -44,7 +75,9 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
                  price: data.price || 0,
                  category: data.category || 'Autres',
                  iconName: data.iconName || 'PackageOpen',
-                 matchedItemId: data.matchedItemId
+                 matchedItemId: data.matchedItemId,
+                 confidence: data.confidence,
+                 barcode: data.barcode
                });
             } else {
                setError("L'IA n'a pas pu identifier cet article. Veuillez réessayer.");
@@ -95,9 +128,34 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
         price: scannedItem.price,
         category: scannedItem.category,
         iconName: scannedItem.iconName,
-        frequent: true
+        frequent: true,
+        // barcode: scannedItem.barcode // if the type supported it
     });
-    onClose();
+    
+    if (isContinuousMode) {
+       setScannedItem(null);
+       setSuccessToast(true);
+       setTimeout(() => setSuccessToast(false), 2000);
+    } else {
+       onClose();
+    }
+  };
+
+  const handleUpdate = () => {
+      if (!scannedItem || !scannedItem.matchedItemId) return;
+      onUpdatePredefinedItem(scannedItem.matchedItemId, {
+          name: scannedItem.name,
+          price: scannedItem.price,
+          category: scannedItem.category,
+          iconName: scannedItem.iconName
+      });
+      if (isContinuousMode) {
+         setScannedItem(null);
+         setSuccessToast(true);
+         setTimeout(() => setSuccessToast(false), 2000);
+      } else {
+         onClose();
+      }
   };
 
   return (
@@ -135,36 +193,83 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6">
-            {!isScanning && !scannedItem && (
-                <div className="flex flex-col items-center justify-center p-8 text-center bg-white rounded-[24px] border border-slate-100 shadow-sm mt-4">
-                    <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center mb-4">
-                        <ImageIcon size={32} />
-                    </div>
-                    <p className="text-slate-600 font-medium mb-6">Prenez une photo d'un de vos articles d'achat pour que notre IA l'analyse et l'ajoute à votre catalogue.</p>
-                    
-                    {error && (
-                      <div className="w-full bg-rose-50 text-rose-600 text-sm font-bold p-4 rounded-xl mb-6 shadow-sm border border-rose-100">
-                        {error}
-                      </div>
-                    )}
+        <div className="flex-1 overflow-y-auto p-6 relative">
+            <AnimatePresence>
+                {successToast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute top-4 left-6 right-6 bg-emerald-50 text-emerald-600 border border-emerald-200 shadow-lg rounded-xl p-3 flex items-center justify-center gap-2 z-50 font-bold"
+                    >
+                        <CheckCircle2 size={18} /> Article ajouté avec succès !
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-                    <div className="flex w-full gap-3">
-                      <button 
-                          onClick={() => cameraInputRef.current?.click()}
-                          className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-4 px-2 rounded-2xl hover:opacity-90 transition shadow-sm flex flex-col items-center justify-center gap-2"
-                      >
-                          <Camera size={24} />
-                          <span className="text-xs">Prendre Photo</span>
-                      </button>
-                      <button 
-                          onClick={() => galleryInputRef.current?.click()}
-                          className="flex-1 bg-white border-2 border-blue-100 text-blue-600 font-bold py-4 px-2 rounded-2xl hover:bg-blue-50 transition shadow-sm flex flex-col items-center justify-center gap-2"
-                      >
-                          <ImageIcon size={24} />
-                          <span className="text-xs">Depuis Galerie</span>
-                      </button>
-                    </div>
+            {!isScanning && !scannedItem && (
+                <div className="flex flex-col items-center justify-center text-center bg-white rounded-[24px] border border-slate-100 shadow-sm mt-4 overflow-hidden relative">
+                    
+                    {isBarcodeReaderOpen ? (
+                        <div className="w-full relative">
+                            <div className="w-full bg-slate-900 aspect-video relative flex items-center justify-center overflow-hidden">
+                                <div id="reader" className="w-full h-full text-white" />
+                            </div>
+                            <button
+                                onClick={() => setIsBarcodeReaderOpen(false)}
+                                className="w-full bg-slate-100 text-slate-600 font-bold py-4 px-2 hover:bg-slate-200 transition"
+                            >
+                                Annuler
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="p-8 w-full flex flex-col items-center">
+                            <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center mb-4">
+                                <ImageIcon size={32} />
+                            </div>
+                            <p className="text-slate-600 font-medium mb-6">Prenez une photo d'un de vos articles d'achat pour que notre IA l'analyse et l'ajoute à votre catalogue.</p>
+                            
+                            {error && (
+                              <div className="w-full bg-rose-50 text-rose-600 text-sm font-bold p-4 rounded-xl mb-6 shadow-sm border border-rose-100">
+                                {error}
+                              </div>
+                            )}
+
+                            <div className="flex w-full gap-3 mb-4">
+                              <button 
+                                  onClick={() => cameraInputRef.current?.click()}
+                                  className="flex-[2] bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-4 px-2 rounded-2xl hover:opacity-90 transition shadow-sm flex flex-col items-center justify-center gap-2"
+                              >
+                                  <Camera size={24} />
+                                  <span className="text-xs">Prendre Photo</span>
+                              </button>
+                              <button 
+                                  onClick={() => setIsBarcodeReaderOpen(true)}
+                                  className="flex-1 bg-slate-800 text-white font-bold py-4 px-2 rounded-2xl hover:bg-slate-700 transition shadow-sm flex flex-col items-center justify-center gap-2"
+                              >
+                                  <Barcode size={24} />
+                                  <span className="text-xs text-center">Code-Barres</span>
+                              </button>
+                              <button 
+                                  onClick={() => galleryInputRef.current?.click()}
+                                  className="flex-1 bg-white border-2 border-slate-200 text-slate-600 font-bold py-4 px-2 rounded-2xl hover:bg-slate-50 transition shadow-sm flex flex-col items-center justify-center gap-2"
+                              >
+                                  <ImageIcon size={24} />
+                                  <span className="text-xs text-center">Galerie</span>
+                              </button>
+                            </div>
+
+                            <label onClick={() => setIsContinuousMode(!isContinuousMode)} className="flex items-center gap-3 bg-slate-50 border border-slate-200 w-full p-4 rounded-2xl cursor-pointer hover:bg-slate-100 transition mt-2">
+                                <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${isContinuousMode ? 'bg-blue-500 border-blue-500 text-white' : 'border-slate-300 bg-white'}`}>
+                                   {isContinuousMode && <CheckCircle2 size={16} />}
+                                </div>
+                                <div className="flex flex-col text-left">
+                                   <span className="font-bold text-slate-800 flex items-center gap-1"><Repeat size={14} className="text-blue-500" /> Mode Scan Continu</span>
+                                   <span className="text-[10px] text-slate-500">Ajouter plusieurs articles à la suite sans refermer</span>
+                                </div>
+                            </label>
+                        </div>
+                    )}
                     <input 
                         type="file" 
                         accept="image/*" 
@@ -206,20 +311,40 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
                                    return <IconComponent size={40} className="text-blue-600 transition-transform group-hover:scale-110" />
                                 })()}
                             </div>
-                            <div className="flex-1">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Icône</label>
-                                <button 
-                                    onClick={handleRegenerateIcon}
-                                    disabled={isRegeneratingIcon}
-                                    className="flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-sm font-bold active:bg-blue-100 transition-colors"
-                                >
-                                    {isRegeneratingIcon ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
-                                    Régénérer
-                                </button>
+                            <div className="flex-1 flex flex-col gap-2">
+                                <div className="flex justify-between items-center w-full">
+                                    <button 
+                                        onClick={handleRegenerateIcon}
+                                        disabled={isRegeneratingIcon}
+                                        className="flex items-center justify-center flex-1 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold active:bg-blue-100 transition-colors"
+                                    >
+                                        {isRegeneratingIcon ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} className="mr-1" />}
+                                        Icône
+                                    </button>
+                                </div>
+                                {scannedItem.confidence !== undefined && (
+                                   <div className={`text-[10px] w-full font-black uppercase tracking-wider px-2 py-1.5 rounded-lg flex items-center justify-center gap-1.5 ${
+                                      scannedItem.confidence >= 80 ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' :
+                                      scannedItem.confidence >= 50 ? 'bg-amber-50 text-amber-600 border border-amber-200' :
+                                      'bg-rose-50 text-rose-600 border border-rose-200'
+                                   }`}>
+                                      <Sparkles size={12} />
+                                      Confiance IA: {scannedItem.confidence}%
+                                   </div>
+                                )}
                             </div>
                         </div>
 
                         <div className="space-y-4">
+                            {scannedItem.barcode && (
+                              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between">
+                                  <div className="flex items-center gap-2 text-slate-600">
+                                      <Barcode size={18} />
+                                      <span className="text-xs font-bold">Code-Barres détecté</span>
+                                  </div>
+                                  <span className="text-sm font-mono font-black text-slate-800">{scannedItem.barcode}</span>
+                              </div>
+                            )}
                             <div>
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5 ml-1">Nom de l'article</label>
                                 <input 
@@ -269,15 +394,7 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
                         </div>
                         <div className="flex gap-2">
                             <button
-                                onClick={() => {
-                                    onUpdatePredefinedItem(scannedItem.matchedItemId!, {
-                                        name: scannedItem.name,
-                                        price: scannedItem.price,
-                                        category: scannedItem.category,
-                                        iconName: scannedItem.iconName
-                                    });
-                                    onClose();
-                                }}
+                                onClick={handleUpdate}
                                 className="flex-1 bg-amber-500 text-white font-black py-4 px-2 rounded-2xl hover:bg-amber-600 transition shadow-sm active:scale-[0.98] flex items-center justify-center gap-2 text-sm text-center leading-tight"
                             >
                                 Mettre à jour l'existant

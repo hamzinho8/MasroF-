@@ -73,7 +73,9 @@ async function startServer() {
         return res.status(500).json({ error: "Gemini API key is not configured on the server." });
       }
       
-      const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: Check if the scanned item resembles any item in this list. If it does, include 'matchedItemId' in your JSON response with the id of that item (otherwise null).` : "";
+      const actualBase64 = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
+      
+      const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT INSTRUCTIONS:\n1. Check if the scanned item resembles any item in this list. If it does, include 'matchedItemId' in your JSON response with the id of that item (otherwise null).\n2. [APPRENTISSAGE] If it matches a predefined item, you MUST use EXACTLY the same category and iconName as the matched item. This allows the system to learn from past user corrections.` : "";
 
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       const response = await ai.models.generateContent({
@@ -84,7 +86,7 @@ async function startServer() {
             parts: [
               {
                 inlineData: {
-                  data: imageBase64,
+                  data: actualBase64,
                   mimeType: "image/jpeg"
                 }
               },
@@ -99,6 +101,8 @@ Extract the following in JSON:
 - 'category': The category, strictly ONE of ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres'].
 - 'iconName': Choose the most appropriate icon name from lucide-react (e.g., 'Coffee', 'Milk', 'Wheat', 'PackageOpen', 'Cookie', 'Droplets', 'CupSoda', 'Candy', 'Beef', 'Fish', 'Carrot', 'Apple', 'Nut', 'IceCream', 'Baby', 'Cigarette', 'WashingMachine', 'Bath', 'ShoppingBag', 'Utensils').
 - 'matchedItemId': The id of the predefined item that resembles this one (if any). Otherwise null.
+- 'confidence': An integer from 0 to 100 representing how confident you are in your identification. High confidence (>80) if clearly visible and known.
+- 'barcode': If you can clearly read a barcode number on the product, include it as a string. Otherwise null.
 
 Respond purely in JSON format like:
 {
@@ -106,7 +110,9 @@ Respond purely in JSON format like:
   "price": 2.50,
   "category": "Nourriture",
   "iconName": "Milk",
-  "matchedItemId": "3"
+  "matchedItemId": "3",
+  "confidence": 92,
+  "barcode": "6111234567890"
 }
 Return ONLY valid JSON, no markdown formatting blocks.${predefinedText}`
               }
