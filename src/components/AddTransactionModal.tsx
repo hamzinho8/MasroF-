@@ -287,11 +287,18 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                setReceiptTotal(data.total || data.totalReceiptAmount || null);
                setDetectedPaymentGroup(data.paymentMethod === 'CASH' ? 'cash' : 'bank');
                setShowFrequent(false);
+            } else {
+               alert("L'IA n'a détecté aucun article. Veuillez réessayer avec une image plus claire.");
             }
+          } else {
+             alert("Erreur serveur lors de la numérisation. L'IA a peut-être rencontré un problème.");
           }
         } catch (error) {
           console.error("Scanning error", error);
+          alert("Erreur de connexion. Impossible d'analyser l'image.");
         }
+      } else {
+          alert("Erreur lors de la lecture de l'image.");
       }
       setIsScanning(false);
     };

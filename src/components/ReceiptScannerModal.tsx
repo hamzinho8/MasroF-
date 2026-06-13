@@ -14,13 +14,16 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
   const [isScanning, setIsScanning] = useState(false);
   const [scannedItem, setScannedItem] = useState<{name: string, price: number, category: string, iconName: string} | null>(null);
   const [isRegeneratingIcon, setIsRegeneratingIcon] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     setIsScanning(true);
+    setError(null);
     const reader = new FileReader();
     reader.onload = async (e) => {
       const result = e.target?.result as string;
@@ -41,11 +44,18 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
                  category: data.category || 'Autres',
                  iconName: data.iconName || 'PackageOpen'
                });
+            } else {
+               setError("L'IA n'a pas pu identifier cet article. Veuillez réessayer.");
             }
+          } else {
+             setError("Une erreur est survenue avec le serveur de l'IA. Veuillez réessayer.");
           }
-        } catch (error) {
-          console.error("Scanning error", error);
+        } catch (err) {
+          console.error("Scanning error", err);
+          setError("Problème de connexion. Veuillez réessayer.");
         }
+      } else {
+         setError("Impossible de lire l'image.");
       }
       setIsScanning(false);
     };
@@ -130,17 +140,41 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
                         <ImageIcon size={32} />
                     </div>
                     <p className="text-slate-600 font-medium mb-6">Prenez une photo d'un de vos articles d'achat pour que notre IA l'analyse et l'ajoute à votre catalogue.</p>
-                    <button 
-                        onClick={() => fileInputRef.current?.click()}
-                        className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-4 px-6 rounded-2xl hover:opacity-90 transition shadow-sm w-full flex items-center justify-center gap-2"
-                    >
-                        <Camera size={20} />
-                        Capturer l'article
-                    </button>
+                    
+                    {error && (
+                      <div className="w-full bg-rose-50 text-rose-600 text-sm font-bold p-4 rounded-xl mb-6 shadow-sm border border-rose-100">
+                        {error}
+                      </div>
+                    )}
+
+                    <div className="flex w-full gap-3">
+                      <button 
+                          onClick={() => cameraInputRef.current?.click()}
+                          className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-4 px-2 rounded-2xl hover:opacity-90 transition shadow-sm flex flex-col items-center justify-center gap-2"
+                      >
+                          <Camera size={24} />
+                          <span className="text-xs">Prendre Photo</span>
+                      </button>
+                      <button 
+                          onClick={() => galleryInputRef.current?.click()}
+                          className="flex-1 bg-white border-2 border-blue-100 text-blue-600 font-bold py-4 px-2 rounded-2xl hover:bg-blue-50 transition shadow-sm flex flex-col items-center justify-center gap-2"
+                      >
+                          <ImageIcon size={24} />
+                          <span className="text-xs">Depuis Galerie</span>
+                      </button>
+                    </div>
                     <input 
                         type="file" 
                         accept="image/*" 
-                        ref={fileInputRef} 
+                        capture="environment"
+                        ref={cameraInputRef} 
+                        className="hidden" 
+                        onChange={handleImageSelection} 
+                    />
+                    <input 
+                        type="file" 
+                        accept="image/*" 
+                        ref={galleryInputRef} 
                         className="hidden" 
                         onChange={handleImageSelection} 
                     />

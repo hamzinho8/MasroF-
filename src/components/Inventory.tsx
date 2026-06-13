@@ -214,9 +214,14 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
                 {activeItems.length > 0 && (
             <div className="flex flex-col gap-3">
               {activeItems.map((item) => {
-                const IconComponent = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : PackageOpen;
-                const iconColorClass = item.color ? item.color : "text-white";
-                const bgClass = item.bg ? item.bg : "bg-violet-600";
+                const predefinedItem = predefinedItems.find(p => p.name.toLowerCase() === item.name.toLowerCase());
+                const categoryId = predefinedItem?.category || 'Autres';
+                const cat = CATEGORIES.find(c => c.id === categoryId) || CATEGORIES.find(c => c.id === 'Autres')!;
+                // Fallback to item.iconName if no predefined icon is found
+                const iconName = predefinedItem?.iconName || item.iconName;
+                const IconComponent = (iconName && ICON_MAP[iconName]) ? ICON_MAP[iconName] as React.ElementType : PackageOpen;
+                const iconColorClass = cat.color;
+                const bgClass = cat.bgColor;
                 
                 return (
                   <motion.div
@@ -267,15 +272,20 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
               </h3>
               <div className="flex flex-col gap-3">
                 {consumedItems.map((item) => {
-                  const IconComponent = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : PackageOpen;
+                  const predefinedItem = predefinedItems.find(p => p.name.toLowerCase() === item.name.toLowerCase());
+                  const categoryId = predefinedItem?.category || 'Autres';
+                  const cat = CATEGORIES.find(c => c.id === categoryId) || CATEGORIES.find(c => c.id === 'Autres')!;
+                  const iconName = predefinedItem?.iconName || item.iconName;
+                  const IconComponent = (iconName && ICON_MAP[iconName]) ? ICON_MAP[iconName] as React.ElementType : PackageOpen;
+                  
                   return (
                     <motion.div
                       key={item.id}
                       layoutId={`card-${item.id}`}
                       onClick={() => setSelectedItemInfo(item)}
-                      className="group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm bg-slate-50 border-slate-200 hover:border-slate-300 cursor-pointer overflow-hidden opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
+                      className="group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm bg-slate-50 border-slate-200 hover:border-slate-300 cursor-pointer overflow-hidden opacity-60 hover:opacity-100 grayscale hover:grayscale-0 z-0"
                     >
-                      <div className="shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 shadow-sm bg-slate-200 text-slate-500 relative z-10">
+                      <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 shadow-sm relative z-10 ${cat.bgColor} ${cat.color}`}>
                         <IconComponent size={24} />
                       </div>
 
@@ -325,22 +335,15 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
               <div className="flex flex-col gap-3">
                 {shoppingList.map((item) => {
                   const IconComp = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : PackageOpen;
-                  const getCatStyle = (cat: string) => {
-                    const c = cat.toLowerCase();
-                    if (c.includes('nourri')) return { bg: 'bg-teal-100', text: 'text-teal-700' };
-                    if (c.includes('shop')) return { bg: 'bg-rose-100', text: 'text-rose-600' };
-                    if (c.includes('trans')) return { bg: 'bg-sky-100', text: 'text-sky-600' };
-                    if (c.includes('loisi')) return { bg: 'bg-purple-100', text: 'text-purple-600' };
-                    return { bg: 'bg-slate-100', text: 'text-slate-600' };
-                  };
-                  const catStyle = getCatStyle(item.category || '');
+                  const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES.find(c => c.id === 'Autres')!;
+                  
                   return (
                     <motion.div
                       key={item.id}
                       onClick={() => onCheckoutShoppingItem(item)}
-                      className={`group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm hover:shadow-xl cursor-pointer overflow-hidden ${catStyle.bg.replace('100', '50')} border-slate-100`}
+                      className={`group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm hover:shadow-xl cursor-pointer overflow-hidden ${cat.lightBg} border-slate-100`}
                     >
-                      <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${catStyle.bg} ${catStyle.text} relative z-10 opacity-90`}>
+                      <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${cat.bgColor} ${cat.color} relative z-10 opacity-90`}>
                         <IconComp size={24} />
                       </div>
 
