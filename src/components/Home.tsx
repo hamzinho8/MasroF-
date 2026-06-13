@@ -32,7 +32,9 @@ import {
   Home as HomeIcon,
   HeartPulse,
   Heart,
-  PackageOpen
+  PackageOpen,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Transaction, CreditEntry, Reminder, ShoppingListItem } from "../types";
@@ -93,6 +95,7 @@ export default function Home({
   const [categoryBudgets, setCategoryBudgets] = useLocalStorage<{category: string; limit: number}[]>('categoryBudgets', []);
   const [showRasSettingModal, setShowRasSettingModal] = useState(false);
   const [rasHiddenItems, setRasHiddenItems] = useLocalStorage<string[]>('rasHiddenItems', []);
+  const [hideBankBalance, setHideBankBalance] = useLocalStorage<boolean>('hideBankBalance', false);
 
   const translations = {
     Français: {
@@ -375,10 +378,16 @@ export default function Home({
                       Solde Bancaire
                     </h2>
                   </div>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setHideBankBalance(!hideBankBalance); }} 
+                    className="p-1 text-slate-800/40 hover:text-slate-800/60 transition-colors pointer-events-auto"
+                  >
+                    {hideBankBalance ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
                 <div className="flex items-baseline gap-2">
                   <div className="text-4xl font-black text-slate-900 tracking-tighter">
-                    {bankBalance.toLocaleString("fr-FR", {
+                    {hideBankBalance ? "*********" : bankBalance.toLocaleString("fr-FR", {
                       minimumFractionDigits: 2,
                     })}
                   </div>
@@ -428,10 +437,16 @@ export default function Home({
                         Solde Bancaire
                       </h2>
                     </div>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setHideBankBalance(!hideBankBalance); }} 
+                      className="p-1 text-slate-800/40 hover:text-slate-800/60 transition-colors pointer-events-auto"
+                    >
+                      {hideBankBalance ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
                   </div>
                   <div className="flex items-baseline gap-2">
                     <div className="text-4xl font-black text-slate-900 tracking-tighter">
-                      {bankBalance.toLocaleString("fr-FR", {
+                      {hideBankBalance ? "*********" : bankBalance.toLocaleString("fr-FR", {
                         minimumFractionDigits: 2,
                       })}
                     </div>

@@ -440,7 +440,7 @@ export default function App() {
       if (inventoryAlertThreshold !== null) {
         inventoryItems.forEach(item => {
           if (item.quantity <= inventoryAlertThreshold) {
-            alarms.push(`<b><font color="${warnColor}">🪫 ⬇ ${item.name} (${item.quantity})</font></b>`);
+            alarms.push(`<b><font color="${warnColor}">🔋 ⬇ ${item.name} (${item.quantity})</font></b>`);
           }
         });
       }
@@ -469,7 +469,8 @@ export default function App() {
           Fuel: "⛽", Flame: "🔥", Tv: "📺", Search: "🔍", Baby: "👶", Bean: "🫘", Cylinder: "🛢️",
           Cigarette: "🚬", Home: "🏠", HeartPulse: "💓", Heart: "❤️", Bath: "🛁", Lightbulb: "💡",
           Users: "👥", Sparkles: "✨", Shirt: "👕", Wind: "💨", HelpCircle: "❓", User: "👤",
-          WashingMachine: "🧼"
+          WashingMachine: "🧼",
+          Beef: "🥩", Drumstick: "🍗", Fish: "🐟", Carrot: "🥕", Apple: "🍎", Nut: "🥜", IceCream: "🍦"
       };
 
       (shoppingList || []).forEach((s) => {
