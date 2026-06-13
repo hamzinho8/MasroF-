@@ -771,6 +771,7 @@ export default function App() {
             onInventoryItemsChange={setInventoryItems}
             predefinedItems={predefinedItems}
             onAddPredefinedItem={(item) => setPredefinedItems([...predefinedItems, item])}
+            onUpdatePredefinedItem={(id, updates) => setPredefinedItems(predefinedItems.map(p => p.id === id ? { ...p, ...updates } : p))}
           />
         );
       case "stats":
@@ -898,6 +899,7 @@ export default function App() {
             onInventoryItemsChange={setInventoryItems}
             predefinedItems={predefinedItems}
             onAddPredefinedItem={(item) => setPredefinedItems([...predefinedItems, item])}
+            onUpdatePredefinedItem={(id, updates) => setPredefinedItems(predefinedItems.map(p => p.id === id ? { ...p, ...updates } : p))}
           />
         );
     }

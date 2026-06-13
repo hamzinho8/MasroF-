@@ -67,6 +67,7 @@ interface HomeProps {
   onInventoryItemsChange?: (items: import("../types").InventoryItem[]) => void;
   predefinedItems: import("../types").PredefinedItem[];
   onAddPredefinedItem: (item: import("../types").PredefinedItem) => void;
+  onUpdatePredefinedItem: (id: string, updates: Partial<import("../types").PredefinedItem>) => void;
 }
 
 export default function Home({
@@ -91,6 +92,7 @@ export default function Home({
   onInventoryItemsChange,
   predefinedItems,
   onAddPredefinedItem,
+  onUpdatePredefinedItem,
 }: HomeProps) {
   const [timeframe, setTimeframe] = useState<"day" | "week" | "month">("week");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
@@ -963,6 +965,7 @@ export default function Home({
                onClose={() => setShowReceiptScannerModal(false)}
                predefinedItems={predefinedItems}
                onAddPredefinedItem={onAddPredefinedItem}
+               onUpdatePredefinedItem={onUpdatePredefinedItem}
              />
           )}
         </AnimatePresence>

@@ -8,11 +8,12 @@ interface ReceiptScannerModalProps {
   onClose: () => void;
   predefinedItems: PredefinedItem[];
   onAddPredefinedItem: (item: PredefinedItem) => void;
+  onUpdatePredefinedItem: (id: string, updates: Partial<PredefinedItem>) => void;
 }
 
-export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPredefinedItem }: ReceiptScannerModalProps) {
+export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPredefinedItem, onUpdatePredefinedItem }: ReceiptScannerModalProps) {
   const [isScanning, setIsScanning] = useState(false);
-  const [scannedItem, setScannedItem] = useState<{name: string, price: number, category: string, iconName: string} | null>(null);
+  const [scannedItem, setScannedItem] = useState<{name: string, price: number, category: string, iconName: string, matchedItemId?: string | null} | null>(null);
   const [isRegeneratingIcon, setIsRegeneratingIcon] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -32,7 +33,7 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
           const response = await fetch('/api/scan-single-item', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageBase64: result })
+            body: JSON.stringify({ imageBase64: result, predefinedItems })
           });
 
           if (response.ok) {
@@ -42,7 +43,8 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
                  name: data.name || '',
                  price: data.price || 0,
                  category: data.category || 'Autres',
-                 iconName: data.iconName || 'PackageOpen'
+                 iconName: data.iconName || 'PackageOpen',
+                 matchedItemId: data.matchedItemId
                });
             } else {
                setError("L'IA n'a pas pu identifier cet article. Veuillez réessayer.");
@@ -259,14 +261,45 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
         </div>
 
         {scannedItem && (
-            <div className="p-6 bg-white border-t border-slate-100 flex-shrink-0 absolute bottom-0 left-0 right-0">
-                <button
-                    onClick={handleAdd}
-                    className="w-full bg-slate-900 text-white font-black py-4 px-6 rounded-2xl hover:bg-slate-800 transition shadow-sm active:scale-[0.98] flex items-center justify-center gap-2"
-                >
-                    <Plus size={20} />
-                    Valider et Ajouter au catalogue
-                </button>
+            <div className="p-6 bg-white border-t border-slate-100 flex-shrink-0 absolute bottom-0 left-0 right-0 z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
+                {scannedItem.matchedItemId ? (
+                    <div className="space-y-3">
+                        <div className="text-center text-xs font-bold text-amber-700 bg-amber-50 rounded-lg p-3 border border-amber-200 shadow-sm flex items-center justify-center gap-2">
+                           <Sparkles size={16} /> L'article ressemble à "{predefinedItems.find(p => p.id === scannedItem.matchedItemId)?.name}".
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => {
+                                    onUpdatePredefinedItem(scannedItem.matchedItemId!, {
+                                        name: scannedItem.name,
+                                        price: scannedItem.price,
+                                        category: scannedItem.category,
+                                        iconName: scannedItem.iconName
+                                    });
+                                    onClose();
+                                }}
+                                className="flex-1 bg-amber-500 text-white font-black py-4 px-2 rounded-2xl hover:bg-amber-600 transition shadow-sm active:scale-[0.98] flex items-center justify-center gap-2 text-sm text-center leading-tight"
+                            >
+                                Mettre à jour l'existant
+                            </button>
+                            <button
+                                onClick={handleAdd}
+                                className="flex-1 bg-slate-900 text-white font-black py-4 px-2 rounded-2xl hover:bg-slate-800 transition shadow-sm active:scale-[0.98] flex items-center justify-center gap-2 text-sm leading-tight"
+                            >
+                                <Plus size={18} />
+                                Nouveau
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <button
+                        onClick={handleAdd}
+                        className="w-full bg-slate-900 text-white font-black py-4 px-6 rounded-2xl hover:bg-slate-800 transition shadow-sm active:scale-[0.98] flex items-center justify-center gap-2"
+                    >
+                        <Plus size={20} />
+                        Valider et Ajouter au catalogue
+                    </button>
+                )}
             </div>
         )}
       </motion.div>

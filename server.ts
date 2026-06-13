@@ -64,7 +64,7 @@ async function startServer() {
 
   app.post("/api/scan-single-item", async (req, res) => {
     try {
-      const { imageBase64 } = req.body;
+      const { imageBase64, predefinedItems } = req.body;
       if (!imageBase64) {
         return res.status(400).json({ error: "No image provided" });
       }
@@ -72,6 +72,8 @@ async function startServer() {
       if (!process.env.GEMINI_API_KEY) {
         return res.status(500).json({ error: "Gemini API key is not configured on the server." });
       }
+      
+      const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: Check if the scanned item resembles any item in this list. If it does, include 'matchedItemId' in your JSON response with the id of that item (otherwise null).` : "";
 
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       const response = await ai.models.generateContent({
@@ -96,15 +98,17 @@ Extract the following in JSON:
 - 'price': Estimate the typical current price of this item in Moroccan Dirhams (MAD/DH). If there is a price tag in the image, use it. Otherwise, provide a realistic estimated price (number).
 - 'category': The category, strictly ONE of ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres'].
 - 'iconName': Choose the most appropriate icon name from lucide-react (e.g., 'Coffee', 'Milk', 'Wheat', 'PackageOpen', 'Cookie', 'Droplets', 'CupSoda', 'Candy', 'Beef', 'Fish', 'Carrot', 'Apple', 'Nut', 'IceCream', 'Baby', 'Cigarette', 'WashingMachine', 'Bath', 'ShoppingBag', 'Utensils').
+- 'matchedItemId': The id of the predefined item that resembles this one (if any). Otherwise null.
 
 Respond purely in JSON format like:
 {
   "name": "Danone",
   "price": 2.50,
   "category": "Nourriture",
-  "iconName": "Milk"
+  "iconName": "Milk",
+  "matchedItemId": "3"
 }
-Return ONLY valid JSON, no markdown formatting blocks.`
+Return ONLY valid JSON, no markdown formatting blocks.${predefinedText}`
               }
             ]
           }
