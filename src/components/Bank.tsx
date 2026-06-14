@@ -15,7 +15,7 @@ import {
   MoreHorizontal
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { Transaction } from "../types";
+import { Transaction, PredefinedItem } from "../types";
 import AddBankBalanceModal from "./AddBankBalanceModal";
 import { ICON_MAP, INITIAL_PREDEFINED_ITEMS, getArticleInfo } from '../constants';
 
@@ -23,6 +23,7 @@ interface BankProps {
   language: string;
   currency: string;
   transactions?: Transaction[];
+  predefinedItems?: PredefinedItem[];
   onAddClick?: (type: "INCOME" | "EXPENSE") => void;
   onAddBankBalance?: (amount: number) => void;
 }
@@ -31,6 +32,7 @@ export default function Bank({
   language,
   currency,
   transactions = [],
+  predefinedItems = [],
   onAddClick,
   onAddBankBalance,
 }: BankProps) {
@@ -282,7 +284,7 @@ export default function Bank({
                 return colors[categoryMatch.color] || "hover:border-slate-200";
               };
 
-              const info = getArticleInfo(tx.label, tx.category);
+              const info = getArticleInfo(tx.label, tx.category, predefinedItems);
               const IconComp = info.iconName ? ICON_MAP[info.iconName] : null;
 
               return (
@@ -294,7 +296,9 @@ export default function Bank({
                   className={`flex items-center gap-4 p-4 rounded-[32px] border transition-all relative backdrop-blur-sm bg-white shadow-sm group ${getCardStyle()}`}
                 >
                   <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all shadow-sm ${categoryMatch.bg} ${categoryMatch.text}`}>
-                    {IconComp ? <IconComp size={24} /> : categoryMatch.icon}
+                    {info.iconSvg ? (
+                      <div dangerouslySetInnerHTML={{ __html: info.iconSvg }} className="w-6 h-6 text-current" />
+                    ) : IconComp ? <IconComp size={24} /> : categoryMatch.icon}
                   </div>
 
                   <div className="flex-1 min-w-0 py-1">

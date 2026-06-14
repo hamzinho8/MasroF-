@@ -28,7 +28,7 @@ import { ICON_MAP, CATEGORIES, INITIAL_PREDEFINED_ITEMS, getArticleInfo } from '
 interface AddTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (label: string, amount: number, type: 'INCOME' | 'EXPENSE', category?: string, paidByBank?: boolean, isPureInflow?: boolean, inventoryData?: { quantity: number; color: string; bg: string; iconName: string }) => void;
+  onAdd: (label: string, amount: number, type: 'INCOME' | 'EXPENSE', category?: string, paidByBank?: boolean, isPureInflow?: boolean, inventoryData?: { quantity: number; color: string; bg: string; iconName: string; iconSvg?: string }) => void;
   initialType: 'INCOME' | 'EXPENSE';
   currency: string;
   predefinedItems: PredefinedItem[];
@@ -156,7 +156,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           const ai = new GoogleGenAI({ apiKey: apiKeyValue });
           const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: If the user says an item that matches one in this list, output its EXACT name. For its 'amount', output its EXACT json price. DO NOT multiply by quantity.` : "";
           const genResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-1.5-flash",
             contents: [
               {
                 role: "user",
@@ -366,7 +366,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           usedFallback = true;
           const ai = new GoogleGenAI({ apiKey: apiKeyValue });
           const genResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-1.5-flash",
             contents: [
               {
                 role: "user",
@@ -496,8 +496,10 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         const matchedItem = predefinedItems.find(p => p.name.toLowerCase() === finalLabel.toLowerCase());
         
         let iconName = 'Box'; // fallback
+        let iconSvg: string | undefined = undefined;
         if (matchedItem) {
           iconName = matchedItem.iconName || 'Box';
+          iconSvg = matchedItem.iconSvg;
         } else {
           if (cat.id === 'Nourriture') iconName = 'Utensils';
           else if (cat.id === 'Shopping') iconName = 'ShoppingBag';
@@ -510,7 +512,8 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           quantity: parseInt(inventoryQty) || 1,
           color: cat.color,
           bg: cat.bgColor,
-          iconName
+          iconName,
+          iconSvg
         };
       }
       

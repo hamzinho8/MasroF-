@@ -32,11 +32,12 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-import { Transaction } from '../types';
+import { Transaction, PredefinedItem } from '../types';
 import { INITIAL_PREDEFINED_ITEMS, ICON_MAP, CATEGORIES as APP_CATEGORIES, getArticleInfo } from '../constants';
 
 interface HistoryProps {
   transactions: Transaction[];
+  predefinedItems?: PredefinedItem[];
   language: string;
   currency: string;
   onDelete: (id: string) => void;
@@ -47,7 +48,7 @@ interface HistoryProps {
 type FilterType = 'ALL' | 'INCOME' | 'EXPENSE';
 type SortType = 'DATE_DESC' | 'DATE_ASC' | 'AMOUNT_DESC' | 'AMOUNT_ASC';
 
-export default function History({ transactions, language, currency, onDelete, onUpdate, onAddClick }: HistoryProps) {
+export default function History({ transactions, predefinedItems, language, currency, onDelete, onUpdate, onAddClick }: HistoryProps) {
   const translations = {
     'Français': {
       title: 'Historique',
@@ -548,7 +549,7 @@ export default function History({ transactions, language, currency, onDelete, on
               glow: isCreditPlus ? 'bg-indigo-400' : (isCreditMinus ? 'bg-amber-400' : (isExpense ? 'bg-slate-400' : 'bg-emerald-400'))
             };
 
-            const info = getArticleInfo(tx.label, tx.category);
+            const info = getArticleInfo(tx.label, tx.category, predefinedItems);
             const CustomIconComp = info.iconName ? ICON_MAP[info.iconName] : null;
 
             const getCardStyle = () => {
@@ -720,7 +721,11 @@ export default function History({ transactions, language, currency, onDelete, on
                     ? 'bg-emerald-500 text-white shadow-emerald-500/20' 
                     : `${categoryMatch.bg} ${categoryMatch.text}`
                 }`}>
-                  {(isExpense || isCreditPlus || isCreditMinus) ? (CustomIconComp ? <CustomIconComp size={24} /> : categoryMatch.icon) : <ArrowDownToLine size={24} />}
+                  {(isExpense || isCreditPlus || isCreditMinus) ? (
+                    info.iconSvg ? (
+                      <div dangerouslySetInnerHTML={{ __html: info.iconSvg }} className="w-6 h-6 text-current" />
+                    ) : (CustomIconComp ? <CustomIconComp size={24} /> : categoryMatch.icon)
+                  ) : <ArrowDownToLine size={24} />}
                 </div>
                 
                 {/* Content middle */}

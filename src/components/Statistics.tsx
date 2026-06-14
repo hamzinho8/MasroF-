@@ -14,13 +14,14 @@ import {
   X
 } from 'lucide-react';
 
-import { Transaction } from '../types';
+import { Transaction, PredefinedItem } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { createPortal } from 'react-dom';
 import { ICON_MAP, INITIAL_PREDEFINED_ITEMS, CATEGORIES as APP_CATEGORIES, getArticleInfo } from '../constants';
 
 interface StatisticsProps {
   transactions: Transaction[];
+  predefinedItems?: PredefinedItem[];
   currency: string;
   language: string;
   isDarkMode: boolean;
@@ -39,7 +40,7 @@ const CATEGORY_STYLES: Record<string, { color: string; icon: React.ReactNode; bg
   ])
 );
 
-export default function Statistics({ transactions, currency, language, isDarkMode, categoryBudgets = {}, onUpdateBudget }: StatisticsProps) {
+export default function Statistics({ transactions, predefinedItems = [], currency, language, isDarkMode, categoryBudgets = {}, onUpdateBudget }: StatisticsProps) {
   const [period, setPeriod] = useState<'day' | 'week' | 'month'>('week');
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [selectedPieCategory, setSelectedPieCategory] = useState<string | null>(null);
@@ -293,13 +294,17 @@ export default function Statistics({ transactions, currency, language, isDarkMod
                           </div>
                         )}
                         {Object.entries(data.articles).map(([article, amount]) => {
-                          const info = getArticleInfo(article, category);
+                          const info = getArticleInfo(article, category, predefinedItems);
                           const IconComp = info.iconName ? ICON_MAP[info.iconName] : null;
 
                           return (
                           <div key={article} className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-white dark:hover:bg-white/5 transition-colors">
                             <div className="flex items-center gap-3">
-                              {IconComp ? (
+                              {info.iconSvg ? (
+                                <div className={`w-6 h-6 rounded-md flex items-center justify-center ${info.bgColor} ${info.color}`}>
+                                  <div dangerouslySetInnerHTML={{ __html: info.iconSvg }} className="w-3 h-3 text-current" />
+                                </div>
+                              ) : IconComp ? (
                                 <div className={`w-6 h-6 rounded-md flex items-center justify-center ${info.bgColor} ${info.color}`}>
                                   <IconComp size={12} />
                                 </div>
@@ -383,7 +388,7 @@ export default function Statistics({ transactions, currency, language, isDarkMod
                   <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Fréquence</span>
                 </div>
                 {topArticles.map((art, idx) => {
-                  const info = getArticleInfo(art.name, art.category);
+                  const info = getArticleInfo(art.name, art.category, predefinedItems);
                   const IconComp = info.iconName ? ICON_MAP[info.iconName] : null;
 
                   return (
@@ -396,7 +401,11 @@ export default function Statistics({ transactions, currency, language, isDarkMod
                     >
                       <div className="flex items-center gap-4">
                         <span className="text-xs font-black text-slate-300 dark:text-white/20 w-4">{idx + 1}.</span>
-                        {IconComp && (
+                        {info.iconSvg ? (
+                           <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${info.bgColor} ${info.color}`}>
+                             <div dangerouslySetInnerHTML={{ __html: info.iconSvg }} className="w-4 h-4 text-current" />
+                           </div>
+                        ) : IconComp && (
                           <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${info.bgColor} ${info.color}`}>
                             <IconComp size={16} />
                           </div>

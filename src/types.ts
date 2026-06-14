@@ -4,6 +4,7 @@ export interface PredefinedItem {
   price: number;
   category: string;
   iconName: string;
+  iconSvg?: string;
   frequent: boolean;
   colorHex?: string;
   categoryColorHex?: string;
@@ -55,6 +56,7 @@ export interface InventoryItem {
   addedAt: number;
   history: InventoryDecreaseAction[];
   iconName?: string;
+  iconSvg?: string;
   color?: string;
   bg?: string;
 }
@@ -65,6 +67,7 @@ export interface ShoppingListItem {
   expectedPrice?: number;
   category: string;
   iconName?: string;
+  iconSvg?: string;
   addedAt: number;
 }
 

@@ -743,7 +743,11 @@ export default function Home({
                   
                   <div className={`z-10 relative flex items-center justify-center ${textClass} mb-1 mt-1`}>
                     <span className="absolute -top-1.5 -left-1.5 text-[11px] font-black leading-none">{item.quantity}</span>
-                    <IconComponent size={26} strokeWidth={2.5} />
+                    {item.iconSvg ? (
+                      <div dangerouslySetInnerHTML={{ __html: item.iconSvg }} className="w-6 h-6 text-current" />
+                    ) : (
+                      <IconComponent size={26} strokeWidth={2.5} />
+                    )}
                   </div>
                   <span className={`z-10 text-[9px] font-bold ${textClass} uppercase truncate w-full px-2 text-center mt-1`}>{item.name}</span>
                 </button>
@@ -1421,7 +1425,11 @@ function RasSettingsModal({
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${textClass} ${bgClass}`}>
-                      <IconComponent size={20} />
+                      {item.iconSvg ? (
+                        <div dangerouslySetInnerHTML={{ __html: item.iconSvg }} className="w-5 h-5 text-current" />
+                      ) : (
+                        <IconComponent size={20} />
+                      )}
                     </div>
                     <div>
                       <p className="font-bold text-slate-800">{item.name}</p>

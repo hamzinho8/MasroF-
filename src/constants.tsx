@@ -5,7 +5,12 @@ import {
   CircleDot, Soup, TrainFront, Fuel, Flame, Tv, Search, Baby,
   Bean, Cylinder, Cigarette, Home, HeartPulse, Heart, Bath, Lightbulb, Users,
   Sparkles, Shirt, Wind, HelpCircle, User, WashingMachine,
-  Beef, Drumstick, Fish, Carrot, Apple, Nut, IceCream
+  Beef, Drumstick, Fish, Carrot, Apple, Nut, IceCream,
+  GlassWater, Wine, Beer, Grape, Croissant, Pizza, Sandwich, Salad, 
+  Cherry, Banana, Egg, 
+  PaintRoller, Wrench, Scissors, Smartphone, Laptop, Plug, Battery, 
+  Umbrella, Glasses, Book, FilePlus, Brush, Pen, PenTool,
+  Paperclip, Camera, MapPin, Ticket, Plane, Ship, Bus
 } from 'lucide-react';
 import { PredefinedItem } from './types';
 
@@ -15,7 +20,12 @@ export const ICON_MAP: Record<string, React.ElementType> = {
   CircleDot, Soup, TrainFront, Fuel, Flame, Tv, Search, Baby, Bean,
   Cylinder, Cigarette, Home, HeartPulse, Heart, Bath, Lightbulb, Users,
   Sparkles, Shirt, Wind, HelpCircle, User, WashingMachine,
-  Beef, Drumstick, Fish, Carrot, Apple, Nut, IceCream
+  Beef, Drumstick, Fish, Carrot, Apple, Nut, IceCream,
+  GlassWater, Wine, Beer, Grape, Croissant, Pizza, Sandwich, Salad, 
+  Cherry, Banana, Egg, 
+  PaintRoller, Wrench, Scissors, Smartphone, Laptop, Plug, Battery, 
+  Umbrella, Glasses, Book, FilePlus, Brush, Pen, PenTool,
+  Paperclip, Camera, MapPin, Ticket, Plane, Ship, Bus
 };
 
 export const CATEGORIES = [
@@ -89,14 +99,15 @@ export const INITIAL_PREDEFINED_ITEMS: PredefinedItem[] = RAW_PREDEFINED_ITEMS.m
   };
 });
 
-export const getArticleInfo = (name: string, categoryId?: string) => {
-  const predefined = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === name.toLowerCase());
+export const getArticleInfo = (name: string, categoryId?: string, predefinedItems: PredefinedItem[] = INITIAL_PREDEFINED_ITEMS) => {
+  const predefined = predefinedItems.find(p => p.name.toLowerCase() === name.toLowerCase());
   
   if (predefined) {
     const category = CATEGORIES.find(c => c.id === predefined.category) || CATEGORIES.find(c => c.id === 'Autres')!;
     return {
       name: predefined.name,
       iconName: predefined.iconName,
+      iconSvg: predefined.iconSvg,
       colorHex: predefined.colorHex,
       categoryColorHex: predefined.categoryColorHex,
       color: category.color,
@@ -109,6 +120,7 @@ export const getArticleInfo = (name: string, categoryId?: string) => {
   return {
     name,
     iconName: category.iconName,
+    iconSvg: undefined,
     colorHex: category.colorHex,
     categoryColorHex: category.colorHex,
     color: category.color,

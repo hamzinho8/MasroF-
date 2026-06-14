@@ -533,7 +533,7 @@ export default function App() {
     category?: string,
     paidByBank: boolean = false,
     isPureInflow: boolean = false,
-    inventoryData?: { quantity: number; color: string; bg: string; iconName: string }
+    inventoryData?: { quantity: number; color: string; bg: string; iconName: string; iconSvg?: string }
   ) => {
     markUnbackedChanges();
     const newTx: Transaction = {
@@ -568,6 +568,7 @@ export default function App() {
           color: inventoryData.color,
           bg: inventoryData.bg,
           iconName: inventoryData.iconName,
+          iconSvg: inventoryData.iconSvg,
         },
         ...prev,
       ]);
@@ -778,6 +779,7 @@ export default function App() {
         return (
           <Statistics
             transactions={transactions}
+            predefinedItems={predefinedItems}
             currency={currency}
             language={language}
             isDarkMode={isDarkMode}
@@ -803,6 +805,7 @@ export default function App() {
         return (
           <HistoryView
             transactions={transactions}
+            predefinedItems={predefinedItems}
             language={language}
             currency={currency}
             onDelete={deleteTransaction}
@@ -816,6 +819,7 @@ export default function App() {
             language={language}
             currency={currency}
             transactions={transactions}
+            predefinedItems={predefinedItems}
             onAddClick={(type) => openModal(type)}
             onAddBankBalance={handleAddBankBalance}
           />
@@ -1024,7 +1028,8 @@ export default function App() {
                category: category || 'Autres',
                expectedPrice: amount,
                addedAt: Date.now(),
-               iconName: inventoryData?.iconName || 'ShoppingBag'
+               iconName: inventoryData?.iconName || 'ShoppingBag',
+               iconSvg: inventoryData?.iconSvg
              };
              setShoppingList(prev => [...prev, newItem]);
           } else {

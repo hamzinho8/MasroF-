@@ -14,7 +14,7 @@ interface ReceiptScannerModalProps {
 
 export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPredefinedItem, onUpdatePredefinedItem }: ReceiptScannerModalProps) {
   const [isScanning, setIsScanning] = useState(false);
-  const [scannedItem, setScannedItem] = useState<{name: string, price: number, category: string, iconName: string, matchedItemId?: string | null, confidence?: number, barcode?: string | null} | null>(null);
+  const [scannedItem, setScannedItem] = useState<{name: string, price: number, category: string, iconName: string, iconSvg?: string, matchedItemId?: string | null, confidence?: number, barcode?: string | null} | null>(null);
   const [isRegeneratingIcon, setIsRegeneratingIcon] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isContinuousMode, setIsContinuousMode] = useState(false);
@@ -27,9 +27,9 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
   useEffect(() => {
     if (isBarcodeReaderOpen) {
       const scanner = new Html5QrcodeScanner('reader', { 
-        qrbox: { width: 250, height: 100 }, 
-        fps: 10,
-        aspectRatio: 1,
+        qrbox: { width: 250, height: 250 }, 
+        aspectRatio: 1.0,
+        fps: 10
       }, false);
       scanner.render((decodedText) => {
          scanner.clear();
@@ -42,16 +42,48 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
     }
   }, [isBarcodeReaderOpen]);
 
-  const handleBarcodeFound = (code: string) => {
-    // Basic fallback: just auto-fill the barcode and wait for user to add name/price
-    setScannedItem({
-      name: `Article (${code})`,
-      price: 0,
-      category: 'Autres',
-      iconName: 'PackageOpen',
-      barcode: code,
-      confidence: 100
-    });
+  const handleBarcodeFound = async (code: string) => {
+    setIsScanning(true);
+    setError(null);
+    try {
+      const apiKeyValue = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('gemini_api_key');
+      const response = await fetch('/api/scan-single-item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ barcode: code, predefinedItems, apiKey: apiKeyValue })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.name) {
+           setScannedItem({
+             name: data.name || `Article (${code})`,
+             price: data.price || 0,
+             category: data.category || 'Autres',
+             iconName: data.iconName || 'PackageOpen',
+             iconSvg: data.iconSvg,
+             matchedItemId: data.matchedItemId,
+             confidence: data.confidence,
+             barcode: data.barcode || code
+           });
+        } else {
+           setError("L'IA n'a pas pu identifier cet article. Veuillez réessayer.");
+        }
+      } else {
+         setError("Une erreur est survenue avec le serveur de l'IA. Veuillez réessayer.");
+      }
+    } catch (err) {
+      console.error("Barcode scanning error", err);
+      setScannedItem({
+        name: `Article (${code})`,
+        price: 0,
+        category: 'Autres',
+        iconName: 'PackageOpen',
+        barcode: code,
+        confidence: 100
+      });
+    }
+    setIsScanning(false);
   };
 
   const handleImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,10 +124,11 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
         const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
 
         try {
+          const apiKeyValue = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('gemini_api_key');
           const response = await fetch('/api/scan-single-item', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageBase64: compressedBase64, predefinedItems })
+            body: JSON.stringify({ imageBase64: compressedBase64, predefinedItems, apiKey: apiKeyValue })
           });
 
           if (response.ok) {
@@ -106,6 +139,7 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
                  price: data.price || 0,
                  category: data.category || 'Autres',
                  iconName: data.iconName || 'PackageOpen',
+                 iconSvg: data.iconSvg,
                  matchedItemId: data.matchedItemId,
                  confidence: data.confidence,
                  barcode: data.barcode
@@ -142,14 +176,17 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
     if (!scannedItem) return;
     setIsRegeneratingIcon(true);
     try {
+      const apiKeyValue = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('gemini_api_key');
       const response = await fetch('/api/regenerate-icon', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ itemName: scannedItem.name, category: scannedItem.category })
+        body: JSON.stringify({ name: scannedItem.name, category: scannedItem.category, currentIcon: scannedItem.iconName, apiKey: apiKeyValue })
       });
       if (response.ok) {
         const data = await response.json();
-        if (data.iconName) {
+        if (data.iconSvg) {
+           setScannedItem({ ...scannedItem, iconSvg: data.iconSvg });
+        } else if (data.iconName) {
            setScannedItem({ ...scannedItem, iconName: data.iconName });
         }
       }
@@ -168,6 +205,7 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
         price: scannedItem.price,
         category: scannedItem.category,
         iconName: scannedItem.iconName,
+        iconSvg: scannedItem.iconSvg,
         frequent: true,
         // barcode: scannedItem.barcode // if the type supported it
     });
@@ -187,7 +225,8 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
           name: scannedItem.name,
           price: scannedItem.price,
           category: scannedItem.category,
-          iconName: scannedItem.iconName
+          iconName: scannedItem.iconName,
+          iconSvg: scannedItem.iconSvg
       });
       if (isContinuousMode) {
          setScannedItem(null);
@@ -252,12 +291,12 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
                     
                     {isBarcodeReaderOpen ? (
                         <div className="w-full relative flex flex-col items-center">
-                            <div className="w-full bg-slate-900 relative flex items-center justify-center overflow-hidden min-h-[300px]">
-                                <div id="reader" className="w-full h-full text-white [&_video]:object-cover [&_video]:w-full [&_video]:h-full [&_button]:bg-blue-600 [&_button]:text-white [&_button]:px-4 [&_button]:py-2 [&_button]:rounded-xl [&_button]:font-bold [&_button]:mt-2 [&_select]:text-slate-800 [&_select]:p-2 [&_select]:rounded-lg" />
+                            <div className="w-full bg-slate-900 relative flex items-center justify-center overflow-hidden min-h-[300px] rounded-t-[24px]">
+                                <div id="reader" className="w-full h-full text-white overflow-hidden [&_video]:object-cover [&_video]:w-full [&_video]:h-full [&_button]:bg-blue-600 [&_button]:text-white [&_button]:px-4 [&_button]:py-2 [&_button]:rounded-xl [&_button]:font-bold [&_button]:mt-4 [&_button]:mb-4 [&_select]:text-slate-800 [&_select]:p-2 [&_select]:rounded-lg [&_select]:mb-4" />
                             </div>
                             <button
                                 onClick={() => setIsBarcodeReaderOpen(false)}
-                                className="w-full bg-slate-100 text-slate-600 font-bold py-4 px-2 hover:bg-slate-200 transition border-t border-slate-200"
+                                className="w-full bg-slate-100 text-slate-600 font-bold py-4 px-2 hover:bg-slate-200 transition"
                             >
                                 Annuler
                             </button>
@@ -275,27 +314,24 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
                               </div>
                             )}
 
-                            <div className="flex w-full gap-3 mb-4">
+                            <div className="flex w-full gap-4 mb-4 justify-between">
                               <button 
                                   onClick={() => cameraInputRef.current?.click()}
-                                  className="flex-[2] bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-4 px-2 rounded-2xl hover:opacity-90 transition shadow-sm flex flex-col items-center justify-center gap-2"
+                                  className="flex-1 bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-bold h-20 rounded-2xl hover:opacity-90 transition shadow-md flex items-center justify-center"
                               >
-                                  <Camera size={24} />
-                                  <span className="text-xs">Prendre Photo</span>
+                                  <Camera size={32} />
                               </button>
                               <button 
                                   onClick={() => setIsBarcodeReaderOpen(true)}
-                                  className="flex-1 bg-slate-800 text-white font-bold py-4 px-2 rounded-2xl hover:bg-slate-700 transition shadow-sm flex flex-col items-center justify-center gap-2"
+                                  className="flex-1 bg-slate-800 text-white font-bold h-20 rounded-2xl hover:bg-slate-700 transition shadow-md flex items-center justify-center"
                               >
-                                  <Barcode size={24} />
-                                  <span className="text-xs text-center">Code-Barres</span>
+                                  <Barcode size={32} />
                               </button>
                               <button 
                                   onClick={() => galleryInputRef.current?.click()}
-                                  className="flex-1 bg-white border-2 border-slate-200 text-slate-600 font-bold py-4 px-2 rounded-2xl hover:bg-slate-50 transition shadow-sm flex flex-col items-center justify-center gap-2"
+                                  className="flex-1 bg-gradient-to-br from-emerald-400 to-teal-500 text-white font-bold h-20 rounded-2xl hover:opacity-90 transition shadow-md flex items-center justify-center"
                               >
-                                  <ImageIcon size={24} />
-                                  <span className="text-xs text-center">Galerie</span>
+                                  <ImageIcon size={32} />
                               </button>
                             </div>
 
@@ -347,8 +383,11 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
                         <div className="flex items-center gap-4 mb-6 relative">
                             <div className={`w-20 h-20 shadow-inner rounded-2xl flex items-center justify-center group ${CATEGORIES.find(c => c.id === scannedItem.category)?.bgColor || 'bg-slate-50'}`}>
                                 {(()=>{ 
-                                   const IconComponent = (ICON_MAP as Record<string, React.ElementType>)[scannedItem.iconName] || ICON_MAP['PackageOpen'];
                                    const cat = CATEGORIES.find(c => c.id === scannedItem.category) || CATEGORIES.find(c => c.id === 'Autres')!;
+                                   if (scannedItem.iconSvg) {
+                                       return <div dangerouslySetInnerHTML={{ __html: scannedItem.iconSvg }} className={`w-10 h-10 ${cat.color} transition-transform group-hover:scale-110`} />
+                                   }
+                                   const IconComponent = (ICON_MAP as Record<string, React.ElementType>)[scannedItem.iconName] || ICON_MAP['PackageOpen'];
                                    return <IconComponent size={40} className={`${cat.color} transition-transform group-hover:scale-110`} />
                                 })()}
                             </div>

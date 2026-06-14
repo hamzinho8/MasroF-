@@ -231,7 +231,11 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
                     className="group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm bg-slate-50/90 border-slate-100 hover:border-slate-200 hover:shadow-xl hover:shadow-slate-500/10 cursor-pointer overflow-hidden"
                   >
                     <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${bgClass} ${iconColorClass} relative z-10 opacity-90`}>
-                      <IconComponent size={24} />
+                      {predefinedItem?.iconSvg ? (
+                         <div dangerouslySetInnerHTML={{ __html: predefinedItem.iconSvg }} className="w-6 h-6 text-current" />
+                      ) : (
+                         <IconComponent size={24} />
+                      )}
                     </div>
 
                     <div className="flex-1 min-w-0 flex flex-col justify-center py-1 relative z-10">
@@ -286,7 +290,11 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
                       className="group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm bg-slate-50 border-slate-200 hover:border-slate-300 cursor-pointer overflow-hidden opacity-60 hover:opacity-100 grayscale hover:grayscale-0 z-0"
                     >
                       <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 shadow-sm relative z-10 ${cat.bgColor} ${cat.color}`}>
-                        <IconComponent size={24} />
+                        {predefinedItem?.iconSvg ? (
+                           <div dangerouslySetInnerHTML={{ __html: predefinedItem.iconSvg }} className="w-6 h-6 text-current" />
+                        ) : (
+                           <IconComponent size={24} />
+                        )}
                       </div>
 
                       <div className="flex-1 min-w-0 flex flex-col justify-center py-1 relative z-10">
@@ -344,7 +352,11 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
                       className={`group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm hover:shadow-xl cursor-pointer overflow-hidden ${cat.lightBg} border-slate-100`}
                     >
                       <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${cat.bgColor} ${cat.color} relative z-10 opacity-90`}>
-                        <IconComp size={24} />
+                        {item.iconSvg ? (
+                             <div dangerouslySetInnerHTML={{ __html: item.iconSvg }} className="w-6 h-6 text-current" />
+                        ) : (
+                             <IconComp size={24} />
+                        )}
                       </div>
 
                       <div className="flex-1 min-w-0 flex flex-col justify-center py-1 relative z-10">
