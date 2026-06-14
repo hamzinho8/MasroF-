@@ -26,7 +26,11 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
 
   useEffect(() => {
     if (isBarcodeReaderOpen) {
-      const scanner = new Html5QrcodeScanner('reader', { qrbox: { width: 250, height: 100 }, fps: 10 }, false);
+      const scanner = new Html5QrcodeScanner('reader', { 
+        qrbox: { width: 250, height: 100 }, 
+        fps: 10,
+        aspectRatio: 1,
+      }, false);
       scanner.render((decodedText) => {
          scanner.clear();
          setIsBarcodeReaderOpen(false);
@@ -56,15 +60,42 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
 
     setIsScanning(true);
     setError(null);
+
     const reader = new FileReader();
-    reader.onload = async (e) => {
-      const result = e.target?.result as string;
-      if (result) {
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = async () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 800; // max width for API
+        const MAX_HEIGHT = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        // Compress
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
         try {
           const response = await fetch('/api/scan-single-item', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageBase64: result, predefinedItems })
+            body: JSON.stringify({ imageBase64: compressedBase64, predefinedItems })
           });
 
           if (response.ok) {
@@ -89,10 +120,19 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
           console.error("Scanning error", err);
           setError("Problème de connexion. Veuillez réessayer.");
         }
-      } else {
+        setIsScanning(false);
+      };
+      
+      img.onerror = () => {
          setError("Impossible de lire l'image.");
-      }
-      setIsScanning(false);
+         setIsScanning(false);
+      };
+      
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => {
+       setError("Impossible de lire l'image.");
+       setIsScanning(false);
     };
     reader.readAsDataURL(file);
     event.target.value = "";
@@ -211,13 +251,13 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
                 <div className="flex flex-col items-center justify-center text-center bg-white rounded-[24px] border border-slate-100 shadow-sm mt-4 overflow-hidden relative">
                     
                     {isBarcodeReaderOpen ? (
-                        <div className="w-full relative">
-                            <div className="w-full bg-slate-900 aspect-video relative flex items-center justify-center overflow-hidden">
-                                <div id="reader" className="w-full h-full text-white" />
+                        <div className="w-full relative flex flex-col items-center">
+                            <div className="w-full bg-slate-900 relative flex items-center justify-center overflow-hidden min-h-[300px]">
+                                <div id="reader" className="w-full h-full text-white [&_video]:object-cover [&_video]:w-full [&_video]:h-full [&_button]:bg-blue-600 [&_button]:text-white [&_button]:px-4 [&_button]:py-2 [&_button]:rounded-xl [&_button]:font-bold [&_button]:mt-2 [&_select]:text-slate-800 [&_select]:p-2 [&_select]:rounded-lg" />
                             </div>
                             <button
                                 onClick={() => setIsBarcodeReaderOpen(false)}
-                                className="w-full bg-slate-100 text-slate-600 font-bold py-4 px-2 hover:bg-slate-200 transition"
+                                className="w-full bg-slate-100 text-slate-600 font-bold py-4 px-2 hover:bg-slate-200 transition border-t border-slate-200"
                             >
                                 Annuler
                             </button>
