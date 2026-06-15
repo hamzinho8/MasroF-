@@ -73,7 +73,8 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
            setError("L'IA n'a pas pu identifier cet article. Veuillez réessayer.");
         }
       } else {
-         setError("Une erreur est survenue avec le serveur de l'IA. Veuillez réessayer.");
+         const errorData = await response.json().catch(() => null);
+         setError(errorData?.error || "Une erreur est survenue avec le serveur de l'IA. Veuillez réessayer.");
       }
     } catch (err) {
       console.error("Barcode scanning error", err);
@@ -153,7 +154,8 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
                setError("L'IA n'a pas pu identifier cet article. Veuillez réessayer.");
             }
           } else {
-             setError("Une erreur est survenue avec le serveur de l'IA. Veuillez réessayer.");
+             const errorData = await response.json().catch(() => null);
+             setError(errorData?.error || "Une erreur est survenue avec le serveur de l'IA. Veuillez réessayer.");
           }
         } catch (err) {
           console.error("Scanning error", err);

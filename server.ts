@@ -34,7 +34,7 @@ async function generateAIContent(aiProvider: string, geminiKey: string, openRout
         "X-Title": "Masrof"
       },
       body: JSON.stringify({
-        model: "google/gemini-1.5-flash",
+        model: "qwen/qwen2.5-vl-72b-instruct",
         messages: [{ role: "user", content: contentArray }]
       })
     });
