@@ -36,7 +36,9 @@ import {
   Eye,
   EyeOff,
   Sparkles,
-  Camera
+  Camera,
+  Wifi,
+  WifiOff
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Transaction, CreditEntry, Reminder, ShoppingListItem } from "../types";
@@ -107,6 +109,18 @@ export default function Home({
   const [rasHiddenItems, setRasHiddenItems] = useLocalStorage<string[]>('rasHiddenItems', []);
   const [hideBankBalance, setHideBankBalance] = useLocalStorage<boolean>('hideBankBalance', true);
   const [showScannerFab] = useLocalStorage<boolean>('showScannerFab', true);
+  const [isOnline, setIsOnline] = React.useState(navigator.onLine);
+
+  React.useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   const translations = {
     Français: {
@@ -359,6 +373,9 @@ export default function Home({
         className="relative min-h-[12rem] h-auto rounded-[24px] overflow-hidden shadow-lg mb-8 transition-all hover:scale-[1.01] cursor-pointer"
         style={{ background: widgetBackground }}
       >
+        <div className="absolute top-4 right-4 z-20 flex items-center justify-center p-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 shadow-sm" title={isOnline ? "Connecté" : "Hors-ligne"}>
+           {isOnline ? <Wifi size={14} className="text-emerald-500" /> : <WifiOff size={14} className="text-red-500" />}
+        </div>
         <AnimatePresence mode="wait">
           <motion.div
             key={`${widgetMode}-${widgetBalanceType}`}
