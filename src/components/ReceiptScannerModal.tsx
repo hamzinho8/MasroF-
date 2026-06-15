@@ -20,6 +20,7 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
   const [isContinuousMode, setIsContinuousMode] = useState(false);
   const [successToast, setSuccessToast] = useState(false);
   const [isBarcodeReaderOpen, setIsBarcodeReaderOpen] = useState(false);
+  const [aiProvider, setAiProvider] = useState<string>(() => localStorage.getItem('ai_provider') || 'gemini');
   
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
@@ -47,10 +48,12 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
     setError(null);
     try {
       const apiKeyValue = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('gemini_api_key');
+      const openRouterKeyValue = localStorage.getItem('openrouter_api_key');
+
       const response = await fetch('/api/scan-single-item', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ barcode: code, predefinedItems, apiKey: apiKeyValue })
+        body: JSON.stringify({ barcode: code, predefinedItems, apiKey: apiKeyValue, openRouterApiKey: openRouterKeyValue, aiProvider })
       });
 
       if (response.ok) {
@@ -125,10 +128,12 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
 
         try {
           const apiKeyValue = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('gemini_api_key');
+          const openRouterKeyValue = localStorage.getItem('openrouter_api_key');
+          
           const response = await fetch('/api/scan-single-item', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageBase64: compressedBase64, predefinedItems, apiKey: apiKeyValue })
+            body: JSON.stringify({ imageBase64: compressedBase64, predefinedItems, apiKey: apiKeyValue, openRouterApiKey: openRouterKeyValue, aiProvider })
           });
 
           if (response.ok) {
@@ -177,10 +182,11 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
     setIsRegeneratingIcon(true);
     try {
       const apiKeyValue = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('gemini_api_key');
+      const openRouterKeyValue = localStorage.getItem('openrouter_api_key');
       const response = await fetch('/api/regenerate-icon', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: scannedItem.name, category: scannedItem.category, currentIcon: scannedItem.iconName, apiKey: apiKeyValue })
+        body: JSON.stringify({ name: scannedItem.name, category: scannedItem.category, currentIcon: scannedItem.iconName, apiKey: apiKeyValue, openRouterApiKey: openRouterKeyValue, aiProvider })
       });
       if (response.ok) {
         const data = await response.json();
@@ -333,6 +339,21 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
                               >
                                   <ImageIcon size={32} />
                               </button>
+                            </div>
+
+                            <div className="w-full mb-4">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5 ml-1">Moteur d'IA</label>
+                                <select 
+                                    value={aiProvider}
+                                    onChange={(e) => {
+                                      setAiProvider(e.target.value);
+                                      localStorage.setItem('ai_provider', e.target.value);
+                                    }}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none"
+                                >
+                                    <option value="gemini">Google Gemini</option>
+                                    <option value="openrouter">OpenRouter</option>
+                                </select>
                             </div>
 
                             <label onClick={() => setIsContinuousMode(!isContinuousMode)} className="flex items-center gap-3 bg-slate-50 border border-slate-200 w-full p-4 rounded-2xl cursor-pointer hover:bg-slate-100 transition mt-2">

@@ -63,6 +63,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
   const [editingCategoryItemId, setEditingCategoryItemId] = useState<string | null>(null);
   const [receiptTotal, setReceiptTotal] = useState<number | null>(null);
   const [detectedPaymentGroup, setDetectedPaymentGroup] = useState<string | null>(null);
+  const [aiProvider, setAiProvider] = useState<string>(() => localStorage.getItem('ai_provider') || 'gemini');
 
   React.useEffect(() => {
     if (isOpen) {
@@ -130,7 +131,8 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
   const processVoiceRecording = async (base64Audio: string, mimeType: string) => {
     setIsScanning(true);
     let data: any = null;
-    const apiKeyValue = window.localStorage.getItem('userGeminiApiKey');
+    const apiKeyValue = window.localStorage.getItem('gemini_api_key') || window.localStorage.getItem('userGeminiApiKey');
+    const openRouterKeyValue = localStorage.getItem('openrouter_api_key');
 
     try {
       const response = await fetch('/api/scan-voice', {
@@ -139,7 +141,10 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         body: JSON.stringify({ 
           audioBase64: base64Audio,
           mimeType: mimeType,
-          predefinedItems: predefinedItems
+          predefinedItems: predefinedItems,
+          apiKey: apiKeyValue,
+          openRouterApiKey: openRouterKeyValue,
+          aiProvider
         })
       });
 
@@ -156,7 +161,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           const ai = new GoogleGenAI({ apiKey: apiKeyValue });
           const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: If the user says an item that matches one in this list, output its EXACT name. For its 'amount', output its EXACT json price. DO NOT multiply by quantity.` : "";
           const genResponse = await ai.models.generateContent({
-            model: "gemini-1.5-flash",
+            model: "gemini-2.5-flash",
             contents: [
               {
                 role: "user",
@@ -270,13 +275,18 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
       const result = e.target?.result as string;
       if (result) {
         try {
+          const apiKeyValue = window.localStorage.getItem('gemini_api_key') || window.localStorage.getItem('userGeminiApiKey');
+          const openRouterKeyValue = localStorage.getItem('openrouter_api_key');
           let data: any = null;
           const response = await fetch('/api/scan-items', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               imageBase64: result,
-              predefinedItems: predefinedItems
+              predefinedItems: predefinedItems,
+              apiKey: apiKeyValue,
+              openRouterApiKey: openRouterKeyValue,
+              aiProvider
             })
           });
 
@@ -342,7 +352,8 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
 
       let data: any = null;
       let usedFallback = false;
-      const apiKeyValue = window.localStorage.getItem('userGeminiApiKey');
+      const apiKeyValue = window.localStorage.getItem('gemini_api_key') || window.localStorage.getItem('userGeminiApiKey');
+      const openRouterKeyValue = localStorage.getItem('openrouter_api_key');
 
       // Try server first, fallback to mock/error
       try {
@@ -351,7 +362,10 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             imageBase64: 'data:image/jpeg;base64,' + image.base64String,
-            predefinedItems: predefinedItems
+            predefinedItems: predefinedItems,
+            apiKey: apiKeyValue,
+            openRouterApiKey: openRouterKeyValue,
+            aiProvider
           })
         });
 
@@ -366,7 +380,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           usedFallback = true;
           const ai = new GoogleGenAI({ apiKey: apiKeyValue });
           const genResponse = await ai.models.generateContent({
-            model: "gemini-1.5-flash",
+            model: "gemini-2.5-flash",
             contents: [
               {
                 role: "user",
@@ -550,6 +564,18 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
               <div className="flex items-center gap-2">
                 {type === 'EXPENSE' && scannedItems === null && !isShoppingMode && (
                   <>
+                    <select 
+                        value={aiProvider}
+                        onChange={(e) => {
+                          setAiProvider(e.target.value);
+                          localStorage.setItem('ai_provider', e.target.value);
+                        }}
+                        className="h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
+                    >
+                        <option value="gemini">Gemini</option>
+                        <option value="openrouter">OpenRouter</option>
+                    </select>
+
                     <button 
                       onClick={startListening} 
                       disabled={isScanning}

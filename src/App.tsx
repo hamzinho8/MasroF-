@@ -81,7 +81,9 @@ export default function App() {
   const [widgetTextColor, setWidgetTextColor] = useLocalStorage<string>("widgetTextColor", "#FFFFFF");
   const [aiNotifications, setAiNotifications] = useLocalStorage("aiNotifications", true);
   const [balanceThreshold, setBalanceThreshold] = useLocalStorage<number | null>("balanceThreshold", 50);
+  const [balanceCustomMessage, setBalanceCustomMessage] = useLocalStorage<string>("balanceCustomMessage", "🛑⛔🙅💼🫗🏃🏃♀️🏃♂️🏦💴👍");
   const [bankBalanceThreshold, setBankBalanceThreshold] = useLocalStorage<number | null>("bankBalanceThreshold", 500);
+  const [bankBalanceCustomMessage, setBankBalanceCustomMessage] = useLocalStorage<string>("bankBalanceCustomMessage", "");
   const [inventoryAlertThreshold, setInventoryAlertThreshold] = useLocalStorage<number | null>("inventoryAlertThreshold", 3);
   const [budgetAlertThreshold, setBudgetAlertThreshold] = useLocalStorage<number | null>("budgetAlertThreshold", 90);
   const [backupAlertInterval, setBackupAlertInterval] = useLocalStorage<number | null>("backupAlertInterval", 30);
@@ -430,11 +432,19 @@ export default function App() {
       const warnColor = "#FDBA74"; // lighter orange for warnings like stock on dark bg
 
       if (bankBalanceThreshold !== null && bankBalance <= bankBalanceThreshold) {
-        alarms.push(`<b><font color="${alarmColor}">🏦 ${bankBalance.toFixed(2)} ${currency}</font></b>`);
+        if (bankBalanceCustomMessage) {
+            alarms.push(`<b><font color="${alarmColor}">${bankBalanceCustomMessage}</font></b>`);
+        } else {
+            alarms.push(`<b><font color="${alarmColor}">🏦 ${bankBalance.toFixed(2)} ${currency}</font></b>`);
+        }
       }
 
       if (balanceThreshold !== null && balance <= balanceThreshold) {
-        alarms.push(`<b><font color="${alarmColor}">💵 ${balance.toFixed(2)} ${currency}</font></b>`);
+        if (balanceCustomMessage) {
+            alarms.push(`<b><font color="${alarmColor}">${balanceCustomMessage}</font></b>`);
+        } else {
+            alarms.push(`<b><font color="${alarmColor}">💵 ${balance.toFixed(2)} ${currency}</font></b>`);
+        }
       }
 
       if (inventoryAlertThreshold !== null) {
@@ -865,8 +875,12 @@ export default function App() {
             onPredefinedItemsChange={setPredefinedItems}
             balanceThreshold={balanceThreshold}
             onBalanceThresholdChange={setBalanceThreshold}
+            balanceCustomMessage={balanceCustomMessage}
+            onBalanceCustomMessageChange={setBalanceCustomMessage}
             bankBalanceThreshold={bankBalanceThreshold}
             onBankBalanceThresholdChange={setBankBalanceThreshold}
+            bankBalanceCustomMessage={bankBalanceCustomMessage}
+            onBankBalanceCustomMessageChange={setBankBalanceCustomMessage}
             inventoryAlertThreshold={inventoryAlertThreshold}
             onInventoryAlertThresholdChange={setInventoryAlertThreshold}
             budgetAlertThreshold={budgetAlertThreshold}

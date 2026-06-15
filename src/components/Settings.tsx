@@ -37,6 +37,7 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { ICON_MAP, CATEGORIES as APP_CATEGORIES } from "../constants";
 import { importDataFromFile, exportDataToFile } from "../utils/backup";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import {
   Utensils,
   Car,
@@ -72,8 +73,12 @@ interface SettingsProps {
   onPredefinedItemsChange: (items: PredefinedItem[]) => void;
   balanceThreshold: number | null;
   onBalanceThresholdChange: (threshold: number | null) => void;
+  balanceCustomMessage: string;
+  onBalanceCustomMessageChange: (message: string) => void;
   bankBalanceThreshold: number | null;
   onBankBalanceThresholdChange: (threshold: number | null) => void;
+  bankBalanceCustomMessage: string;
+  onBankBalanceCustomMessageChange: (message: string) => void;
   inventoryAlertThreshold: number | null;
   onInventoryAlertThresholdChange: (threshold: number | null) => void;
   budgetAlertThreshold: number | null;
@@ -122,8 +127,12 @@ export default function Settings({
   onPredefinedItemsChange,
   balanceThreshold,
   onBalanceThresholdChange,
+  balanceCustomMessage,
+  onBalanceCustomMessageChange,
   bankBalanceThreshold,
   onBankBalanceThresholdChange,
+  bankBalanceCustomMessage,
+  onBankBalanceCustomMessageChange,
   inventoryAlertThreshold,
   onInventoryAlertThresholdChange,
   budgetAlertThreshold,
@@ -139,6 +148,7 @@ export default function Settings({
   const [isResetting, setIsResetting] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [showScannerFab, setShowScannerFab] = useLocalStorage<boolean>('showScannerFab', true);
   const [showSelector, setShowSelector] = useState<
     | "CURRENCY"
     | "LANGUAGE"
@@ -152,7 +162,11 @@ export default function Settings({
   const [pinSetupStep, setPinSetupStep] = useState<1 | 2>(1);
   const [tempPin, setTempPin] = useState("");
   const [pinError, setPinError] = useState(false);
-  const [apiKeyInput, setApiKeyInput] = useState(() => localStorage.getItem("userGeminiApiKey") || "");
+  const [apiKeyInput, setApiKeyInput] = useState(() => localStorage.getItem("userGeminiApiKey") || localStorage.getItem("gemini_api_key") || "");
+  const [openRouterKeyInput, setOpenRouterKeyInput] = useState(() => localStorage.getItem("openrouter_api_key") || "");
+  const [aiProvider, setAiProvider] = useState<"gemini" | "openrouter">(
+    () => (localStorage.getItem("ai_provider") as "gemini" | "openrouter") || "gemini"
+  );
   const [soundType, setSoundType] = useState(() => localStorage.getItem("notificationSoundType") || "checkout");
   const [showArticleManager, setShowArticleManager] = useState(false);
   const [showReminderManager, setShowReminderManager] = useState(false);
@@ -326,11 +340,30 @@ export default function Settings({
             />
             <SettingsItem
               icon={<Brain />}
-              title="CLÉ API IA"
-              subtitle={apiKeyInput ? "Clé configurée" : "Non configurée (Requise pour scan OCR)"}
+              title="INTELLIGENCE ARTIFICIELLE"
+              subtitle={apiKeyInput || openRouterKeyInput ? "Clé configurée" : "Non configurée (Requise pour scan OCR)"}
               onClick={() => setShowSelector("API_SETTINGS")}
               showArrow={true}
             />
+            <div className="flex items-center justify-between px-4 py-4 hover:bg-[#1B5E66]/5 transition-colors border-b border-[#1B5E66]/5 last:border-0 cursor-pointer" onClick={() => setShowScannerFab(!showScannerFab)}>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-[12px] bg-[#1B5E66]/10 flex items-center justify-center text-[#1B5E66]">
+                  <Sparkles size={16} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-800">
+                    Bouton Magique IA (FAB)
+                  </h4>
+                  <p className="text-[10px] font-black text-[#2D8B96] tracking-widest uppercase">
+                    {showScannerFab ? "Affiché" : "Masqué"}
+                  </p>
+                </div>
+              </div>
+              <Switch
+                active={showScannerFab}
+                onToggle={() => setShowScannerFab(!showScannerFab)}
+              />
+            </div>
             <SettingsItem
               icon={<Plus />}
               title="GESTION DES ARTICLES"
@@ -546,8 +579,12 @@ export default function Settings({
             onClose={() => setShowAlarmManager(false)}
             balanceThreshold={balanceThreshold}
             onBalanceThresholdChange={onBalanceThresholdChange}
+            balanceCustomMessage={balanceCustomMessage}
+            onBalanceCustomMessageChange={onBalanceCustomMessageChange}
             bankBalanceThreshold={bankBalanceThreshold}
             onBankBalanceThresholdChange={onBankBalanceThresholdChange}
+            bankBalanceCustomMessage={bankBalanceCustomMessage}
+            onBankBalanceCustomMessageChange={onBankBalanceCustomMessageChange}
             inventoryAlertThreshold={inventoryAlertThreshold}
             onInventoryAlertThresholdChange={onInventoryAlertThresholdChange}
             budgetAlertThreshold={budgetAlertThreshold}
@@ -602,7 +639,7 @@ export default function Settings({
               <h3 className="text-xl font-black text-[#1B5E66] mb-6 italic uppercase tracking-tighter">
                 {showSelector === "WIDGET_SETTINGS" ? "Réglages Widget" : 
                  showSelector === "PIN_SETUP" ? "Configurer Code PIN" :
-                 showSelector === "API_SETTINGS" ? "Clé API IA" :
+                 showSelector === "API_SETTINGS" ? "Intelligence Artificielle" :
                  `Sélection ${
                   showSelector === "CURRENCY" ? "Devise" :
                   showSelector === "LANGUAGE" ? "Langue" : ""
@@ -611,8 +648,8 @@ export default function Settings({
               <div className="space-y-3">
                 {showSelector === "API_SETTINGS" ? (
                   <div className="flex flex-col py-2">
-                    <p className="text-xs text-[#1B5E66]/70 mb-4 font-bold">
-                      Saisissez votre clé API Google Gemini :
+                    <p className="text-xs text-[#1B5E66]/70 mb-2 font-bold uppercase tracking-wider">
+                      Clé API Google Gemini :
                     </p>
                     <input
                       type="text"
@@ -621,17 +658,32 @@ export default function Settings({
                       value={apiKeyInput}
                       onChange={(e) => setApiKeyInput(e.target.value)}
                     />
+
+                    <p className="text-xs text-[#1B5E66]/70 mb-2 font-bold uppercase tracking-wider">
+                      Clé API OpenRouter :
+                    </p>
+                    <input
+                      type="text"
+                      className="w-full bg-[#1B5E66]/5 border border-[#1B5E66]/10 rounded-2xl px-4 py-3 text-sm font-bold text-[#1B5E66] focus:outline-none focus:ring-2 focus:ring-[#2D8B96]/50 mb-6"
+                      placeholder="sk-or-v1-..."
+                      value={openRouterKeyInput}
+                      onChange={(e) => setOpenRouterKeyInput(e.target.value)}
+                    />
+
                     <button
                       className="w-full bg-[#2D8B96] hover:bg-[#1B5E66] text-white font-black italic uppercase tracking-wider py-4 rounded-2xl transition-colors shadow-lg shadow-[#2D8B96]/20"
                       onClick={() => {
                         window.localStorage.setItem("userGeminiApiKey", apiKeyInput);
+                        window.localStorage.setItem("gemini_api_key", apiKeyInput);
+                        window.localStorage.setItem("openrouter_api_key", openRouterKeyInput);
+                        window.localStorage.setItem("ai_provider", aiProvider);
                         setShowSelector(null);
                       }}
                     >
                       Enregistrer
                     </button>
                     <p className="text-[10px] text-[#1B5E66]/50 mt-4 text-center font-bold">
-                      Nécessaire pour le scan des factures. Stocké localement.
+                      Nécessaire pour le scan des factures et articles. Stocké localement.
                     </p>
                   </div>
                 ) : showSelector === "PIN_SETUP" ? (
@@ -946,8 +998,12 @@ function AlarmSettingsModal({
   onClose,
   balanceThreshold,
   onBalanceThresholdChange,
+  balanceCustomMessage,
+  onBalanceCustomMessageChange,
   bankBalanceThreshold,
   onBankBalanceThresholdChange,
+  bankBalanceCustomMessage,
+  onBankBalanceCustomMessageChange,
   inventoryAlertThreshold,
   onInventoryAlertThresholdChange,
   budgetAlertThreshold,
@@ -958,8 +1014,12 @@ function AlarmSettingsModal({
   onClose: () => void;
   balanceThreshold: number | null;
   onBalanceThresholdChange: (threshold: number | null) => void;
+  balanceCustomMessage: string;
+  onBalanceCustomMessageChange: (message: string) => void;
   bankBalanceThreshold: number | null;
   onBankBalanceThresholdChange: (threshold: number | null) => void;
+  bankBalanceCustomMessage: string;
+  onBankBalanceCustomMessageChange: (message: string) => void;
   inventoryAlertThreshold: number | null;
   onInventoryAlertThresholdChange: (threshold: number | null) => void;
   budgetAlertThreshold: number | null;
@@ -1005,7 +1065,14 @@ function AlarmSettingsModal({
                 placeholder="Ex: 500"
                 value={bankBalanceThreshold ?? ""}
                 onChange={(e) => onBankBalanceThresholdChange(e.target.value ? Number(e.target.value) : null)}
-                className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
+                className="w-1/3 h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
+              />
+              <input
+                type="text"
+                placeholder="Message (Optionnel)"
+                value={bankBalanceCustomMessage}
+                onChange={(e) => onBankBalanceCustomMessageChange(e.target.value)}
+                className="w-2/3 h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
               />
             </div>
           </div>
@@ -1020,7 +1087,14 @@ function AlarmSettingsModal({
                 placeholder="Ex: 50"
                 value={balanceThreshold ?? ""}
                 onChange={(e) => onBalanceThresholdChange(e.target.value ? Number(e.target.value) : null)}
-                className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
+                className="w-1/3 h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
+              />
+              <input
+                type="text"
+                placeholder="Message (Optionnel)"
+                value={balanceCustomMessage}
+                onChange={(e) => onBalanceCustomMessageChange(e.target.value)}
+                className="w-2/3 h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
               />
             </div>
           </div>

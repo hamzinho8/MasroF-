@@ -106,6 +106,7 @@ export default function Home({
   const [showRasSettingModal, setShowRasSettingModal] = useState(false);
   const [rasHiddenItems, setRasHiddenItems] = useLocalStorage<string[]>('rasHiddenItems', []);
   const [hideBankBalance, setHideBankBalance] = useLocalStorage<boolean>('hideBankBalance', true);
+  const [showScannerFab] = useLocalStorage<boolean>('showScannerFab', true);
 
   const translations = {
     Français: {
@@ -831,12 +832,14 @@ export default function Home({
       </div>
 
       {/* FAB AI Scanner */}
-      <button
-        onClick={() => setShowReceiptScannerModal(true)}
-        className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full shadow-lg shadow-blue-500/40 flex items-center justify-center text-white z-50 hover:scale-105 active:scale-95 transition-transform"
-      >
-        <Sparkles size={24} fill="currentColor" className="text-white" />
-      </button>
+      {showScannerFab && (
+        <button
+          onClick={() => setShowReceiptScannerModal(true)}
+          className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full shadow-lg shadow-blue-500/40 flex items-center justify-center text-white z-50 hover:scale-105 active:scale-95 transition-transform"
+        >
+          <Sparkles size={24} fill="currentColor" className="text-white" />
+        </button>
+      )}
 
         {/* Inline Edit Modal */}
         <AnimatePresence>

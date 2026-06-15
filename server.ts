@@ -11,6 +11,52 @@ try {
    console.log("Could not load MOROCCAN_DB", e);
 }
 
+async function generateAIContent(aiProvider: string, geminiKey: string, openRouterKey: string, parts: any[]) {
+  if (aiProvider === 'openrouter') {
+    if (!openRouterKey) throw new Error("OpenRouter API key missing");
+    let contentArray = [];
+    for (const p of parts) {
+      if (p.text) contentArray.push({ type: "text", text: p.text });
+      if (p.inlineData) {
+        contentArray.push({ 
+          type: "image_url", 
+          image_url: { url: `data:${p.inlineData.mimeType};base64,${p.inlineData.data}` } 
+        });
+      }
+    }
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${openRouterKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://masrof.app",
+        "X-Title": "Masrof"
+      },
+      body: JSON.stringify({
+        model: "google/gemini-1.5-flash",
+        messages: [{ role: "user", content: contentArray }]
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`OpenRouter Error: ${errorText}`);
+    }
+    const data = await response.json();
+    return data.choices[0]?.message?.content || "";
+  } else {
+    const apiKey = geminiKey || process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error("Gemini API key missing");
+    const ai = new GoogleGenAI({ apiKey });
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ role: "user", parts: parts }]
+    });
+    return response.text || "";
+  }
+}
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -20,41 +66,21 @@ async function startServer() {
   // API routes FIRST
   app.post("/api/scan-items", async (req, res) => {
     try {
-      const { imageBase64, predefinedItems } = req.body;
+      const { imageBase64, predefinedItems, apiKey, openRouterApiKey, aiProvider } = req.body;
       if (!imageBase64) {
         return res.status(400).json({ error: "No image provided" });
       }
 
-      if (!process.env.GEMINI_API_KEY) {
-        return res.status(500).json({ error: "Gemini API key is not configured on the server." });
-      }
-
       const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: Try strictly to match detected items with the ones in this JSON list. If an item matches exactly or closely, output its EXACT name. For its 'amount', use its EXACT json price. DO NOT multiply by quantity detected. Even if there are 3 Danones, 'amount' must be the exact price of 1 Danone.` : "";
 
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                inlineData: {
-                  data: imageBase64,
-                  mimeType: "image/jpeg"
-                }
-              },
-              {
-                text: `Analyze this receipt or image of purchased goods from Morocco. Extract:\n1. 'items': an array of UNIQUE items purchased. If the image has identical items, group them into a single item and sum their prices. For each item, give 'amount' (number, representing the total price), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string), and 'isStorable' (boolean, true for physical goods).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "paymentMethod": "CARD", "items": [{"title": "Danone", "amount": 12.50, "category": "Nourriture", "isStorable": true}]}. Return ONLY valid JSON.${predefinedText}\n\nHere is a list of typical Moroccan items as a reference for item name normalization and category:\n${MOROCCAN_DB}`
-              }
-            ]
-          }
-        ]
-      });
+      const parts = [
+        { inlineData: { data: imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64, mimeType: "image/jpeg" } },
+        { text: `Analyze this receipt or image of purchased goods from Morocco. Extract:\n1. 'items': an array of UNIQUE items purchased. If the image has identical items, group them into a single item and sum their prices. For each item, give 'amount' (number, representing the total price), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string), and 'isStorable' (boolean, true for physical goods).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "paymentMethod": "CARD", "items": [{"title": "Danone", "amount": 12.50, "category": "Nourriture", "isStorable": true}]}. Return ONLY valid JSON.${predefinedText}\n\nHere is a list of typical Moroccan items as a reference for item name normalization and category:\n${MOROCCAN_DB}` }
+      ];
 
-      const text = response.text || "[]";
-      const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
-      const data = JSON.parse(cleanText);
+      const text = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts);
+      const match = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+      const data = JSON.parse(match ? match[0] : text);
       res.json(data);
     } catch (e: any) {
       console.error("OCR Items Error:", e);
@@ -64,19 +90,13 @@ async function startServer() {
 
   app.post("/api/scan-single-item", async (req, res) => {
     try {
-      const { imageBase64, predefinedItems, barcode, apiKey } = req.body;
+      const { imageBase64, predefinedItems, barcode, apiKey, openRouterApiKey, aiProvider } = req.body;
       if (!imageBase64 && !barcode) {
         return res.status(400).json({ error: "No image or barcode provided" });
-      }
-
-      const effectiveApiKey = apiKey || process.env.GEMINI_API_KEY;
-      if (!effectiveApiKey) {
-        return res.status(500).json({ error: "Gemini API key is not configured." });
       }
       
       const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT INSTRUCTIONS:\n1. Check if the scanned item resembles any item in this list. If it does, include 'matchedItemId' in your JSON response with the id of that item (otherwise null).\n2. [APPRENTISSAGE] If it matches a predefined item, you MUST use EXACTLY the same category and iconName as the matched item. This allows the system to learn from past user corrections.` : "";
 
-      const ai = new GoogleGenAI({ apiKey: effectiveApiKey });
       let parts = [];
       if (imageBase64) {
           const actualBase64 = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
@@ -145,19 +165,9 @@ Return ONLY valid JSON, no markdown formatting blocks.${predefinedText}`
           });
       }
 
-      const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
-        contents: [
-          {
-            role: "user",
-            parts: parts
-          }
-        ]
-      });
-
-      const text = response.text || "{}";
-      const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
-      const data = JSON.parse(cleanText);
+      const text = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts);
+      const match = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+      const data = JSON.parse(match ? match[0] : text);
       res.json(data);
     } catch (e: any) {
       console.error("Single Item Scan Error:", e);
@@ -167,21 +177,10 @@ Return ONLY valid JSON, no markdown formatting blocks.${predefinedText}`
 
   app.post("/api/regenerate-icon", async (req, res) => {
     try {
-      const { name, category, apiKey } = req.body;
-      const effectiveApiKey = apiKey || process.env.GEMINI_API_KEY;
-      if (!effectiveApiKey) {
-        return res.status(500).json({ error: "Gemini API key missing" });
-      }
-
-      const ai = new GoogleGenAI({ apiKey: effectiveApiKey });
-      const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                text: `I need a completely custom, perfectly tailored SVG icon for the following item:
+      const { name, category, apiKey, openRouterApiKey, aiProvider } = req.body;
+      const parts = [
+        {
+          text: `I need a completely custom, perfectly tailored SVG icon for the following item:
 Item Name: "${name}"
 Category: "${category}"
 
@@ -190,13 +189,10 @@ REQUIREMENTS:
 2. Provide ONLY the pure <svg> HTML string. No markdown wrappers.
 3. SVG format must be EXACTLY: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"> ...paths/shapes... </svg>
 4. Do not include any text or explanations. Be creative and draw exactly what the item represents.`
-              }
-            ]
-          }
-        ]
-      });
+        }
+      ];
 
-      let svg = response.text || "";
+      let svg = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts);
       svg = svg.trim().replace(/^```(svg|html)?\n/, "").replace(/\n```$/, "");
       res.json({ iconSvg: svg });
     } catch (e: any) {
@@ -207,43 +203,23 @@ REQUIREMENTS:
 
   app.post("/api/scan-voice", async (req, res) => {
     try {
-      const { audioBase64, mimeType, predefinedItems } = req.body;
+      const { audioBase64, mimeType, predefinedItems, apiKey, openRouterApiKey, aiProvider } = req.body;
       if (!audioBase64) {
         return res.status(400).json({ error: "No audio provided" });
-      }
-
-      if (!process.env.GEMINI_API_KEY) {
-        return res.status(500).json({ error: "Gemini API key is not configured." });
       }
 
       const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: If the user says an item that matches one in this list, output its EXACT name. For its 'amount', output its EXACT json price. DO NOT multiply by quantity.` : "";
 
       const actualBase64 = audioBase64.includes(',') ? audioBase64.split(',')[1] : audioBase64;
       
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                inlineData: {
-                  data: actualBase64,
-                  mimeType: mimeType || "audio/webm"
-                }
-              },
-              {
-                text: `Listen to this voice recording (probably Moroccan Arabic/French) describing bought articles. Extract:\n1. 'items': an array of UNIQUE items mentioned. Group identical items and sum their prices. For each item, give 'amount' (number), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string), and 'isStorable' (boolean).\n2. 'totalReceiptAmount': sum of the items (number).\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "items": [{"title": "Cafe", "amount": 10, "category": "Nourriture", "isStorable": true}]}. Return ONLY valid JSON.${predefinedText}\n\nHere is a list of typical Moroccan items as a reference for item name normalization and category:\n${MOROCCAN_DB}`
-              }
-            ]
-          }
-        ]
-      });
+      const parts = [
+        { inlineData: { data: actualBase64, mimeType: mimeType || "audio/webm" } },
+        { text: `Listen to this voice recording (probably Moroccan Arabic/French) describing bought articles. Extract:\n1. 'items': an array of UNIQUE items mentioned. Group identical items and sum their prices. For each item, give 'amount' (number), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string), and 'isStorable' (boolean).\n2. 'totalReceiptAmount': sum of the items (number).\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "items": [{"title": "Cafe", "amount": 10, "category": "Nourriture", "isStorable": true}]}. Return ONLY valid JSON.${predefinedText}\n\nHere is a list of typical Moroccan items as a reference for item name normalization and category:\n${MOROCCAN_DB}` }
+      ];
 
-      const text = response.text || "[]";
-      const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
-      const data = JSON.parse(cleanText);
+      const text = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts);
+      const match = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+      const data = JSON.parse(match ? match[0] : text);
       res.json(data);
     } catch (e: any) {
       console.error("Voice parse error:", e);
@@ -253,39 +229,19 @@ REQUIREMENTS:
 
   app.post("/api/scan-receipt", async (req, res) => {
     try {
-      const { imageBase64 } = req.body;
+      const { imageBase64, apiKey, openRouterApiKey, aiProvider } = req.body;
       if (!imageBase64) {
         return res.status(400).json({ error: "No image provided" });
       }
 
-      if (!process.env.GEMINI_API_KEY) {
-        return res.status(500).json({ error: "Gemini API key is not configured on the server." });
-      }
+      const parts = [
+        { inlineData: { data: imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64, mimeType: "image/jpeg" } },
+        { text: "Extract the total amount, expense category, title and date from this receipt. Note: category must be one of ['Alimentation', 'Nourriture', 'Transport', 'Logement', 'Factures', 'Santé', 'Éducation', 'Shopping', 'Loisirs', 'Voyage', 'Autres']. Respond purely in a JSON object format like: {\"amount\": 12.50, \"category\": \"Nourriture\", \"title\": \"Supermarché\", \"date\": \"DD/MM/YYYY\"}. If you can't read it, just return empty values or reasonable defaults. Return ONLY valid JSON, no markdown blocks." }
+      ];
 
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                inlineData: {
-                  data: imageBase64,
-                  mimeType: "image/jpeg"
-                }
-              },
-              {
-                text: "Extract the total amount, expense category, title and date from this receipt. Note: category must be one of ['Alimentation', 'Nourriture', 'Transport', 'Logement', 'Factures', 'Santé', 'Éducation', 'Shopping', 'Loisirs', 'Voyage', 'Autres']. Respond purely in a JSON object format like: {\"amount\": 12.50, \"category\": \"Nourriture\", \"title\": \"Supermarché\", \"date\": \"DD/MM/YYYY\"}. If you can't read it, just return empty values or reasonable defaults. Return ONLY valid JSON, no markdown blocks."
-              }
-            ]
-          }
-        ]
-      });
-
-      const text = response.text || "{}";
-      const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
-      const data = JSON.parse(cleanText);
+      const text = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts);
+      const match = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+      const data = JSON.parse(match ? match[0] : text);
       res.json(data);
     } catch (e: any) {
       console.error("OCR Error:", e);
@@ -320,8 +276,8 @@ REQUIREMENTS:
       });
 
       const rawText = response.text || "{}";
-      const cleanText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
-      const data = JSON.parse(cleanText);
+      const match = rawText.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+      const data = JSON.parse(match ? match[0] : rawText);
       res.json(data);
     } catch (e: any) {
       console.error("Voice Parse Error:", e);
