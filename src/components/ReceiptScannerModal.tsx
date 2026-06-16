@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Camera, X, Plus, Image as ImageIcon, Loader2, Sparkles, RefreshCw, Barcode, Repeat, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Camera, X, Plus, Image as ImageIcon, Loader2, Sparkles, RefreshCw, Barcode, Repeat, CheckCircle2, AlertTriangle, Cpu } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PredefinedItem } from "../types";
 import { CATEGORIES, ICON_MAP } from "../constants";
@@ -408,18 +408,23 @@ REQUIREMENTS:
                             </div>
 
                             <div className="w-full mb-4">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5 ml-1">Moteur d'IA</label>
-                                <select 
-                                    value={aiProvider}
-                                    onChange={(e) => {
-                                      setAiProvider(e.target.value);
-                                      localStorage.setItem('ai_provider', e.target.value);
-                                    }}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none"
-                                >
-                                    <option value="gemini">Google Gemini</option>
-                                    <option value="openrouter">OpenRouter</option>
-                                </select>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 text-center">Moteur d'IA</label>
+                                <div className="flex bg-slate-100/80 rounded-2xl p-1.5 h-[60px] items-center overflow-hidden w-full border border-slate-200/60 shadow-inner">
+                                   <button 
+                                     type="button"
+                                     onClick={() => { setAiProvider('gemini'); localStorage.setItem('ai_provider', 'gemini'); }} 
+                                     className={`flex-1 h-full rounded-xl text-xs font-black tracking-wide flex items-center justify-center gap-2 transition-all duration-300 ${aiProvider === 'gemini' ? 'bg-white text-blue-600 shadow-[0_4px_12px_rgba(0,0,0,0.05)] ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'}`}
+                                   >
+                                     <Sparkles size={16} className={aiProvider === 'gemini' ? "text-blue-500" : ""} /> Gemini
+                                   </button>
+                                   <button 
+                                     type="button"
+                                     onClick={() => { setAiProvider('openrouter'); localStorage.setItem('ai_provider', 'openrouter'); }} 
+                                     className={`flex-1 h-full rounded-xl text-xs font-black tracking-wide flex items-center justify-center gap-2 transition-all duration-300 ${aiProvider === 'openrouter' ? 'bg-white text-blue-600 shadow-[0_4px_12px_rgba(0,0,0,0.05)] ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'}`}
+                                   >
+                                     <Cpu size={16} className={aiProvider === 'openrouter' ? "text-blue-500" : ""} /> OpenRouter
+                                   </button>
+                                </div>
                             </div>
 
                             <label onClick={() => setIsContinuousMode(!isContinuousMode)} className="flex items-center gap-3 bg-slate-50 border border-slate-200 w-full p-4 rounded-2xl cursor-pointer hover:bg-slate-100 transition mt-2">

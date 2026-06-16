@@ -9,6 +9,8 @@ import { generateAIContent } from '../utils/ai';
 import { 
   X, 
   Check, 
+  Image as ImageIcon,
+  Camera as CameraLucideIcon,
   Utensils, 
   ShoppingBag, 
   Car, 
@@ -21,7 +23,9 @@ import {
   Home as HomeIcon,
   HeartPulse,
   Heart,
-  ShoppingCart
+  ShoppingCart,
+  Sparkles,
+  Cpu
 } from 'lucide-react';
 import { PredefinedItem } from '../types';
 import { ICON_MAP, CATEGORIES, INITIAL_PREDEFINED_ITEMS, getArticleInfo } from '../constants';
@@ -230,6 +234,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
   };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const handleFallbackImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -288,7 +293,10 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
     event.target.value = '';
   };
 
-  const handleScanReceipt = async () => {
+  const [showImageSourceModal, setShowImageSourceModal] = useState(false);
+  
+  const handleScanReceipt = async (sourceType: CameraSource = CameraSource.Prompt) => {
+    setShowImageSourceModal(false);
     try {
       setIsScanning(true);
       if (Capacitor.isNativePlatform()) {
@@ -308,7 +316,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
         quality: 60,
         allowEditing: false,
         resultType: CameraResultType.Base64,
-        source: CameraSource.Prompt,
+        source: sourceType,
         saveToGallery: true,
         width: 1024
       });
@@ -372,7 +380,9 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
          return; // silently ignore
       }
       console.log("Triggering fallback file input due to error...");
-      if (fileInputRef.current) {
+      if (sourceType === CameraSource.Photos && galleryInputRef.current) {
+        galleryInputRef.current.click();
+      } else if (fileInputRef.current) {
         fileInputRef.current.click();
       } else {
         alert("Erreur lors de la numérisation : " + e.message);
@@ -503,29 +513,32 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
               <div className="flex items-center gap-2">
                 {type === 'EXPENSE' && scannedItems === null && !isShoppingMode && (
                   <>
-                    <select 
-                        value={aiProvider}
-                        onChange={(e) => {
-                          setAiProvider(e.target.value);
-                          localStorage.setItem('ai_provider', e.target.value);
-                        }}
-                        className="h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
-                    >
-                        <option value="gemini">Gemini</option>
-                        <option value="openrouter">OpenRouter</option>
-                    </select>
+                    <div className="flex bg-slate-100 rounded-full p-1 h-10 items-center overflow-hidden shrink-0">
+                       <button 
+                         onClick={() => { setAiProvider('gemini'); localStorage.setItem('ai_provider', 'gemini'); }} 
+                         className={`h-full px-3 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all ${aiProvider === 'gemini' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                       >
+                         <Sparkles size={14} /> <span className="hidden sm:inline">Gemini</span>
+                       </button>
+                       <button 
+                         onClick={() => { setAiProvider('openrouter'); localStorage.setItem('ai_provider', 'openrouter'); }} 
+                         className={`h-full px-3 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all ${aiProvider === 'openrouter' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                       >
+                         <Cpu size={14} /> <span className="hidden sm:inline">OpenRouter</span>
+                       </button>
+                    </div>
 
                     <button 
                       onClick={startListening} 
                       disabled={isScanning}
-                      className={`h-10 w-10 ${isListening ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-slate-100 text-slate-500'} rounded-full flex items-center justify-center hover:bg-slate-200 transition-colors`}
+                      className={`shrink-0 h-10 w-10 ${isListening ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-slate-100 text-slate-500'} rounded-full flex items-center justify-center hover:bg-slate-200 transition-colors`}
                     >
                       {isListening ? <Mic size={16} className="animate-pulse" /> : <Mic size={16} />}
                     </button>
                     <button 
-                      onClick={handleScanReceipt} 
+                      onClick={() => setShowImageSourceModal(true)} 
                       disabled={isScanning || isListening}
-                      className="h-10 px-4 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center gap-2 font-black text-xs uppercase tracking-widest hover:bg-teal-100 transition-colors"
+                      className="shrink-0 h-10 px-4 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center gap-2 font-black text-xs uppercase tracking-widest hover:bg-teal-100 transition-colors"
                     >
                       {isScanning ? <Loader2 size={16} className="animate-spin" /> : <ScanText size={16} />}
                       <span className="hidden sm:inline">Scanner</span>
@@ -832,6 +845,13 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
       />
       <input
         type="file"
+        ref={galleryInputRef}
+        hidden
+        accept="image/*"
+        onChange={handleFallbackImageSelection}
+      />
+      <input
+        type="file"
         ref={audioInputRef}
         hidden
         accept="audio/*"
@@ -870,6 +890,47 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
                ))}
              </div>
              <button type="button" onClick={() => setEditingCategoryItemId(null)} className="mt-6 w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-2xl transition-colors">Annuler</button>
+           </motion.div>
+        </div>
+      )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+      {showImageSourceModal && (
+        <div className="fixed inset-0 z-[140] flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm sm:p-4" onClick={() => setShowImageSourceModal(false)}>
+           <motion.div 
+             key="image-source-modal"
+             initial={{ y: "100%" }}
+             animate={{ y: 0 }}
+             exit={{ y: "100%" }}
+             transition={{ type: "spring", damping: 25, stiffness: 300 }}
+             onClick={e => e.stopPropagation()}
+             className="w-full sm:max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-6 sm:p-8 flex flex-col gap-6 shadow-2xl"
+           >
+              <div className="flex justify-between items-center mb-2">
+                 <h3 className="font-bold text-slate-800 text-lg">Scanner un article</h3>
+                 <button type="button" onClick={() => setShowImageSourceModal(false)} className="w-8 h-8 flex items-center justify-center bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200">
+                    <X size={18} />
+                 </button>
+              </div>
+
+              <div className="flex gap-4">
+                 <button 
+                   onClick={() => handleScanReceipt(CameraSource.Camera)}
+                   className="flex-1 flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-2xl p-6 transition-colors font-bold text-sm"
+                 >
+                    <CameraLucideIcon size={32} className="mb-3" />
+                    Prendre une photo
+                 </button>
+                 <button 
+                   onClick={() => handleScanReceipt(CameraSource.Photos)}
+                   className="flex-1 flex flex-col items-center justify-center bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl p-6 transition-colors font-bold text-sm"
+                 >
+                    <ImageIcon size={32} className="mb-3" />
+                    Choisir depuis la galerie
+                 </button>
+              </div>
+
            </motion.div>
         </div>
       )}

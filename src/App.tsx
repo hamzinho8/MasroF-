@@ -177,7 +177,7 @@ export default function App() {
         });
 
         // Target frequent items
-        const frequentNames = ["Taxi", "Cafe", "Pisquet", "Danone", "Sucette", "Farine", "Glaces", "Cigarette", "Bampers", "Tram", "Savon", "Fairy", "Tide", "Champoo"];
+        const frequentNames = ["Taxi", "Cafe", "Pisquet", "Danone", "Sucette", "Farine", "Glaces", "Cigarette", "Bampers", "Tram"];
         
         newItems = newItems.map((item: any) => {
           let updatedItem = { ...item };
