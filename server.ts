@@ -11,7 +11,7 @@ try {
    console.log("Could not load MOROCCAN_DB", e);
 }
 
-async function generateAIContent(aiProvider: string, geminiKey: string, openRouterKey: string, parts: any[]) {
+async function generateAIContent(aiProvider: string, geminiKey: string, openRouterKey: string, parts: any[], maxTokens: number = 1000) {
   if (aiProvider === 'openrouter') {
     if (!openRouterKey) throw new Error("OpenRouter API key missing");
     let contentArray = [];
@@ -25,6 +25,10 @@ async function generateAIContent(aiProvider: string, geminiKey: string, openRout
       }
     }
 
+    const imageParts = contentArray.filter(c => c.type === "image_url");
+    const imageSizeLog = imageParts.length > 0 ? `Taille image: ${imageParts.map(p => Math.round((p.image_url?.url.length || 0) / 1024) + 'KB').join(', ')}` : "Aucune image";
+    console.log(`[OpenRouter API] Modèle: qwen/qwen2.5-vl-72b-instruct | ${imageSizeLog} | max_tokens demandé: ${maxTokens}`);
+
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -35,13 +39,18 @@ async function generateAIContent(aiProvider: string, geminiKey: string, openRout
       },
       body: JSON.stringify({
         model: "qwen/qwen2.5-vl-72b-instruct",
-        messages: [{ role: "user", content: contentArray }]
+        messages: [{ role: "user", content: contentArray }],
+        max_tokens: maxTokens,
+        response_format: { type: "json_object" }
       })
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`OpenRouter Error: ${errorText}`);
+      const errorData = await response.json().catch(() => null);
+      if (response.status === 402) {
+         throw new Error("Crédit insuffisant ou limite atteinte sur OpenRouter. Veuillez vérifier votre compte.");
+      }
+      throw new Error(`Erreur OpenRouter (${response.status}): ${errorData?.error?.message || 'Réponse invalide'}`);
     }
     const data = await response.json();
     return data.choices[0]?.message?.content || "";
@@ -78,7 +87,7 @@ async function startServer() {
         { text: `Analyze this receipt or image of purchased goods from Morocco. Extract:\n1. 'items': an array of UNIQUE items purchased. If the image has identical items, group them into a single item and sum their prices. For each item, give 'amount' (number, representing the total price), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string), and 'isStorable' (boolean, true for physical goods).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "paymentMethod": "CARD", "items": [{"title": "Danone", "amount": 12.50, "category": "Nourriture", "isStorable": true}]}. Return ONLY valid JSON.${predefinedText}\n\nHere is a list of typical Moroccan items as a reference for item name normalization and category:\n${MOROCCAN_DB}` }
       ];
 
-      const text = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts);
+      const text = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts, 1500);
       const match = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
       const data = JSON.parse(match ? match[0] : text);
       res.json(data);
@@ -165,7 +174,7 @@ Return ONLY valid JSON, no markdown formatting blocks.${predefinedText}`
           });
       }
 
-      const text = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts);
+      const text = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts, 1500);
       const match = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
       const data = JSON.parse(match ? match[0] : text);
       res.json(data);
@@ -192,7 +201,7 @@ REQUIREMENTS:
         }
       ];
 
-      let svg = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts);
+      let svg = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts, 800);
       svg = svg.trim().replace(/^```(svg|html)?\n/, "").replace(/\n```$/, "");
       res.json({ iconSvg: svg });
     } catch (e: any) {
@@ -217,7 +226,7 @@ REQUIREMENTS:
         { text: `Listen to this voice recording (probably Moroccan Arabic/French) describing bought articles. Extract:\n1. 'items': an array of UNIQUE items mentioned. Group identical items and sum their prices. For each item, give 'amount' (number), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string), and 'isStorable' (boolean).\n2. 'totalReceiptAmount': sum of the items (number).\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "items": [{"title": "Cafe", "amount": 10, "category": "Nourriture", "isStorable": true}]}. Return ONLY valid JSON.${predefinedText}\n\nHere is a list of typical Moroccan items as a reference for item name normalization and category:\n${MOROCCAN_DB}` }
       ];
 
-      const text = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts);
+      const text = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts, 1500);
       const match = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
       const data = JSON.parse(match ? match[0] : text);
       res.json(data);
@@ -239,7 +248,7 @@ REQUIREMENTS:
         { text: "Extract the total amount, expense category, title and date from this receipt. Note: category must be one of ['Alimentation', 'Nourriture', 'Transport', 'Logement', 'Factures', 'Santé', 'Éducation', 'Shopping', 'Loisirs', 'Voyage', 'Autres']. Respond purely in a JSON object format like: {\"amount\": 12.50, \"category\": \"Nourriture\", \"title\": \"Supermarché\", \"date\": \"DD/MM/YYYY\"}. If you can't read it, just return empty values or reasonable defaults. Return ONLY valid JSON, no markdown blocks." }
       ];
 
-      const text = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts);
+      const text = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts, 2500);
       const match = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
       const data = JSON.parse(match ? match[0] : text);
       res.json(data);

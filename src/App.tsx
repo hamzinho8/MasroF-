@@ -230,7 +230,10 @@ export default function App() {
     translations["Français"];
   const isRtl = language === "العربية";
   const [reminders, setReminders] = useLocalStorage<Reminder[]>("reminders", []);
-  const [categoryBudgets, setCategoryBudgets] = useLocalStorage<Record<string, number>>("categoryBudgets", {});
+  const [categoryBudgetsRaw, setCategoryBudgets] = useLocalStorage<Record<string, number>>("categoryBudgets", {});
+  const categoryBudgets = Array.isArray(categoryBudgetsRaw) 
+    ? (categoryBudgetsRaw as any[]).reduce((acc: any, b: any) => ({ ...acc, [b.category]: b.limit }), {})
+    : categoryBudgetsRaw || {};
 
   useEffect(() => {
     async function syncNotifications() {
@@ -383,12 +386,13 @@ export default function App() {
     });
 
     Object.entries(categoryBudgets).forEach(([cat, limit]) => {
+      const limitNum = typeof limit === 'number' ? limit : 0;
       const total = categoryTotals[cat] || 0;
       const budgetThresholdRatio = budgetAlertThreshold !== null ? budgetAlertThreshold / 100 : 0.9;
-      if (budgetAlertThreshold !== null && total >= limit * budgetThresholdRatio && !alertedCategoriesRef.current[cat]) {
-         console.warn(`Alarme Budget: Vous avez atteint ou dépassé ${budgetAlertThreshold}% du budget pour la catégorie "${cat}" (${total.toFixed(2)} / ${limit} ${currency}).`);
+      if (budgetAlertThreshold !== null && total >= limitNum * budgetThresholdRatio && !alertedCategoriesRef.current[cat]) {
+         console.warn(`Alarme Budget: Vous avez atteint ou dépassé ${budgetAlertThreshold}% du budget pour la catégorie "${cat}" (${total.toFixed(2)} / ${limitNum} ${currency}).`);
          alertedCategoriesRef.current[cat] = true;
-      } else if (budgetAlertThreshold !== null && total < limit * budgetThresholdRatio) {
+      } else if (budgetAlertThreshold !== null && total < limitNum * budgetThresholdRatio) {
          alertedCategoriesRef.current[cat] = false;
       }
     });
@@ -479,8 +483,9 @@ export default function App() {
            }
         });
         Object.entries(categoryBudgets).forEach(([cat, limit]) => {
+           const limitNum = typeof limit === 'number' ? limit : 0;
            const total = categoryTotals[cat] || 0;
-           if (total >= limit * (budgetAlertThreshold / 100)) {
+           if (total >= limitNum * (budgetAlertThreshold / 100)) {
              alarms.push(`<b><font color="${alarmColor}">📊 Budget dépassé: ${cat}</font></b>`);
            }
         });

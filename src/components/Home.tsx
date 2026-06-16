@@ -104,7 +104,10 @@ export default function Home({
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [showReceiptScannerModal, setShowReceiptScannerModal] = useState(false);
-  const [categoryBudgets, setCategoryBudgets] = useLocalStorage<{category: string; limit: number}[]>('categoryBudgets', []);
+  const [categoryBudgetsRaw, setCategoryBudgets] = useLocalStorage<Record<string, number>>('categoryBudgets', {});
+  const categoryBudgets = Array.isArray(categoryBudgetsRaw) 
+    ? (categoryBudgetsRaw as any[]).reduce((acc: any, b: any) => ({ ...acc, [b.category]: b.limit }), {})
+    : categoryBudgetsRaw || {};
   const [showRasSettingModal, setShowRasSettingModal] = useState(false);
   const [rasHiddenItems, setRasHiddenItems] = useLocalStorage<string[]>('rasHiddenItems', []);
   const [hideBankBalance, setHideBankBalance] = useLocalStorage<boolean>('hideBankBalance', true);
@@ -790,32 +793,32 @@ export default function Home({
         </div>
         
         <div className="space-y-4">
-          {categoryBudgets.length === 0 ? (
+          {Object.keys(categoryBudgets).length === 0 ? (
             <div className="text-center bg-white border border-dashed border-slate-200 rounded-3xl p-8 flex flex-col items-center">
                <Target size={32} className="text-slate-200 mb-3" />
                <p className="text-xs text-slate-400 font-medium">{t.noBudgetsYet}</p>
             </div>
           ) : (
-            categoryBudgets.map((b, index) => {
-              const spent = currentMonthExpenses.get(b.category.toLowerCase()) || 0;
-              const limit = b.limit;
+            Object.entries(categoryBudgets).map(([category, limitRaw], index) => {
+              const limit = typeof limitRaw === 'number' ? limitRaw : 0;
+              const spent = currentMonthExpenses.get(category.toLowerCase()) || 0;
               const percent = Math.min((spent / limit) * 100, 100);
               const isOver = spent > limit;
               const isClose = !isOver && percent > 80;
 
               const categoryMatch = CATEGORY_MAP.find(
-                 (c) => c.label.toLowerCase() === b.category.toLowerCase()
+                 (c) => c.label.toLowerCase() === category.toLowerCase()
               ) || CATEGORY_MAP[0];
 
               return (
-                <div key={`${b.category}-${index}`} className={`bg-white rounded-3xl p-5 border shadow-sm ${isOver ? 'border-rose-200 shadow-rose-100' : isClose ? 'border-amber-200 shadow-amber-100' : 'border-slate-100'}`}>
+                <div key={`${category}-${index}`} className={`bg-white rounded-3xl p-5 border shadow-sm ${isOver ? 'border-rose-200 shadow-rose-100' : isClose ? 'border-amber-200 shadow-amber-100' : 'border-slate-100'}`}>
                   <div className="flex items-center gap-4 mb-1">
                     <div className={`w-10 h-10 rounded-2xl flex items-center justify-center border border-white shadow-sm ${categoryMatch.bg} ${categoryMatch.text}`}>
                       {categoryMatch.icon}
                     </div>
                     <div className="flex-1">
                        <div className="flex justify-between items-center">
-                          <h4 className="font-bold text-slate-800 tracking-tight text-sm">{b.category}</h4>
+                          <h4 className="font-bold text-slate-800 tracking-tight text-sm">{category}</h4>
                           <span className={`text-xs font-black tracking-tighter ${isOver ? 'text-rose-600' : 'text-slate-500'}`}>
                             {spent.toLocaleString("fr-FR")} / <span className="text-slate-400">{limit.toLocaleString("fr-FR")} {currency}</span>
                           </span>
@@ -1005,15 +1008,15 @@ function BudgetSettingsModal({
   currency
 }: { 
   onClose: () => void, 
-  categoryBudgets: {category: string, limit: number}[], 
-  setCategoryBudgets: (b: {category: string, limit: number}[]) => void,
+  categoryBudgets: Record<string, number>, 
+  setCategoryBudgets: (b: Record<string, number>) => void,
   categories: any[],
   currency: string
 }) {
-  const [budgets, setBudgets] = useState<{category: string; limit: number}[]>(categoryBudgets);
+  const [budgets, setBudgets] = useState<Record<string, number>>(categoryBudgets);
 
   const handleSave = () => {
-    setCategoryBudgets(budgets.filter(b => b.limit > 0));
+    setCategoryBudgets(budgets);
     onClose();
   };
 
@@ -1021,11 +1024,13 @@ function BudgetSettingsModal({
     const val = parseFloat(amountStr);
     const limit = isNaN(val) ? 0 : val;
     setBudgets(prev => {
-      const existing = prev.find(p => p.category === category);
-      if (existing) {
-        return prev.map(p => p.category === category ? { ...p, limit } : p);
+      const next = { ...prev };
+      if (limit === 0) {
+        delete next[category];
+      } else {
+        next[category] = limit;
       }
-      return [...prev, { category, limit }];
+      return next;
     });
   };
 
@@ -1059,7 +1064,7 @@ function BudgetSettingsModal({
 
         <div className="space-y-4 overflow-y-auto pr-2 pb-4 flex-1">
           {categories.map((c) => {
-            const currentBudget = budgets.find(b => b.category === c.label)?.limit || "";
+            const currentBudget = budgets[c.label] || "";
             return (
               <div key={c.label} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${c.bg} ${c.text}`}>
