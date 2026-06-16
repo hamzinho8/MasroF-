@@ -177,7 +177,7 @@ export default function App() {
         });
 
         // Target frequent items
-        const frequentNames = ["Taxi", "Cafe", "Pisquet", "Danone", "Sucette", "Farine", "Glaces", "Cigarette", "Bampers", "Tram"];
+        const frequentNames = ["Taxi", "Cafe", "Pisquet", "Danone", "Sucette", "Farine", "Glaces", "Cigarette", "Bampers", "Tram", "Savon", "Fairy", "Tide", "Champoo"];
         
         newItems = newItems.map((item: any) => {
           let updatedItem = { ...item };
@@ -230,10 +230,43 @@ export default function App() {
     translations["Français"];
   const isRtl = language === "العربية";
   const [reminders, setReminders] = useLocalStorage<Reminder[]>("reminders", []);
-  const [categoryBudgetsRaw, setCategoryBudgets] = useLocalStorage<Record<string, number>>("categoryBudgets", {});
-  const categoryBudgets = Array.isArray(categoryBudgetsRaw) 
-    ? (categoryBudgetsRaw as any[]).reduce((acc: any, b: any) => ({ ...acc, [b.category]: b.limit }), {})
-    : categoryBudgetsRaw || {};
+  const [categoryBudgetsRaw, setCategoryBudgetsRaw] = useLocalStorage<any>("categoryBudgets", {});
+  const categoryBudgets = React.useMemo(() => {
+    if (!categoryBudgetsRaw) return {};
+    if (Array.isArray(categoryBudgetsRaw)) {
+      return categoryBudgetsRaw.reduce((acc: any, b: any) => ({ ...acc, [b.category]: b.limit }), {});
+    }
+    if (typeof categoryBudgetsRaw === 'object') {
+      const clean: Record<string, number> = {};
+      Object.entries(categoryBudgetsRaw).forEach(([k, v]) => {
+        if (typeof v === 'number') {
+          clean[k] = v;
+        } else if (v && typeof v === 'object' && (v as any).category && typeof (v as any).limit === 'number') {
+          clean[(v as any).category] = (v as any).limit;
+        }
+      });
+      return clean;
+    }
+    return {};
+  }, [categoryBudgetsRaw]);
+  
+  const setCategoryBudgets = (updater: React.SetStateAction<Record<string, number>>) => {
+    setCategoryBudgetsRaw((prevRaw: any) => {
+      let currentClean: Record<string, number> = {};
+      if (Array.isArray(prevRaw)) {
+        currentClean = prevRaw.reduce((acc: any, b: any) => ({ ...acc, [b.category]: b.limit }), {});
+      } else if (prevRaw && typeof prevRaw === 'object') {
+        Object.entries(prevRaw).forEach(([k, v]) => {
+          if (typeof v === 'number') {
+            currentClean[k] = v;
+          } else if (v && typeof v === 'object' && (v as any).category && typeof (v as any).limit === 'number') {
+            currentClean[(v as any).category] = (v as any).limit;
+          }
+        });
+      }
+      return typeof updater === 'function' ? updater(currentClean) : updater;
+    });
+  };
 
   useEffect(() => {
     async function syncNotifications() {

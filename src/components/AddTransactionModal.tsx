@@ -5,6 +5,7 @@ import { CameraResultType, CameraSource } from '@capacitor/camera';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
 import { GoogleGenAI } from '@google/genai';
+import { generateAIContent } from '../utils/ai';
 import { 
   X, 
   Check, 
@@ -135,61 +136,28 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
     const openRouterKeyValue = localStorage.getItem('openrouter_api_key');
 
     try {
-      const response = await fetch('/api/scan-voice', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          audioBase64: base64Audio,
-          mimeType: mimeType,
-          predefinedItems: predefinedItems,
-          apiKey: apiKeyValue,
-          openRouterApiKey: openRouterKeyValue,
-          aiProvider
-        })
-      });
-
-      if (response.ok) {
-        data = await response.json();
-      } else {
-         const errorData = await response.text();
-         throw new Error(errorData || 'Server error processing voice');
-      }
-    } catch (error) {
-      if (apiKeyValue) {
-        try {
-          const actualBase64 = base64Audio.includes(',') ? base64Audio.split(',')[1] : base64Audio;
-          const ai = new GoogleGenAI({ apiKey: apiKeyValue });
-          const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: If the user says an item that matches one in this list, output its EXACT name. For its 'amount', output its EXACT json price. DO NOT multiply by quantity.` : "";
-          const genResponse = await ai.models.generateContent({
-            model: "gemini-1.5-flash",
-            contents: [
-              {
-                role: "user",
-                parts: [
-                  {
-                    inlineData: {
-                      data: actualBase64,
-                      mimeType: mimeType || "audio/webm"
-                    }
-                  },
-                  {
-                    text: `Listen to this voice recording (probably Moroccan Arabic/French) describing bought articles. Extract:\n1. 'items': an array of UNIQUE items mentioned. Group identical items and sum their prices. For each item, give 'amount' (number), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string), and 'isStorable' (boolean).\n2. 'totalReceiptAmount': sum of the items (number).\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "items": [{"title": "Cafe", "amount": 10, "category": "Nourriture", "isStorable": true}]}. Return ONLY valid JSON.${predefinedText}`
-                  }
-                ]
-              }
-            ]
-          });
-          const rawText = genResponse.text || "{}";
-          const cleanText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
-          data = JSON.parse(cleanText);
-        } catch (fallbackError: any) {
-           console.error("Voice scanning fallback error", fallbackError);
-           alert(`Erreur lors de la reconnaissance vocale: ${fallbackError.message}`);
+      const actualBase64 = base64Audio.includes(',') ? base64Audio.split(',')[1] : base64Audio;
+      const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: If the user says an item that matches one in this list, output its EXACT name. For its 'amount', output its EXACT json price. DO NOT multiply by quantity.` : "";
+      
+      const parts = [
+        {
+          inlineData: {
+            data: actualBase64,
+            mimeType: mimeType || "audio/webm"
+          }
+        },
+        {
+          text: `Listen to this voice recording (probably Moroccan Arabic/French) describing bought articles. Extract:\n1. 'items': an array of UNIQUE items mentioned. Group identical items and sum their prices. For each item, give 'amount' (number), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string), and 'isStorable' (boolean).\n2. 'totalReceiptAmount': sum of the items (number).\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "items": [{"title": "Cafe", "amount": 10, "category": "Nourriture", "isStorable": true}]}. Return ONLY valid JSON.${predefinedText}`
         }
-      } else {
-        console.error("Voice scanning error", error);
-        alert(`Erreur de connexion et clé API non configurée. Veuillez configurer la clé API dans les paramètres.`);
-      }
+      ];
+
+      const textResult = await generateAIContent(aiProvider, apiKeyValue, openRouterKeyValue, parts, 1500);
+      const match = textResult.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+      const cleanText = match ? match[0] : textResult;
+      data = JSON.parse(cleanText);
+    } catch (error: any) {
+      console.error("Voice scanning error", error);
+      alert(`Erreur lors de la reconnaissance vocale: ${error.message}`);
     }
 
     if (data && data.items) {
@@ -355,56 +323,27 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
       const apiKeyValue = window.localStorage.getItem('gemini_api_key') || window.localStorage.getItem('userGeminiApiKey');
       const openRouterKeyValue = localStorage.getItem('openrouter_api_key');
 
-      // Try server first, fallback to mock/error
       try {
-        const response = await fetch('/api/scan-items', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            imageBase64: 'data:image/jpeg;base64,' + image.base64String,
-            predefinedItems: predefinedItems,
-            apiKey: apiKeyValue,
-            openRouterApiKey: openRouterKeyValue,
-            aiProvider
-          })
-        });
+        const parts = [
+          {
+            inlineData: {
+              data: image.base64String,
+              mimeType: "image/jpeg"
+            }
+          },
+          {
+            text: `Analyze this receipt or image of purchased goods from Morocco (prices use Dirham, labels might be French/Arabic). Extract:\n1. 'items': an array of UNIQUE items purchased. Try to map item titles strictly to these predefined articles if they match: ${predefinedItems.map(p => p.name).join(', ')}. If they match, use their EXACT price from the predefined items list as 'amount'. Do NOT multiply by quantity. For each item, give 'amount' (number), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string, use predefined names where possible), and 'isStorable' (boolean, false by default).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "paymentMethod": "CARD", "items": [{"title": "Danone", "amount": 18, "category": "Nourriture", "isStorable": false}]}. Return ONLY valid JSON.`
+          }
+        ];
 
-        if (response.ok) {
-          data = await response.json();
-        } else {
-          throw new Error("Server OCR failed");
-        }
-      } catch (err) {
-        // Fallback for Android standalone APK without backend
-        if (apiKeyValue) {
-          usedFallback = true;
-          const ai = new GoogleGenAI({ apiKey: apiKeyValue });
-          const genResponse = await ai.models.generateContent({
-            model: "gemini-1.5-flash",
-            contents: [
-              {
-                role: "user",
-                parts: [
-                  {
-                    inlineData: {
-                      data: image.base64String,
-                      mimeType: "image/jpeg"
-                    }
-                  },
-                  {
-                    text: `Analyze this receipt or image of purchased goods from Morocco (prices use Dirham, labels might be French/Arabic). Extract:\n1. 'items': an array of UNIQUE items purchased. Try to map item titles strictly to these predefined articles if they match: ${predefinedItems.map(p => p.name).join(', ')}. If they match, use their EXACT price from the predefined items list as 'amount'. Do NOT multiply by quantity. For each item, give 'amount' (number), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string, use predefined names where possible), and 'isStorable' (boolean, false by default).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "paymentMethod": "CARD", "items": [{"title": "Danone", "amount": 18, "category": "Nourriture", "isStorable": false}]}. Return ONLY valid JSON.`
-                  }
-                ]
-              }
-            ]
-          });
-          const text = genResponse.text || "{}";
-          const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
-          data = JSON.parse(cleanText);
-        } else {
-          alert("L'API OCR est inaccessible. Veuillez configurer le backend ou la clé API depuis les paramètres.");
-          return;
-        }
+        const textResult = await generateAIContent(aiProvider, apiKeyValue, openRouterKeyValue, parts, 2500);
+        const match = textResult.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+        const cleanText = match ? match[0] : textResult;
+        data = JSON.parse(cleanText);
+      } catch (err: any) {
+         console.error("Camera OCR scan error:", err);
+         alert(`Erreur avec l'IA: ${err.message}`);
+         return;
       }
 
       if (data) {

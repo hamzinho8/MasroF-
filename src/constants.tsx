@@ -56,10 +56,10 @@ const RAW_PREDEFINED_ITEMS: Omit<PredefinedItem, 'colorHex' | 'categoryColorHex'
   { id: 'elec', name: 'Électricité', price: 150, category: 'Logement', iconName: 'Lightbulb', frequent: false },
   
   // Nouveaux articles Sanitaire
-  { id: 'savon', name: 'Savon', price: 5, category: 'Sanitaire', iconName: 'Droplets', frequent: false },
-  { id: 'fairy', name: 'Fairy', price: 10, category: 'Sanitaire', iconName: 'Sparkles', frequent: false },
-  { id: 'tide', name: 'Tide', price: 10, category: 'Sanitaire', iconName: 'Shirt', frequent: false },
-  { id: 'champo', name: 'Champoo', price: 10, category: 'Sanitaire', iconName: 'Wind', frequent: false },
+  { id: 'savon', name: 'Savon', price: 5, category: 'Sanitaire', iconName: 'Droplets', frequent: true },
+  { id: 'fairy', name: 'Fairy', price: 10, category: 'Sanitaire', iconName: 'Sparkles', frequent: true },
+  { id: 'tide', name: 'Tide', price: 10, category: 'Sanitaire', iconName: 'Shirt', frequent: true },
+  { id: 'champo', name: 'Champoo', price: 10, category: 'Sanitaire', iconName: 'Wind', frequent: true },
 
   // Devoir
   { id: 'parents', name: 'Parents', price: 0, category: 'Devoir', iconName: 'Users', frequent: false },

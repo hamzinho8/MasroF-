@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { PredefinedItem } from "../types";
 import { CATEGORIES, ICON_MAP } from "../constants";
 import { Html5QrcodeScanner } from "html5-qrcode";
+import { generateAIContent } from "../utils/ai";
 
 interface ReceiptScannerModalProps {
   onClose: () => void;
@@ -50,31 +51,56 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
       const apiKeyValue = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('gemini_api_key');
       const openRouterKeyValue = localStorage.getItem('openrouter_api_key');
 
-      const response = await fetch('/api/scan-single-item', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ barcode: code, predefinedItems, apiKey: apiKeyValue, openRouterApiKey: openRouterKeyValue, aiProvider })
-      });
+      const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT INSTRUCTIONS:\n1. Check if the scanned item resembles any item in this list. If it does, include 'matchedItemId' in your JSON response with the id of that item (otherwise null).\n2. [APPRENTISSAGE] If it matches a predefined item, you MUST use EXACTLY the same category and iconName as the matched item. This allows the system to learn from past user corrections.` : "";
+      
+      const parts = [
+        {
+          text: `You are an expert AI for analyzing Moroccan products (supermarket items, grocery items, etc.).
+The user has scanned a product barcode: "${code}".
+Your task is to identify this product based on its barcode and provide details to add it to a predefined items list. For example, 42104964 is Eau de table Ciel, Morocco, etc. Try your best to identify the product. If you cannot identify the exact product from the barcode, suggest a generic product name based on the barcode format or typical Moroccan products.
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data && data.name) {
-           setScannedItem({
-             name: data.name || `Article (${code})`,
-             price: data.price || 0,
-             category: data.category || 'Autres',
-             iconName: data.iconName || 'PackageOpen',
-             iconSvg: data.iconSvg,
-             matchedItemId: data.matchedItemId,
-             confidence: data.confidence,
-             barcode: data.barcode || code
-           });
-        } else {
-           setError("L'IA n'a pas pu identifier cet article. Veuillez réessayer.");
+Extract the following in JSON:
+- 'name': The name of the product (e.g. "Eau Minérale Ciel 33cl"). If completely unknown, return "Article inconnu".
+- 'price': Estimate the typical current price of this item in Moroccan Dirhams (MAD/DH). 
+- 'category': The category, strictly ONE of ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres'].
+- 'iconSvg': Generate a minimalist, scalable, single-color SVG icon string representing this specific item precisely. Use exactly this format with your paths inside: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"> ... </svg>
+- 'iconName': A fallback lucide icon name (e.g., 'PackageOpen').
+- 'matchedItemId': The id of the predefined item that resembles this one (if any). Otherwise null.
+- 'confidence': An integer from 0 to 100 representing how confident you are in your identification.
+- 'barcode': "${code}"
+
+Respond purely in JSON format like:
+{
+  "name": "Danone",
+  "price": 2.50,
+  "category": "Nourriture",
+  "iconSvg": "<svg ...>...</svg>",
+  "iconName": "Milk",
+  "matchedItemId": "3",
+  "confidence": 92,
+  "barcode": "${code}"
+}
+Return ONLY valid JSON, no markdown formatting blocks.${predefinedText}`
         }
+      ];
+
+      const textResult = await generateAIContent(aiProvider, apiKeyValue, openRouterKeyValue, parts, 1500);
+      const match = textResult.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+      const data = JSON.parse(match ? match[0] : textResult);
+
+      if (data && data.name) {
+         setScannedItem({
+           name: data.name || `Article (${code})`,
+           price: data.price || 0,
+           category: data.category || 'Autres',
+           iconName: data.iconName || 'PackageOpen',
+           iconSvg: data.iconSvg,
+           matchedItemId: data.matchedItemId,
+           confidence: data.confidence,
+           barcode: data.barcode || code
+         });
       } else {
-         const errorData = await response.json().catch(() => null);
-         setError(errorData?.error || "Une erreur est survenue avec le serveur de l'IA. Veuillez réessayer.");
+         setError("L'IA n'a pas pu identifier cet article. Veuillez réessayer.");
       }
     } catch (err) {
       console.error("Barcode scanning error", err);
@@ -131,31 +157,61 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
           const apiKeyValue = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('gemini_api_key');
           const openRouterKeyValue = localStorage.getItem('openrouter_api_key');
           
-          const response = await fetch('/api/scan-single-item', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageBase64: compressedBase64, predefinedItems, apiKey: apiKeyValue, openRouterApiKey: openRouterKeyValue, aiProvider })
-          });
+          const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT INSTRUCTIONS:\n1. Check if the scanned item resembles any item in this list. If it does, include 'matchedItemId' in your JSON response with the id of that item (otherwise null).\n2. [APPRENTISSAGE] If it matches a predefined item, you MUST use EXACTLY the same category and iconName as the matched item. This allows the system to learn from past user corrections.` : "";
+          const parts = [
+            {
+              inlineData: {
+                data: compressedBase64.includes(',') ? compressedBase64.split(',')[1] : compressedBase64,
+                mimeType: "image/jpeg"
+              }
+            },
+            {
+              text: `You are an expert AI for analyzing Moroccan products (supermarket items, grocery items, etc.).
+The user has provided an image of a single product. 
+Your task is to identify this product and provide details to add it to a predefined items list.
 
-          if (response.ok) {
-            const data = await response.json();
-            if (data && data.name) {
-               setScannedItem({
-                 name: data.name || '',
-                 price: data.price || 0,
-                 category: data.category || 'Autres',
-                 iconName: data.iconName || 'PackageOpen',
-                 iconSvg: data.iconSvg,
-                 matchedItemId: data.matchedItemId,
-                 confidence: data.confidence,
-                 barcode: data.barcode
-               });
-            } else {
-               setError("L'IA n'a pas pu identifier cet article. Veuillez réessayer.");
+Extract the following in JSON:
+- 'name': The name of the product. Keep it concise, e.g., "Danone Vanille", "Oulmes", "Sidi Ali", "Lait Frais".
+- 'price': Estimate the typical current price of this item in Moroccan Dirhams (MAD/DH). If there is a price tag in the image, use it. Otherwise, provide a realistic estimated price (number).
+- 'category': The category, strictly ONE of ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres'].
+- 'iconSvg': Generate a minimalist, scalable, single-color SVG icon string representing this specific item precisely. Use exactly this format with your paths inside: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"> ... </svg>
+- 'iconName': A fallback lucide icon name (e.g., 'PackageOpen').
+- 'matchedItemId': The id of the predefined item that resembles this one (if any). Otherwise null.
+- 'confidence': An integer from 0 to 100 representing how confident you are in your identification. High confidence (>80) if clearly visible and known.
+- 'barcode': If you can clearly read a barcode number on the product, include it as a string. Otherwise null.
+
+Respond purely in JSON format like:
+{
+  "name": "Danone",
+  "price": 2.50,
+  "category": "Nourriture",
+  "iconSvg": "<svg ...>...</svg>",
+  "iconName": "Milk",
+  "matchedItemId": "3",
+  "confidence": 92,
+  "barcode": "6111234567890"
+}
+Return ONLY valid JSON, no markdown formatting blocks.${predefinedText}`
             }
+          ];
+
+          const textResult = await generateAIContent(aiProvider, apiKeyValue, openRouterKeyValue, parts, 1500);
+          const match = textResult.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+          const data = JSON.parse(match ? match[0] : textResult);
+
+          if (data && data.name) {
+             setScannedItem({
+               name: data.name || '',
+               price: data.price || 0,
+               category: data.category || 'Autres',
+               iconName: data.iconName || 'PackageOpen',
+               iconSvg: data.iconSvg,
+               matchedItemId: data.matchedItemId,
+               confidence: data.confidence,
+               barcode: data.barcode
+             });
           } else {
-             const errorData = await response.json().catch(() => null);
-             setError(errorData?.error || "Une erreur est survenue avec le serveur de l'IA. Veuillez réessayer.");
+             setError("L'IA n'a pas pu identifier cet article. Veuillez réessayer.");
           }
         } catch (err) {
           console.error("Scanning error", err);
@@ -185,18 +241,26 @@ export default function ReceiptScannerModal({ onClose, predefinedItems, onAddPre
     try {
       const apiKeyValue = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('gemini_api_key');
       const openRouterKeyValue = localStorage.getItem('openrouter_api_key');
-      const response = await fetch('/api/regenerate-icon', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: scannedItem.name, category: scannedItem.category, currentIcon: scannedItem.iconName, apiKey: apiKeyValue, openRouterApiKey: openRouterKeyValue, aiProvider })
-      });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.iconSvg) {
-           setScannedItem({ ...scannedItem, iconSvg: data.iconSvg });
-        } else if (data.iconName) {
-           setScannedItem({ ...scannedItem, iconName: data.iconName });
+      
+      const parts = [
+        {
+          text: `I need a completely custom, perfectly tailored SVG icon for the following item:
+Item Name: "${scannedItem.name}"
+Category: "${scannedItem.category}"
+
+REQUIREMENTS:
+1. Generate a modern, minimalist, single-color SVG icon that looks like a high-quality Lucide icon and perfectly represents the item. Do not just use generic icons if you can draw the exact item.
+2. Provide ONLY the pure <svg> HTML string. No markdown wrappers.
+3. SVG format must be EXACTLY: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"> ...paths/shapes... </svg>
+4. Do not include any text or explanations. Be creative and draw exactly what the item represents.`
         }
+      ];
+
+      let svgResult = await generateAIContent(aiProvider, apiKeyValue, openRouterKeyValue, parts, 800);
+      svgResult = svgResult.trim().replace(/^```(svg|html)?\n/, "").replace(/\n```$/, "");
+
+      if (svgResult && svgResult.startsWith('<svg')) {
+          setScannedItem({ ...scannedItem, iconSvg: svgResult });
       }
     } catch (e) {
       console.error(e);
