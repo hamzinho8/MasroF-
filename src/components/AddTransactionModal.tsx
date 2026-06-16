@@ -161,7 +161,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           const ai = new GoogleGenAI({ apiKey: apiKeyValue });
           const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: If the user says an item that matches one in this list, output its EXACT name. For its 'amount', output its EXACT json price. DO NOT multiply by quantity.` : "";
           const genResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-1.5-flash",
             contents: [
               {
                 role: "user",
@@ -380,7 +380,7 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
           usedFallback = true;
           const ai = new GoogleGenAI({ apiKey: apiKeyValue });
           const genResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-1.5-flash",
             contents: [
               {
                 role: "user",

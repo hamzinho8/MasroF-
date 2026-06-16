@@ -345,25 +345,6 @@ export default function Settings({
               onClick={() => setShowSelector("API_SETTINGS")}
               showArrow={true}
             />
-            <div className="flex items-center justify-between px-4 py-4 hover:bg-[#1B5E66]/5 transition-colors border-b border-[#1B5E66]/5 last:border-0 cursor-pointer" onClick={() => setShowScannerFab(!showScannerFab)}>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-[12px] bg-[#1B5E66]/10 flex items-center justify-center text-[#1B5E66]">
-                  <Sparkles size={16} />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-800">
-                    Bouton Magique IA (FAB)
-                  </h4>
-                  <p className="text-[10px] font-black text-[#2D8B96] tracking-widest uppercase">
-                    {showScannerFab ? "Affiché" : "Masqué"}
-                  </p>
-                </div>
-              </div>
-              <Switch
-                active={showScannerFab}
-                onToggle={() => setShowScannerFab(!showScannerFab)}
-              />
-            </div>
             <SettingsItem
               icon={<Plus />}
               title="GESTION DES ARTICLES"
@@ -669,6 +650,26 @@ export default function Settings({
                       value={openRouterKeyInput}
                       onChange={(e) => setOpenRouterKeyInput(e.target.value)}
                     />
+
+                    <p className="text-xs text-[#1B5E66]/70 mb-2 font-bold uppercase tracking-wider">
+                      Bouton Magique Scanner IA (FAB) :
+                    </p>
+                    <div className="flex items-center justify-between px-4 py-4 mb-6 bg-[#1B5E66]/5 border border-[#1B5E66]/10 rounded-2xl cursor-pointer" onClick={() => setShowScannerFab(!showScannerFab)}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-[12px] bg-[#1B5E66]/10 flex items-center justify-center text-[#1B5E66]">
+                          <Sparkles size={16} />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-[#1B5E66]">
+                            Afficher le bouton
+                          </h4>
+                        </div>
+                      </div>
+                      <Switch
+                        active={showScannerFab}
+                        onToggle={() => setShowScannerFab(!showScannerFab)}
+                      />
+                    </div>
 
                     <button
                       className="w-full bg-[#2D8B96] hover:bg-[#1B5E66] text-white font-black italic uppercase tracking-wider py-4 rounded-2xl transition-colors shadow-lg shadow-[#2D8B96]/20"
