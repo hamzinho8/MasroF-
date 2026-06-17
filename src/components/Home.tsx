@@ -61,6 +61,21 @@ interface HomeProps {
     type: "INCOME" | "EXPENSE",
     prefill?: { name: string; category: string; price: number }
   ) => void;
+  onAddTransaction?: (
+    label: string,
+    amount: number,
+    type: "INCOME" | "EXPENSE",
+    category?: string,
+    paidByBank?: boolean,
+    isPureInflow?: boolean,
+    inventoryData?: {
+      quantity: number;
+      color: string;
+      bg: string;
+      iconName: string;
+      iconSvg?: string;
+    }
+  ) => void;
   onViewAll: () => void;
   onDelete: (id: string) => void;
   onEdit: (tx: Transaction) => void;
@@ -89,6 +104,7 @@ export default function Home({
   onAddBankBalance,
   transactions,
   onAddClick,
+  onAddTransaction,
   onViewAll,
   onDelete,
   onEdit,
@@ -184,21 +200,86 @@ export default function Home({
   );
   const [showFavoritesSettingModal, setShowFavoritesSettingModal] =
     useState(false);
+  const [hiddenFavorites, setHiddenFavorites] = useLocalStorage<
+    Record<string, number>
+  >("hiddenFavorites", {});
+
+  const getNext230AM = () => {
+    const now = new Date();
+    const next = new Date(now);
+    next.setHours(2, 30, 0, 0);
+    if (now.getTime() >= next.getTime()) {
+      next.setDate(next.getDate() + 1);
+    }
+    return next.getTime();
+  };
+
+  const handleFavoriteClick = (item: any) => {
+    if (onAddTransaction) {
+      onAddTransaction(
+        item.name,
+        item.price,
+        "EXPENSE",
+        item.category,
+        false,
+        false
+      );
+      setHiddenFavorites((prev) => ({ ...prev, [item.id]: getNext230AM() }));
+    } else {
+      onAddClick("EXPENSE", {
+        name: item.name,
+        category: item.category,
+        price: item.price,
+      });
+    }
+  };
+
   const [hideBankBalance, setHideBankBalance] = useLocalStorage<boolean>(
     "hideBankBalance",
     true
   );
   const [showScannerFab] = useLocalStorage<boolean>("showScannerFab", true);
-  const [isOnline, setIsOnline] = React.useState(navigator.onLine);
+  const [isOnline, setIsOnline] = React.useState(true);
 
   React.useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    let unmounted = false;
+
+    const initNetwork = async () => {
+      try {
+        const { Network } = await import("@capacitor/network");
+
+        const updateStatus = async () => {
+          const status = await Network.getStatus();
+          if (!unmounted) setIsOnline(status.connected);
+        };
+        updateStatus();
+
+        await Network.addListener("networkStatusChange", (status) => {
+          if (!unmounted) setIsOnline(status.connected);
+        });
+      } catch (e) {
+        // Fallback for non-capacitor environments if needed, though Network usually works in web
+        if (!unmounted) setIsOnline(navigator.onLine);
+        const handleOnline = () => setIsOnline(true);
+        const handleOffline = () => setIsOnline(false);
+        window.addEventListener("online", handleOnline);
+        window.addEventListener("offline", handleOffline);
+        return () => {
+          window.removeEventListener("online", handleOnline);
+          window.removeEventListener("offline", handleOffline);
+        };
+      }
+    };
+
+    initNetwork();
+
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      unmounted = true;
+      import("@capacitor/network")
+        .then(({ Network }) => {
+          Network.removeAllListeners();
+        })
+        .catch(() => {});
     };
   }, []);
 
@@ -893,8 +974,10 @@ export default function Home({
           </div>
         ) : (
           <div className="grid grid-cols-4 gap-2 pb-4 px-1">
-            {INITIAL_PREDEFINED_ITEMS.filter((i) =>
-              favoriteItemIds.includes(i.id)
+            {INITIAL_PREDEFINED_ITEMS.filter(
+              (i) =>
+                favoriteItemIds.includes(i.id) &&
+                (!hiddenFavorites[i.id] || hiddenFavorites[i.id] < Date.now())
             ).map((item) => {
               const info = getArticleInfo(item.name, item.category);
               const IconComponent =
@@ -906,31 +989,29 @@ export default function Home({
               return (
                 <button
                   key={item.id}
-                  onClick={() =>
-                    onAddClick("EXPENSE", {
-                      name: item.name,
-                      category: item.category,
-                      price: item.price,
-                    })
-                  }
-                  className={`w-full h-[86px] rounded-[24px] flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-sm border border-white hover:border-slate-200 active:scale-95 group ${
-                    info.bgColor ? info.bgColor.replace("100", "50") : "bg-slate-50"
+                  onClick={() => handleFavoriteClick(item)}
+                  className={`w-full aspect-square rounded-full p-2 flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-sm border border-white hover:border-slate-200 active:scale-95 group ${
+                    info.bgColor || "bg-slate-50"
                   }`}
                 >
                   <div
-                    className={`z-10 relative flex items-center justify-center ${textClass} mb-1 mt-1`}
+                    className={`z-10 relative flex items-center justify-center ${textClass} mb-0.5`}
                   >
                     {item.iconSvg ? (
                       <div
                         dangerouslySetInnerHTML={{ __html: item.iconSvg }}
-                        className="w-6 h-6 text-current"
+                        className="w-5 h-5 sm:w-6 sm:h-6 text-current"
                       />
                     ) : (
-                      <IconComponent size={26} strokeWidth={2.5} />
+                      <IconComponent
+                        size={24}
+                        className="sm:w-[26px] sm:h-[26px]"
+                        strokeWidth={2.5}
+                      />
                     )}
                   </div>
                   <span
-                    className={`z-10 text-[9px] font-bold ${textClass} uppercase truncate w-full px-2 text-center mt-1`}
+                    className={`z-10 text-[8px] sm:text-[9px] font-bold ${textClass} uppercase truncate w-full px-1 text-center mt-0.5`}
                   >
                     {item.name}
                   </span>
@@ -1742,9 +1823,7 @@ function FavoritesSettingsModal({
                   : PackageOpen;
               const isSelected = selectedIds.includes(item.id);
               const textClass = info.color || "text-slate-800";
-              const bgClass = info.bgColor
-                ? info.bgColor.replace("100", "50")
-                : "bg-slate-100";
+              const bgClass = info.bgColor || "bg-slate-100";
               return (
                 <button
                   key={item.id}

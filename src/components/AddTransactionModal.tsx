@@ -216,7 +216,8 @@ export default function AddTransactionModal({
         apiKeyValue,
         openRouterKeyValue,
         parts,
-        1500
+        1500,
+        true
       );
       const match = textResult.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
       const cleanText = match ? match[0] : textResult;
@@ -443,7 +444,8 @@ export default function AddTransactionModal({
           apiKeyValue,
           openRouterKeyValue,
           parts,
-          2500
+          2500,
+          true
         );
         const match = textResult.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
         const cleanText = match ? match[0] : textResult;

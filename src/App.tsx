@@ -1138,6 +1138,7 @@ export default function App() {
             onAddBankBalance={handleAddBankBalance}
             transactions={transactions}
             onAddClick={openModal}
+            onAddTransaction={addTransaction}
             onViewAll={() => setActiveTab("history")}
             onDelete={deleteTransaction}
             onEdit={(tx) => updateTransaction(tx.id, tx)}
@@ -1283,6 +1284,7 @@ export default function App() {
             onAddBankBalance={handleAddBankBalance}
             transactions={transactions}
             onAddClick={openModal}
+            onAddTransaction={addTransaction}
             onViewAll={() => setActiveTab("history")}
             onDelete={deleteTransaction}
             onEdit={(tx) => updateTransaction(tx.id, tx)}
