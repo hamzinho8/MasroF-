@@ -110,6 +110,10 @@ export default function AddTransactionModal({
     () => localStorage.getItem("ai_provider") || "gemini"
   );
 
+  const [selectedMultiItems, setSelectedMultiItems] = useState<
+    { name: string; price: number; category: string }[]
+  >([]);
+
   React.useEffect(() => {
     if (isOpen) {
       setType(initialType);
@@ -124,6 +128,7 @@ export default function AddTransactionModal({
       setReceiptTotal(null);
       setDetectedPaymentGroup(null);
       setIsListening(false);
+      setSelectedMultiItems([]);
     }
   }, [isOpen, initialType]);
 
@@ -499,10 +504,26 @@ export default function AddTransactionModal({
   };
 
   const handleItemSelect = (name: string, price: number, category: string) => {
-    setLabel(name);
-    setAmount(price.toString());
-    setSelectedCategory(category);
+    setSelectedMultiItems((prev) => {
+      const exists = prev.find((p) => p.name === name);
+      if (exists) {
+        return prev.filter((p) => p.name !== name);
+      } else {
+        return [...prev, { name, price, category }];
+      }
+    });
   };
+
+  React.useEffect(() => {
+    if (selectedMultiItems.length === 1) {
+      setLabel(selectedMultiItems[0].name);
+      setAmount(selectedMultiItems[0].price.toString());
+      setSelectedCategory(selectedMultiItems[0].category);
+    } else if (selectedMultiItems.length === 0) {
+      setLabel("");
+      setAmount("");
+    }
+  }, [selectedMultiItems]);
 
   const handleScanItemChange = (
     id: string,
@@ -575,50 +596,109 @@ export default function AddTransactionModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (amount || isShoppingMode) {
-      const finalLabel =
-        type === "INCOME" ? "Retrait Banque" : label.trim() || "Achat";
-      const finalAmount = amount ? parseFloat(amount) : 0;
-      let invReq = undefined;
+    if (amount || selectedMultiItems.length > 0 || isShoppingMode) {
+      if (selectedMultiItems.length >= 2) {
+        selectedMultiItems.forEach((mItem) => {
+          let invReq = undefined;
+          if (type === "EXPENSE" && (addToInventory || isShoppingMode)) {
+            const cat =
+              CATEGORIES.find((c) => c.id === mItem.category) || CATEGORIES[4];
+            const matchedItem = predefinedItems.find(
+              (p) => p.name.toLowerCase() === mItem.name.toLowerCase()
+            );
 
-      if (type === "EXPENSE" && (addToInventory || isShoppingMode)) {
-        const cat =
-          CATEGORIES.find((c) => c.id === selectedCategory) || CATEGORIES[4];
-        const matchedItem = predefinedItems.find(
-          (p) => p.name.toLowerCase() === finalLabel.toLowerCase()
-        );
+            let iconName = "Box";
+            let iconSvg: string | undefined = undefined;
+            if (matchedItem) {
+              iconName = matchedItem.iconName || "Box";
+              iconSvg = matchedItem.iconSvg;
+            } else {
+              if (cat.id === "Nourriture") iconName = "Utensils";
+              else if (cat.id === "Shopping") iconName = "ShoppingBag";
+              else if (cat.id === "Transport") iconName = "Car";
+              else if (cat.id === "Loisirs") iconName = "Gamepad2";
+              else if (cat.id === "Autres") iconName = "MoreHorizontal";
+            }
 
-        let iconName = "Box"; // fallback
-        let iconSvg: string | undefined = undefined;
-        if (matchedItem) {
-          iconName = matchedItem.iconName || "Box";
-          iconSvg = matchedItem.iconSvg;
-        } else {
-          if (cat.id === "Nourriture") iconName = "Utensils";
-          else if (cat.id === "Shopping") iconName = "ShoppingBag";
-          else if (cat.id === "Transport") iconName = "Car";
-          else if (cat.id === "Loisirs") iconName = "Gamepad2";
-          else if (cat.id === "Autres") iconName = "MoreHorizontal";
+            invReq = {
+              quantity: parseInt(inventoryQty) || 1,
+              color: cat.color,
+              bg: cat.bgColor,
+              iconName,
+              iconSvg,
+            };
+          }
+
+          onAdd(
+            mItem.name,
+            mItem.price,
+            type,
+            type === "EXPENSE" ? mItem.category : undefined,
+            paidByBank,
+            false,
+            invReq
+          );
+        });
+      } else if (amount) {
+        const finalLabel =
+          type === "INCOME" ? "Retrait Banque" : label.trim() || "Achat";
+        const finalAmount = parseFloat(amount);
+        if (finalAmount > 0) {
+          let invReq = undefined;
+          if (type === "EXPENSE" && (addToInventory || isShoppingMode)) {
+            const cat =
+              CATEGORIES.find((c) => c.id === selectedCategory) ||
+              CATEGORIES[4];
+            const matchedItem = predefinedItems.find(
+              (p) => p.name.toLowerCase() === finalLabel.toLowerCase()
+            );
+
+            let iconName = "Box";
+            let iconSvg: string | undefined = undefined;
+            if (matchedItem) {
+              iconName = matchedItem.iconName || "Box";
+              iconSvg = matchedItem.iconSvg;
+            } else {
+              if (cat.id === "Nourriture") iconName = "Utensils";
+              else if (cat.id === "Shopping") iconName = "ShoppingBag";
+              else if (cat.id === "Transport") iconName = "Car";
+              else if (cat.id === "Loisirs") iconName = "Gamepad2";
+              else if (cat.id === "Autres") iconName = "MoreHorizontal";
+            }
+
+            invReq = {
+              quantity: parseInt(inventoryQty) || 1,
+              color: cat.color,
+              bg: cat.bgColor,
+              iconName,
+              iconSvg,
+            };
+          }
+
+          onAdd(
+            finalLabel,
+            finalAmount,
+            type,
+            type === "EXPENSE" ? selectedCategory : undefined,
+            paidByBank,
+            false,
+            invReq
+          );
         }
-
-        invReq = {
-          quantity: parseInt(inventoryQty) || 1,
-          color: cat.color,
-          bg: cat.bgColor,
-          iconName,
-          iconSvg,
-        };
+      } else if (isShoppingMode) {
+        // Fallback for shopping mode if no amount and no selected items
+        const finalLabel = label.trim() || "Achat";
+        onAdd(
+          finalLabel,
+          0,
+          type,
+          type === "EXPENSE" ? selectedCategory : undefined,
+          paidByBank,
+          false,
+          undefined
+        );
       }
 
-      onAdd(
-        finalLabel,
-        finalAmount,
-        type,
-        type === "EXPENSE" ? selectedCategory : undefined,
-        paidByBank,
-        false,
-        invReq
-      );
       onClose();
     }
   };
@@ -1015,8 +1095,10 @@ export default function AddTransactionModal({
                                       )
                                     }
                                     className={`flex items-center gap-2 pr-3 pl-1 py-1 rounded-full border border-slate-100 shadow-sm transition-all active:scale-95 bg-white hover:border-teal-500/30 ${
-                                      label === item.name
-                                        ? "ring-2 ring-teal-500/20 border-teal-500/50"
+                                      selectedMultiItems.some(
+                                        (m) => m.name === item.name
+                                      )
+                                        ? "ring-2 ring-teal-500/20 border-teal-500/50 bg-teal-50"
                                         : ""
                                     }`}
                                   >
@@ -1045,22 +1127,65 @@ export default function AddTransactionModal({
                           </div>
                         </div>
 
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">
-                            Libellé (Optionnel)
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="Qu'avez-vous acheté ?"
-                            className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-5 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all font-mono"
-                            value={label}
-                            onChange={(e) => setLabel(e.target.value)}
-                          />
-                        </div>
+                        {selectedMultiItems.length < 2 && (
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">
+                              Libellé (Optionnel)
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="Qu'avez-vous acheté ?"
+                              className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-5 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all font-mono"
+                              value={label}
+                              onChange={(e) => setLabel(e.target.value)}
+                            />
+                          </div>
+                        )}
                       </>
                     )}
 
-                    {!isShoppingMode && (
+                    {selectedMultiItems.length >= 2 && (
+                      <div className="space-y-1.5 mt-2">
+                        <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">
+                          Facture
+                        </label>
+                        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 font-mono">
+                          {selectedMultiItems.map((item, idx) => {
+                            const catColor =
+                              CATEGORIES.find((c) => c.id === item.category)
+                                ?.color || "text-slate-800";
+                            return (
+                              <div
+                                key={idx}
+                                className="flex justify-between items-center py-1.5 border-b border-slate-200/50 last:border-0"
+                              >
+                                <span
+                                  className={`font-bold text-sm ${catColor}`}
+                                >
+                                  {item.name}
+                                </span>
+                                <span className={`font-black ${catColor}`}>
+                                  {item.price.toFixed(2)} {currency}
+                                </span>
+                              </div>
+                            );
+                          })}
+                          <div className="flex justify-between items-center pt-3 mt-1 border-t-2 border-slate-200">
+                            <span className="font-black text-slate-800 uppercase text-xs">
+                              Total
+                            </span>
+                            <span className="font-black text-slate-800 text-lg">
+                              {selectedMultiItems
+                                .reduce((acc, curr) => acc + curr.price, 0)
+                                .toFixed(2)}{" "}
+                              {currency}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {!isShoppingMode && selectedMultiItems.length < 2 && (
                       <div className="space-y-1.5">
                         <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">
                           Montant ({currency})
@@ -1068,7 +1193,7 @@ export default function AddTransactionModal({
                         <input
                           type="number"
                           step="0.1"
-                          required
+                          required={selectedMultiItems.length === 0}
                           autoFocus={type === "INCOME"}
                           placeholder="0.0"
                           className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-5 font-black text-slate-800 text-3xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all text-center font-mono"
@@ -1173,7 +1298,25 @@ export default function AddTransactionModal({
                     }`}
                   >
                     <Check size={24} strokeWidth={3} />
-                    <span>Confirmer</span>
+                    <span>
+                      Confirmer{" "}
+                      {selectedMultiItems.length >= 2 ||
+                      (amount && parseFloat(amount) > 0) ? (
+                        <span className="opacity-90 tracking-wide font-mono ml-1">
+                          (
+                          {(selectedMultiItems.length >= 2
+                            ? selectedMultiItems.reduce(
+                                (acc, curr) => acc + curr.price,
+                                0
+                              )
+                            : parseFloat(amount) || 0
+                          ).toFixed(2)}{" "}
+                          {currency})
+                        </span>
+                      ) : (
+                        ""
+                      )}
+                    </span>
                   </button>
                 </form>
               )}
