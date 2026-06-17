@@ -506,49 +506,50 @@ export default function AddTransactionModal({ isOpen, onClose, onAdd, initialTyp
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="fixed bottom-0 left-0 right-0 z-[120] bg-white rounded-t-[40px] p-8 max-w-md mx-auto shadow-2xl max-h-[90vh] overflow-y-auto"
             >
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-black text-slate-800 tracking-tight">
-                {isShoppingMode ? 'Programmer Achat' : (scannedItems !== null ? 'Articles Scannés' : (type === 'INCOME' ? 'Retrait Banque' : 'Nouvel Achat'))}
-              </h2>
-              <div className="flex items-center gap-2">
-                {type === 'EXPENSE' && scannedItems === null && !isShoppingMode && (
-                  <>
-                    <div className="flex bg-slate-100 rounded-full p-1 h-10 items-center overflow-hidden shrink-0">
-                       <button 
-                         onClick={() => { setAiProvider('gemini'); localStorage.setItem('ai_provider', 'gemini'); }} 
-                         className={`h-full px-3 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all ${aiProvider === 'gemini' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                       >
-                         <Sparkles size={14} /> <span className="hidden sm:inline">Gemini</span>
-                       </button>
-                       <button 
-                         onClick={() => { setAiProvider('openrouter'); localStorage.setItem('ai_provider', 'openrouter'); }} 
-                         className={`h-full px-3 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all ${aiProvider === 'openrouter' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                       >
-                         <Cpu size={14} /> <span className="hidden sm:inline">OpenRouter</span>
-                       </button>
-                    </div>
+            <div className="flex flex-col gap-3 mb-6">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  {type === 'EXPENSE' && scannedItems === null && !isShoppingMode && (
+                    <>
+                      <div className="flex bg-slate-100 rounded-full p-1 h-10 items-center overflow-hidden shrink-0">
+                         <button 
+                           onClick={() => { setAiProvider('gemini'); localStorage.setItem('ai_provider', 'gemini'); }} 
+                           className={`h-full px-3 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center justify-center transition-all ${aiProvider === 'gemini' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                         >
+                           <Sparkles size={14} />
+                         </button>
+                         <button 
+                           onClick={() => { setAiProvider('openrouter'); localStorage.setItem('ai_provider', 'openrouter'); }} 
+                           className={`h-full px-3 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center justify-center transition-all ${aiProvider === 'openrouter' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                         >
+                           <Cpu size={14} />
+                         </button>
+                      </div>
 
-                    <button 
-                      onClick={startListening} 
-                      disabled={isScanning}
-                      className={`shrink-0 h-10 w-10 ${isListening ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-slate-100 text-slate-500'} rounded-full flex items-center justify-center hover:bg-slate-200 transition-colors`}
-                    >
-                      {isListening ? <Mic size={16} className="animate-pulse" /> : <Mic size={16} />}
-                    </button>
-                    <button 
-                      onClick={() => setShowImageSourceModal(true)} 
-                      disabled={isScanning || isListening}
-                      className="shrink-0 h-10 px-4 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center gap-2 font-black text-xs uppercase tracking-widest hover:bg-teal-100 transition-colors"
-                    >
-                      {isScanning ? <Loader2 size={16} className="animate-spin" /> : <ScanText size={16} />}
-                      <span className="hidden sm:inline">Scanner</span>
-                    </button>
-                  </>
-                )}
-                <button onClick={onClose} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors">
+                      <button 
+                        onClick={startListening} 
+                        disabled={isScanning}
+                        className={`shrink-0 h-10 w-10 ${isListening ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-slate-100 text-slate-500'} rounded-full flex items-center justify-center hover:bg-slate-200 transition-colors`}
+                      >
+                        {isListening ? <Mic size={16} className="animate-pulse" /> : <Mic size={16} />}
+                      </button>
+                      <button 
+                        onClick={() => setShowImageSourceModal(true)} 
+                        disabled={isScanning || isListening}
+                        className="shrink-0 h-10 w-10 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center hover:bg-teal-100 transition-colors"
+                      >
+                        {isScanning ? <Loader2 size={16} className="animate-spin" /> : <ScanText size={16} />}
+                      </button>
+                    </>
+                  )}
+                </div>
+                <button onClick={onClose} className="shrink-0 w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors ml-auto">
                   <X size={20} />
                 </button>
               </div>
+              <h2 className="text-2xl font-black text-slate-800 tracking-tight whitespace-nowrap">
+                {isShoppingMode ? 'Programmer Achat' : (scannedItems !== null ? 'Articles Scannés' : (type === 'INCOME' ? 'Retrait Banque' : 'Nouvel Achat'))}
+              </h2>
             </div>
 
             {scannedItems !== null ? (

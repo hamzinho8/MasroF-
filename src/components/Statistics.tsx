@@ -11,13 +11,16 @@ import {
   Gamepad2, 
   CreditCard,
   Target,
-  X
+  X,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 
 import { Transaction, PredefinedItem } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { createPortal } from 'react-dom';
 import { ICON_MAP, INITIAL_PREDEFINED_ITEMS, CATEGORIES as APP_CATEGORIES, getArticleInfo } from '../constants';
+import { generateAIContent } from '../utils/ai';
 
 interface StatisticsProps {
   transactions: Transaction[];
@@ -44,6 +47,51 @@ export default function Statistics({ transactions, predefinedItems = [], currenc
   const [period, setPeriod] = useState<'day' | 'week' | 'month'>('week');
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [selectedPieCategory, setSelectedPieCategory] = useState<string | null>(null);
+  
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [summaryText, setSummaryText] = useState<string | null>(null);
+
+  const generateSummary = async () => {
+    setIsGeneratingSummary(true);
+    setSummaryText(null);
+    try {
+      const apiKeyValue = window.localStorage.getItem('gemini_api_key') || window.localStorage.getItem('userGeminiApiKey');
+      const openRouterKeyValue = localStorage.getItem('openrouter_api_key');
+      const aiProvider = localStorage.getItem('ai_provider') || 'gemini';
+
+      if (!apiKeyValue && !openRouterKeyValue) {
+        setSummaryText("Veuillez configurer votre clé API (Gemini ou OpenRouter) dans les paramètres.");
+        setIsGeneratingSummary(false);
+        return;
+      }
+
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const monthExpenses = transactions.filter(t => {
+        const isCredit = (t.category && ["on me doit","je dois","مستحقات لي","ديون علي","owed to me","i owe","loans","debts","crédit +","crédit --"].includes(t.category.toLowerCase()));
+        const isExpense = (t.type === 'EXPENSE' || (t.type as any) === 'expense') && !isCredit;
+        return isExpense && t.timestamp >= startOfMonth.getTime();
+      });
+
+      const promptText = `
+Voici les dépenses du mois en cours de l'utilisateur:
+${JSON.stringify(monthExpenses.map(t => ({ article: t.label, montant: t.amount, catégorie: t.category, date: new Date(t.timestamp).toLocaleDateString() })))}
+
+Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur les habitudes de dépenses et propose 2-3 conseils brefs pour optimiser le budget. Fais un résumé court (max 100-150 mots) et convivial en français. N'utilise pas le markdown JSON dans ta réponse.`;
+
+      const parts = [{ text: promptText }];
+      const textResult = await generateAIContent(aiProvider, apiKeyValue, openRouterKeyValue, parts, 500);
+      setSummaryText(textResult.trim());
+
+    } catch (err: any) {
+      console.error(err);
+      setSummaryText("Erreur lors de la génération du résumé.");
+    } finally {
+      setIsGeneratingSummary(false);
+    }
+  };
 
   const toggleCategory = (cat: string) => {
     setExpandedCategories(prev => 
@@ -166,6 +214,31 @@ export default function Statistics({ transactions, predefinedItems = [], currenc
             {p.label}
           </button>
         ))}
+      </div>
+
+      {/* AI Summary */}
+      <div className="mb-6">
+         <button
+           onClick={generateSummary}
+           disabled={isGeneratingSummary}
+           className={`w-full flex items-center justify-center gap-2 font-black py-4 rounded-[20px] transition-all disabled:opacity-70 ${isDarkMode ? 'bg-slate-800 text-[#2DD4BF] hover:bg-slate-700' : 'bg-teal-50 text-teal-600 hover:bg-teal-100 shadow-sm'}`}
+         >
+           {isGeneratingSummary ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
+           {language === 'Français' ? 'Générer Résumé IA (Mois en cours)' : 'Generate AI Summary (Current Month)'}
+         </button>
+         
+         <AnimatePresence>
+           {summaryText && (
+             <motion.div
+               initial={{ opacity: 0, y: -10, height: 0 }}
+               animate={{ opacity: 1, y: 0, height: "auto" }}
+               exit={{ opacity: 0, y: -10, height: 0 }}
+               className={`mt-4 p-5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap font-medium ${isDarkMode ? 'bg-slate-800/80 text-teal-50 border border-slate-700' : 'bg-white text-slate-700 border border-slate-100 shadow-sm'}`}
+             >
+               {summaryText}
+             </motion.div>
+           )}
+         </AnimatePresence>
       </div>
 
       {/* Pie Chart */}
