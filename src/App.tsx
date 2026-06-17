@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useLocalStorage } from "./hooks/useLocalStorage";
-import { LocalNotifications } from '@capacitor/local-notifications';
-import { Preferences } from '@capacitor/preferences';
-import { registerPlugin, Capacitor } from '@capacitor/core';
-import { App as CapacitorApp } from '@capacitor/app';
+import { LocalNotifications } from "@capacitor/local-notifications";
+import { Preferences } from "@capacitor/preferences";
+import { registerPlugin, Capacitor } from "@capacitor/core";
+import { App as CapacitorApp } from "@capacitor/app";
 import { importDataFromFile, autoBackup } from "./utils/backup";
 
-const WidgetUpdater = registerPlugin<any>('WidgetUpdater');
+const WidgetUpdater = registerPlugin<any>("WidgetUpdater");
 
 import {
   ArrowRightLeft as HistoryIcon,
@@ -16,7 +16,7 @@ import {
   Handshake,
   Package,
   PackageOpen,
-  Landmark
+  Landmark,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Home from "./components/Home";
@@ -30,11 +30,25 @@ import LockScreen from "./components/LockScreen";
 import Inventory from "./components/Inventory"; // newly added
 import MasrofLogo from "./components/Logo";
 import AddTransactionModal from "./components/AddTransactionModal";
-import { Transaction, Reminder, CreditEntry, PredefinedItem, InventoryItem, ShoppingListItem } from "./types";
+import {
+  Transaction,
+  Reminder,
+  CreditEntry,
+  PredefinedItem,
+  InventoryItem,
+  ShoppingListItem,
+} from "./types";
 import { INITIAL_PREDEFINED_ITEMS } from "./constants";
 import { useSwipeable } from "react-swipeable";
 
-type Tab = "home" | "stats" | "history" | "credits" | "bank" | "inventory" | "settings";
+type Tab =
+  | "home"
+  | "stats"
+  | "history"
+  | "credits"
+  | "bank"
+  | "inventory"
+  | "settings";
 
 export default function App() {
   const [isInitializing, setIsInitializing] = useState(true);
@@ -46,20 +60,32 @@ export default function App() {
     if (Capacitor.isNativePlatform()) {
       // Explicit microphone permission check on startup for voice scanning
       try {
-        navigator.mediaDevices.getUserMedia({ audio: true })
-          .then(stream => stream.getTracks().forEach(track => track.stop()))
-          .catch(err => console.log("Microphone permission check failed during startup:", err));
+        navigator.mediaDevices
+          .getUserMedia({ audio: true })
+          .then((stream) => stream.getTracks().forEach((track) => track.stop()))
+          .catch((err) =>
+            console.log(
+              "Microphone permission check failed during startup:",
+              err
+            )
+          );
       } catch (e) {
-        console.log("getUserMedia not supported for startup permission check", e);
+        console.log(
+          "getUserMedia not supported for startup permission check",
+          e
+        );
       }
 
-      const listener = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
-        if (!isActive) {
-          autoBackup();
+      const listener = CapacitorApp.addListener(
+        "appStateChange",
+        ({ isActive }) => {
+          if (!isActive) {
+            autoBackup();
+          }
         }
-      });
+      );
       return () => {
-        listener.then(l => l.remove()).catch(() => {});
+        listener.then((l) => l.remove()).catch(() => {});
       };
     }
   }, []);
@@ -69,28 +95,51 @@ export default function App() {
   const [modalType, setModalType] = useState<"INCOME" | "EXPENSE">("EXPENSE");
   const [widgetMode, setWidgetMode] = useLocalStorage<"balance" | "spending">(
     "widgetMode",
-    "balance",
+    "balance"
   );
-  const [widgetBalanceType, setWidgetBalanceType] = useLocalStorage<"cash" | "bank">(
-    "widgetBalanceType",
-    "cash",
-  );
+  const [widgetBalanceType, setWidgetBalanceType] = useLocalStorage<
+    "cash" | "bank"
+  >("widgetBalanceType", "cash");
   const [widgetColor, setWidgetColor] = useLocalStorage<
     "default" | "blue" | "purple" | "rose"
   >("widgetColor", "default");
-  const [widgetTextColor, setWidgetTextColor] = useLocalStorage<string>("widgetTextColor", "#FFFFFF");
-  const [aiNotifications, setAiNotifications] = useLocalStorage("aiNotifications", true);
-  const [balanceThreshold, setBalanceThreshold] = useLocalStorage<number | null>("balanceThreshold", 50);
-  const [balanceCustomMessage, setBalanceCustomMessage] = useLocalStorage<string>("balanceCustomMessage", "🛑⛔🙅💼🫗🏃🏃♀️🏃♂️🏦💴👍");
-  const [bankBalanceThreshold, setBankBalanceThreshold] = useLocalStorage<number | null>("bankBalanceThreshold", 500);
-  const [bankBalanceCustomMessage, setBankBalanceCustomMessage] = useLocalStorage<string>("bankBalanceCustomMessage", "");
-  const [inventoryAlertThreshold, setInventoryAlertThreshold] = useLocalStorage<number | null>("inventoryAlertThreshold", 3);
-  const [budgetAlertThreshold, setBudgetAlertThreshold] = useLocalStorage<number | null>("budgetAlertThreshold", 90);
-  const [backupAlertInterval, setBackupAlertInterval] = useLocalStorage<number | null>("backupAlertInterval", 30);
+  const [widgetTextColor, setWidgetTextColor] = useLocalStorage<string>(
+    "widgetTextColor",
+    "#FFFFFF"
+  );
+  const [aiNotifications, setAiNotifications] = useLocalStorage(
+    "aiNotifications",
+    true
+  );
+  const [balanceThreshold, setBalanceThreshold] = useLocalStorage<
+    number | null
+  >("balanceThreshold", 50);
+  const [balanceCustomMessage, setBalanceCustomMessage] =
+    useLocalStorage<string>(
+      "balanceCustomMessage",
+      "🛑⛔🙅💼🫗🏃🏃♀️🏃♂️🏦💴👍"
+    );
+  const [bankBalanceThreshold, setBankBalanceThreshold] = useLocalStorage<
+    number | null
+  >("bankBalanceThreshold", 500);
+  const [bankBalanceCustomMessage, setBankBalanceCustomMessage] =
+    useLocalStorage<string>("bankBalanceCustomMessage", "");
+  const [inventoryAlertThreshold, setInventoryAlertThreshold] = useLocalStorage<
+    number | null
+  >("inventoryAlertThreshold", 3);
+  const [budgetAlertThreshold, setBudgetAlertThreshold] = useLocalStorage<
+    number | null
+  >("budgetAlertThreshold", 90);
+  const [backupAlertInterval, setBackupAlertInterval] = useLocalStorage<
+    number | null
+  >("backupAlertInterval", 30);
   const [isDarkMode, setIsDarkMode] = useLocalStorage("isDarkMode", false);
   const [currency, setCurrency] = useLocalStorage("currency", "DH");
   const [appPin, setAppPin] = useLocalStorage<string | null>("appPin", null);
-  const [appBiometric, setAppBiometric] = useLocalStorage<boolean>("appBiometric", true);
+  const [appBiometric, setAppBiometric] = useLocalStorage<boolean>(
+    "appBiometric",
+    true
+  );
   const [isLocked, setIsLocked] = useState<boolean>(true);
 
   useEffect(() => {
@@ -99,10 +148,9 @@ export default function App() {
     }
   }, [appPin, appBiometric]);
 
-  const [language, setLanguage] = useLocalStorage<"Français" | "العربية" | "English">(
-    "language",
-    "Français",
-  );
+  const [language, setLanguage] = useLocalStorage<
+    "Français" | "العربية" | "English"
+  >("language", "Français");
 
   const translations = {
     Français: {
@@ -137,9 +185,18 @@ export default function App() {
     },
   };
 
-  const [creditEntries, setCreditEntries] = useLocalStorage<CreditEntry[]>("creditEntries", []);
-  const [inventoryItems, setInventoryItems] = useLocalStorage<InventoryItem[]>("inventoryItems", []);
-  const [shoppingList, setShoppingList] = useLocalStorage<ShoppingListItem[]>("shoppingList", []);
+  const [creditEntries, setCreditEntries] = useLocalStorage<CreditEntry[]>(
+    "creditEntries",
+    []
+  );
+  const [inventoryItems, setInventoryItems] = useLocalStorage<InventoryItem[]>(
+    "inventoryItems",
+    []
+  );
+  const [shoppingList, setShoppingList] = useLocalStorage<ShoppingListItem[]>(
+    "shoppingList",
+    []
+  );
 
   const [predefinedItems, setPredefinedItems] = useState<PredefinedItem[]>(
     () => {
@@ -147,20 +204,23 @@ export default function App() {
       if (saved) {
         let items = JSON.parse(saved);
         let migrated = false;
-        
+
         // Items to remove completely
         const itemsToRemove = ["Produits Sanitaires", "Aide Famille"];
-        
-        let newItems = items.filter((item: any) => !itemsToRemove.includes(item.name));
+
+        let newItems = items.filter(
+          (item: any) => !itemsToRemove.includes(item.name)
+        );
         if (newItems.length !== items.length) {
           migrated = true;
         }
 
         // Rename Les Glaces
-        newItems = newItems.filter((i: any) => 
-          i.name?.toLowerCase() !== "bampers" && 
-          i.name?.toLowerCase() !== "champo" &&
-          i.name?.toLowerCase() !== "bambers" 
+        newItems = newItems.filter(
+          (i: any) =>
+            i.name?.toLowerCase() !== "bampers" &&
+            i.name?.toLowerCase() !== "champo" &&
+            i.name?.toLowerCase() !== "bambers"
         );
 
         newItems = newItems.map((item: any) => {
@@ -177,35 +237,53 @@ export default function App() {
         });
 
         // Target frequent items
-        const frequentNames = ["Taxi", "Cafe", "Pisquet", "Danone", "Sucette", "Farine", "Glaces", "Cigarette", "Bampers", "Tram"];
-        
+        const frequentNames = [
+          "Taxi",
+          "Cafe",
+          "Pisquet",
+          "Danone",
+          "Sucette",
+          "Farine",
+          "Glaces",
+          "Cigarette",
+          "Bampers",
+          "Tram",
+        ];
+
         newItems = newItems.map((item: any) => {
           let updatedItem = { ...item };
 
           // Enforce frequency
           const shouldBeFrequent = frequentNames.includes(updatedItem.name);
           if (updatedItem.frequent !== shouldBeFrequent) {
-             updatedItem.frequent = shouldBeFrequent;
-             migrated = true;
+            updatedItem.frequent = shouldBeFrequent;
+            migrated = true;
           }
 
           // Merge any structural updates from constants
-          const constItem = INITIAL_PREDEFINED_ITEMS.find(p => p.name === updatedItem.name);
+          const constItem = INITIAL_PREDEFINED_ITEMS.find(
+            (p) => p.name === updatedItem.name
+          );
           if (constItem) {
-             if (updatedItem.iconName !== constItem.iconName || updatedItem.category !== constItem.category || updatedItem.colorHex !== constItem.colorHex || updatedItem.categoryColorHex !== constItem.categoryColorHex) {
-                updatedItem.iconName = constItem.iconName;
-                updatedItem.category = constItem.category;
-                updatedItem.colorHex = constItem.colorHex;
-                updatedItem.categoryColorHex = constItem.categoryColorHex;
-                migrated = true;
-             }
+            if (
+              updatedItem.iconName !== constItem.iconName ||
+              updatedItem.category !== constItem.category ||
+              updatedItem.colorHex !== constItem.colorHex ||
+              updatedItem.categoryColorHex !== constItem.categoryColorHex
+            ) {
+              updatedItem.iconName = constItem.iconName;
+              updatedItem.category = constItem.category;
+              updatedItem.colorHex = constItem.colorHex;
+              updatedItem.categoryColorHex = constItem.categoryColorHex;
+              migrated = true;
+            }
           }
 
           return updatedItem;
         });
 
         // Ensure missing items
-        INITIAL_PREDEFINED_ITEMS.forEach(targetItem => {
+        INITIAL_PREDEFINED_ITEMS.forEach((targetItem) => {
           if (!newItems.some((i: any) => i.name === targetItem.name)) {
             newItems.push(targetItem);
             migrated = true;
@@ -218,7 +296,7 @@ export default function App() {
         return newItems;
       }
       return INITIAL_PREDEFINED_ITEMS;
-    },
+    }
   );
 
   React.useEffect(() => {
@@ -229,19 +307,33 @@ export default function App() {
     translations[language as keyof typeof translations] ||
     translations["Français"];
   const isRtl = language === "العربية";
-  const [reminders, setReminders] = useLocalStorage<Reminder[]>("reminders", []);
-  const [categoryBudgetsRaw, setCategoryBudgetsRaw] = useLocalStorage<any>("categoryBudgets", {});
+  const [reminders, setReminders] = useLocalStorage<Reminder[]>(
+    "reminders",
+    []
+  );
+  const [categoryBudgetsRaw, setCategoryBudgetsRaw] = useLocalStorage<any>(
+    "categoryBudgets",
+    {}
+  );
   const categoryBudgets = React.useMemo(() => {
     if (!categoryBudgetsRaw) return {};
     if (Array.isArray(categoryBudgetsRaw)) {
-      return categoryBudgetsRaw.reduce((acc: any, b: any) => ({ ...acc, [b.category]: b.limit }), {});
+      return categoryBudgetsRaw.reduce(
+        (acc: any, b: any) => ({ ...acc, [b.category]: b.limit }),
+        {}
+      );
     }
-    if (typeof categoryBudgetsRaw === 'object') {
+    if (typeof categoryBudgetsRaw === "object") {
       const clean: Record<string, number> = {};
       Object.entries(categoryBudgetsRaw).forEach(([k, v]) => {
-        if (typeof v === 'number') {
+        if (typeof v === "number") {
           clean[k] = v;
-        } else if (v && typeof v === 'object' && (v as any).category && typeof (v as any).limit === 'number') {
+        } else if (
+          v &&
+          typeof v === "object" &&
+          (v as any).category &&
+          typeof (v as any).limit === "number"
+        ) {
           clean[(v as any).category] = (v as any).limit;
         }
       });
@@ -249,38 +341,50 @@ export default function App() {
     }
     return {};
   }, [categoryBudgetsRaw]);
-  
-  const setCategoryBudgets = (updater: React.SetStateAction<Record<string, number>>) => {
+
+  const setCategoryBudgets = (
+    updater: React.SetStateAction<Record<string, number>>
+  ) => {
     setCategoryBudgetsRaw((prevRaw: any) => {
       let currentClean: Record<string, number> = {};
       if (Array.isArray(prevRaw)) {
-        currentClean = prevRaw.reduce((acc: any, b: any) => ({ ...acc, [b.category]: b.limit }), {});
-      } else if (prevRaw && typeof prevRaw === 'object') {
+        currentClean = prevRaw.reduce(
+          (acc: any, b: any) => ({ ...acc, [b.category]: b.limit }),
+          {}
+        );
+      } else if (prevRaw && typeof prevRaw === "object") {
         Object.entries(prevRaw).forEach(([k, v]) => {
-          if (typeof v === 'number') {
+          if (typeof v === "number") {
             currentClean[k] = v;
-          } else if (v && typeof v === 'object' && (v as any).category && typeof (v as any).limit === 'number') {
+          } else if (
+            v &&
+            typeof v === "object" &&
+            (v as any).category &&
+            typeof (v as any).limit === "number"
+          ) {
             currentClean[(v as any).category] = (v as any).limit;
           }
         });
       }
-      return typeof updater === 'function' ? updater(currentClean) : updater;
+      return typeof updater === "function" ? updater(currentClean) : updater;
     });
   };
 
   useEffect(() => {
     async function syncNotifications() {
       if (!Capacitor.isNativePlatform()) {
-        console.log("Local notifications skipped: not running on native platform.");
+        console.log(
+          "Local notifications skipped: not running on native platform."
+        );
         return;
       }
       try {
         let permStatus = await LocalNotifications.checkPermissions();
-        if (permStatus.display !== 'granted') {
+        if (permStatus.display !== "granted") {
           permStatus = await LocalNotifications.requestPermissions();
         }
 
-        if (permStatus.display !== 'granted') {
+        if (permStatus.display !== "granted") {
           return;
         }
 
@@ -289,11 +393,11 @@ export default function App() {
 
           await LocalNotifications.createChannel({
             id: channelId,
-            name: 'Rappels',
-            description: 'Rappels réguliers',
+            name: "Rappels",
+            description: "Rappels réguliers",
             importance: 5,
             visibility: 1,
-            vibration: true
+            vibration: true,
           });
         } catch (e) {
           console.error("Error creating channel", e);
@@ -301,22 +405,24 @@ export default function App() {
 
         const pending = await LocalNotifications.getPending();
         if (pending.notifications.length > 0) {
-          await LocalNotifications.cancel({ notifications: pending.notifications });
+          await LocalNotifications.cancel({
+            notifications: pending.notifications,
+          });
         }
 
         const toSchedule = reminders
-          .filter(r => r.enabled)
+          .filter((r) => r.enabled)
           .map((r, i) => {
-            const [hours, minutes] = r.time.split(':').map(Number);
-            
-            let iconColor = '#0f1725'; // Default dark color 
+            const [hours, minutes] = r.time.split(":").map(Number);
 
-            if (r.type === 'ACHAT') {
-              iconColor = '#e11d48'; // rose-600
-            } else if (r.type === 'RETRAIT') {
-              iconColor = '#0d9488'; // teal-600
+            let iconColor = "#0f1725"; // Default dark color
+
+            if (r.type === "ACHAT") {
+              iconColor = "#e11d48"; // rose-600
+            } else if (r.type === "RETRAIT") {
+              iconColor = "#0d9488"; // teal-600
             }
-            
+
             const channelId = `reminders_default_v1`;
 
             return {
@@ -326,11 +432,11 @@ export default function App() {
               channelId: channelId,
               smallIcon: "ic_notification",
               iconColor,
-              largeIcon: 'ic_launcher',
-              schedule: { 
+              largeIcon: "ic_launcher",
+              schedule: {
                 repeats: true,
                 on: { hour: hours, minute: minutes },
-                allowWhileIdle: true
+                allowWhileIdle: true,
               },
             };
           });
@@ -346,19 +452,25 @@ export default function App() {
 
     if (Capacitor.isNativePlatform()) {
       let listenerRemoved = false;
-      const listener = LocalNotifications.addListener('localNotificationReceived', (notification) => {
-         // Do anything else needed
-      });
+      const listener = LocalNotifications.addListener(
+        "localNotificationReceived",
+        (notification) => {
+          // Do anything else needed
+        }
+      );
       return () => {
-         listenerRemoved = true;
-         listener.then(l => l.remove()).catch(() => {});
+        listenerRemoved = true;
+        listener.then((l) => l.remove()).catch(() => {});
       };
     }
   }, [reminders]);
 
   const [balance, setBalance] = useLocalStorage("balance", 0);
   const [bankBalance, setBankBalance] = useLocalStorage("bankBalance", 0);
-  const [transactions, setTransactions] = useLocalStorage<Transaction[]>("transactions", []);
+  const [transactions, setTransactions] = useLocalStorage<Transaction[]>(
+    "transactions",
+    []
+  );
   const prevBalanceRef = React.useRef(balance);
 
   const alertedBankRef = React.useRef(false);
@@ -369,32 +481,63 @@ export default function App() {
 
   React.useEffect(() => {
     // 1. Bank Balance == 500 DH
-    if (bankBalanceThreshold !== null && bankBalance <= bankBalanceThreshold && !alertedBankRef.current) {
-        console.warn(`Alarme: Votre solde du compte bancaire a atteint le seuil critique (${bankBalance} ${currency}).`);
-        alertedBankRef.current = true;
-    } else if (bankBalanceThreshold !== null && bankBalance > bankBalanceThreshold) {
-        alertedBankRef.current = false;
+    if (
+      bankBalanceThreshold !== null &&
+      bankBalance <= bankBalanceThreshold &&
+      !alertedBankRef.current
+    ) {
+      console.warn(
+        `Alarme: Votre solde du compte bancaire a atteint le seuil critique (${bankBalance} ${currency}).`
+      );
+      alertedBankRef.current = true;
+    } else if (
+      bankBalanceThreshold !== null &&
+      bankBalance > bankBalanceThreshold
+    ) {
+      alertedBankRef.current = false;
     }
 
     // 2. Pocket Balance == 50 DH
-    if (balanceThreshold !== null && balance <= balanceThreshold && !alertedPocketRef.current) {
-        console.warn(`Alarme: Le montant dans votre poche a atteint le seuil critique (${balance} ${currency}).`);
-        alertedPocketRef.current = true;
+    if (
+      balanceThreshold !== null &&
+      balance <= balanceThreshold &&
+      !alertedPocketRef.current
+    ) {
+      console.warn(
+        `Alarme: Le montant dans votre poche a atteint le seuil critique (${balance} ${currency}).`
+      );
+      alertedPocketRef.current = true;
     } else if (balanceThreshold !== null && balance > balanceThreshold) {
-        alertedPocketRef.current = false;
+      alertedPocketRef.current = false;
     }
 
     // 3. Inventory Item == 3
     inventoryItems.forEach((item: any) => {
-        if (inventoryAlertThreshold !== null && item.quantity === inventoryAlertThreshold && !alertedInventoryRef.current[item.id]) {
-            console.warn(`Alarme Stock: La quantité de l'article "${item.name}" est ${inventoryAlertThreshold}.`);
-            alertedInventoryRef.current[item.id] = true;
-        } else if (inventoryAlertThreshold !== null && item.quantity !== inventoryAlertThreshold) {
-            alertedInventoryRef.current[item.id] = false;
-        }
+      if (
+        inventoryAlertThreshold !== null &&
+        item.quantity === inventoryAlertThreshold &&
+        !alertedInventoryRef.current[item.id]
+      ) {
+        console.warn(
+          `Alarme Stock: La quantité de l'article "${item.name}" est ${inventoryAlertThreshold}.`
+        );
+        alertedInventoryRef.current[item.id] = true;
+      } else if (
+        inventoryAlertThreshold !== null &&
+        item.quantity !== inventoryAlertThreshold
+      ) {
+        alertedInventoryRef.current[item.id] = false;
+      }
     });
-
-  }, [bankBalance, balance, inventoryItems, currency, bankBalanceThreshold, balanceThreshold, inventoryAlertThreshold]);
+  }, [
+    bankBalance,
+    balance,
+    inventoryItems,
+    currency,
+    bankBalanceThreshold,
+    balanceThreshold,
+    inventoryAlertThreshold,
+  ]);
 
   React.useEffect(() => {
     // 4. Category Budget >= 90%
@@ -403,30 +546,56 @@ export default function App() {
     startOfPeriod.setDate(1);
     startOfPeriod.setHours(0, 0, 0, 0);
 
-    const expenses = transactions.filter(t => {
-      const isCredit = (t.category && ["on me doit","je dois","مستحقات لي","ديون علي","owed to me","i owe","loans","debts","crédit +","crédit --"].includes(t.category.toLowerCase()));
-      const isExpense = (t.type === 'EXPENSE' || (t.type as any) === 'expense') && !isCredit;
+    const expenses = transactions.filter((t) => {
+      const isCredit =
+        t.category &&
+        [
+          "on me doit",
+          "je dois",
+          "مستحقات لي",
+          "ديون علي",
+          "owed to me",
+          "i owe",
+          "loans",
+          "debts",
+          "crédit +",
+          "crédit --",
+        ].includes(t.category.toLowerCase());
+      const isExpense =
+        (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit;
       return isExpense && t.timestamp >= startOfPeriod.getTime();
     });
 
     const categoryTotals: Record<string, number> = {};
-    expenses.forEach(t => {
-      let category = t.category || 'Autres';
-      if (category === 'Food') category = 'Nourriture';
-      else if (category === 'Leisure') category = 'Loisirs';
-      else if (category === 'Others') category = 'Autres';
+    expenses.forEach((t) => {
+      let category = t.category || "Autres";
+      if (category === "Food") category = "Nourriture";
+      else if (category === "Leisure") category = "Loisirs";
+      else if (category === "Others") category = "Autres";
       categoryTotals[category] = (categoryTotals[category] || 0) + t.amount;
     });
 
     Object.entries(categoryBudgets).forEach(([cat, limit]) => {
-      const limitNum = typeof limit === 'number' ? limit : 0;
+      const limitNum = typeof limit === "number" ? limit : 0;
       const total = categoryTotals[cat] || 0;
-      const budgetThresholdRatio = budgetAlertThreshold !== null ? budgetAlertThreshold / 100 : 0.9;
-      if (budgetAlertThreshold !== null && total >= limitNum * budgetThresholdRatio && !alertedCategoriesRef.current[cat]) {
-         console.warn(`Alarme Budget: Vous avez atteint ou dépassé ${budgetAlertThreshold}% du budget pour la catégorie "${cat}" (${total.toFixed(2)} / ${limitNum} ${currency}).`);
-         alertedCategoriesRef.current[cat] = true;
-      } else if (budgetAlertThreshold !== null && total < limitNum * budgetThresholdRatio) {
-         alertedCategoriesRef.current[cat] = false;
+      const budgetThresholdRatio =
+        budgetAlertThreshold !== null ? budgetAlertThreshold / 100 : 0.9;
+      if (
+        budgetAlertThreshold !== null &&
+        total >= limitNum * budgetThresholdRatio &&
+        !alertedCategoriesRef.current[cat]
+      ) {
+        console.warn(
+          `Alarme Budget: Vous avez atteint ou dépassé ${budgetAlertThreshold}% du budget pour la catégorie "${cat}" (${total.toFixed(
+            2
+          )} / ${limitNum} ${currency}).`
+        );
+        alertedCategoriesRef.current[cat] = true;
+      } else if (
+        budgetAlertThreshold !== null &&
+        total < limitNum * budgetThresholdRatio
+      ) {
+        alertedCategoriesRef.current[cat] = false;
       }
     });
   }, [transactions, categoryBudgets, currency, budgetAlertThreshold]);
@@ -434,13 +603,19 @@ export default function App() {
   React.useEffect(() => {
     // 5. Backup Alarm
     if (!backupAlertInterval) return;
-    
+
     const checkBackupInterval = setInterval(() => {
-      const hasUnbacked = localStorage.getItem('hasUnbackedChanges') === 'true';
+      const hasUnbacked = localStorage.getItem("hasUnbackedChanges") === "true";
       // Trigger if unbacked changes exist and interval passed since last alert
-      if (hasUnbacked && Date.now() - lastBackupAlertRef.current > backupAlertInterval * 60 * 1000) {
-          console.warn("Alarme Sauvegarde: Vous avez des modifications non enregistrées. Pensez à faire une sauvegarde de vos données !");
-          lastBackupAlertRef.current = Date.now();
+      if (
+        hasUnbacked &&
+        Date.now() - lastBackupAlertRef.current >
+          backupAlertInterval * 60 * 1000
+      ) {
+        console.warn(
+          "Alarme Sauvegarde: Vous avez des modifications non enregistrées. Pensez à faire une sauvegarde de vos données !"
+        );
+        lastBackupAlertRef.current = Date.now();
       }
     }, 60000); // check every minute
 
@@ -454,123 +629,239 @@ export default function App() {
       prevBalanceRef.current >= balanceThreshold
     ) {
       console.warn(
-        `Attention ! Votre solde (${balance.toFixed(2)} ${currency}) est passé en dessous du seuil configuré (${balanceThreshold} ${currency}).`,
+        `Attention ! Votre solde (${balance.toFixed(
+          2
+        )} ${currency}) est passé en dessous du seuil configuré (${balanceThreshold} ${currency}).`
       );
     }
     prevBalanceRef.current = balance;
 
     async function updateWidget() {
-      await Preferences.set({ key: 'widget_balance', value: balance.toString() });
-      await Preferences.set({ key: 'widget_currency', value: currency });
-      await Preferences.set({ key: 'widget_text_color', value: widgetTextColor });
+      await Preferences.set({
+        key: "widget_balance",
+        value: balance.toString(),
+      });
+      await Preferences.set({ key: "widget_currency", value: currency });
+      await Preferences.set({
+        key: "widget_text_color",
+        value: widgetTextColor,
+      });
 
       const alarms: string[] = [];
       const alarmColor = "#FCA5A5"; // lighter red for high priority alarms on dark bg
       const warnColor = "#FDBA74"; // lighter orange for warnings like stock on dark bg
 
-      if (bankBalanceThreshold !== null && bankBalance <= bankBalanceThreshold) {
+      if (
+        bankBalanceThreshold !== null &&
+        bankBalance <= bankBalanceThreshold
+      ) {
         if (bankBalanceCustomMessage) {
-            alarms.push(`<b><font color="${alarmColor}">${bankBalanceCustomMessage}</font></b>`);
+          alarms.push(
+            `<b><font color="${alarmColor}">${bankBalanceCustomMessage}</font></b>`
+          );
         } else {
-            alarms.push(`<b><font color="${alarmColor}">🏦 ${bankBalance.toFixed(2)} ${currency}</font></b>`);
+          alarms.push(
+            `<b><font color="${alarmColor}">🏦 ${bankBalance.toFixed(
+              2
+            )} ${currency}</font></b>`
+          );
         }
       }
 
       if (balanceThreshold !== null && balance <= balanceThreshold) {
         if (balanceCustomMessage) {
-            alarms.push(`<b><font color="${alarmColor}">${balanceCustomMessage}</font></b>`);
+          alarms.push(
+            `<b><font color="${alarmColor}">${balanceCustomMessage}</font></b>`
+          );
         } else {
-            alarms.push(`<b><font color="${alarmColor}">💵 ${balance.toFixed(2)} ${currency}</font></b>`);
+          alarms.push(
+            `<b><font color="${alarmColor}">💵 ${balance.toFixed(
+              2
+            )} ${currency}</font></b>`
+          );
         }
       }
 
       if (inventoryAlertThreshold !== null) {
-        inventoryItems.forEach(item => {
+        inventoryItems.forEach((item) => {
           if (item.quantity > 0 && item.quantity <= inventoryAlertThreshold) {
             let colorHex = warnColor;
-            const prefItem = predefinedItems.find((p: any) => p.name === item.name);
+            const prefItem = predefinedItems.find(
+              (p: any) => p.name === item.name
+            );
             const category = prefItem?.category;
-            
+
             if (category) {
-                switch (category) {
-                    case "Nourriture": colorHex = "#0D9488"; break;
-                    case "Logement": colorHex = "#4F46E5"; break;
-                    case "Transport": colorHex = "#0284C7"; break;
-                    case "Sanitaire": colorHex = "#E11D48"; break;
-                    case "Shopping": colorHex = "#9333EA"; break;
-                    case "Loisirs": colorHex = "#D97706"; break;
-                    case "Devoir": colorHex = "#EA580C"; break;
-                    default: colorHex = "#475569"; break;
-                }
+              switch (category) {
+                case "Nourriture":
+                  colorHex = "#0D9488";
+                  break;
+                case "Logement":
+                  colorHex = "#4F46E5";
+                  break;
+                case "Transport":
+                  colorHex = "#0284C7";
+                  break;
+                case "Sanitaire":
+                  colorHex = "#E11D48";
+                  break;
+                case "Shopping":
+                  colorHex = "#9333EA";
+                  break;
+                case "Loisirs":
+                  colorHex = "#D97706";
+                  break;
+                case "Devoir":
+                  colorHex = "#EA580C";
+                  break;
+                default:
+                  colorHex = "#475569";
+                  break;
+              }
             }
-            alarms.push(`<b><font color="${colorHex}">🔋 ⬇ ${item.name} (${item.quantity})</font></b>`);
+            alarms.push(
+              `<b><font color="${colorHex}">🔋 ⬇ ${item.name} (${item.quantity})</font></b>`
+            );
           }
         });
       }
 
       if (budgetAlertThreshold !== null) {
         const categoryTotals: Record<string, number> = {};
-        transactions.forEach(t => {
-           if (t.type === 'EXPENSE' && t.category) {
-             categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
-           }
+        transactions.forEach((t) => {
+          if (t.type === "EXPENSE" && t.category) {
+            categoryTotals[t.category] =
+              (categoryTotals[t.category] || 0) + t.amount;
+          }
         });
         Object.entries(categoryBudgets).forEach(([cat, limit]) => {
-           const limitNum = typeof limit === 'number' ? limit : 0;
-           const total = categoryTotals[cat] || 0;
-           if (total >= limitNum * (budgetAlertThreshold / 100)) {
-             alarms.push(`<b><font color="${alarmColor}">📊 Budget dépassé: ${cat}</font></b>`);
-           }
+          const limitNum = typeof limit === "number" ? limit : 0;
+          const total = categoryTotals[cat] || 0;
+          if (total >= limitNum * (budgetAlertThreshold / 100)) {
+            alarms.push(
+              `<b><font color="${alarmColor}">📊 Budget dépassé: ${cat}</font></b>`
+            );
+          }
         });
       }
 
       const newsItems: string[] = [...alarms];
 
       const UNICODE_ICONS: Record<string, string> = {
-          Utensils: "🍽️", ShoppingBag: "🛍️", Car: "🚗", Gamepad2: "🎮", MoreHorizontal: "⋯",
-          Coffee: "☕", Milk: "🥛", Wheat: "🌾", Box: "📦", Cookie: "🍪", Droplets: "💧",
-          CupSoda: "🥤", Candy: "🍬", Zap: "⚡", CircleDot: "🎯", Soup: "🥣", TrainFront: "🚆",
-          Fuel: "⛽", Flame: "🔥", Tv: "📺", Search: "🔍", Baby: "👶", Bean: "🫘", Cylinder: "🛢️",
-          Cigarette: "🚬", Home: "🏠", HeartPulse: "💓", Heart: "❤️", Bath: "🛁", Lightbulb: "💡",
-          Users: "👥", Sparkles: "✨", Shirt: "👕", Wind: "💨", HelpCircle: "❓", User: "👤",
-          WashingMachine: "🧼",
-          Beef: "🥩", Drumstick: "🍗", Fish: "🐟", Carrot: "🥕", Apple: "🍎", Nut: "🥜", IceCream: "🍦"
+        Utensils: "🍽️",
+        ShoppingBag: "🛍️",
+        Car: "🚗",
+        Gamepad2: "🎮",
+        MoreHorizontal: "⋯",
+        Coffee: "☕",
+        Milk: "🥛",
+        Wheat: "🌾",
+        Box: "📦",
+        Cookie: "🍪",
+        Droplets: "💧",
+        CupSoda: "🥤",
+        Candy: "🍬",
+        Zap: "⚡",
+        CircleDot: "🎯",
+        Soup: "🥣",
+        TrainFront: "🚆",
+        Fuel: "⛽",
+        Flame: "🔥",
+        Tv: "📺",
+        Search: "🔍",
+        Baby: "👶",
+        Bean: "🫘",
+        Cylinder: "🛢️",
+        Cigarette: "🚬",
+        Home: "🏠",
+        HeartPulse: "💓",
+        Heart: "❤️",
+        Bath: "🛁",
+        Lightbulb: "💡",
+        Users: "👥",
+        Sparkles: "✨",
+        Shirt: "👕",
+        Wind: "💨",
+        HelpCircle: "❓",
+        User: "👤",
+        WashingMachine: "🧼",
+        Beef: "🥩",
+        Drumstick: "🍗",
+        Fish: "🐟",
+        Carrot: "🥕",
+        Apple: "🍎",
+        Nut: "🥜",
+        IceCream: "🍦",
       };
 
       (shoppingList || []).forEach((s) => {
         let colorHex = "#64748B"; // slate
-        
+
         switch (s.category) {
-            case "Nourriture": colorHex = "#0D9488"; break;
-            case "Logement": colorHex = "#4F46E5"; break;
-            case "Transport": colorHex = "#0284C7"; break;
-            case "Sanitaire": colorHex = "#E11D48"; break;
-            case "Shopping": colorHex = "#9333EA"; break;
-            case "Loisirs": colorHex = "#D97706"; break;
-            case "Devoir": colorHex = "#EA580C"; break;
-            default: colorHex = "#475569"; break;
+          case "Nourriture":
+            colorHex = "#0D9488";
+            break;
+          case "Logement":
+            colorHex = "#4F46E5";
+            break;
+          case "Transport":
+            colorHex = "#0284C7";
+            break;
+          case "Sanitaire":
+            colorHex = "#E11D48";
+            break;
+          case "Shopping":
+            colorHex = "#9333EA";
+            break;
+          case "Loisirs":
+            colorHex = "#D97706";
+            break;
+          case "Devoir":
+            colorHex = "#EA580C";
+            break;
+          default:
+            colorHex = "#475569";
+            break;
         }
-        
-        const iconStr = s.iconName ? (UNICODE_ICONS[s.iconName] || "📦") : "📦";
-        newsItems.push(`<b><font color="${colorHex}">${iconStr} ${s.name}</font></b>`);
+
+        const iconStr = s.iconName ? UNICODE_ICONS[s.iconName] || "📦" : "📦";
+        newsItems.push(
+          `<b><font color="${colorHex}">${iconStr} ${s.name}</font></b>`
+        );
       });
 
       let newsHtml = newsItems.join("&nbsp;&nbsp;•&nbsp;&nbsp;");
       if (!newsHtml) {
-          newsHtml = "<i>Aucun achat programmé.</i>";
+        newsHtml = "<i>Aucun achat programmé.</i>";
       }
-      
-      await Preferences.set({ key: 'widget_news_html', value: newsHtml });
+
+      await Preferences.set({ key: "widget_news_html", value: newsHtml });
 
       if (typeof window !== "undefined") {
-        WidgetUpdater.update().catch((err: any) => console.log('WidgetUpdater skip:', err));
+        WidgetUpdater.update().catch((err: any) =>
+          console.log("WidgetUpdater skip:", err)
+        );
       }
     }
     updateWidget();
-  }, [balance, balanceThreshold, bankBalance, bankBalanceThreshold, inventoryItems, inventoryAlertThreshold, transactions, categoryBudgets, budgetAlertThreshold, currency, widgetTextColor, reminders, shoppingList]);
+  }, [
+    balance,
+    balanceThreshold,
+    bankBalance,
+    bankBalanceThreshold,
+    inventoryItems,
+    inventoryAlertThreshold,
+    transactions,
+    categoryBudgets,
+    budgetAlertThreshold,
+    currency,
+    widgetTextColor,
+    reminders,
+    shoppingList,
+  ]);
 
   const markUnbackedChanges = () => {
-    localStorage.setItem('hasUnbackedChanges', 'true');
+    localStorage.setItem("hasUnbackedChanges", "true");
     scheduleBackupReminder();
   };
 
@@ -581,7 +872,13 @@ export default function App() {
     category?: string,
     paidByBank: boolean = false,
     isPureInflow: boolean = false,
-    inventoryData?: { quantity: number; color: string; bg: string; iconName: string; iconSvg?: string }
+    inventoryData?: {
+      quantity: number;
+      color: string;
+      bg: string;
+      iconName: string;
+      iconSvg?: string;
+    }
   ) => {
     markUnbackedChanges();
     const newTx: Transaction = {
@@ -608,7 +905,10 @@ export default function App() {
     if (inventoryData) {
       setInventoryItems((prev) => [
         {
-          id: Date.now().toString() + Math.random().toString(36).substring(2, 9) + "_inv", // ensure unique ID
+          id:
+            Date.now().toString() +
+            Math.random().toString(36).substring(2, 9) +
+            "_inv", // ensure unique ID
           name: label,
           quantity: inventoryData.quantity,
           addedAt: Date.now(),
@@ -692,7 +992,7 @@ export default function App() {
           return result;
         }
         return tx;
-      }),
+      })
     );
   };
 
@@ -703,17 +1003,24 @@ export default function App() {
   };
 
   const [modalIsShoppingMode, setModalIsShoppingMode] = useState(false);
-  const [modalInitialLabel, setModalInitialLabel] = useState('');
-  const [modalInitialCategory, setModalInitialCategory] = useState('');
-  const [modalInitialAmount, setModalInitialAmount] = useState<number | undefined>(undefined);
-  const [shoppingItemSelectedId, setShoppingItemSelectedId] = useState<string | null>(null);
+  const [modalInitialLabel, setModalInitialLabel] = useState("");
+  const [modalInitialCategory, setModalInitialCategory] = useState("");
+  const [modalInitialAmount, setModalInitialAmount] = useState<
+    number | undefined
+  >(undefined);
+  const [shoppingItemSelectedId, setShoppingItemSelectedId] = useState<
+    string | null
+  >(null);
 
-  const openModal = (type: "INCOME" | "EXPENSE") => {
+  const openModal = (
+    type: "INCOME" | "EXPENSE",
+    prefill?: { name: string; category: string; price: number }
+  ) => {
     setModalType(type);
     setModalIsShoppingMode(false);
-    setModalInitialLabel('');
-    setModalInitialCategory('');
-    setModalInitialAmount(undefined);
+    setModalInitialLabel(prefill?.name || "");
+    setModalInitialCategory(prefill?.category || "");
+    setModalInitialAmount(prefill?.price);
     setShoppingItemSelectedId(null);
     setIsModalOpen(true);
   };
@@ -721,8 +1028,8 @@ export default function App() {
   const openShoppingListAddModal = () => {
     setModalType("EXPENSE");
     setModalIsShoppingMode(true);
-    setModalInitialLabel('');
-    setModalInitialCategory('');
+    setModalInitialLabel("");
+    setModalInitialCategory("");
     setModalInitialAmount(undefined);
     setShoppingItemSelectedId(null);
     setIsModalOpen(true);
@@ -738,7 +1045,10 @@ export default function App() {
     setIsModalOpen(true);
   };
 
-  const handleCreditSettlement = (id: string, settleSource: 'compte' | 'poche' = 'poche') => {
+  const handleCreditSettlement = (
+    id: string,
+    settleSource: "compte" | "poche" = "poche"
+  ) => {
     const entry = creditEntries.find((e) => e.id === id);
     if (!entry) return;
 
@@ -750,19 +1060,43 @@ export default function App() {
         language === "العربية"
           ? `استرداد مستحق: ${entry.name}`
           : `Remboursement : ${entry.name}`;
-      addTransaction(label, entry.amount, "INCOME", t.owedToMe, paidByBank, true);
+      addTransaction(
+        label,
+        entry.amount,
+        "INCOME",
+        t.owedToMe,
+        paidByBank,
+        true
+      );
     } else {
       // I paid someone back (Expense)
       const label =
         language === "العربية"
           ? `تسديد دين: ${entry.name}`
           : `Paiement dette : ${entry.name}`;
-      addTransaction(label, entry.amount, "EXPENSE", t.owedByMe, paidByBank, true);
+      addTransaction(
+        label,
+        entry.amount,
+        "EXPENSE",
+        t.owedByMe,
+        paidByBank,
+        true
+      );
     }
 
     // Mark credit entry as settled instead of removing
-    setCreditEntries((prev) => 
-      prev.map(e => e.id === id ? { ...e, settled: true, settledDate: new Date().toLocaleDateString(language === "Français" ? "fr-FR" : "en-US") } : e)
+    setCreditEntries((prev) =>
+      prev.map((e) =>
+        e.id === id
+          ? {
+              ...e,
+              settled: true,
+              settledDate: new Date().toLocaleDateString(
+                language === "Français" ? "fr-FR" : "en-US"
+              ),
+            }
+          : e
+      )
     );
   };
 
@@ -774,8 +1108,8 @@ export default function App() {
         language === "Français"
           ? "Salaire / Dépôt"
           : language === "العربية"
-            ? "راتب / إيداع"
-            : "Salary / Deposit",
+          ? "راتب / إيداع"
+          : "Salary / Deposit",
       amount,
       type: "INCOME",
       category: "Banque",
@@ -819,8 +1153,16 @@ export default function App() {
             inventoryItems={inventoryItems}
             onInventoryItemsChange={setInventoryItems}
             predefinedItems={predefinedItems}
-            onAddPredefinedItem={(item) => setPredefinedItems([...predefinedItems, item])}
-            onUpdatePredefinedItem={(id, updates) => setPredefinedItems(predefinedItems.map(p => p.id === id ? { ...p, ...updates } : p))}
+            onAddPredefinedItem={(item) =>
+              setPredefinedItems([...predefinedItems, item])
+            }
+            onUpdatePredefinedItem={(id, updates) =>
+              setPredefinedItems(
+                predefinedItems.map((p) =>
+                  p.id === id ? { ...p, ...updates } : p
+                )
+              )
+            }
           />
         );
       case "stats":
@@ -832,7 +1174,9 @@ export default function App() {
             language={language}
             isDarkMode={isDarkMode}
             categoryBudgets={categoryBudgets}
-            onUpdateBudget={(cat, limit) => setCategoryBudgets(prev => ({...prev, [cat]: limit}))}
+            onUpdateBudget={(cat, limit) =>
+              setCategoryBudgets((prev) => ({ ...prev, [cat]: limit }))
+            }
           />
         );
       case "credits":
@@ -954,15 +1298,31 @@ export default function App() {
             inventoryItems={inventoryItems}
             onInventoryItemsChange={setInventoryItems}
             predefinedItems={predefinedItems}
-            onAddPredefinedItem={(item) => setPredefinedItems([...predefinedItems, item])}
-            onUpdatePredefinedItem={(id, updates) => setPredefinedItems(predefinedItems.map(p => p.id === id ? { ...p, ...updates } : p))}
+            onAddPredefinedItem={(item) =>
+              setPredefinedItems([...predefinedItems, item])
+            }
+            onUpdatePredefinedItem={(id, updates) =>
+              setPredefinedItems(
+                predefinedItems.map((p) =>
+                  p.id === id ? { ...p, ...updates } : p
+                )
+              )
+            }
           />
         );
     }
   };
 
-  const TABS: Tab[] = ["home", "history", "bank", "credits", "stats", "inventory", "settings"];
-  
+  const TABS: Tab[] = [
+    "home",
+    "history",
+    "bank",
+    "credits",
+    "stats",
+    "inventory",
+    "settings",
+  ];
+
   const handleSwipe = (dir: "Left" | "Right") => {
     // Swipe disabled as per user request
   };
@@ -971,24 +1331,38 @@ export default function App() {
     onSwipedLeft: () => {},
     onSwipedRight: () => {},
     preventScrollOnSwipe: false,
-    trackMouse: false
+    trackMouse: false,
   });
 
   if (isInitializing) {
     return (
-      <div className={`h-screen ${isDarkMode ? "bg-slate-900 text-slate-200" : "bg-slate-50 text-slate-500"} flex items-center justify-center`}>
-         <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="w-8 h-8 border-4 border-t-transparent border-[#2D8B96] rounded-full" />
+      <div
+        className={`h-screen ${
+          isDarkMode
+            ? "bg-slate-900 text-slate-200"
+            : "bg-slate-50 text-slate-500"
+        } flex items-center justify-center`}
+      >
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1 }}
+          className="w-8 h-8 border-4 border-t-transparent border-[#2D8B96] rounded-full"
+        />
       </div>
     );
   }
 
   if (isLocked && (appPin || appBiometric)) {
     return (
-      <div className={`h-screen ${isDarkMode ? "bg-slate-900" : "bg-slate-50"} flex flex-col max-w-md mx-auto relative overflow-hidden font-sans`}>
-        <LockScreen 
-          correctPin={appPin || ""} 
+      <div
+        className={`h-screen ${
+          isDarkMode ? "bg-slate-900" : "bg-slate-50"
+        } flex flex-col max-w-md mx-auto relative overflow-hidden font-sans`}
+      >
+        <LockScreen
+          correctPin={appPin || ""}
           allowBiometric={appBiometric}
-          onUnlock={() => setIsLocked(false)} 
+          onUnlock={() => setIsLocked(false)}
         />
       </div>
     );
@@ -998,11 +1372,15 @@ export default function App() {
     <div
       {...swipeHandlers}
       dir={isRtl ? "rtl" : "ltr"}
-      className={`h-screen ${isDarkMode ? "bg-slate-900" : "bg-slate-50"} flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden font-sans transition-colors duration-500`}
+      className={`h-screen ${
+        isDarkMode ? "bg-slate-900" : "bg-slate-50"
+      } flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden font-sans transition-colors duration-500`}
     >
       {/* Header & Navigation */}
       <header
-        className={`sticky top-0 z-50 transition-colors duration-300 ${isDarkMode ? "bg-slate-900" : "bg-white"} border-b ${isDarkMode ? "border-slate-800" : "border-slate-100"}`}
+        className={`sticky top-0 z-50 transition-colors duration-300 ${
+          isDarkMode ? "bg-slate-900" : "bg-white"
+        } border-b ${isDarkMode ? "border-slate-800" : "border-slate-100"}`}
       >
         {/* Global Navigation Tabs (Compact & Artistic) */}
         <nav className="flex items-center justify-around px-2 pb-5 pt-3 max-w-full mx-auto gap-1">
@@ -1060,7 +1438,9 @@ export default function App() {
 
       {/* Main Container */}
       <main
-        className={`flex-1 rounded-t-[32px] p-6 shadow-even transition-colors relative z-10 overflow-y-auto ${isDarkMode ? "bg-slate-900 shadow-none" : "bg-white"}`}
+        className={`flex-1 rounded-t-[32px] p-6 shadow-even transition-colors relative z-10 overflow-y-auto ${
+          isDarkMode ? "bg-slate-900 shadow-none" : "bg-white"
+        }`}
       >
         <div className="pb-32">
           {" "}
@@ -1072,23 +1452,43 @@ export default function App() {
       <AddTransactionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onAdd={(label, amount, type, category, paidByBank, isPureInflow, inventoryData) => {
+        onAdd={(
+          label,
+          amount,
+          type,
+          category,
+          paidByBank,
+          isPureInflow,
+          inventoryData
+        ) => {
           if (modalIsShoppingMode) {
-             const newItem: ShoppingListItem = {
-               id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
-               name: label,
-               category: category || 'Autres',
-               expectedPrice: amount,
-               addedAt: Date.now(),
-               iconName: inventoryData?.iconName || 'ShoppingBag',
-               iconSvg: inventoryData?.iconSvg
-             };
-             setShoppingList(prev => [...prev, newItem]);
+            const newItem: ShoppingListItem = {
+              id:
+                Date.now().toString() +
+                Math.random().toString(36).substring(2, 9),
+              name: label,
+              category: category || "Autres",
+              expectedPrice: amount,
+              addedAt: Date.now(),
+              iconName: inventoryData?.iconName || "ShoppingBag",
+              iconSvg: inventoryData?.iconSvg,
+            };
+            setShoppingList((prev) => [...prev, newItem]);
           } else {
-             addTransaction(label, amount, type, category, paidByBank, isPureInflow, inventoryData);
-             if (shoppingItemSelectedId) {
-                setShoppingList(prev => prev.filter(i => i.id !== shoppingItemSelectedId));
-             }
+            addTransaction(
+              label,
+              amount,
+              type,
+              category,
+              paidByBank,
+              isPureInflow,
+              inventoryData
+            );
+            if (shoppingItemSelectedId) {
+              setShoppingList((prev) =>
+                prev.filter((i) => i.id !== shoppingItemSelectedId)
+              );
+            }
           }
         }}
         initialType={modalType}
@@ -1169,7 +1569,13 @@ function TabButton({
   return (
     <button
       onClick={onClick}
-      className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-3 transition-all duration-300 relative rounded-2xl group ${active ? colors.text + " scale-105" : isDarkMode ? "text-slate-500 hover:text-slate-300" : "text-slate-400 hover:text-slate-600"}`}
+      className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-3 transition-all duration-300 relative rounded-2xl group ${
+        active
+          ? colors.text + " scale-105"
+          : isDarkMode
+          ? "text-slate-500 hover:text-slate-300"
+          : "text-slate-400 hover:text-slate-600"
+      }`}
     >
       {active && (
         <motion.div
@@ -1180,7 +1586,9 @@ function TabButton({
         />
       )}
       <div
-        className={`transition-transform duration-300 group-hover:scale-110 ${active ? `scale-110 drop-shadow-[0_0_12px_${colors.glow}]` : ""}`}
+        className={`transition-transform duration-300 group-hover:scale-110 ${
+          active ? `scale-110 drop-shadow-[0_0_12px_${colors.glow}]` : ""
+        }`}
       >
         {active && (colors as any).iconColor ? (
           <div style={{ color: (colors as any).iconColor }}>{icon}</div>

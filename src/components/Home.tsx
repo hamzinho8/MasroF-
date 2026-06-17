@@ -38,12 +38,17 @@ import {
   Sparkles,
   Camera,
   Wifi,
-  WifiOff
+  WifiOff,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Transaction, CreditEntry, Reminder, ShoppingListItem } from "../types";
 import { useLocalStorage } from "../hooks/useLocalStorage";
-import { ICON_MAP, CATEGORIES as APP_CATEGORIES } from "../constants";
+import {
+  ICON_MAP,
+  CATEGORIES as APP_CATEGORIES,
+  INITIAL_PREDEFINED_ITEMS,
+  getArticleInfo,
+} from "../constants";
 import CalendarView from "./CalendarView";
 import ReceiptScannerModal from "./ReceiptScannerModal";
 
@@ -52,7 +57,10 @@ interface HomeProps {
   bankBalance: number;
   onAddBankBalance: (amount: number) => void;
   transactions: Transaction[];
-  onAddClick: (type: "INCOME" | "EXPENSE") => void;
+  onAddClick: (
+    type: "INCOME" | "EXPENSE",
+    prefill?: { name: string; category: string; price: number }
+  ) => void;
   onViewAll: () => void;
   onDelete: (id: string) => void;
   onEdit: (tx: Transaction) => void;
@@ -69,7 +77,10 @@ interface HomeProps {
   onInventoryItemsChange?: (items: import("../types").InventoryItem[]) => void;
   predefinedItems: import("../types").PredefinedItem[];
   onAddPredefinedItem: (item: import("../types").PredefinedItem) => void;
-  onUpdatePredefinedItem: (id: string, updates: Partial<import("../types").PredefinedItem>) => void;
+  onUpdatePredefinedItem: (
+    id: string,
+    updates: Partial<import("../types").PredefinedItem>
+  ) => void;
 }
 
 export default function Home({
@@ -104,18 +115,29 @@ export default function Home({
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [showReceiptScannerModal, setShowReceiptScannerModal] = useState(false);
-  const [categoryBudgetsRaw, setCategoryBudgetsRaw] = useLocalStorage<any>('categoryBudgets', {});
+  const [categoryBudgetsRaw, setCategoryBudgetsRaw] = useLocalStorage<any>(
+    "categoryBudgets",
+    {}
+  );
   const categoryBudgets = React.useMemo(() => {
     if (!categoryBudgetsRaw) return {};
     if (Array.isArray(categoryBudgetsRaw)) {
-      return categoryBudgetsRaw.reduce((acc: any, b: any) => ({ ...acc, [b.category]: b.limit }), {});
+      return categoryBudgetsRaw.reduce(
+        (acc: any, b: any) => ({ ...acc, [b.category]: b.limit }),
+        {}
+      );
     }
-    if (typeof categoryBudgetsRaw === 'object') {
+    if (typeof categoryBudgetsRaw === "object") {
       const clean: Record<string, number> = {};
       Object.entries(categoryBudgetsRaw).forEach(([k, v]) => {
-        if (typeof v === 'number') {
+        if (typeof v === "number") {
           clean[k] = v;
-        } else if (v && typeof v === 'object' && (v as any).category && typeof (v as any).limit === 'number') {
+        } else if (
+          v &&
+          typeof v === "object" &&
+          (v as any).category &&
+          typeof (v as any).limit === "number"
+        ) {
           clean[(v as any).category] = (v as any).limit;
         }
       });
@@ -123,28 +145,50 @@ export default function Home({
     }
     return {};
   }, [categoryBudgetsRaw]);
-  
-  const setCategoryBudgets = (updater: React.SetStateAction<Record<string, number>>) => {
+
+  const setCategoryBudgets = (
+    updater: React.SetStateAction<Record<string, number>>
+  ) => {
     setCategoryBudgetsRaw((prevRaw: any) => {
       let currentClean: Record<string, number> = {};
       if (Array.isArray(prevRaw)) {
-        currentClean = prevRaw.reduce((acc: any, b: any) => ({ ...acc, [b.category]: b.limit }), {});
-      } else if (prevRaw && typeof prevRaw === 'object') {
+        currentClean = prevRaw.reduce(
+          (acc: any, b: any) => ({ ...acc, [b.category]: b.limit }),
+          {}
+        );
+      } else if (prevRaw && typeof prevRaw === "object") {
         Object.entries(prevRaw).forEach(([k, v]) => {
-          if (typeof v === 'number') {
+          if (typeof v === "number") {
             currentClean[k] = v;
-          } else if (v && typeof v === 'object' && (v as any).category && typeof (v as any).limit === 'number') {
+          } else if (
+            v &&
+            typeof v === "object" &&
+            (v as any).category &&
+            typeof (v as any).limit === "number"
+          ) {
             currentClean[(v as any).category] = (v as any).limit;
           }
         });
       }
-      return typeof updater === 'function' ? updater(currentClean) : updater;
+      return typeof updater === "function" ? updater(currentClean) : updater;
     });
   };
   const [showRasSettingModal, setShowRasSettingModal] = useState(false);
-  const [rasHiddenItems, setRasHiddenItems] = useLocalStorage<string[]>('rasHiddenItems', []);
-  const [hideBankBalance, setHideBankBalance] = useLocalStorage<boolean>('hideBankBalance', true);
-  const [showScannerFab] = useLocalStorage<boolean>('showScannerFab', true);
+  const [rasHiddenItems, setRasHiddenItems] = useLocalStorage<string[]>(
+    "rasHiddenItems",
+    []
+  );
+  const [favoriteItemIds, setFavoriteItemIds] = useLocalStorage<string[]>(
+    "favoriteItemIds",
+    []
+  );
+  const [showFavoritesSettingModal, setShowFavoritesSettingModal] =
+    useState(false);
+  const [hideBankBalance, setHideBankBalance] = useLocalStorage<boolean>(
+    "hideBankBalance",
+    true
+  );
+  const [showScannerFab] = useLocalStorage<boolean>("showScannerFab", true);
   const [isOnline, setIsOnline] = React.useState(navigator.onLine);
 
   React.useEffect(() => {
@@ -187,7 +231,8 @@ export default function Home({
       owedToMe: "On me doit",
       owedByMe: "Je dois",
       budgetsTitle: "Budgets par Catégorie",
-      noBudgetsYet: "Aucun budget défini. Appuyez sur l'icône de réglage pour commencer.",
+      noBudgetsYet:
+        "Aucun budget défini. Appuyez sur l'icône de réglage pour commencer.",
     },
     العربية: {
       bonjour: "مرحباً",
@@ -255,13 +300,16 @@ export default function Home({
     translations[language as keyof typeof translations] ||
     translations["Français"];
 
-  const CATEGORY_MAP = APP_CATEGORIES.map(cat => ({
+  const CATEGORY_MAP = APP_CATEGORIES.map((cat) => ({
     label: cat.label,
-    icon: (() => { const IconComp = ICON_MAP[cat.iconName] || MoreHorizontal; return <IconComp size={24} />; })(),
+    icon: (() => {
+      const IconComp = ICON_MAP[cat.iconName] || MoreHorizontal;
+      return <IconComp size={24} />;
+    })(),
     color: cat.colorString,
     bg: cat.bgColor,
     text: cat.color,
-    glow: `bg-${cat.colorString}-400`
+    glow: `bg-${cat.colorString}-400`,
   }));
 
   const getSummaryTitle = () => {
@@ -316,10 +364,24 @@ export default function Home({
 
     transactions.forEach((tx) => {
       if (tx.timestamp >= startOfPeriod.getTime()) {
-        const isCredit = (tx.category && ["on me doit","je dois","مستحقات لي","ديون علي","owed to me","i owe","loans","debts","crédit +","crédit --"].includes(tx.category.toLowerCase()));
+        const isCredit =
+          tx.category &&
+          [
+            "on me doit",
+            "je dois",
+            "مستحقات لي",
+            "ديون علي",
+            "owed to me",
+            "i owe",
+            "loans",
+            "debts",
+            "crédit +",
+            "crédit --",
+          ].includes(tx.category.toLowerCase());
         if (!isCredit) {
           if (tx.type === "EXPENSE") totalExpense += tx.amount;
-          else if (tx.type === "INCOME" && !tx.paidByBank) totalIncome += tx.amount;
+          else if (tx.type === "INCOME" && !tx.paidByBank)
+            totalIncome += tx.amount;
         }
       }
     });
@@ -330,7 +392,7 @@ export default function Home({
   const currentMonthExpenses = React.useMemo(() => {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    
+
     const spends = new Map<string, number>();
 
     transactions.forEach((tx) => {
@@ -339,37 +401,43 @@ export default function Home({
         spends.set(cat, (spends.get(cat) || 0) + tx.amount);
       }
     });
-    
+
     return spends;
   }, [transactions]);
 
   const handleDecreaseInventory = (item: import("../types").InventoryItem) => {
     if (item.quantity <= 0 || !onInventoryItemsChange) return;
-    
+
     const now = new Date();
-    const dateStr = now.toLocaleDateString(
-      language === 'Français' ? 'fr-FR' : (language === 'العربية' ? 'ar-MA' : 'en-US'), 
-      {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      }
-    ).replace(',', '');
-    
+    const dateStr = now
+      .toLocaleDateString(
+        language === "Français"
+          ? "fr-FR"
+          : language === "العربية"
+          ? "ar-MA"
+          : "en-US",
+        {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }
+      )
+      .replace(",", "");
+
     const newAction: import("../types").InventoryDecreaseAction = {
       id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
       timestamp: Date.now(),
-      dateStr
+      dateStr,
     };
 
-    const updatedItems = inventoryItems.map(i => {
+    const updatedItems = inventoryItems.map((i) => {
       if (i.id === item.id) {
         return {
           ...i,
           quantity: i.quantity - 1,
-          history: [...i.history, newAction]
+          history: [...i.history, newAction],
         };
       }
       return i;
@@ -409,8 +477,15 @@ export default function Home({
         className="relative min-h-[12rem] h-auto rounded-[24px] overflow-hidden shadow-lg mb-8 transition-all hover:scale-[1.01] cursor-pointer"
         style={{ background: widgetBackground }}
       >
-        <div className="absolute top-4 right-4 z-20 flex items-center justify-center p-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 shadow-sm" title={isOnline ? "Connecté" : "Hors-ligne"}>
-           {isOnline ? <Wifi size={14} className="text-emerald-500" /> : <WifiOff size={14} className="text-red-500" />}
+        <div
+          className="absolute top-4 right-4 z-20 flex items-center justify-center p-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 shadow-sm"
+          title={isOnline ? "Connecté" : "Hors-ligne"}
+        >
+          {isOnline ? (
+            <Wifi size={14} className="text-emerald-500" />
+          ) : (
+            <WifiOff size={14} className="text-red-500" />
+          )}
         </div>
         <AnimatePresence mode="wait">
           <motion.div
@@ -432,17 +507,26 @@ export default function Home({
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setHideBankBalance(!hideBankBalance); }} 
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setHideBankBalance(!hideBankBalance);
+                    }}
                     className="flex items-center justify-center pointer-events-auto text-slate-800 active:scale-95 transition-transform"
                   >
-                    {hideBankBalance ? <EyeOff size={28} strokeWidth={2.5} /> : <Eye size={28} strokeWidth={2.5} />}
+                    {hideBankBalance ? (
+                      <EyeOff size={28} strokeWidth={2.5} />
+                    ) : (
+                      <Eye size={28} strokeWidth={2.5} />
+                    )}
                   </button>
                   <div className="flex items-baseline gap-2">
                     <div className="text-4xl font-black text-slate-900 tracking-tighter">
-                      {hideBankBalance ? "****" : bankBalance.toLocaleString("fr-FR", {
-                        minimumFractionDigits: 2,
-                      })}
+                      {hideBankBalance
+                        ? "****"
+                        : bankBalance.toLocaleString("fr-FR", {
+                            minimumFractionDigits: 2,
+                          })}
                     </div>
                     <span className="text-xl font-bold text-slate-900/40 uppercase">
                       {currency}
@@ -493,17 +577,26 @@ export default function Home({
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); setHideBankBalance(!hideBankBalance); }} 
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setHideBankBalance(!hideBankBalance);
+                      }}
                       className="flex items-center justify-center pointer-events-auto text-slate-800 active:scale-95 transition-transform"
                     >
-                      {hideBankBalance ? <EyeOff size={28} strokeWidth={2.5} /> : <Eye size={28} strokeWidth={2.5} />}
+                      {hideBankBalance ? (
+                        <EyeOff size={28} strokeWidth={2.5} />
+                      ) : (
+                        <Eye size={28} strokeWidth={2.5} />
+                      )}
                     </button>
                     <div className="flex items-baseline gap-2">
                       <div className="text-4xl font-black text-slate-900 tracking-tighter">
-                        {hideBankBalance ? "****" : bankBalance.toLocaleString("fr-FR", {
-                          minimumFractionDigits: 2,
-                        })}
+                        {hideBankBalance
+                          ? "****"
+                          : bankBalance.toLocaleString("fr-FR", {
+                              minimumFractionDigits: 2,
+                            })}
                       </div>
                       <span className="text-xl font-bold text-slate-900/40 uppercase">
                         {currency}
@@ -709,19 +802,31 @@ export default function Home({
           <div className="flex bg-slate-100 p-1 rounded-xl">
             <button
               onClick={() => setTimeframe("day")}
-              className={`p-1.5 rounded-lg transition-all ${timeframe === "day" ? "bg-white text-slate-900 shadow-sm" : "text-slate-400"}`}
+              className={`p-1.5 rounded-lg transition-all ${
+                timeframe === "day"
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-400"
+              }`}
             >
               <CalendarCheck size={16} />
             </button>
             <button
               onClick={() => setTimeframe("week")}
-              className={`p-1.5 rounded-lg transition-all ${timeframe === "week" ? "bg-white text-slate-900 shadow-sm" : "text-slate-400"}`}
+              className={`p-1.5 rounded-lg transition-all ${
+                timeframe === "week"
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-400"
+              }`}
             >
               <CalendarRange size={16} />
             </button>
             <button
               onClick={() => setTimeframe("month")}
-              className={`p-1.5 rounded-lg transition-all ${timeframe === "month" ? "bg-white text-slate-900 shadow-sm" : "text-slate-400"}`}
+              className={`p-1.5 rounded-lg transition-all ${
+                timeframe === "month"
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-400"
+              }`}
             >
               <CalendarDays size={16} />
             </button>
@@ -729,7 +834,7 @@ export default function Home({
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <button 
+          <button
             onClick={() => setShowCalendarModal(true)}
             className="text-left p-4 rounded-2xl border-2 border-danger-red/20 bg-danger-red/5 relative overflow-hidden group hover:border-danger-red/40 transition-all cursor-pointer"
           >
@@ -746,7 +851,7 @@ export default function Home({
               size={48}
             />
           </button>
-          <button 
+          <button
             onClick={() => setShowCalendarModal(true)}
             className="text-left p-4 rounded-2xl border-2 border-bank-blue/20 bg-bank-blue/5 relative overflow-hidden group hover:border-bank-blue/40 transition-all cursor-pointer"
           >
@@ -766,50 +871,145 @@ export default function Home({
         </div>
       </div>
 
+      {/* Favorites Shortcuts */}
+      <div className="mb-2 overflow-hidden -mx-1 px-1">
+        <div className="flex justify-between items-center mb-4 px-1">
+          <h3 className="text-slate-900 font-black tracking-tight flex items-center gap-2">
+            Favoris
+          </h3>
+          <button
+            onClick={() => setShowFavoritesSettingModal(true)}
+            className="w-8 h-8 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:bg-slate-50 transition-colors shadow-sm"
+          >
+            <Settings size={16} />
+          </button>
+        </div>
+        {favoriteItemIds.length === 0 ? (
+          <div
+            className="text-center py-4 border-2 border-dashed border-slate-200 rounded-[24px] mb-4 text-slate-400 text-sm font-medium mx-1"
+            onClick={() => setShowFavoritesSettingModal(true)}
+          >
+            Appuyez sur l'icône réglage pour épingler vos achats fréquents
+          </div>
+        ) : (
+          <div className="grid grid-cols-4 gap-2 pb-4 px-1">
+            {INITIAL_PREDEFINED_ITEMS.filter((i) =>
+              favoriteItemIds.includes(i.id)
+            ).map((item) => {
+              const info = getArticleInfo(item.name, item.category);
+              const IconComponent =
+                info.iconName && ICON_MAP[info.iconName]
+                  ? (ICON_MAP[info.iconName] as React.ElementType)
+                  : PackageOpen;
+              const textClass = info.color || "text-slate-800";
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() =>
+                    onAddClick("EXPENSE", {
+                      name: item.name,
+                      category: item.category,
+                      price: item.price,
+                    })
+                  }
+                  className={`w-full h-[86px] rounded-[24px] flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-sm border border-white hover:border-slate-200 active:scale-95 group ${
+                    info.bgColor ? info.bgColor.replace("100", "50") : "bg-slate-50"
+                  }`}
+                >
+                  <div
+                    className={`z-10 relative flex items-center justify-center ${textClass} mb-1 mt-1`}
+                  >
+                    {item.iconSvg ? (
+                      <div
+                        dangerouslySetInnerHTML={{ __html: item.iconSvg }}
+                        className="w-6 h-6 text-current"
+                      />
+                    ) : (
+                      <IconComponent size={26} strokeWidth={2.5} />
+                    )}
+                  </div>
+                  <span
+                    className={`z-10 text-[9px] font-bold ${textClass} uppercase truncate w-full px-2 text-center mt-1`}
+                  >
+                    {item.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       {/* Inventory Shortcuts */}
-      {inventoryItems && inventoryItems.filter(i => i.quantity > 0).length > 0 && (
-        <div className="mb-2 overflow-hidden -mx-1 px-1">
-          <div className="flex justify-between items-center mb-4 px-1">
-             <h3 className="text-slate-900 font-black tracking-tight flex items-center gap-2">RAS</h3>
-             <button
+      {inventoryItems &&
+        inventoryItems.filter((i) => i.quantity > 0).length > 0 && (
+          <div className="mb-2 overflow-hidden -mx-1 px-1">
+            <div className="flex justify-between items-center mb-4 px-1">
+              <h3 className="text-slate-900 font-black tracking-tight flex items-center gap-2">
+                RAS
+              </h3>
+              <button
                 onClick={() => setShowRasSettingModal(true)}
                 className="w-8 h-8 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:bg-slate-50 transition-colors shadow-sm"
               >
                 <Settings size={16} />
               </button>
+            </div>
+            <div className="grid grid-cols-4 gap-2 pb-4 px-1">
+              {inventoryItems
+                .filter((i) => i.quantity > 0 && !rasHiddenItems.includes(i.id))
+                .map((item) => {
+                  const IconComponent =
+                    item.iconName && ICON_MAP[item.iconName]
+                      ? (ICON_MAP[item.iconName] as React.ElementType)
+                      : PackageOpen;
+                  const bgClass = item.bg || "bg-violet-600";
+                  const textClass = item.color || "text-slate-800";
+
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleDecreaseInventory(item)}
+                      className={`w-full h-[86px] rounded-[24px] flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-sm border border-white hover:border-slate-200 active:scale-95 group ${
+                        item.bg ? item.bg.replace("100", "50") : "bg-slate-50"
+                      }`}
+                    >
+                      {/* Plus/minus icon that appears on hover/active (optional visual cue) */}
+                      <div
+                        className={`absolute right-1 top-1 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 shadow-sm ${textClass}`}
+                      >
+                        <span className="text-xs font-black leading-none mb-0.5">
+                          -
+                        </span>
+                      </div>
+
+                      <div
+                        className={`z-10 relative flex items-center justify-center ${textClass} mb-1 mt-1`}
+                      >
+                        <span className="absolute -top-1.5 -left-1.5 text-[11px] font-black leading-none">
+                          {item.quantity}
+                        </span>
+                        {item.iconSvg ? (
+                          <div
+                            dangerouslySetInnerHTML={{ __html: item.iconSvg }}
+                            className="w-6 h-6 text-current"
+                          />
+                        ) : (
+                          <IconComponent size={26} strokeWidth={2.5} />
+                        )}
+                      </div>
+                      <span
+                        className={`z-10 text-[9px] font-bold ${textClass} uppercase truncate w-full px-2 text-center mt-1`}
+                      >
+                        {item.name}
+                      </span>
+                    </button>
+                  );
+                })}
+            </div>
           </div>
-          <div className="grid grid-cols-4 gap-2 pb-4 px-1">
-            {inventoryItems.filter(i => i.quantity > 0 && !rasHiddenItems.includes(i.id)).map(item => {
-              const IconComponent = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : PackageOpen;
-              const bgClass = item.bg || "bg-violet-600";
-              const textClass = item.color || "text-slate-800";
-              
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleDecreaseInventory(item)}
-                  className={`w-full h-[86px] rounded-[24px] flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-sm border border-white hover:border-slate-200 active:scale-95 group ${item.bg ? item.bg.replace('100', '50') : 'bg-slate-50'}`}
-                >
-                  {/* Plus/minus icon that appears on hover/active (optional visual cue) */}
-                  <div className={`absolute right-1 top-1 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 shadow-sm ${textClass}`}>
-                    <span className="text-xs font-black leading-none mb-0.5">-</span>
-                  </div>
-                  
-                  <div className={`z-10 relative flex items-center justify-center ${textClass} mb-1 mt-1`}>
-                    <span className="absolute -top-1.5 -left-1.5 text-[11px] font-black leading-none">{item.quantity}</span>
-                    {item.iconSvg ? (
-                      <div dangerouslySetInnerHTML={{ __html: item.iconSvg }} className="w-6 h-6 text-current" />
-                    ) : (
-                      <IconComponent size={26} strokeWidth={2.5} />
-                    )}
-                  </div>
-                  <span className={`z-10 text-[9px] font-bold ${textClass} uppercase truncate w-full px-2 text-center mt-1`}>{item.name}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+        )}
 
       {/* Category Budgets Activity Instead of History */}
       <div>
@@ -824,62 +1024,97 @@ export default function Home({
             <Settings size={14} />
           </button>
         </div>
-        
+
         <div className="space-y-4">
           {Object.keys(categoryBudgets).length === 0 ? (
             <div className="text-center bg-white border border-dashed border-slate-200 rounded-3xl p-8 flex flex-col items-center">
-               <Target size={32} className="text-slate-200 mb-3" />
-               <p className="text-xs text-slate-400 font-medium">{t.noBudgetsYet}</p>
+              <Target size={32} className="text-slate-200 mb-3" />
+              <p className="text-xs text-slate-400 font-medium">
+                {t.noBudgetsYet}
+              </p>
             </div>
           ) : (
-            Object.entries(categoryBudgets).map(([category, limitRaw], index) => {
-              const limit = typeof limitRaw === 'number' ? limitRaw : 0;
-              const spent = currentMonthExpenses.get(category.toLowerCase()) || 0;
-              const percent = Math.min((spent / limit) * 100, 100);
-              const isOver = spent > limit;
-              const isClose = !isOver && percent > 80;
+            Object.entries(categoryBudgets).map(
+              ([category, limitRaw], index) => {
+                const limit = typeof limitRaw === "number" ? limitRaw : 0;
+                const spent =
+                  currentMonthExpenses.get(category.toLowerCase()) || 0;
+                const percent = Math.min((spent / limit) * 100, 100);
+                const isOver = spent > limit;
+                const isClose = !isOver && percent > 80;
 
-              const categoryMatch = CATEGORY_MAP.find(
-                 (c) => c.label.toLowerCase() === category.toLowerCase()
-              ) || CATEGORY_MAP[0];
+                const categoryMatch =
+                  CATEGORY_MAP.find(
+                    (c) => c.label.toLowerCase() === category.toLowerCase()
+                  ) || CATEGORY_MAP[0];
 
-              return (
-                <div key={`${category}-${index}`} className={`bg-white rounded-3xl p-5 border shadow-sm ${isOver ? 'border-rose-200 shadow-rose-100' : isClose ? 'border-amber-200 shadow-amber-100' : 'border-slate-100'}`}>
-                  <div className="flex items-center gap-4 mb-1">
-                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center border border-white shadow-sm ${categoryMatch.bg} ${categoryMatch.text}`}>
-                      {categoryMatch.icon}
-                    </div>
-                    <div className="flex-1">
-                       <div className="flex justify-between items-center">
-                          <h4 className="font-bold text-slate-800 tracking-tight text-sm">{category}</h4>
-                          <span className={`text-xs font-black tracking-tighter ${isOver ? 'text-rose-600' : 'text-slate-500'}`}>
-                            {spent.toLocaleString("fr-FR")} / <span className="text-slate-400">{limit.toLocaleString("fr-FR")} {currency}</span>
+                return (
+                  <div
+                    key={`${category}-${index}`}
+                    className={`bg-white rounded-3xl p-5 border shadow-sm ${
+                      isOver
+                        ? "border-rose-200 shadow-rose-100"
+                        : isClose
+                        ? "border-amber-200 shadow-amber-100"
+                        : "border-slate-100"
+                    }`}
+                  >
+                    <div className="flex items-center gap-4 mb-1">
+                      <div
+                        className={`w-10 h-10 rounded-2xl flex items-center justify-center border border-white shadow-sm ${categoryMatch.bg} ${categoryMatch.text}`}
+                      >
+                        {categoryMatch.icon}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-center">
+                          <h4 className="font-bold text-slate-800 tracking-tight text-sm">
+                            {category}
+                          </h4>
+                          <span
+                            className={`text-xs font-black tracking-tighter ${
+                              isOver ? "text-rose-600" : "text-slate-500"
+                            }`}
+                          >
+                            {spent.toLocaleString("fr-FR")} /{" "}
+                            <span className="text-slate-400">
+                              {limit.toLocaleString("fr-FR")} {currency}
+                            </span>
                           </span>
-                       </div>
-                       <div className="w-full h-2 bg-slate-100 rounded-full mt-2 overflow-hidden shadow-inner">
-                          <motion.div 
+                        </div>
+                        <div className="w-full h-2 bg-slate-100 rounded-full mt-2 overflow-hidden shadow-inner">
+                          <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${percent}%` }}
                             transition={{ duration: 0.8, ease: "easeOut" }}
-                            className={`h-full rounded-full ${isOver ? 'bg-rose-500' : isClose ? 'bg-amber-500' : 'bg-teal-500'}`}
+                            className={`h-full rounded-full ${
+                              isOver
+                                ? "bg-rose-500"
+                                : isClose
+                                ? "bg-amber-500"
+                                : "bg-teal-500"
+                            }`}
                           />
-                       </div>
+                        </div>
+                      </div>
                     </div>
+                    {isOver && (
+                      <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-rose-500 mt-3 bg-rose-50 px-2 py-1.5 rounded-lg w-fit border border-rose-100/50">
+                        <AlertTriangle size={10} />
+                        Dépassement de{" "}
+                        {Math.abs(limit - spent).toLocaleString("fr-FR")}{" "}
+                        {currency}
+                      </div>
+                    )}
+                    {isClose && (
+                      <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-amber-500 mt-3 bg-amber-50 px-2 py-1.5 rounded-lg w-fit border border-amber-100/50">
+                        Reste {Math.abs(limit - spent).toLocaleString("fr-FR")}{" "}
+                        {currency}
+                      </div>
+                    )}
                   </div>
-                  {isOver && (
-                    <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-rose-500 mt-3 bg-rose-50 px-2 py-1.5 rounded-lg w-fit border border-rose-100/50">
-                      <AlertTriangle size={10} />
-                      Dépassement de {Math.abs(limit - spent).toLocaleString("fr-FR")} {currency}
-                    </div>
-                  )}
-                  {isClose && (
-                    <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-amber-500 mt-3 bg-amber-50 px-2 py-1.5 rounded-lg w-fit border border-amber-100/50">
-                      Reste {Math.abs(limit - spent).toLocaleString("fr-FR")} {currency}
-                    </div>
-                  )}
-                </div>
-              )
-            })
+                );
+              }
+            )
           )}
         </div>
       </div>
@@ -894,159 +1129,171 @@ export default function Home({
         </button>
       )}
 
-        {/* Inline Edit Modal */}
-        <AnimatePresence>
-          {editingTx && (
+      {/* Inline Edit Modal */}
+      <AnimatePresence>
+        {editingTx && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-900/60"
+            onClick={() => setEditingTx(null)}
+          >
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-900/60"
-              onClick={() => setEditingTx(null)}
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-[32px] w-full max-w-sm p-8 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
             >
-              <motion.div
-                initial={{ scale: 0.9, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 20 }}
-                className="bg-white rounded-[32px] w-full max-w-sm p-8 shadow-2xl"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-black text-slate-900 tracking-tight">
-                    Modifier
-                  </h3>
-                  <button
-                    onClick={() => setEditingTx(null)}
-                    className="p-2 bg-slate-50 rounded-full text-slate-400"
-                  >
-                    <X size={20} />
-                  </button>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                  Modifier
+                </h3>
+                <button
+                  onClick={() => setEditingTx(null)}
+                  className="p-2 bg-slate-50 rounded-full text-slate-400"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveEdit} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-1">
+                    Libellé
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editingTx.label}
+                    onChange={(e) =>
+                      setEditingTx({ ...editingTx, label: e.target.value })
+                    }
+                    className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm font-bold text-slate-800 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all shadow-inner"
+                  />
                 </div>
 
-                <form onSubmit={handleSaveEdit} className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-1">
-                      Libellé
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={editingTx.label}
-                      onChange={(e) =>
-                        setEditingTx({ ...editingTx, label: e.target.value })
-                      }
-                      className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm font-bold text-slate-800 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all shadow-inner"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-1">
-                      Montant ({currency})
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      required
-                      value={isNaN(editingTx.amount) ? "" : editingTx.amount}
-                      onChange={(e) => {
-                        const val = parseFloat(e.target.value);
-                        setEditingTx({
-                          ...editingTx,
-                          amount: isNaN(val) ? NaN : val,
-                        });
-                      }}
-                      className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm font-black text-slate-800 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all shadow-inner text-xl"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full py-5 bg-teal-brand text-white rounded-[24px] font-black uppercase tracking-widest shadow-xl shadow-teal-brand/20 active:scale-95 transition-all mt-4"
-                  >
-                    Enregistrer
-                  </button>
-                </form>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {showRasSettingModal && inventoryItems && (
-            <RasSettingsModal
-              onClose={() => setShowRasSettingModal(false)}
-              inventoryItems={inventoryItems}
-              rasHiddenItems={rasHiddenItems}
-              setRasHiddenItems={setRasHiddenItems}
-            />
-          )}
-          {showBudgetModal && (
-            <BudgetSettingsModal 
-              onClose={() => setShowBudgetModal(false)}
-              categoryBudgets={categoryBudgets}
-              setCategoryBudgets={setCategoryBudgets}
-              categories={CATEGORY_MAP}
-              currency={currency}
-            />
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {showCalendarModal && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
-              onClick={() => setShowCalendarModal(false)}
-            >
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-md relative flex flex-col gap-4"
-              >
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => setShowCalendarModal(false)}
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 text-white shadow-lg hover:bg-slate-700 transition-colors"
-                  >
-                    <X size={20} />
-                  </button>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-1">
+                    Montant ({currency})
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={isNaN(editingTx.amount) ? "" : editingTx.amount}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      setEditingTx({
+                        ...editingTx,
+                        amount: isNaN(val) ? NaN : val,
+                      });
+                    }}
+                    className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm font-black text-slate-800 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all shadow-inner text-xl"
+                  />
                 </div>
-                <CalendarView transactions={transactions} currency={currency} />
-              </motion.div>
-            </motion.div>
-          )}
 
-          {showReceiptScannerModal && (
-             <ReceiptScannerModal 
-               onClose={() => setShowReceiptScannerModal(false)}
-               predefinedItems={predefinedItems}
-               onAddPredefinedItem={onAddPredefinedItem}
-               onUpdatePredefinedItem={onUpdatePredefinedItem}
-             />
-          )}
-        </AnimatePresence>
+                <button
+                  type="submit"
+                  className="w-full py-5 bg-teal-brand text-white rounded-[24px] font-black uppercase tracking-widest shadow-xl shadow-teal-brand/20 active:scale-95 transition-all mt-4"
+                >
+                  Enregistrer
+                </button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showFavoritesSettingModal && (
+          <FavoritesSettingsModal
+            onClose={() => setShowFavoritesSettingModal(false)}
+            predefinedItems={INITIAL_PREDEFINED_ITEMS}
+            favoriteItemIds={favoriteItemIds}
+            setFavoriteItemIds={setFavoriteItemIds}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showRasSettingModal && inventoryItems && (
+          <RasSettingsModal
+            onClose={() => setShowRasSettingModal(false)}
+            inventoryItems={inventoryItems}
+            rasHiddenItems={rasHiddenItems}
+            setRasHiddenItems={setRasHiddenItems}
+          />
+        )}
+        {showBudgetModal && (
+          <BudgetSettingsModal
+            onClose={() => setShowBudgetModal(false)}
+            categoryBudgets={categoryBudgets}
+            setCategoryBudgets={setCategoryBudgets}
+            categories={CATEGORY_MAP}
+            currency={currency}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showCalendarModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+            onClick={() => setShowCalendarModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md relative flex flex-col gap-4"
+            >
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowCalendarModal(false)}
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 text-white shadow-lg hover:bg-slate-700 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <CalendarView transactions={transactions} currency={currency} />
+            </motion.div>
+          </motion.div>
+        )}
+
+        {showReceiptScannerModal && (
+          <ReceiptScannerModal
+            onClose={() => setShowReceiptScannerModal(false)}
+            predefinedItems={predefinedItems}
+            onAddPredefinedItem={onAddPredefinedItem}
+            onUpdatePredefinedItem={onUpdatePredefinedItem}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
 
-function BudgetSettingsModal({ 
-  onClose, 
-  categoryBudgets, 
-  setCategoryBudgets, 
+function BudgetSettingsModal({
+  onClose,
+  categoryBudgets,
+  setCategoryBudgets,
   categories,
-  currency
-}: { 
-  onClose: () => void, 
-  categoryBudgets: Record<string, number>, 
-  setCategoryBudgets: (b: Record<string, number>) => void,
-  categories: any[],
-  currency: string
+  currency,
+}: {
+  onClose: () => void;
+  categoryBudgets: Record<string, number>;
+  setCategoryBudgets: (b: Record<string, number>) => void;
+  categories: any[];
+  currency: string;
 }) {
-  const [budgets, setBudgets] = useState<Record<string, number>>(categoryBudgets);
+  const [budgets, setBudgets] =
+    useState<Record<string, number>>(categoryBudgets);
 
   const handleSave = () => {
     setCategoryBudgets(budgets);
@@ -1056,7 +1303,7 @@ function BudgetSettingsModal({
   const handleBudgetChange = (category: string, amountStr: string) => {
     const val = parseFloat(amountStr);
     const limit = isNaN(val) ? 0 : val;
-    setBudgets(prev => {
+    setBudgets((prev) => {
       const next = { ...prev };
       if (limit === 0) {
         delete next[category];
@@ -1099,19 +1346,28 @@ function BudgetSettingsModal({
           {categories.map((c) => {
             const currentBudget = budgets[c.label] || "";
             return (
-              <div key={c.label} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${c.bg} ${c.text}`}>
+              <div
+                key={c.label}
+                className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3"
+              >
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${c.bg} ${c.text}`}
+                >
                   {c.icon}
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs font-bold text-slate-800 mb-1">{c.label}</p>
+                  <p className="text-xs font-bold text-slate-800 mb-1">
+                    {c.label}
+                  </p>
                   <div className="relative">
-                    <input 
+                    <input
                       type="number"
                       min="0"
                       step="0.01"
                       value={currentBudget}
-                      onChange={(e) => handleBudgetChange(c.label, e.target.value)}
+                      onChange={(e) =>
+                        handleBudgetChange(c.label, e.target.value)
+                      }
                       placeholder="0"
                       className="w-full bg-white border border-slate-200 rounded-lg py-2 pl-3 pr-10 text-sm font-black text-slate-800 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all font-mono"
                     />
@@ -1121,7 +1377,7 @@ function BudgetSettingsModal({
                   </div>
                 </div>
               </div>
-            )
+            );
           })}
         </div>
 
@@ -1325,7 +1581,11 @@ function CalculatorModal({ onClose }: { onClose: () => void }) {
           </button>
           <button
             onClick={copyToClipboard}
-            className={`h-10 rounded-xl flex items-center justify-center transition-all active:scale-95 ${copied ? "bg-emerald-500 text-white" : "bg-slate-800 text-teal-400"}`}
+            className={`h-10 rounded-xl flex items-center justify-center transition-all active:scale-95 ${
+              copied
+                ? "bg-emerald-500 text-white"
+                : "bg-slate-800 text-teal-400"
+            }`}
           >
             <Copy size={14} />
           </button>
@@ -1410,11 +1670,150 @@ function AddBankBalanceModal({
   );
 }
 
+function FavoritesSettingsModal({
+  onClose,
+  predefinedItems,
+  favoriteItemIds,
+  setFavoriteItemIds,
+}: {
+  onClose: () => void;
+  predefinedItems: any[];
+  favoriteItemIds: string[];
+  setFavoriteItemIds: (ids: string[]) => void;
+}) {
+  const [selectedIds, setSelectedIds] = useState<string[]>(favoriteItemIds);
+
+  const handleToggle = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleSave = () => {
+    setFavoriteItemIds(selectedIds);
+    onClose();
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4 sm:p-6 bg-slate-900/60 transition-opacity"
+      onClick={onClose}
+    >
+      <motion.div
+        drag="y"
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={0.2}
+        onDragEnd={(e, info) => {
+          if (info.offset.y > 100) onClose();
+        }}
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white w-full max-w-md rounded-t-[32px] sm:rounded-3xl p-6 sm:p-8 flex flex-col max-h-[85vh] shadow-2xl relative"
+      >
+        <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 shrink-0" />
+
+        <div className="flex items-center gap-3 mb-6 shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
+            <Settings size={20} className="text-slate-600" />
+          </div>
+          <div>
+            <h3 className="text-xl font-black text-slate-900">
+              Articles Favoris
+            </h3>
+            <p className="text-sm font-medium text-slate-500 mt-0.5">
+              Sélect. les favoris
+            </p>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto min-h-0 -mx-2 px-2 hide-scrollbar">
+          <div className="space-y-3 pb-2">
+            {predefinedItems.map((item) => {
+              const info = getArticleInfo(item.name, item.category);
+              const IconComponent =
+                info.iconName && ICON_MAP[info.iconName]
+                  ? (ICON_MAP[info.iconName] as React.ElementType)
+                  : PackageOpen;
+              const isSelected = selectedIds.includes(item.id);
+              const textClass = info.color || "text-slate-800";
+              const bgClass = info.bgColor
+                ? info.bgColor.replace("100", "50")
+                : "bg-slate-100";
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleToggle(item.id)}
+                  className="w-full flex items-center justify-between p-3 rounded-2xl border border-slate-100 active:bg-slate-50 transition-colors text-left group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center ${textClass} ${bgClass}`}
+                    >
+                      <IconComponent size={20} />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-slate-700 leading-none mb-1">
+                        {item.name}
+                      </span>
+                      <span className="text-xs font-semibold text-slate-400">
+                        {item.price} Dhs
+                      </span>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                      isSelected
+                        ? "bg-teal-500 border-teal-500"
+                        : "border-slate-300 group-active:border-slate-400"
+                    }`}
+                  >
+                    {isSelected && (
+                      <svg
+                        viewBox="0 0 14 14"
+                        fill="none"
+                        className="w-4 h-4 text-white"
+                      >
+                        <path
+                          d="M11.6666 3.5L5.24992 9.91667L2.33325 7"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="pt-6 mt-2 shrink-0">
+          <button
+            onClick={handleSave}
+            className="w-full h-14 bg-slate-900 active:bg-slate-800 text-white rounded-2xl font-black text-[15px] uppercase tracking-widest transition-colors shadow-xl shadow-slate-900/20"
+          >
+            Enregistrer
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function RasSettingsModal({
   onClose,
   inventoryItems,
   rasHiddenItems,
-  setRasHiddenItems
+  setRasHiddenItems,
 }: {
   onClose: () => void;
   inventoryItems: any[];
@@ -1424,8 +1823,8 @@ function RasSettingsModal({
   const [hiddenIds, setHiddenIds] = useState<string[]>(rasHiddenItems);
 
   const handleToggle = (id: string) => {
-    setHiddenIds(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    setHiddenIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
   };
 
@@ -1457,49 +1856,73 @@ function RasSettingsModal({
         className="bg-white w-full max-w-md rounded-t-[32px] sm:rounded-3xl p-6 sm:p-8 flex flex-col max-h-[85vh] shadow-2xl relative"
       >
         <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 shrink-0" />
-        
+
         <div className="flex items-center gap-3 mb-6 shrink-0">
           <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
             <Settings size={20} className="text-slate-600" />
           </div>
           <div>
-            <h3 className="text-xl font-black text-slate-900">Paramètres RAS</h3>
-            <p className="text-sm font-medium text-slate-500 mt-0.5">Visibilité des articles</p>
+            <h3 className="text-xl font-black text-slate-900">
+              Paramètres RAS
+            </h3>
+            <p className="text-sm font-medium text-slate-500 mt-0.5">
+              Visibilité des articles
+            </p>
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto min-h-0 -mx-2 px-2 hide-scrollbar">
           <div className="space-y-3 pb-2">
-            {inventoryItems.filter(item => item.quantity > 0).map(item => {
-              const IconComponent = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : PackageOpen;
-              const isVisible = !hiddenIds.includes(item.id);
-              const textClass = item.color || "text-slate-800";
-              const bgClass = item.bg ? item.bg.replace('100', '50') : "bg-slate-100";
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleToggle(item.id)}
-                  className="w-full flex items-center justify-between p-3 rounded-2xl border border-slate-100 active:bg-slate-50 transition-colors text-left group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${textClass} ${bgClass}`}>
-                      {item.iconSvg ? (
-                        <div dangerouslySetInnerHTML={{ __html: item.iconSvg }} className="w-5 h-5 text-current" />
-                      ) : (
-                        <IconComponent size={20} />
-                      )}
+            {inventoryItems
+              .filter((item) => item.quantity > 0)
+              .map((item) => {
+                const IconComponent =
+                  item.iconName && ICON_MAP[item.iconName]
+                    ? (ICON_MAP[item.iconName] as React.ElementType)
+                    : PackageOpen;
+                const isVisible = !hiddenIds.includes(item.id);
+                const textClass = item.color || "text-slate-800";
+                const bgClass = item.bg
+                  ? item.bg.replace("100", "50")
+                  : "bg-slate-100";
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleToggle(item.id)}
+                    className="w-full flex items-center justify-between p-3 rounded-2xl border border-slate-100 active:bg-slate-50 transition-colors text-left group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${textClass} ${bgClass}`}
+                      >
+                        {item.iconSvg ? (
+                          <div
+                            dangerouslySetInnerHTML={{ __html: item.iconSvg }}
+                            className="w-5 h-5 text-current"
+                          />
+                        ) : (
+                          <IconComponent size={20} />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800">{item.name}</p>
+                        <p className="text-xs font-medium text-slate-400">
+                          {item.quantity} en stock
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-slate-800">{item.name}</p>
-                      <p className="text-xs font-medium text-slate-400">{item.quantity} en stock</p>
+                    <div
+                      className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
+                        isVisible
+                          ? "bg-teal-500 text-white"
+                          : "bg-slate-100 text-transparent"
+                      }`}
+                    >
+                      <Check size={14} strokeWidth={4} />
                     </div>
-                  </div>
-                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${isVisible ? 'bg-teal-500 text-white' : 'bg-slate-100 text-transparent'}`}>
-                    <Check size={14} strokeWidth={4} />
-                  </div>
-                </button>
-              );
-            })}
+                  </button>
+                );
+              })}
           </div>
         </div>
 

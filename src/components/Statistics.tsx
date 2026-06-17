@@ -191,33 +191,8 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
 
   return (
     <div className="flex flex-col h-full bg-transparent px-4 pb-24 overflow-y-auto relative">
-      {/* Title 1 */}
-      <div className="mt-6 mb-2">
-        <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#1B7C86] ml-1">
-          {language === 'Français' ? 'Récapitulatif par Catégorie' : 'Category Summary'}
-        </h2>
-      </div>
-
-      {/* Period Selector */}
-      <div className="flex items-center justify-between gap-2 p-1 bg-slate-900/5 dark:bg-white/5 rounded-2xl mb-6 border border-white/10">
-        {periods.map((p) => (
-          <button
-            key={p.id}
-            onClick={() => setPeriod(p.id as any)}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
-              period === p.id 
-                ? 'bg-[#1B7C86] text-white shadow-lg shadow-[#1B7C86]/20' 
-                : 'text-slate-500 hover:bg-white/10'
-            }`}
-          >
-            {p.icon}
-            {p.label}
-          </button>
-        ))}
-      </div>
-
       {/* AI Summary */}
-      <div className="mb-6">
+      <div className="mt-6 mb-6">
          <button
            onClick={generateSummary}
            disabled={isGeneratingSummary}
@@ -239,6 +214,31 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
              </motion.div>
            )}
          </AnimatePresence>
+      </div>
+
+      {/* Title 1 */}
+      <div className="mb-2">
+        <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#1B7C86] ml-1">
+          {language === 'Français' ? 'Récapitulatif par Catégorie' : 'Category Summary'}
+        </h2>
+      </div>
+
+      {/* Period Selector */}
+      <div className="flex items-center justify-between gap-2 p-1 bg-slate-900/5 dark:bg-white/5 rounded-2xl mb-6 border border-white/10">
+        {periods.map((p) => (
+          <button
+            key={p.id}
+            onClick={() => setPeriod(p.id as any)}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+              period === p.id 
+                ? 'bg-[#1B7C86] text-white shadow-lg shadow-[#1B7C86]/20' 
+                : 'text-slate-500 hover:bg-white/10'
+            }`}
+          >
+            {p.icon}
+            {p.label}
+          </button>
+        ))}
       </div>
 
       {/* Pie Chart */}
