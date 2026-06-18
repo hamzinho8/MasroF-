@@ -28,7 +28,7 @@ import {
   Layout,
   Palette,
   Smartphone,
-  Upload
+  Upload,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import MasrofLogo from "./Logo";
@@ -45,7 +45,7 @@ import {
   MoreHorizontal,
   Home as HomeLucide,
   HeartPulse,
-  Heart
+  Heart,
 } from "lucide-react";
 
 interface SettingsProps {
@@ -148,7 +148,10 @@ export default function Settings({
   const [isResetting, setIsResetting] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [showScannerFab, setShowScannerFab] = useLocalStorage<boolean>('showScannerFab', true);
+  const [showScannerFab, setShowScannerFab] = useLocalStorage<boolean>(
+    "showScannerFab",
+    true
+  );
   const [showSelector, setShowSelector] = useState<
     | "CURRENCY"
     | "LANGUAGE"
@@ -162,17 +165,33 @@ export default function Settings({
   const [pinSetupStep, setPinSetupStep] = useState<1 | 2>(1);
   const [tempPin, setTempPin] = useState("");
   const [pinError, setPinError] = useState(false);
-  const [apiKeyInput, setApiKeyInput] = useState(() => localStorage.getItem("userGeminiApiKey") || localStorage.getItem("gemini_api_key") || "");
-  const [openRouterKeyInput, setOpenRouterKeyInput] = useState(() => localStorage.getItem("openrouter_api_key") || "");
-  const [aiProvider, setAiProvider] = useState<"gemini" | "openrouter">(
-    () => (localStorage.getItem("ai_provider") as "gemini" | "openrouter") || "gemini"
+  const [apiKeyInput, setApiKeyInput] = useState(
+    () =>
+      localStorage.getItem("userGeminiApiKey") ||
+      localStorage.getItem("gemini_api_key") ||
+      ""
   );
-  const [soundType, setSoundType] = useState(() => localStorage.getItem("notificationSoundType") || "checkout");
+  const [openRouterKeyInput, setOpenRouterKeyInput] = useState(
+    () => localStorage.getItem("openrouter_api_key") || ""
+  );
+  const [cloudflareKeyInput, setCloudflareKeyInput] = useState(
+    () => localStorage.getItem("cloudflare_api_key") || ""
+  );
+  const [aiProvider, setAiProvider] = useState<"gemini" | "openrouter">(
+    () =>
+      (localStorage.getItem("ai_provider") as "gemini" | "openrouter") ||
+      "gemini"
+  );
+  const [soundType, setSoundType] = useState(
+    () => localStorage.getItem("notificationSoundType") || "checkout"
+  );
   const [showArticleManager, setShowArticleManager] = useState(false);
   const [showReminderManager, setShowReminderManager] = useState(false);
   const [showAlarmManager, setShowAlarmManager] = useState(false);
   const [showNotificationCenter, setShowNotificationCenter] = useState(false);
-  const [backupReminder, setBackupReminder] = useState(() => localStorage.getItem("backupReminderEnabled") === "true");
+  const [backupReminder, setBackupReminder] = useState(
+    () => localStorage.getItem("backupReminderEnabled") === "true"
+  );
 
   const handleReset = () => {
     setIsResetting(true);
@@ -190,7 +209,7 @@ export default function Settings({
   const soundOptions = [
     { id: "default", label: "Défaut d'Android" },
     { id: "checkout", label: "Masrof (Checkout)" },
-    { id: "bell", label: "Cloche (Bell)" }
+    { id: "bell", label: "Cloche (Bell)" },
   ];
 
   const exportToPDF = () => {
@@ -203,9 +222,11 @@ export default function Settings({
     doc.setTextColor(100);
     doc.text(`Généré le: ${new Date().toLocaleString("fr-FR")}`, 14, 30);
     doc.text(
-      `Solde (Dépenses): ${transactions.reduce((acc, tx) => (tx.type === "EXPENSE" ? acc + tx.amount : acc), 0).toFixed(2)} ${currency}`,
+      `Solde (Dépenses): ${transactions
+        .reduce((acc, tx) => (tx.type === "EXPENSE" ? acc + tx.amount : acc), 0)
+        .toFixed(2)} ${currency}`,
       14,
-      38,
+      38
     );
 
     // Table
@@ -213,7 +234,11 @@ export default function Settings({
       tx.date,
       tx.label,
       tx.category || (tx.type === "INCOME" ? "Banque" : "Marché"),
-      tx.type === "INCOME" ? (tx.paidByBank ? "Salaire / Dépôt" : "Retrait") : "Achat",
+      tx.type === "INCOME"
+        ? tx.paidByBank
+          ? "Salaire / Dépôt"
+          : "Retrait"
+        : "Achat",
       `${tx.amount.toFixed(2)} ${currency}`,
     ]);
 
@@ -231,10 +256,18 @@ export default function Settings({
   const handleRestoreData = async () => {
     const success = await importDataFromFile();
     if (success) {
-      alert(language === "Français" ? "Données restaurées avec succès. L'application va redémarrer." : "Data restored successfully. App will restart.");
+      alert(
+        language === "Français"
+          ? "Données restaurées avec succès. L'application va redémarrer."
+          : "Data restored successfully. App will restart."
+      );
       window.location.reload();
     } else {
-      alert(language === "Français" ? "Aucune sauvegarde trouvée ou fichier corrompu." : "No backup found or file corrupted.");
+      alert(
+        language === "Français"
+          ? "Aucune sauvegarde trouvée ou fichier corrompu."
+          : "No backup found or file corrupted."
+      );
     }
   };
 
@@ -341,7 +374,11 @@ export default function Settings({
             <SettingsItem
               icon={<Brain />}
               title="INTELLIGENCE ARTIFICIELLE"
-              subtitle={apiKeyInput || openRouterKeyInput ? "Clé configurée" : "Non configurée (Requise pour scan OCR)"}
+              subtitle={
+                apiKeyInput || openRouterKeyInput
+                  ? "Clé configurée"
+                  : "Non configurée (Requise pour scan OCR)"
+              }
               onClick={() => setShowSelector("API_SETTINGS")}
               showArrow={true}
             />
@@ -441,12 +478,12 @@ export default function Settings({
               </div>
               <div className="flex items-center gap-4">
                 {appPin && (
-                  <button 
+                  <button
                     onClick={() => {
                       setPinSetupStep(1);
                       setTempPin("");
                       setShowSelector("PIN_SETUP");
-                    }} 
+                    }}
                     className="text-[10px] font-black uppercase text-[#2D8B96] border border-[#2D8B96]/30 px-3 py-1.5 rounded-full active:scale-95 transition-all"
                   >
                     Modifier
@@ -618,13 +655,19 @@ export default function Settings({
               className="fixed inset-x-0 bottom-0 z-[120] bg-white/95 backdrop-blur-2xl border-t border-[#2D8B96]/30 rounded-t-[40px] p-8 max-w-md mx-auto shadow-[0_-10px_40px_rgba(45,139,150,0.15)]"
             >
               <h3 className="text-xl font-black text-[#1B5E66] mb-6 italic uppercase tracking-tighter">
-                {showSelector === "WIDGET_SETTINGS" ? "Réglages Widget" : 
-                 showSelector === "PIN_SETUP" ? "Configurer Code PIN" :
-                 showSelector === "API_SETTINGS" ? "Intelligence Artificielle" :
-                 `Sélection ${
-                  showSelector === "CURRENCY" ? "Devise" :
-                  showSelector === "LANGUAGE" ? "Langue" : ""
-                }`}
+                {showSelector === "WIDGET_SETTINGS"
+                  ? "Réglages Widget"
+                  : showSelector === "PIN_SETUP"
+                  ? "Configurer Code PIN"
+                  : showSelector === "API_SETTINGS"
+                  ? "Intelligence Artificielle"
+                  : `Sélection ${
+                      showSelector === "CURRENCY"
+                        ? "Devise"
+                        : showSelector === "LANGUAGE"
+                        ? "Langue"
+                        : ""
+                    }`}
               </h3>
               <div className="space-y-3">
                 {showSelector === "API_SETTINGS" ? (
@@ -645,16 +688,30 @@ export default function Settings({
                     </p>
                     <input
                       type="text"
-                      className="w-full bg-[#1B5E66]/5 border border-[#1B5E66]/10 rounded-2xl px-4 py-3 text-sm font-bold text-[#1B5E66] focus:outline-none focus:ring-2 focus:ring-[#2D8B96]/50 mb-6"
+                      className="w-full bg-[#1B5E66]/5 border border-[#1B5E66]/10 rounded-2xl px-4 py-3 text-sm font-bold text-[#1B5E66] focus:outline-none focus:ring-2 focus:ring-[#2D8B96]/50 mb-4"
                       placeholder="sk-or-v1-..."
                       value={openRouterKeyInput}
                       onChange={(e) => setOpenRouterKeyInput(e.target.value)}
                     />
 
                     <p className="text-xs text-[#1B5E66]/70 mb-2 font-bold uppercase tracking-wider">
+                      API Token Cloudflare Workers AI :
+                    </p>
+                    <input
+                      type="text"
+                      className="w-full bg-[#1B5E66]/5 border border-[#1B5E66]/10 rounded-2xl px-4 py-3 text-sm font-bold text-[#1B5E66] focus:outline-none focus:ring-2 focus:ring-[#2D8B96]/50 mb-6"
+                      placeholder="A-Za-z0-9..."
+                      value={cloudflareKeyInput}
+                      onChange={(e) => setCloudflareKeyInput(e.target.value)}
+                    />
+
+                    <p className="text-xs text-[#1B5E66]/70 mb-2 font-bold uppercase tracking-wider">
                       Bouton Magique Scanner IA (FAB) :
                     </p>
-                    <div className="flex items-center justify-between px-4 py-4 mb-6 bg-[#1B5E66]/5 border border-[#1B5E66]/10 rounded-2xl cursor-pointer" onClick={() => setShowScannerFab(!showScannerFab)}>
+                    <div
+                      className="flex items-center justify-between px-4 py-4 mb-6 bg-[#1B5E66]/5 border border-[#1B5E66]/10 rounded-2xl cursor-pointer"
+                      onClick={() => setShowScannerFab(!showScannerFab)}
+                    >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-[12px] bg-[#1B5E66]/10 flex items-center justify-center text-[#1B5E66]">
                           <Sparkles size={16} />
@@ -674,9 +731,22 @@ export default function Settings({
                     <button
                       className="w-full bg-[#2D8B96] hover:bg-[#1B5E66] text-white font-black italic uppercase tracking-wider py-4 rounded-2xl transition-colors shadow-lg shadow-[#2D8B96]/20"
                       onClick={() => {
-                        window.localStorage.setItem("userGeminiApiKey", apiKeyInput);
-                        window.localStorage.setItem("gemini_api_key", apiKeyInput);
-                        window.localStorage.setItem("openrouter_api_key", openRouterKeyInput);
+                        window.localStorage.setItem(
+                          "userGeminiApiKey",
+                          apiKeyInput
+                        );
+                        window.localStorage.setItem(
+                          "gemini_api_key",
+                          apiKeyInput
+                        );
+                        window.localStorage.setItem(
+                          "openrouter_api_key",
+                          openRouterKeyInput
+                        );
+                        window.localStorage.setItem(
+                          "cloudflare_api_key",
+                          cloudflareKeyInput
+                        );
                         window.localStorage.setItem("ai_provider", aiProvider);
                         setShowSelector(null);
                       }}
@@ -684,22 +754,27 @@ export default function Settings({
                       Enregistrer
                     </button>
                     <p className="text-[10px] text-[#1B5E66]/50 mt-4 text-center font-bold">
-                      Nécessaire pour le scan des factures et articles. Stocké localement.
+                      Nécessaire pour le scan des factures et articles. Stocké
+                      localement.
                     </p>
                   </div>
                 ) : showSelector === "PIN_SETUP" ? (
                   <div className="flex flex-col items-center py-6">
                     <p className="text-sm font-bold text-[#1B5E66]/60 mb-8 uppercase tracking-widest text-center">
-                      {pinSetupStep === 1 
-                        ? "Saisissez un code à 4 chiffres" 
+                      {pinSetupStep === 1
+                        ? "Saisissez un code à 4 chiffres"
                         : "Confirmez votre code"}
                     </p>
-                    <div className={`flex items-center gap-4 mb-10 ${pinError ? "animate-pulse" : ""}`}>
+                    <div
+                      className={`flex items-center gap-4 mb-10 ${
+                        pinError ? "animate-pulse" : ""
+                      }`}
+                    >
                       {[0, 1, 2, 3].map((i) => (
                         <div
                           key={i}
                           className={`w-4 h-4 rounded-full transition-all duration-300 ${
-                            tempPin.length > i 
+                            tempPin.length > i
                               ? pinError
                                 ? "bg-red-500 scale-110 shadow-[0_0_10px_rgba(239,68,68,0.5)]"
                                 : "bg-[#2D8B96] scale-110 shadow-[0_0_10px_rgba(45,139,150,0.5)]"
@@ -723,9 +798,13 @@ export default function Settings({
                                     setPinSetupStep(2);
                                     setTempPin("");
                                     // Hack to store first step pin without another state variable
-                                    localStorage.setItem("temp_pin_setup", newPin);
+                                    localStorage.setItem(
+                                      "temp_pin_setup",
+                                      newPin
+                                    );
                                   } else {
-                                    const expected = localStorage.getItem("temp_pin_setup");
+                                    const expected =
+                                      localStorage.getItem("temp_pin_setup");
                                     if (expected === newPin) {
                                       onAppPinChange(newPin);
                                       setShowSelector(null);
@@ -769,9 +848,13 @@ export default function Settings({
                                 if (pinSetupStep === 1) {
                                   setPinSetupStep(2);
                                   setTempPin("");
-                                  localStorage.setItem("temp_pin_setup", newPin);
+                                  localStorage.setItem(
+                                    "temp_pin_setup",
+                                    newPin
+                                  );
                                 } else {
-                                  const expected = localStorage.getItem("temp_pin_setup");
+                                  const expected =
+                                    localStorage.getItem("temp_pin_setup");
                                   if (expected === newPin) {
                                     onAppPinChange(newPin);
                                     setShowSelector(null);
@@ -794,7 +877,7 @@ export default function Settings({
                         0
                       </button>
                       <button
-                        onClick={() => setTempPin(p => p.slice(0, -1))}
+                        onClick={() => setTempPin((p) => p.slice(0, -1))}
                         className="h-14 rounded-full bg-transparent text-[#1B5E66]/60 active:text-[#2D8B96] active:scale-95 transition-all flex items-center justify-center"
                       >
                         <X size={24} />
@@ -804,105 +887,167 @@ export default function Settings({
                 ) : showSelector === "WIDGET_SETTINGS" ? (
                   <div className="space-y-6">
                     <div>
-                      <h4 className="text-[10px] font-black uppercase tracking-widest text-[#1B5E66]/60 mb-3">Données à afficher</h4>
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-[#1B5E66]/60 mb-3">
+                        Données à afficher
+                      </h4>
                       <div className="grid grid-cols-1 gap-2">
                         {[
-                          { id: "cash", label: "Argent Dispo", action: () => { onWidgetModeChange("balance"); onWidgetBalanceTypeChange("cash"); } },
-                          { id: "bank", label: "Solde Bancaire", action: () => { onWidgetModeChange("balance"); onWidgetBalanceTypeChange("bank"); } },
-                          { id: "spending", label: "Dépenses Hebdo", action: () => { onWidgetModeChange("spending"); } }
-                        ].map(opt => {
-                          const isActive = widgetMode === "spending" ? opt.id === "spending" : opt.id === widgetBalanceType;
+                          {
+                            id: "cash",
+                            label: "Argent Dispo",
+                            action: () => {
+                              onWidgetModeChange("balance");
+                              onWidgetBalanceTypeChange("cash");
+                            },
+                          },
+                          {
+                            id: "bank",
+                            label: "Solde Bancaire",
+                            action: () => {
+                              onWidgetModeChange("balance");
+                              onWidgetBalanceTypeChange("bank");
+                            },
+                          },
+                          {
+                            id: "spending",
+                            label: "Dépenses Hebdo",
+                            action: () => {
+                              onWidgetModeChange("spending");
+                            },
+                          },
+                        ].map((opt) => {
+                          const isActive =
+                            widgetMode === "spending"
+                              ? opt.id === "spending"
+                              : opt.id === widgetBalanceType;
                           return (
                             <button
                               key={opt.id}
                               onClick={() => opt.action()}
-                              className={`w-full p-4 rounded-2xl border transition-all flex items-center justify-between ${isActive ? 'bg-[#2D8B96]/10 border-[#2D8B96] text-[#1B5E66] shadow-[0_0_15px_rgba(45,139,150,0.2)]' : 'border-[#2D8B96]/10 text-[#1B5E66]/40'}`}
+                              className={`w-full p-4 rounded-2xl border transition-all flex items-center justify-between ${
+                                isActive
+                                  ? "bg-[#2D8B96]/10 border-[#2D8B96] text-[#1B5E66] shadow-[0_0_15px_rgba(45,139,150,0.2)]"
+                                  : "border-[#2D8B96]/10 text-[#1B5E66]/40"
+                              }`}
                             >
-                              <span className="font-bold text-sm tracking-widest uppercase italic">{opt.label}</span>
-                              {isActive && <div className="w-5 h-5 rounded-full bg-[#E5C366] shadow-[0_0_8px_#E5C366]" />}
+                              <span className="font-bold text-sm tracking-widest uppercase italic">
+                                {opt.label}
+                              </span>
+                              {isActive && (
+                                <div className="w-5 h-5 rounded-full bg-[#E5C366] shadow-[0_0_8px_#E5C366]" />
+                              )}
                             </button>
                           );
                         })}
                       </div>
                     </div>
                     <div>
-                      <h4 className="text-[10px] font-black uppercase tracking-widest text-[#1B5E66]/60 mb-3">Couleur du texte</h4>
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-[#1B5E66]/60 mb-3">
+                        Couleur du texte
+                      </h4>
                       <div className="flex gap-3">
                         {[
                           { id: "#000000", color: "bg-black" },
                           { id: "#FFFFFF", color: "bg-white" },
                           { id: "#3b82f6", color: "bg-blue-500" },
                           { id: "#22c55e", color: "bg-green-500" },
-                          { id: "#ef4444", color: "bg-red-500" }
-                        ].map(c => (
-                           <button
-                             key={c.id}
-                             onClick={() => onWidgetTextColorChange(c.id)}
-                             className={`w-10 h-10 rounded-full border border-gray-300 transition-all ${c.color} ${widgetTextColor === c.id ? "ring-2 ring-offset-2 ring-[#1B5E66] scale-110 shadow-md opacity-100" : "opacity-60 hover:opacity-100"}`}
-                           />
+                          { id: "#ef4444", color: "bg-red-500" },
+                        ].map((c) => (
+                          <button
+                            key={c.id}
+                            onClick={() => onWidgetTextColorChange(c.id)}
+                            className={`w-10 h-10 rounded-full border border-gray-300 transition-all ${
+                              c.color
+                            } ${
+                              widgetTextColor === c.id
+                                ? "ring-2 ring-offset-2 ring-[#1B5E66] scale-110 shadow-md opacity-100"
+                                : "opacity-60 hover:opacity-100"
+                            }`}
+                          />
                         ))}
                       </div>
                     </div>
-                    <button onClick={() => setShowSelector(null)} className="w-full bg-[#2D8B96] text-white rounded-2xl p-5 font-bold uppercase tracking-widest text-sm mt-2 active:scale-95 transition-transform">Terminé</button>
-                  </div>
-                ) : (() => {
-                  let options: { id: string; label: string; color?: string }[] = [];
-                  let activeValue = "";
-                  
-                  if (showSelector === "CURRENCY") {
-                    options = currencies.map(c => ({ id: c, label: c }));
-                    activeValue = currency;
-                  } else if (showSelector === "LANGUAGE") {
-                    options = languages.map(l => ({ id: l, label: l }));
-                    activeValue = language;
-                  }
-
-                  return options.map((opt) => (
                     <button
-                      key={opt.id}
-                      onClick={() => {
-                        if (showSelector === "CURRENCY") onCurrencyChange(opt.id);
-                        else if (showSelector === "LANGUAGE") onLanguageChange(opt.id);
-                        setShowSelector(null);
-                      }}
-                      className={`w-full p-5 rounded-2xl border transition-all flex items-center justify-between group ${
-                        activeValue === opt.id
-                          ? "border-[#2D8B96] bg-[#2D8B96]/10 text-[#1B5E66] shadow-[0_0_15px_rgba(45,139,150,0.2)]"
-                          : "border-[#2D8B96]/10 text-[#1B5E66]/40"
-                      }`}
+                      onClick={() => setShowSelector(null)}
+                      className="w-full bg-[#2D8B96] text-white rounded-2xl p-5 font-bold uppercase tracking-widest text-sm mt-2 active:scale-95 transition-transform"
                     >
-                      <div className="flex items-center gap-3">
-                        {opt.color && (
-                          <div className={`w-6 h-6 rounded-full shadow-sm border border-black/10 ${opt.color}`} />
-                        )}
-                        <span className="font-bold italic uppercase tracking-widest text-sm">
-                          {opt.label}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        {showSelector === "SOUND" && (
-                          <div
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (opt.id === "default") {
-                                console.log("Son système par défaut.");
-                              } else {
-                                const audio = new Audio(`/${opt.id}.wav`);
-                                audio.play().catch(err => console.log("Erreur de lecture: " + err.message));
-                              }
-                            }}
-                            className="w-8 h-8 rounded-full bg-[#2D8B96]/10 border border-[#2D8B96]/20 flex items-center justify-center text-[#2D8B96] hover:bg-[#2D8B96]/20 transition-colors"
-                          >
-                            <Play size={14} className="ml-0.5" />
-                          </div>
-                        )}
-                        {activeValue === opt.id && (
-                          <div className="w-5 h-5 rounded-full bg-[#E5C366] shadow-[0_0_8px_#E5C366]" />
-                        )}
-                      </div>
+                      Terminé
                     </button>
-                  ));
-                })()}
+                  </div>
+                ) : (
+                  (() => {
+                    let options: {
+                      id: string;
+                      label: string;
+                      color?: string;
+                    }[] = [];
+                    let activeValue = "";
+
+                    if (showSelector === "CURRENCY") {
+                      options = currencies.map((c) => ({ id: c, label: c }));
+                      activeValue = currency;
+                    } else if (showSelector === "LANGUAGE") {
+                      options = languages.map((l) => ({ id: l, label: l }));
+                      activeValue = language;
+                    }
+
+                    return options.map((opt) => (
+                      <button
+                        key={opt.id}
+                        onClick={() => {
+                          if (showSelector === "CURRENCY")
+                            onCurrencyChange(opt.id);
+                          else if (showSelector === "LANGUAGE")
+                            onLanguageChange(opt.id);
+                          setShowSelector(null);
+                        }}
+                        className={`w-full p-5 rounded-2xl border transition-all flex items-center justify-between group ${
+                          activeValue === opt.id
+                            ? "border-[#2D8B96] bg-[#2D8B96]/10 text-[#1B5E66] shadow-[0_0_15px_rgba(45,139,150,0.2)]"
+                            : "border-[#2D8B96]/10 text-[#1B5E66]/40"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {opt.color && (
+                            <div
+                              className={`w-6 h-6 rounded-full shadow-sm border border-black/10 ${opt.color}`}
+                            />
+                          )}
+                          <span className="font-bold italic uppercase tracking-widest text-sm">
+                            {opt.label}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {showSelector === "SOUND" && (
+                            <div
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (opt.id === "default") {
+                                  console.log("Son système par défaut.");
+                                } else {
+                                  const audio = new Audio(`/${opt.id}.wav`);
+                                  audio
+                                    .play()
+                                    .catch((err) =>
+                                      console.log(
+                                        "Erreur de lecture: " + err.message
+                                      )
+                                    );
+                                }
+                              }}
+                              className="w-8 h-8 rounded-full bg-[#2D8B96]/10 border border-[#2D8B96]/20 flex items-center justify-center text-[#2D8B96] hover:bg-[#2D8B96]/20 transition-colors"
+                            >
+                              <Play size={14} className="ml-0.5" />
+                            </div>
+                          )}
+                          {activeValue === opt.id && (
+                            <div className="w-5 h-5 rounded-full bg-[#E5C366] shadow-[0_0_8px_#E5C366]" />
+                          )}
+                        </div>
+                      </button>
+                    ));
+                  })()
+                )}
               </div>
             </motion.div>
           </>
@@ -1065,19 +1210,25 @@ function AlarmSettingsModal({
                 type="number"
                 placeholder="Ex: 500"
                 value={bankBalanceThreshold ?? ""}
-                onChange={(e) => onBankBalanceThresholdChange(e.target.value ? Number(e.target.value) : null)}
+                onChange={(e) =>
+                  onBankBalanceThresholdChange(
+                    e.target.value ? Number(e.target.value) : null
+                  )
+                }
                 className="w-1/3 h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
               />
               <input
                 type="text"
                 placeholder="Message (Optionnel)"
                 value={bankBalanceCustomMessage}
-                onChange={(e) => onBankBalanceCustomMessageChange(e.target.value)}
+                onChange={(e) =>
+                  onBankBalanceCustomMessageChange(e.target.value)
+                }
                 className="w-2/3 h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
               />
             </div>
           </div>
-          
+
           <div className="space-y-4">
             <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
               Argent dans ma Poche
@@ -1087,7 +1238,11 @@ function AlarmSettingsModal({
                 type="number"
                 placeholder="Ex: 50"
                 value={balanceThreshold ?? ""}
-                onChange={(e) => onBalanceThresholdChange(e.target.value ? Number(e.target.value) : null)}
+                onChange={(e) =>
+                  onBalanceThresholdChange(
+                    e.target.value ? Number(e.target.value) : null
+                  )
+                }
                 className="w-1/3 h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
               />
               <input
@@ -1109,7 +1264,11 @@ function AlarmSettingsModal({
                 type="number"
                 placeholder="Ex: 3"
                 value={inventoryAlertThreshold ?? ""}
-                onChange={(e) => onInventoryAlertThresholdChange(e.target.value ? Number(e.target.value) : null)}
+                onChange={(e) =>
+                  onInventoryAlertThresholdChange(
+                    e.target.value ? Number(e.target.value) : null
+                  )
+                }
                 className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
               />
             </div>
@@ -1126,7 +1285,11 @@ function AlarmSettingsModal({
                 min={0}
                 max={100}
                 value={budgetAlertThreshold ?? ""}
-                onChange={(e) => onBudgetAlertThresholdChange(e.target.value ? Number(e.target.value) : null)}
+                onChange={(e) =>
+                  onBudgetAlertThresholdChange(
+                    e.target.value ? Number(e.target.value) : null
+                  )
+                }
                 className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
               />
             </div>
@@ -1141,7 +1304,11 @@ function AlarmSettingsModal({
                 type="number"
                 placeholder="Ex: 30"
                 value={backupAlertInterval ?? ""}
-                onChange={(e) => onBackupAlertIntervalChange(e.target.value ? Number(e.target.value) : null)}
+                onChange={(e) =>
+                  onBackupAlertIntervalChange(
+                    e.target.value ? Number(e.target.value) : null
+                  )
+                }
                 className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
               />
             </div>
@@ -1166,14 +1333,17 @@ function ReminderManagerModal({
 
   const handleUpdate = (id: string, updates: Partial<Reminder>) => {
     onRemindersChange(
-      reminders.map((r) => (r.id === id ? { ...r, ...updates } : r)),
+      reminders.map((r) => (r.id === id ? { ...r, ...updates } : r))
     );
   };
 
   const handleAdd = (newReminder: Omit<Reminder, "id">) => {
     onRemindersChange([
       ...reminders,
-      { ...newReminder, id: `rem-${Date.now()}-${Math.random().toString(36).substring(2, 9)}` },
+      {
+        ...newReminder,
+        id: `rem-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      },
     ]);
     setShowAddForm(false);
   };
@@ -1250,8 +1420,8 @@ function ReminderManagerModal({
                     reminder.type === "ACHAT"
                       ? "bg-rose-50 text-rose-600"
                       : reminder.type === "RETRAIT"
-                        ? "bg-teal-50 text-teal-600"
-                        : "bg-indigo-600 text-white"
+                      ? "bg-teal-50 text-teal-600"
+                      : "bg-indigo-600 text-white"
                   }`}
                 >
                   {reminder.type === "ACHAT" ? (
@@ -1282,9 +1452,9 @@ function ReminderManagerModal({
                           maxLength={5}
                           value={reminder.time}
                           onChange={(e) => {
-                            let val = e.target.value.replace(/[^0-9]/g, '');
+                            let val = e.target.value.replace(/[^0-9]/g, "");
                             if (val.length >= 3) {
-                              val = val.slice(0, 2) + ':' + val.slice(2, 4);
+                              val = val.slice(0, 2) + ":" + val.slice(2, 4);
                             }
                             handleUpdate(reminder.id, { time: val });
                           }}
@@ -1318,7 +1488,11 @@ function ReminderManagerModal({
                   />
                   <button
                     onClick={() => setEditingId(isEditing ? null : reminder.id)}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center ${isEditing ? "bg-teal-brand text-white" : "bg-slate-100 text-slate-400"}`}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      isEditing
+                        ? "bg-teal-brand text-white"
+                        : "bg-slate-100 text-slate-400"
+                    }`}
                   >
                     {isEditing ? <Check size={14} /> : <Settings2 size={14} />}
                   </button>
@@ -1383,10 +1557,12 @@ function ReminderFormFields({
               type="button"
               onClick={() => setType(t)}
               className={`py-3 px-2 border-2 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all ${
-                type === t 
-                  ? t === "ACHAT" ? "border-rose-100 bg-rose-50 text-rose-600 shadow-sm"
-                  : t === "RETRAIT" ? "border-teal-100 bg-teal-50 text-teal-600 shadow-sm"
-                  : "border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
+                type === t
+                  ? t === "ACHAT"
+                    ? "border-rose-100 bg-rose-50 text-rose-600 shadow-sm"
+                    : t === "RETRAIT"
+                    ? "border-teal-100 bg-teal-50 text-teal-600 shadow-sm"
+                    : "border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
                   : "border-slate-50 bg-white text-slate-400 hover:border-slate-100"
               }`}
             >
@@ -1427,15 +1603,19 @@ function ReminderFormFields({
               key={f}
               type="button"
               onClick={() => setFrequency(f)}
-              className={`p-3 rounded-2xl border text-[10px] font-black uppercase tracking-wider transition-all ${frequency === f ? "border-[#2D8B96] bg-[#2D8B96]/10 text-[#1B5E66] shadow-[0_0_10px_rgba(45,139,150,0.1)]" : "border-[#2D8B96]/10 text-[#1B5E66]/40"}`}
+              className={`p-3 rounded-2xl border text-[10px] font-black uppercase tracking-wider transition-all ${
+                frequency === f
+                  ? "border-[#2D8B96] bg-[#2D8B96]/10 text-[#1B5E66] shadow-[0_0_10px_rgba(45,139,150,0.1)]"
+                  : "border-[#2D8B96]/10 text-[#1B5E66]/40"
+              }`}
             >
               {f === "ONCE"
                 ? "Une fois"
                 : f === "DAILY"
-                  ? "Chaque jour"
-                  : f === "WEEKLY"
-                    ? "Hebdo"
-                    : "Mensuel"}
+                ? "Chaque jour"
+                : f === "WEEKLY"
+                ? "Hebdo"
+                : "Mensuel"}
             </button>
           ))}
         </div>
@@ -1452,9 +1632,9 @@ function ReminderFormFields({
             maxLength={5}
             value={time}
             onChange={(e) => {
-              let val = e.target.value.replace(/[^0-9]/g, '');
+              let val = e.target.value.replace(/[^0-9]/g, "");
               if (val.length >= 3) {
-                val = val.slice(0, 2) + ':' + val.slice(2, 4);
+                val = val.slice(0, 2) + ":" + val.slice(2, 4);
               }
               setTime(val);
             }}
@@ -1470,7 +1650,11 @@ function ReminderFormFields({
             ref={dateRef}
             type="date"
             value={date}
-            onClick={() => { try { dateRef.current?.showPicker() } catch(e) {} }}
+            onClick={() => {
+              try {
+                dateRef.current?.showPicker();
+              } catch (e) {}
+            }}
             onChange={(e) => setDate(e.target.value)}
             className="w-full h-14 bg-white border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none"
           />
@@ -1557,10 +1741,12 @@ function ReminderForm({
                   type="button"
                   onClick={() => setType(t)}
                   className={`py-3 px-2 border-2 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all ${
-                    type === t 
-                      ? t === "ACHAT" ? "border-rose-100 bg-rose-50 text-rose-600 shadow-sm"
-                      : t === "RETRAIT" ? "border-teal-100 bg-teal-50 text-teal-600 shadow-sm"
-                      : "border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
+                    type === t
+                      ? t === "ACHAT"
+                        ? "border-rose-100 bg-rose-50 text-rose-600 shadow-sm"
+                        : t === "RETRAIT"
+                        ? "border-teal-100 bg-teal-50 text-teal-600 shadow-sm"
+                        : "border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
                       : "border-slate-50 bg-white text-slate-400 hover:border-slate-100"
                   }`}
                 >
@@ -1601,15 +1787,19 @@ function ReminderForm({
                   key={f}
                   type="button"
                   onClick={() => setFrequency(f)}
-                  className={`p-3 rounded-2xl border text-[10px] font-black uppercase tracking-wider transition-all ${frequency === f ? "border-[#2D8B96] bg-[#2D8B96]/10 text-[#1B5E66] shadow-[0_0_10px_rgba(45,139,150,0.1)]" : "border-[#2D8B96]/10 text-[#1B5E66]/40"}`}
+                  className={`p-3 rounded-2xl border text-[10px] font-black uppercase tracking-wider transition-all ${
+                    frequency === f
+                      ? "border-[#2D8B96] bg-[#2D8B96]/10 text-[#1B5E66] shadow-[0_0_10px_rgba(45,139,150,0.1)]"
+                      : "border-[#2D8B96]/10 text-[#1B5E66]/40"
+                  }`}
                 >
                   {f === "ONCE"
                     ? "Une fois"
                     : f === "DAILY"
-                      ? "Chaque jour"
-                      : f === "WEEKLY"
-                        ? "Hebdo"
-                        : "Mensuel"}
+                    ? "Chaque jour"
+                    : f === "WEEKLY"
+                    ? "Hebdo"
+                    : "Mensuel"}
                 </button>
               ))}
             </div>
@@ -1626,9 +1816,9 @@ function ReminderForm({
                 maxLength={5}
                 value={time}
                 onChange={(e) => {
-                  let val = e.target.value.replace(/[^0-9]/g, '');
+                  let val = e.target.value.replace(/[^0-9]/g, "");
                   if (val.length >= 3) {
-                    val = val.slice(0, 2) + ':' + val.slice(2, 4);
+                    val = val.slice(0, 2) + ":" + val.slice(2, 4);
                   }
                   setTime(val);
                 }}
@@ -1644,7 +1834,11 @@ function ReminderForm({
                 ref={dateRef2}
                 type="date"
                 value={date}
-                onClick={() => { try { dateRef2.current?.showPicker() } catch(e) {} }}
+                onClick={() => {
+                  try {
+                    dateRef2.current?.showPicker();
+                  } catch (e) {}
+                }}
                 onChange={(e) => setDate(e.target.value)}
                 className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none"
               />
@@ -1690,7 +1884,7 @@ function ArticleManagerModal({
 
   const handleUpdate = (id: string, updates: Partial<PredefinedItem>) => {
     onItemsChange(
-      items.map((item) => (item.id === id ? { ...item, ...updates } : item)),
+      items.map((item) => (item.id === id ? { ...item, ...updates } : item))
     );
   };
 
@@ -1776,7 +1970,11 @@ function ArticleManagerModal({
                   key={cat.id}
                   type="button"
                   onClick={() => setNewItem({ ...newItem, category: cat.id })}
-                  className={`flex-shrink-0 px-3 py-2 rounded-xl border text-[9px] font-black uppercase tracking-wider transition-all ${newItem.category === cat.id ? "border-teal-brand bg-teal-brand text-white shadow-md shadow-teal-brand/20" : "border-teal-brand/10 text-teal-brand/50 bg-white"}`}
+                  className={`flex-shrink-0 px-3 py-2 rounded-xl border text-[9px] font-black uppercase tracking-wider transition-all ${
+                    newItem.category === cat.id
+                      ? "border-teal-brand bg-teal-brand text-white shadow-md shadow-teal-brand/20"
+                      : "border-teal-brand/10 text-teal-brand/50 bg-white"
+                  }`}
                 >
                   {cat.id}
                 </button>
@@ -1810,15 +2008,21 @@ function ArticleManagerModal({
           {items.map((item) => {
             const IconComp = (ICON_MAP[item.iconName] ||
               ICON_MAP["Box"]) as React.ElementType;
-            const cat = APP_CATEGORIES.find(c => c.id === item.category) || APP_CATEGORIES[7];
+            const cat =
+              APP_CATEGORIES.find((c) => c.id === item.category) ||
+              APP_CATEGORIES[7];
             const isEditing = editingId === item.id;
 
             return (
               <div
                 key={item.id}
-                className={`bg-white border border-slate-100 rounded-full p-4 flex items-center gap-4 transition-all hover:bg-slate-50 group hover:border-${cat.color ? cat.color.replace('text-', '') : 'teal-500'}`}
+                className={`bg-white border border-slate-100 rounded-full p-4 flex items-center gap-4 transition-all hover:bg-slate-50 group hover:border-${
+                  cat.color ? cat.color.replace("text-", "") : "teal-500"
+                }`}
               >
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${cat.bgColor} ${cat.color} group-active:scale-95 transition-transform`}>
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${cat.bgColor} ${cat.color} group-active:scale-95 transition-transform`}
+                >
                   <IconComp size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -1859,7 +2063,11 @@ function ArticleManagerModal({
                     onClick={() =>
                       handleUpdate(item.id, { frequent: !item.frequent })
                     }
-                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${item.frequent ? "bg-amber-400 text-white" : "bg-slate-100 text-slate-300"}`}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                      item.frequent
+                        ? "bg-amber-400 text-white"
+                        : "bg-slate-100 text-slate-300"
+                    }`}
                   >
                     <Sparkles
                       size={14}
@@ -1868,7 +2076,11 @@ function ArticleManagerModal({
                   </button>
                   <button
                     onClick={() => setEditingId(isEditing ? null : item.id)}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center ${isEditing ? "bg-teal-brand text-white" : "bg-slate-100 text-slate-400"}`}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      isEditing
+                        ? "bg-teal-brand text-white"
+                        : "bg-slate-100 text-slate-400"
+                    }`}
                   >
                     {isEditing ? <Check size={14} /> : <Settings2 size={14} />}
                   </button>
@@ -1977,7 +2189,9 @@ function SupportModal({ onClose }: { onClose: () => void }) {
                     </span>
                     <ChevronRight
                       size={16}
-                      className={`text-[#2D8B96] transition-transform ${activeFaq === idx ? "rotate-90" : ""}`}
+                      className={`text-[#2D8B96] transition-transform ${
+                        activeFaq === idx ? "rotate-90" : ""
+                      }`}
                     />
                   </button>
                   <AnimatePresence>
@@ -2028,8 +2242,12 @@ function NotificationCenterModal({
     >
       <div className="pt-12 pb-4 px-6 bg-white shrink-0 border-b border-slate-100 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-display font-black text-slate-800 tracking-tight">NOTIFICATIONS</h2>
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Alertes & Rappels</p>
+          <h2 className="text-xl font-display font-black text-slate-800 tracking-tight">
+            NOTIFICATIONS
+          </h2>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
+            Alertes & Rappels
+          </p>
         </div>
         <button
           onClick={onClose}
@@ -2040,7 +2258,6 @@ function NotificationCenterModal({
       </div>
 
       <div className="flex-1 overflow-y-auto pb-20 p-4 space-y-4">
-        
         <div className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm flex flex-col divide-y divide-slate-50">
           <SettingsItem
             icon={<AlarmClock />}
@@ -2059,33 +2276,35 @@ function NotificationCenterModal({
         </div>
 
         <div className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm">
-            <div className="px-6 py-4 flex items-center gap-4 border-[#2D8B96]/5">
-              <div className="w-10 h-10 rounded-full border border-sky-100 flex items-center justify-center text-sky-500 bg-sky-50 shadow-sm">
-                <Bell size={18} />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-bold text-[#1B5E66] uppercase tracking-tight">
-                  RAPPEL DE SAUVEGARDE
-                </p>
-                <p className="text-[10px] font-black text-slate-500 uppercase leading-snug mt-0.5">
-                  Notifie si des modifications ne sont pas sauvegardées
-                </p>
-              </div>
-              <Switch
-                active={backupReminder}
-                onToggle={async () => {
-                   const newValue = !backupReminder;
-                   setBackupReminder(newValue);
-                   localStorage.setItem("backupReminderEnabled", newValue.toString());
-                   const extSync = await import("../utils/notifications");
-                   if (newValue) {
-                       extSync.scheduleBackupReminder();
-                   }
-                }}
-              />
+          <div className="px-6 py-4 flex items-center gap-4 border-[#2D8B96]/5">
+            <div className="w-10 h-10 rounded-full border border-sky-100 flex items-center justify-center text-sky-500 bg-sky-50 shadow-sm">
+              <Bell size={18} />
             </div>
+            <div className="flex-1">
+              <p className="text-sm font-bold text-[#1B5E66] uppercase tracking-tight">
+                RAPPEL DE SAUVEGARDE
+              </p>
+              <p className="text-[10px] font-black text-slate-500 uppercase leading-snug mt-0.5">
+                Notifie si des modifications ne sont pas sauvegardées
+              </p>
+            </div>
+            <Switch
+              active={backupReminder}
+              onToggle={async () => {
+                const newValue = !backupReminder;
+                setBackupReminder(newValue);
+                localStorage.setItem(
+                  "backupReminderEnabled",
+                  newValue.toString()
+                );
+                const extSync = await import("../utils/notifications");
+                if (newValue) {
+                  extSync.scheduleBackupReminder();
+                }
+              }}
+            />
+          </div>
         </div>
-
       </div>
     </motion.div>
   );
@@ -2107,7 +2326,9 @@ function SettingsItem({
   return (
     <div
       onClick={onClick}
-      className={`flex items-center gap-5 p-7 hover:bg-[#2D8B96]/5 transition-all cursor-pointer group border-b border-[#2D8B96]/10 last:border-none ${onClick ? "active:scale-[0.98]" : ""}`}
+      className={`flex items-center gap-5 p-7 hover:bg-[#2D8B96]/5 transition-all cursor-pointer group border-b border-[#2D8B96]/10 last:border-none ${
+        onClick ? "active:scale-[0.98]" : ""
+      }`}
     >
       <div className="w-12 h-12 rounded-2xl border-2 border-[#2D8B96]/20 flex items-center justify-center text-[#2D8B96] shadow-[0_4px_12px_rgba(45,139,150,0.1)] group-hover:bg-[#2D8B96] group-hover:text-white transition-all duration-300">
         {React.cloneElement(icon as React.ReactElement<any>, {

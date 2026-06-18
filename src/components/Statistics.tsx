@@ -149,8 +149,8 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
       );
       setSummaryText(textResult.trim());
     } catch (err: any) {
-      console.error(err);
-      setSummaryText("Erreur lors de la génération du résumé.");
+      console.debug(err);
+      setSummaryText(err.message || "Erreur lors de la génération du résumé.");
     } finally {
       setIsGeneratingSummary(false);
     }

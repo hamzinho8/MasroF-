@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   Cpu,
   Edit3,
+  Cloud,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PredefinedItem } from "../types";
@@ -48,6 +49,7 @@ export default function ReceiptScannerModal({
     barcode?: string | null;
   } | null>(null);
   const [isRegeneratingIcon, setIsRegeneratingIcon] = useState(false);
+  const [isCloudflareGenerating, setIsCloudflareGenerating] = useState(false);
   const [showIconPrompt, setShowIconPrompt] = useState(false);
   const [iconPrompt, setIconPrompt] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +83,7 @@ export default function ReceiptScannerModal({
         (error) => {}
       );
       return () => {
-        scanner.clear().catch((e) => console.error(e));
+        scanner.clear().catch((e) => console.debug(e));
       };
     }
   }, [isBarcodeReaderOpen]);
@@ -112,7 +114,7 @@ Extract the following in JSON:
 - 'price': Estimate the typical current price of this item in Moroccan Dirhams (MAD/DH). 
 - 'category': The category, strictly ONE of ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres'].
 - 'generic_description': Description brève et générique de l'objet physique réel (ex: 'bouteille d'eau', 'savon', 'canette', 'paquet de lessive', 'pot de yaourt').
-- 'iconSvg': Tu es un designer professionnel d'icônes. Ta mission est de créer UNE SEULE icône représentant l'objet isolé (style Line Art Minimaliste, 2 à 4 formes max, traits 2px, stroke-linecap="round", stroke-linejoin="round", centré 24x24). Utilise UNIQUEMENT ces balises: <svg>, <path>, <circle>, <rect>, <line>. Pas de remplissage coloré, juste fill="none" et stroke="currentColor". PAS de texte. PAS de logo. PAS de décor. Génère UNIQUEMENT le code brut. <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"> ... </svg>
+- 'iconSvg': Tu es un expert en SVG minimaliste. Crée UNE icône vectorielle (Line Art). Utilise <rect>, <circle>, <line>, <path>. stroke-width='2', stroke-linecap='round', stroke-linejoin='round'. AUCUN remplissage (fill='none'). AUCUN texte ni décor. IMPORTANT: Dans le SVG généré, tu DOIS utiliser UNIQUEMENT des guillemets simples (') pour les attributs (et NON des guillemets doubles) pour ne pas casser le format JSON! Exemple pour un cercle: <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='w-full h-full'><circle cx='12' cy='12' r='10'/></svg>
 - 'iconName': A fallback lucide icon name (e.g., 'PackageOpen').
 - 'matchedItemId': The id of the predefined item that resembles this one (if any). Otherwise null.
 - 'confidence': An integer from 0 to 100 representing how confident you are in your identification.
@@ -159,8 +161,9 @@ Return ONLY valid JSON, no markdown formatting blocks.${predefinedText}`,
       } else {
         setError("L'IA n'a pas pu identifier cet article. Veuillez réessayer.");
       }
-    } catch (err) {
-      console.error("Barcode scanning error", err);
+    } catch (err: any) {
+      console.debug("Barcode scanning error", err);
+      setError(err.message || "Erreur de numérisation");
       setScannedItem({
         name: `Article (${code})`,
         price: 0,
@@ -240,7 +243,7 @@ Extract the following in JSON:
 - 'price': Estimate the typical current price of this item in Moroccan Dirhams (MAD/DH). If there is a price tag in the image, use it. Otherwise, provide a realistic estimated price (number).
 - 'category': The category, strictly ONE of ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres'].
 - 'generic_description': Description brève et générique de l'objet physique réel (ex: 'bouteille d'eau', 'savon', 'canette', 'paquet de lessive', 'pot de yaourt').
-- 'iconSvg': Tu es un designer professionnel d'icônes. Ta mission est de créer UNE SEULE icône représentant l'objet isolé (style Line Art Minimaliste, 2 à 4 formes max, traits 2px, stroke-linecap="round", stroke-linejoin="round", centré 24x24). Utilise UNIQUEMENT ces balises: <svg>, <path>, <circle>, <rect>, <line>. Pas de remplissage coloré, juste fill="none" et stroke="currentColor". PAS de texte. PAS de logo. PAS de décor. Génère UNIQUEMENT le code brut. <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"> ... </svg>
+- 'iconSvg': Tu es un expert en SVG minimaliste. Crée UNE icône vectorielle (Line Art). Utilise <rect>, <circle>, <line>, <path>. stroke-width='2', stroke-linecap='round', stroke-linejoin='round'. AUCUN remplissage (fill='none'). AUCUN texte ni décor. IMPORTANT: Dans le SVG généré, tu DOIS utiliser UNIQUEMENT des guillemets simples (') pour les attributs (et NON des guillemets doubles) pour ne pas casser le format JSON! Exemple pour un cercle: <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='w-full h-full'><circle cx='12' cy='12' r='10'/></svg>
 - 'iconName': A fallback lucide icon name (e.g., 'PackageOpen').
 - 'matchedItemId': The id of the predefined item that resembles this one (if any). Otherwise null.
 - 'confidence': An integer from 0 to 100 representing how confident you are in your identification. High confidence (>80) if clearly visible and known.
@@ -289,9 +292,9 @@ Return ONLY valid JSON, no markdown formatting blocks.${predefinedText}`,
               "L'IA n'a pas pu identifier cet article. Veuillez réessayer."
             );
           }
-        } catch (err) {
-          console.error("Scanning error", err);
-          setError("Problème de connexion. Veuillez réessayer.");
+        } catch (err: any) {
+          console.debug("Scanning error", err);
+          setError(err.message || "Problème de connexion. Veuillez réessayer.");
         }
         setIsScanning(false);
       };
@@ -355,24 +358,31 @@ Ne fournis QUE la description générique courte (1 à 3 mots). Ne mets aucun au
       // Étape 2 : Générer l'icône basée sur la description
       const parts = [
         {
-          text: `Tu es un designer professionnel d'icônes vectorielles.
-Ta mission est de créer UNE SEULE icône représentant fidèlement l'article décrit ci-dessous.
+          text: `Tu es un expert mondial en SVG minimaliste (style Lucide/Heroicons).
+Crée une icône pour : "${genericDesc}" (Article original : "${scannedItem.name}")
 
-1. Style (Line Art Minimaliste) :
-- Design très simple, peu de détails (2 à 4 formes max).
-- Traits de 2px de large (stroke-width="2").
-- Coins arrondis (stroke-linecap="round", stroke-linejoin="round").
-- Parfaitement centré dans un cadre 24x24.
+Instructions :
+1. L'icône doit être extrêmement reconnaissable. Utilise des formes d'une grande clarté.
+2. Dessine l'objet au centre d'une vue 24x24.
+3. Utilise UNIQUEMENT fill="none" et stroke="currentColor", avec stroke-width="2", stroke-linecap="round", stroke-linejoin="round".
+4. Évite les courbes de Bézier complexes si tu n'es pas sûr, privilégie des compositions de <rect>, <circle>, <line>, <path> simples.
+5. PAS de texte (ni lettres, ni chiffres). PAS de décor ou arrière-plan. Juste l'objet isolé.
 
-2. Contraintes techniques strictes :
-- Utilise UNIQUEMENT ces balises : <svg>, <path>, <circle>, <rect>, <line>, <polyline>, <polygon>.
-- AUCUN remplissage complexe. Utilise \`fill="none"\` et \`stroke="currentColor"\` sur tous les traits.
-- PAS de texte (ni lettres, ni chiffres). PAS de logo. PAS de décor ou arrière-plan. Juste l'objet isolé.
+Exemple de rendu pour une "bouteille d'eau" :
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
+  <path d="M8 3h8" />
+  <path d="M10 3v4a2 2 0 0 1-2 2H7.5a2.5 2.5 0 0 0-2.5 2.5v9A2.5 2.5 0 0 0 7.5 23h9a2.5 2.5 0 0 0 2.5-2.5v-9A2.5 2.5 0 0 0 16.5 11H16a2 2 0 0 1-2-2V3" />
+  <path d="M8 14h8" />
+</svg>
 
-Objet physique à dessiner : ${genericDesc}
-(Article original : ${scannedItem.name})
+Exemple de rendu pour une "canette" :
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
+  <path d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z" />
+  <path d="M8 6h8" />
+  <path d="M8 18h8" />
+</svg>
 
-Génère UNIQUEMENT le code brut (pas de blabla, pas de markdown). Respecte exactement le code suivant comme base :
+Génère UNIQUEMENT le code SVG brut. AUCUNE explication. AUCUN texte markdown (\`\`\`svg). Réponds uniquement avec :
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
   <!-- Tes formes ici -->
 </svg>`,
@@ -384,20 +394,93 @@ Génère UNIQUEMENT le code brut (pas de blabla, pas de markdown). Respecte exac
         apiKeyValue,
         openRouterKeyValue,
         parts,
-        800
+        800,
+        false
       );
-      svgResult = svgResult
-        .trim()
-        .replace(/^```(svg|html)?\n/, "")
-        .replace(/\n```$/, "");
 
-      if (svgResult && svgResult.startsWith("<svg")) {
-        setScannedItem({ ...scannedItem, iconSvg: svgResult });
+      const svgMatch = svgResult.match(/<svg[\s\S]*?<\/svg>/i);
+      if (svgMatch) {
+        setScannedItem({ ...scannedItem, iconSvg: svgMatch[0] });
+      } else {
+        console.debug("Aucun SVG valide trouvé dans la réponse", svgResult);
+        setError(
+          "L'IA n'a pas pu dessiner cette icône. Essayez d'améliorer la description."
+        );
       }
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      console.debug(e);
+      setError(e.message || "Erreur lors de la génération de l'icône");
     }
     setIsRegeneratingIcon(false);
+  };
+
+  const handleCloudflareGenerate = async () => {
+    if (!scannedItem) return;
+    setIsCloudflareGenerating(true);
+    setError(null);
+
+    const cloudflareKey = localStorage.getItem("cloudflare_api_key");
+    if (!cloudflareKey) {
+      setError(
+        "Clé API Cloudflare manquante. Veuillez la configurer dans les paramètres."
+      );
+      setIsCloudflareGenerating(false);
+      return;
+    }
+
+    try {
+      const accountId = "c662224bb24739b992de58c0d6eda130";
+      const model = "@cf/meta/llama-3.1-8b-instruct";
+      const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`;
+
+      const promptContext = iconPrompt.trim()
+        ? `The user explicitly requested: "${iconPrompt}".`
+        : `Draw a: "${scannedItem.name}".`;
+
+      const promptText = `You are an expert SVG designer. Create a highly recognizable, minimalist vector icon representing: ${promptContext}
+
+STRICT INSTRUCTIONS:
+1. Formats: ONLY output raw SVG code. NO markdown formatting, NO \`\`\`svg wrappers, NO explanations.
+2. SVG Container: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+3. Permitted elements: <path>, <circle>, <rect>, <line>, <polyline>, <polygon>.
+4. Do NOT use any text or background.
+5. Example format:
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+
+Your response must start with <svg and end with </svg>.`;
+
+      const response = await fetch("/api/cloudflare-icon", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          promptText,
+          cloudflareKey
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => null);
+        console.debug("Cloudflare Backend error", errData);
+        throw new Error(`Erreur Cloudflare: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const aiResponse = data.result?.response || "";
+      const svgMatch = aiResponse.match(/<svg[\s\S]*?<\/svg>/i);
+
+      if (svgMatch) {
+        setScannedItem({ ...scannedItem, iconSvg: svgMatch[0] });
+      } else {
+        console.debug("Aucun SVG Cloudflare", aiResponse);
+        setError("Cloudflare n'a pas généré de SVG valide.");
+      }
+    } catch (e: any) {
+      console.debug("Cloudflare exception", e);
+      setError(e.message || "Erreur Cloudflare.");
+    }
+    setIsCloudflareGenerating(false);
   };
 
   const handleAdd = () => {
@@ -696,54 +779,69 @@ Génère UNIQUEMENT le code brut (pas de blabla, pas de markdown). Respecte exac
                   </div>
                   <div className="flex-1 flex flex-col gap-2">
                     <div className="flex justify-between items-center w-full gap-2">
-                       <button
-                         onClick={handleRegenerateIcon}
-                         disabled={isRegeneratingIcon}
-                         className="flex items-center justify-center flex-1 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold active:bg-blue-100 transition-colors"
-                       >
-                         {isRegeneratingIcon ? (
-                           <Loader2 size={16} className="animate-spin" />
-                         ) : (
-                           <RefreshCw size={16} className="mr-1" />
-                         )}
-                         Icône
-                       </button>
-                       <button
-                         onClick={() => setShowIconPrompt(!showIconPrompt)}
-                         className={`flex items-center justify-center w-[36px] h-[36px] rounded-xl transition-colors ${
-                           showIconPrompt
-                             ? "bg-blue-600 text-white shadow-sm"
-                             : "bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-200"
-                         }`}
-                         title="Modifier l'instruction"
-                       >
-                          <Edit3 size={15} />
-                       </button>
-                     </div>
-                     <AnimatePresence>
-                       {showIconPrompt && (
-                         <motion.div
-                           initial={{ height: 0, opacity: 0 }}
-                           animate={{ height: "auto", opacity: 1 }}
-                           exit={{ height: 0, opacity: 0 }}
-                           className="overflow-hidden w-full"
-                         >
-                           <input
-                             type="text"
-                             value={iconPrompt}
-                             onChange={(e) => setIconPrompt(e.target.value)}
-                             placeholder="Ex: canette, savon, yaourt..."
-                             className="w-full px-3 py-2 bg-white text-xs text-slate-800 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                             onKeyDown={(e) => {
-                               if (e.key === "Enter") {
-                                 handleRegenerateIcon();
-                               }
-                             }}
-                           />
-                         </motion.div>
-                       )}
-                     </AnimatePresence>
-                     {scannedItem.confidence !== undefined && (
+                      <button
+                        onClick={handleRegenerateIcon}
+                        disabled={isRegeneratingIcon || isCloudflareGenerating}
+                        className="flex items-center justify-center flex-1 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold active:bg-blue-100 transition-colors"
+                      >
+                        {isRegeneratingIcon ? (
+                          <Loader2 size={16} className="animate-spin" />
+                        ) : (
+                          <RefreshCw size={16} className="mr-1" />
+                        )}
+                        Icône
+                      </button>
+                      <button
+                        onClick={() => setShowIconPrompt(!showIconPrompt)}
+                        className={`flex items-center justify-center w-[36px] h-[36px] rounded-xl transition-colors ${
+                          showIconPrompt
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-200"
+                        }`}
+                        title="Modifier l'instruction"
+                      >
+                        <Edit3 size={15} />
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={handleCloudflareGenerate}
+                      disabled={isRegeneratingIcon || isCloudflareGenerating}
+                      className="flex items-center justify-center w-full py-2 bg-[#F6821F]/10 text-[#F6821F] rounded-xl text-xs font-bold hover:bg-[#F6821F]/20 active:bg-[#F6821F]/30 transition-colors"
+                      title="Générer avec Cloudflare AI"
+                    >
+                      {isCloudflareGenerating ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <Cloud size={16} className="mr-1" />
+                      )}
+                      Cloudflare AI
+                    </button>
+
+                    <AnimatePresence>
+                      {showIconPrompt && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden w-full"
+                        >
+                          <input
+                            type="text"
+                            value={iconPrompt}
+                            onChange={(e) => setIconPrompt(e.target.value)}
+                            placeholder="Ex: canette, savon, yaourt..."
+                            className="w-full px-3 py-2 bg-white text-xs text-slate-800 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                handleRegenerateIcon();
+                              }
+                            }}
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                    {scannedItem.confidence !== undefined && (
                       <div
                         className={`text-[10px] w-full font-black uppercase tracking-wider px-2 py-1.5 rounded-lg flex items-center justify-center gap-1.5 ${
                           scannedItem.confidence >= 80

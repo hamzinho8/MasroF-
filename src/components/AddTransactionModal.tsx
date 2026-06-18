@@ -178,7 +178,7 @@ export default function AddTransactionModal({
       mediaRecorder.start();
       setIsListening(true);
     } catch (err) {
-      console.error("Microphone not available, using fallback", err);
+      console.debug("Microphone not available, using fallback", err);
       audioInputRef.current?.click();
     }
   };
@@ -228,7 +228,7 @@ export default function AddTransactionModal({
       const cleanText = match ? match[0] : textResult;
       data = JSON.parse(cleanText);
     } catch (error: any) {
-      console.error("Voice scanning error", error);
+      console.debug("Voice scanning error", error);
       alert(`Erreur lors de la reconnaissance vocale: ${error.message}`);
     }
 
@@ -368,9 +368,9 @@ export default function AddTransactionModal({
               "Erreur serveur lors de la numérisation. L'IA a peut-être rencontré un problème."
             );
           }
-        } catch (error) {
-          console.error("Scanning error", error);
-          alert("Erreur de connexion. Impossible d'analyser l'image.");
+        } catch (error: any) {
+          console.debug("Scanning error", error);
+          alert(`Erreur de connexion: ${error.message}`);
         }
       } else {
         alert("Erreur lors de la lecture de l'image.");
@@ -456,7 +456,7 @@ export default function AddTransactionModal({
         const cleanText = match ? match[0] : textResult;
         data = JSON.parse(cleanText);
       } catch (err: any) {
-        console.error("Camera OCR scan error:", err);
+        console.debug("Camera OCR scan error:", err);
         alert(`Erreur avec l'IA: ${err.message}`);
         return;
       }

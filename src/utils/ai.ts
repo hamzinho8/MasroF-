@@ -75,7 +75,7 @@ export async function generateAIContent(
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error("[OpenRouter API] Error HTTP", response.status, errText);
+      console.debug("[OpenRouter API] Error HTTP", response.status, errText);
       throw new Error(`OpenRouter error: ${response.status} ${errText}`);
     }
 
