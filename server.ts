@@ -6,51 +6,80 @@ import fs from "fs";
 
 let MOROCCAN_DB = "[]";
 try {
-   MOROCCAN_DB = fs.readFileSync(path.join(process.cwd(), 'src', 'moroccanItemsDB.ts'), 'utf-8');
-} catch(e) {
-   console.log("Could not load MOROCCAN_DB", e);
+  MOROCCAN_DB = fs.readFileSync(
+    path.join(process.cwd(), "src", "moroccanItemsDB.ts"),
+    "utf-8"
+  );
+} catch (e) {
+  console.log("Could not load MOROCCAN_DB", e);
 }
 
-async function generateAIContent(aiProvider: string, geminiKey: string, openRouterKey: string, parts: any[], maxTokens: number = 1000) {
-  if (aiProvider === 'openrouter') {
+async function generateAIContent(
+  aiProvider: string,
+  geminiKey: string,
+  openRouterKey: string,
+  parts: any[],
+  maxTokens: number = 1000
+) {
+  if (aiProvider === "openrouter") {
     if (!openRouterKey) throw new Error("OpenRouter API key missing");
     let contentArray = [];
     for (const p of parts) {
       if (p.text) contentArray.push({ type: "text", text: p.text });
       if (p.inlineData) {
-        contentArray.push({ 
-          type: "image_url", 
-          image_url: { url: `data:${p.inlineData.mimeType};base64,${p.inlineData.data}` } 
+        contentArray.push({
+          type: "image_url",
+          image_url: {
+            url: `data:${p.inlineData.mimeType};base64,${p.inlineData.data}`,
+          },
         });
       }
     }
 
-    const imageParts = contentArray.filter(c => c.type === "image_url");
-    const imageSizeLog = imageParts.length > 0 ? `Taille image: ${imageParts.map(p => Math.round((p.image_url?.url.length || 0) / 1024) + 'KB').join(', ')}` : "Aucune image";
-    console.log(`[OpenRouter API] Modèle: qwen/qwen2.5-vl-72b-instruct | ${imageSizeLog} | max_tokens demandé: ${maxTokens}`);
+    const imageParts = contentArray.filter((c) => c.type === "image_url");
+    const imageSizeLog =
+      imageParts.length > 0
+        ? `Taille image: ${imageParts
+            .map(
+              (p) => Math.round((p.image_url?.url.length || 0) / 1024) + "KB"
+            )
+            .join(", ")}`
+        : "Aucune image";
+    console.log(
+      `[OpenRouter API] Modèle: qwen/qwen2.5-vl-72b-instruct | ${imageSizeLog} | max_tokens demandé: ${maxTokens}`
+    );
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${openRouterKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://masrof.app",
-        "X-Title": "Masrof"
-      },
-      body: JSON.stringify({
-        model: "qwen/qwen2.5-vl-72b-instruct",
-        messages: [{ role: "user", content: contentArray }],
-        max_tokens: maxTokens,
-        response_format: { type: "json_object" }
-      })
-    });
+    const response = await fetch(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${openRouterKey}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://masrof.app",
+          "X-Title": "Masrof",
+        },
+        body: JSON.stringify({
+          model: "qwen/qwen2.5-vl-72b-instruct",
+          messages: [{ role: "user", content: contentArray }],
+          max_tokens: maxTokens,
+          response_format: { type: "json_object" },
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
       if (response.status === 402) {
-         throw new Error("Crédit insuffisant ou limite atteinte sur OpenRouter. Veuillez vérifier votre compte.");
+        throw new Error(
+          "Crédit insuffisant ou limite atteinte sur OpenRouter. Veuillez vérifier votre compte."
+        );
       }
-      throw new Error(`Erreur OpenRouter (${response.status}): ${errorData?.error?.message || 'Réponse invalide'}`);
+      throw new Error(
+        `Erreur OpenRouter (${response.status}): ${
+          errorData?.error?.message || "Réponse invalide"
+        }`
+      );
     }
     const data = await response.json();
     return data.choices[0]?.message?.content || "";
@@ -60,7 +89,7 @@ async function generateAIContent(aiProvider: string, geminiKey: string, openRout
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: "gemini-1.5-flash",
-      contents: [{ role: "user", parts: parts }]
+      contents: [{ role: "user", parts: parts }],
     });
     return response.text || "";
   }
@@ -75,19 +104,44 @@ async function startServer() {
   // API routes FIRST
   app.post("/api/scan-items", async (req, res) => {
     try {
-      const { imageBase64, predefinedItems, apiKey, openRouterApiKey, aiProvider } = req.body;
+      const {
+        imageBase64,
+        predefinedItems,
+        apiKey,
+        openRouterApiKey,
+        aiProvider,
+      } = req.body;
       if (!imageBase64) {
         return res.status(400).json({ error: "No image provided" });
       }
 
-      const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: Try strictly to match detected items with the ones in this JSON list. If an item matches exactly or closely, output its EXACT name. For its 'amount', use its EXACT json price. DO NOT multiply by quantity detected. Even if there are 3 Danones, 'amount' must be the exact price of 1 Danone.` : "";
+      const predefinedText = predefinedItems
+        ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(
+            predefinedItems
+          )}\n\nIMPORTANT: Try strictly to match detected items with the ones in this JSON list. If an item matches exactly or closely, output its EXACT name. For its 'amount', use its EXACT json price. DO NOT multiply by quantity detected. Even if there are 3 Danones, 'amount' must be the exact price of 1 Danone.`
+        : "";
 
       const parts = [
-        { inlineData: { data: imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64, mimeType: "image/jpeg" } },
-        { text: `Analyze this receipt or image of purchased goods from Morocco. Extract:\n1. 'items': an array of UNIQUE items purchased. If the image has identical items, group them into a single item and sum their prices. For each item, give 'amount' (number, representing the total price), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string), and 'isStorable' (boolean, true for physical goods).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "paymentMethod": "CARD", "items": [{"title": "Danone", "amount": 12.50, "category": "Nourriture", "isStorable": true}]}. Return ONLY valid JSON.${predefinedText}\n\nHere is a list of typical Moroccan items as a reference for item name normalization and category:\n${MOROCCAN_DB}` }
+        {
+          inlineData: {
+            data: imageBase64.includes(",")
+              ? imageBase64.split(",")[1]
+              : imageBase64,
+            mimeType: "image/jpeg",
+          },
+        },
+        {
+          text: `Analyze this receipt or image of purchased goods from Morocco. Extract:\n1. 'items': an array of UNIQUE items purchased. If the image has identical items, group them into a single item and sum their prices. For each item, give 'amount' (number, representing the total price), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string), and 'isStorable' (boolean, true for physical goods).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "paymentMethod": "CARD", "items": [{"title": "Danone", "amount": 12.50, "category": "Nourriture", "isStorable": true}]}. Return ONLY valid JSON.${predefinedText}\n\nHere is a list of typical Moroccan items as a reference for item name normalization and category:\n${MOROCCAN_DB}`,
+        },
       ];
 
-      const text = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts, 1500);
+      const text = await generateAIContent(
+        aiProvider,
+        apiKey,
+        openRouterApiKey,
+        parts,
+        1500
+      );
       const match = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
       const data = JSON.parse(match ? match[0] : text);
       res.json(data);
@@ -99,24 +153,37 @@ async function startServer() {
 
   app.post("/api/scan-single-item", async (req, res) => {
     try {
-      const { imageBase64, predefinedItems, barcode, apiKey, openRouterApiKey, aiProvider } = req.body;
+      const {
+        imageBase64,
+        predefinedItems,
+        barcode,
+        apiKey,
+        openRouterApiKey,
+        aiProvider,
+      } = req.body;
       if (!imageBase64 && !barcode) {
         return res.status(400).json({ error: "No image or barcode provided" });
       }
-      
-      const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT INSTRUCTIONS:\n1. Check if the scanned item resembles any item in this list. If it does, include 'matchedItemId' in your JSON response with the id of that item (otherwise null).\n2. [APPRENTISSAGE] If it matches a predefined item, you MUST use EXACTLY the same category and iconName as the matched item. This allows the system to learn from past user corrections.` : "";
+
+      const predefinedText = predefinedItems
+        ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(
+            predefinedItems
+          )}\n\nIMPORTANT INSTRUCTIONS:\n1. Check if the scanned item resembles any item in this list. If it does, include 'matchedItemId' in your JSON response with the id of that item (otherwise null).\n2. [APPRENTISSAGE] If it matches a predefined item, you MUST use EXACTLY the same category and iconName as the matched item. This allows the system to learn from past user corrections.`
+        : "";
 
       let parts = [];
       if (imageBase64) {
-          const actualBase64 = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
-          parts.push({
-            inlineData: {
-              data: actualBase64,
-              mimeType: "image/jpeg"
-            }
-          });
-          parts.push({
-            text: `You are an expert AI for analyzing Moroccan products (supermarket items, grocery items, etc.).
+        const actualBase64 = imageBase64.includes(",")
+          ? imageBase64.split(",")[1]
+          : imageBase64;
+        parts.push({
+          inlineData: {
+            data: actualBase64,
+            mimeType: "image/jpeg",
+          },
+        });
+        parts.push({
+          text: `You are an expert AI for analyzing Moroccan products (supermarket items, grocery items, etc.).
 The user has provided an image of a single product. 
 Your task is to identify this product and provide details to add it to a predefined items list.
 
@@ -141,11 +208,11 @@ Respond purely in JSON format like:
   "confidence": 92,
   "barcode": "6111234567890"
 }
-Return ONLY valid JSON, no markdown formatting blocks.${predefinedText}`
-          });
+Return ONLY valid JSON, no markdown formatting blocks.${predefinedText}`,
+        });
       } else {
-          parts.push({
-            text: `You are an expert AI for analyzing Moroccan products (supermarket items, grocery items, etc.).
+        parts.push({
+          text: `You are an expert AI for analyzing Moroccan products (supermarket items, grocery items, etc.).
 The user has scanned a product barcode: "${barcode}".
 Your task is to identify this product based on its barcode and provide details to add it to a predefined items list. For example, 42104964 is Eau de table Ciel, Morocco, etc. Try your best to identify the product. If you cannot identify the exact product from the barcode, suggest a generic product name based on the barcode format or typical Moroccan products.
 
@@ -170,11 +237,17 @@ Respond purely in JSON format like:
   "confidence": 92,
   "barcode": "${barcode}"
 }
-Return ONLY valid JSON, no markdown formatting blocks.${predefinedText}`
-          });
+Return ONLY valid JSON, no markdown formatting blocks.${predefinedText}`,
+        });
       }
 
-      const text = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts, 1500);
+      const text = await generateAIContent(
+        aiProvider,
+        apiKey,
+        openRouterApiKey,
+        parts,
+        1500
+      );
       const match = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
       const data = JSON.parse(match ? match[0] : text);
       res.json(data);
@@ -197,12 +270,21 @@ REQUIREMENTS:
 1. Generate a modern, minimalist, single-color SVG icon that looks like a high-quality Lucide icon and perfectly represents the item. Do not just use generic icons if you can draw the exact item.
 2. Provide ONLY the pure <svg> HTML string. No markdown wrappers.
 3. SVG format must be EXACTLY: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"> ...paths/shapes... </svg>
-4. Do not include any text or explanations. Be creative and draw exactly what the item represents.`
-        }
+4. Do not include any text or explanations. Be creative and draw exactly what the item represents.`,
+        },
       ];
 
-      let svg = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts, 800);
-      svg = svg.trim().replace(/^```(svg|html)?\n/, "").replace(/\n```$/, "");
+      let svg = await generateAIContent(
+        aiProvider,
+        apiKey,
+        openRouterApiKey,
+        parts,
+        800
+      );
+      svg = svg
+        .trim()
+        .replace(/^```(svg|html)?\n/, "")
+        .replace(/\n```$/, "");
       res.json({ iconSvg: svg });
     } catch (e: any) {
       console.error("Regenerate Icon Error:", e);
@@ -212,21 +294,47 @@ REQUIREMENTS:
 
   app.post("/api/scan-voice", async (req, res) => {
     try {
-      const { audioBase64, mimeType, predefinedItems, apiKey, openRouterApiKey, aiProvider } = req.body;
+      const {
+        audioBase64,
+        mimeType,
+        predefinedItems,
+        apiKey,
+        openRouterApiKey,
+        aiProvider,
+      } = req.body;
       if (!audioBase64) {
         return res.status(400).json({ error: "No audio provided" });
       }
 
-      const predefinedText = predefinedItems ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(predefinedItems)}\n\nIMPORTANT: If the user says an item that matches one in this list, output its EXACT name. For its 'amount', output its EXACT json price. DO NOT multiply by quantity.` : "";
+      const predefinedText = predefinedItems
+        ? `\n\nPREDEFINED ITEMS LIST (JSON):\n${JSON.stringify(
+            predefinedItems
+          )}\n\nIMPORTANT: If the user says an item that matches one in this list, output its EXACT name. For its 'amount', output its EXACT json price. DO NOT multiply by quantity.`
+        : "";
 
-      const actualBase64 = audioBase64.includes(',') ? audioBase64.split(',')[1] : audioBase64;
-      
+      const actualBase64 = audioBase64.includes(",")
+        ? audioBase64.split(",")[1]
+        : audioBase64;
+
       const parts = [
-        { inlineData: { data: actualBase64, mimeType: mimeType || "audio/webm" } },
-        { text: `Listen to this voice recording (probably Moroccan Arabic/French) describing bought articles. Extract:\n1. 'items': an array of UNIQUE items mentioned. Group identical items and sum their prices. For each item, give 'amount' (number), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string), and 'isStorable' (boolean).\n2. 'totalReceiptAmount': sum of the items (number).\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "items": [{"title": "Cafe", "amount": 10, "category": "Nourriture", "isStorable": true}]}. Return ONLY valid JSON.${predefinedText}\n\nHere is a list of typical Moroccan items as a reference for item name normalization and category:\n${MOROCCAN_DB}` }
+        {
+          inlineData: {
+            data: actualBase64,
+            mimeType: mimeType || "audio/webm",
+          },
+        },
+        {
+          text: `Listen to this voice recording (probably Moroccan Arabic/French) describing bought articles. Extract:\n1. 'items': an array of UNIQUE items mentioned. Group identical items and sum their prices. For each item, give 'amount' (number), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string), and 'isStorable' (boolean).\n2. 'totalReceiptAmount': sum of the items (number).\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "items": [{"title": "Cafe", "amount": 10, "category": "Nourriture", "isStorable": true}]}. Return ONLY valid JSON.${predefinedText}\n\nHere is a list of typical Moroccan items as a reference for item name normalization and category:\n${MOROCCAN_DB}`,
+        },
       ];
 
-      const text = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts, 1500);
+      const text = await generateAIContent(
+        aiProvider,
+        apiKey,
+        openRouterApiKey,
+        parts,
+        1500
+      );
       const match = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
       const data = JSON.parse(match ? match[0] : text);
       res.json(data);
@@ -244,11 +352,26 @@ REQUIREMENTS:
       }
 
       const parts = [
-        { inlineData: { data: imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64, mimeType: "image/jpeg" } },
-        { text: "Extract the total amount, expense category, title and date from this receipt. Note: category must be one of ['Alimentation', 'Nourriture', 'Transport', 'Logement', 'Factures', 'Santé', 'Éducation', 'Shopping', 'Loisirs', 'Voyage', 'Autres']. Respond purely in a JSON object format like: {\"amount\": 12.50, \"category\": \"Nourriture\", \"title\": \"Supermarché\", \"date\": \"DD/MM/YYYY\"}. If you can't read it, just return empty values or reasonable defaults. Return ONLY valid JSON, no markdown blocks." }
+        {
+          inlineData: {
+            data: imageBase64.includes(",")
+              ? imageBase64.split(",")[1]
+              : imageBase64,
+            mimeType: "image/jpeg",
+          },
+        },
+        {
+          text: "Extract the total amount, expense category, title and date from this receipt. Note: category must be one of ['Alimentation', 'Nourriture', 'Transport', 'Logement', 'Factures', 'Santé', 'Éducation', 'Shopping', 'Loisirs', 'Voyage', 'Autres']. Respond purely in a JSON object format like: {\"amount\": 12.50, \"category\": \"Nourriture\", \"title\": \"Supermarché\", \"date\": \"DD/MM/YYYY\"}. If you can't read it, just return empty values or reasonable defaults. Return ONLY valid JSON, no markdown blocks.",
+        },
       ];
 
-      const text = await generateAIContent(aiProvider, apiKey, openRouterApiKey, parts, 2500);
+      const text = await generateAIContent(
+        aiProvider,
+        apiKey,
+        openRouterApiKey,
+        parts,
+        2500
+      );
       const match = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
       const data = JSON.parse(match ? match[0] : text);
       res.json(data);
@@ -266,7 +389,9 @@ REQUIREMENTS:
       }
 
       if (!process.env.GEMINI_API_KEY) {
-        return res.status(500).json({ error: "Gemini API key is not configured on the server." });
+        return res
+          .status(500)
+          .json({ error: "Gemini API key is not configured on the server." });
       }
 
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -277,11 +402,11 @@ REQUIREMENTS:
             role: "user",
             parts: [
               {
-                text: `Extract information from this voice transcript: "${text}". Extract: 1. 'amount' (number), 2. 'label' (string), 3. 'category' (strictly from ['Nourriture', 'Shopping', 'Transport', 'Loisirs', 'Autres']). Respond purely in JSON format like: {"amount": 50, "label": "coffee", "category": "Nourriture"}. If you can't determine something, leave it null. Return ONLY valid JSON, no markdown blocks.\n\nHere is a list of typical Moroccan items as a reference for item name normalization and category:\n${MOROCCAN_DB}`
-              }
-            ]
-          }
-        ]
+                text: `Extract information from this voice transcript: "${text}". Extract: 1. 'amount' (number), 2. 'label' (string), 3. 'category' (strictly from ['Nourriture', 'Shopping', 'Transport', 'Loisirs', 'Autres']). Respond purely in JSON format like: {"amount": 50, "label": "coffee", "category": "Nourriture"}. If you can't determine something, leave it null. Return ONLY valid JSON, no markdown blocks.\n\nHere is a list of typical Moroccan items as a reference for item name normalization and category:\n${MOROCCAN_DB}`,
+              },
+            ],
+          },
+        ],
       });
 
       const rawText = response.text || "{}";
@@ -290,7 +415,9 @@ REQUIREMENTS:
       res.json(data);
     } catch (e: any) {
       console.error("Voice Parse Error:", e);
-      res.status(500).json({ error: e.message || "Failed to parse voice text" });
+      res
+        .status(500)
+        .json({ error: e.message || "Failed to parse voice text" });
     }
   });
 
@@ -298,7 +425,9 @@ REQUIREMENTS:
     try {
       const { promptText, cloudflareKey } = req.body;
       if (!cloudflareKey) {
-        return res.status(400).json({ error: "No Cloudflare API key provided" });
+        return res
+          .status(400)
+          .json({ error: "No Cloudflare API key provided" });
       }
 
       const accountId = "c662224bb24739b992de58c0d6eda130";
@@ -308,14 +437,15 @@ REQUIREMENTS:
       const response = await fetch(url, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${cloudflareKey}`,
+          Authorization: `Bearer ${cloudflareKey}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           messages: [
             {
               role: "system",
-              content: "You are a professional SVG icon designer. You only output SVG code.",
+              content:
+                "You are a professional SVG icon designer. You only output SVG code. Do not output markdown, DO NOT explain anything, just output the raw SVG element.",
             },
             {
               role: "user",
@@ -328,14 +458,18 @@ REQUIREMENTS:
       if (!response.ok) {
         const errText = await response.text();
         console.error("Cloudflare API error", errText);
-        return res.status(response.status).json({ error: "Erreur Cloudflare API" });
+        return res
+          .status(response.status)
+          .json({ error: "Erreur Cloudflare API" });
       }
 
       const data = await response.json();
       res.json(data);
     } catch (e: any) {
       console.error("Cloudflare exception:", e);
-      res.status(500).json({ error: e.message || "Failed to generate Cloudflare icon" });
+      res
+        .status(500)
+        .json({ error: e.message || "Failed to generate Cloudflare icon" });
     }
   });
 

@@ -112,7 +112,7 @@ Your task is to identify this product based on its barcode and provide details t
 Extract the following in JSON:
 - 'name': Le nom de l'article. Base-toi sur le nom générique de l'objet détecté. Ne te base pas sur la marque. Représente l'objet réel plutôt que son emballage. À l'exception si l'article est connu uniquement par son emballage ou marque (ex: Tide, Danone, Coca-Cola) selon la culture marocaine. (ex: Lait, et non Centrale). Si inconnu, "Article inconnu".
 - 'price': Estimate the typical current price of this item in Moroccan Dirhams (MAD/DH). 
-- 'category': The category, strictly ONE of ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres'].
+- 'category': The category, strictly ONE of ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']. Attention: L'eau et les boissons doivent TOUJOURS être classés dans 'Nourriture'.
 - 'generic_description': Description brève et générique de l'objet physique réel (ex: 'bouteille d'eau', 'savon', 'canette', 'paquet de lessive', 'pot de yaourt').
 - 'iconSvg': Tu es un expert en SVG minimaliste. Crée UNE icône vectorielle (Line Art). Utilise <rect>, <circle>, <line>, <path>. stroke-width='2', stroke-linecap='round', stroke-linejoin='round'. AUCUN remplissage (fill='none'). AUCUN texte ni décor. IMPORTANT: Dans le SVG généré, tu DOIS utiliser UNIQUEMENT des guillemets simples (') pour les attributs (et NON des guillemets doubles) pour ne pas casser le format JSON! Exemple pour un cercle: <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='w-full h-full'><circle cx='12' cy='12' r='10'/></svg>
 - 'iconName': A fallback lucide icon name (e.g., 'PackageOpen').
@@ -241,7 +241,7 @@ Your task is to identify this product and provide details to add it to a predefi
 Extract the following in JSON:
 - 'name': Le nom de l'article. Base-toi sur le nom générique de l'objet détecté. Ne te base pas sur la marque. Représente l'objet réel plutôt que son emballage ou étiquette. À l'exception si l'article est connu uniquement par son emballage ou sa marque (ex: Tide, Danone, Coca-Cola) selon la culture marocaine. Garde-le concis.
 - 'price': Estimate the typical current price of this item in Moroccan Dirhams (MAD/DH). If there is a price tag in the image, use it. Otherwise, provide a realistic estimated price (number).
-- 'category': The category, strictly ONE of ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres'].
+- 'category': The category, strictly ONE of ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']. Attention: L'eau et les boissons doivent TOUJOURS être classés dans 'Nourriture'.
 - 'generic_description': Description brève et générique de l'objet physique réel (ex: 'bouteille d'eau', 'savon', 'canette', 'paquet de lessive', 'pot de yaourt').
 - 'iconSvg': Tu es un expert en SVG minimaliste. Crée UNE icône vectorielle (Line Art). Utilise <rect>, <circle>, <line>, <path>. stroke-width='2', stroke-linecap='round', stroke-linejoin='round'. AUCUN remplissage (fill='none'). AUCUN texte ni décor. IMPORTANT: Dans le SVG généré, tu DOIS utiliser UNIQUEMENT des guillemets simples (') pour les attributs (et NON des guillemets doubles) pour ne pas casser le format JSON! Exemple pour un cercle: <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='w-full h-full'><circle cx='12' cy='12' r='10'/></svg>
 - 'iconName': A fallback lucide icon name (e.g., 'PackageOpen').
@@ -429,25 +429,29 @@ Génère UNIQUEMENT le code SVG brut. AUCUNE explication. AUCUN texte markdown (
     }
 
     try {
-      const accountId = "c662224bb24739b992de58c0d6eda130";
-      const model = "@cf/meta/llama-3.1-8b-instruct";
-      const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`;
-
       const promptContext = iconPrompt.trim()
-        ? `The user explicitly requested: "${iconPrompt}".`
-        : `Draw a: "${scannedItem.name}".`;
+        ? `L'utilisateur demande explicitement (The user explicitly requested): "${iconPrompt}". Draw this object.`
+        : `L'objet est (The object is): "${scannedItem.name}". Draw this object.`;
 
-      const promptText = `You are an expert SVG designer. Create a highly recognizable, minimalist vector icon representing: ${promptContext}
+      const promptText = `You are an expert SVG icon designer. Your task is to draw a highly recognizable, minimalist line-art icon of the object requested.
+Think about the geometric shapes that make up the object. Use standard SVG elements: <rect>, <circle>, <path>, <line> with viewBox="0 0 24 24".
+
+Example 1: A water bottle (bouteille d'eau, eau)
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="10" width="8" height="12" rx="2"/><path d="M8 10V7a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/><line x1="10" y1="2" x2="14" y2="2"/></svg>
+
+Example 2: An apple (pomme, fruit)
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/><path d="M12 4v-2"/><path d="M10 2s2 0 2 2"/></svg>
+
+Example 3: A book (livre, cahier)
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+
+Now, draw: ${promptContext}
+If the object is a liquid (like water/eau or milk), DRAW A BOTTLE OR GLASS.
 
 STRICT INSTRUCTIONS:
-1. Formats: ONLY output raw SVG code. NO markdown formatting, NO \`\`\`svg wrappers, NO explanations.
-2. SVG Container: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-3. Permitted elements: <path>, <circle>, <rect>, <line>, <polyline>, <polygon>.
-4. Do NOT use any text or background.
-5. Example format:
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-
-Your response must start with <svg and end with </svg>.`;
+1. ONLY output raw SVG code. NO explanations, NO markdown wrappers (like \`\`\`svg).
+2. The SVG MUST start with <svg and end with </svg>.
+3. Use simple, clear geometric paths that resemble the object.`;
 
       const response = await fetch("/api/cloudflare-icon", {
         method: "POST",
@@ -456,7 +460,7 @@ Your response must start with <svg and end with </svg>.`;
         },
         body: JSON.stringify({
           promptText,
-          cloudflareKey
+          cloudflareKey,
         }),
       });
 
