@@ -43,7 +43,15 @@ export async function generateAIContent(
 
     const bodyVariables: any = {
       model: "qwen/qwen2.5-vl-72b-instruct",
-      messages: [{ role: "user", content: contentArray }],
+      messages: [
+        {
+          role: "user",
+          content:
+            imageParts.length === 0
+              ? contentArray.map((c: any) => c.text || JSON.stringify(c)).join("\n")
+              : contentArray,
+        },
+      ],
       max_tokens: maxTokens,
     };
 

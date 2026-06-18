@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Cpu,
+  Edit3,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PredefinedItem } from "../types";
@@ -47,6 +48,8 @@ export default function ReceiptScannerModal({
     barcode?: string | null;
   } | null>(null);
   const [isRegeneratingIcon, setIsRegeneratingIcon] = useState(false);
+  const [showIconPrompt, setShowIconPrompt] = useState(false);
+  const [iconPrompt, setIconPrompt] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isContinuousMode, setIsContinuousMode] = useState(false);
   const [successToast, setSuccessToast] = useState(false);
@@ -105,10 +108,11 @@ The user has scanned a product barcode: "${code}".
 Your task is to identify this product based on its barcode and provide details to add it to a predefined items list. For example, 42104964 is Eau de table Ciel, Morocco, etc. Try your best to identify the product. If you cannot identify the exact product from the barcode, suggest a generic product name based on the barcode format or typical Moroccan products.
 
 Extract the following in JSON:
-- 'name': The name of the product (e.g. "Eau Minérale Ciel 33cl"). If completely unknown, return "Article inconnu".
+- 'name': Le nom de l'article. Base-toi sur le nom générique de l'objet détecté. Ne te base pas sur la marque. Représente l'objet réel plutôt que son emballage. À l'exception si l'article est connu uniquement par son emballage ou marque (ex: Tide, Danone, Coca-Cola) selon la culture marocaine. (ex: Lait, et non Centrale). Si inconnu, "Article inconnu".
 - 'price': Estimate the typical current price of this item in Moroccan Dirhams (MAD/DH). 
 - 'category': The category, strictly ONE of ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres'].
-- 'iconSvg': Generate a minimalist, scalable, single-color SVG icon string representing this specific item precisely. Use exactly this format with your paths inside: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"> ... </svg>
+- 'generic_description': Description brève et générique de l'objet physique réel (ex: 'bouteille d'eau', 'savon', 'canette', 'paquet de lessive', 'pot de yaourt').
+- 'iconSvg': Tu es un designer professionnel d'icônes. Ta mission est de créer UNE SEULE icône représentant l'objet isolé (style Line Art Minimaliste, 2 à 4 formes max, traits 2px, stroke-linecap="round", stroke-linejoin="round", centré 24x24). Utilise UNIQUEMENT ces balises: <svg>, <path>, <circle>, <rect>, <line>. Pas de remplissage coloré, juste fill="none" et stroke="currentColor". PAS de texte. PAS de logo. PAS de décor. Génère UNIQUEMENT le code brut. <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"> ... </svg>
 - 'iconName': A fallback lucide icon name (e.g., 'PackageOpen').
 - 'matchedItemId': The id of the predefined item that resembles this one (if any). Otherwise null.
 - 'confidence': An integer from 0 to 100 representing how confident you are in your identification.
@@ -119,6 +123,7 @@ Respond purely in JSON format like:
   "name": "Danone",
   "price": 2.50,
   "category": "Nourriture",
+  "generic_description": "pot de yaourt",
   "iconSvg": "<svg ...>...</svg>",
   "iconName": "Milk",
   "matchedItemId": "3",
@@ -231,10 +236,11 @@ The user has provided an image of a single product.
 Your task is to identify this product and provide details to add it to a predefined items list.
 
 Extract the following in JSON:
-- 'name': The name of the product. Keep it concise, e.g., "Danone Vanille", "Oulmes", "Sidi Ali", "Lait Frais".
+- 'name': Le nom de l'article. Base-toi sur le nom générique de l'objet détecté. Ne te base pas sur la marque. Représente l'objet réel plutôt que son emballage ou étiquette. À l'exception si l'article est connu uniquement par son emballage ou sa marque (ex: Tide, Danone, Coca-Cola) selon la culture marocaine. Garde-le concis.
 - 'price': Estimate the typical current price of this item in Moroccan Dirhams (MAD/DH). If there is a price tag in the image, use it. Otherwise, provide a realistic estimated price (number).
 - 'category': The category, strictly ONE of ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres'].
-- 'iconSvg': Generate a minimalist, scalable, single-color SVG icon string representing this specific item precisely. Use exactly this format with your paths inside: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"> ... </svg>
+- 'generic_description': Description brève et générique de l'objet physique réel (ex: 'bouteille d'eau', 'savon', 'canette', 'paquet de lessive', 'pot de yaourt').
+- 'iconSvg': Tu es un designer professionnel d'icônes. Ta mission est de créer UNE SEULE icône représentant l'objet isolé (style Line Art Minimaliste, 2 à 4 formes max, traits 2px, stroke-linecap="round", stroke-linejoin="round", centré 24x24). Utilise UNIQUEMENT ces balises: <svg>, <path>, <circle>, <rect>, <line>. Pas de remplissage coloré, juste fill="none" et stroke="currentColor". PAS de texte. PAS de logo. PAS de décor. Génère UNIQUEMENT le code brut. <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"> ... </svg>
 - 'iconName': A fallback lucide icon name (e.g., 'PackageOpen').
 - 'matchedItemId': The id of the predefined item that resembles this one (if any). Otherwise null.
 - 'confidence': An integer from 0 to 100 representing how confident you are in your identification. High confidence (>80) if clearly visible and known.
@@ -245,6 +251,7 @@ Respond purely in JSON format like:
   "name": "Danone",
   "price": 2.50,
   "category": "Nourriture",
+  "generic_description": "pot de yaourt",
   "iconSvg": "<svg ...>...</svg>",
   "iconName": "Milk",
   "matchedItemId": "3",
@@ -313,17 +320,62 @@ Return ONLY valid JSON, no markdown formatting blocks.${predefinedText}`,
         localStorage.getItem("gemini_api_key");
       const openRouterKeyValue = localStorage.getItem("openrouter_api_key");
 
+      // Étape 1 : Générer description générique
+      let genericDesc = "";
+      if (!iconPrompt.trim()) {
+        const descParts = [
+          {
+            text: `Génère une description brève et générique de l'objet physique réel pour l'article suivant : "${scannedItem.name}" (Catégorie: ${scannedItem.category}).
+Exemples :
+Eau minérale → bouteille d'eau
+Coca-Cola → canette
+Tide → paquet de lessive
+Ariel → paquet de lessive
+Fairy → liquide vaisselle
+Savon Dove → savon
+Marlboro → paquet de cigarettes
+Yaourt Danone → pot de yaourt
+
+Ne fournis QUE la description générique courte (1 à 3 mots). Ne mets aucun autre texte ni point ni guillemets.`,
+          },
+        ];
+
+        genericDesc = await generateAIContent(
+          aiProvider,
+          apiKeyValue,
+          openRouterKeyValue,
+          descParts,
+          50
+        );
+        genericDesc = genericDesc.trim();
+      } else {
+        genericDesc = iconPrompt.trim();
+      }
+
+      // Étape 2 : Générer l'icône basée sur la description
       const parts = [
         {
-          text: `I need a completely custom, perfectly tailored SVG icon for the following item:
-Item Name: "${scannedItem.name}"
-Category: "${scannedItem.category}"
+          text: `Tu es un designer professionnel d'icônes vectorielles.
+Ta mission est de créer UNE SEULE icône représentant fidèlement l'article décrit ci-dessous.
 
-REQUIREMENTS:
-1. Generate a modern, minimalist, single-color SVG icon that looks like a high-quality Lucide icon and perfectly represents the item. Do not just use generic icons if you can draw the exact item.
-2. Provide ONLY the pure <svg> HTML string. No markdown wrappers.
-3. SVG format must be EXACTLY: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full"> ...paths/shapes... </svg>
-4. Do not include any text or explanations. Be creative and draw exactly what the item represents.`,
+1. Style (Line Art Minimaliste) :
+- Design très simple, peu de détails (2 à 4 formes max).
+- Traits de 2px de large (stroke-width="2").
+- Coins arrondis (stroke-linecap="round", stroke-linejoin="round").
+- Parfaitement centré dans un cadre 24x24.
+
+2. Contraintes techniques strictes :
+- Utilise UNIQUEMENT ces balises : <svg>, <path>, <circle>, <rect>, <line>, <polyline>, <polygon>.
+- AUCUN remplissage complexe. Utilise \`fill="none"\` et \`stroke="currentColor"\` sur tous les traits.
+- PAS de texte (ni lettres, ni chiffres). PAS de logo. PAS de décor ou arrière-plan. Juste l'objet isolé.
+
+Objet physique à dessiner : ${genericDesc}
+(Article original : ${scannedItem.name})
+
+Génère UNIQUEMENT le code brut (pas de blabla, pas de markdown). Respecte exactement le code suivant comme base :
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
+  <!-- Tes formes ici -->
+</svg>`,
         },
       ];
 
@@ -643,21 +695,55 @@ REQUIREMENTS:
                     })()}
                   </div>
                   <div className="flex-1 flex flex-col gap-2">
-                    <div className="flex justify-between items-center w-full">
-                      <button
-                        onClick={handleRegenerateIcon}
-                        disabled={isRegeneratingIcon}
-                        className="flex items-center justify-center flex-1 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold active:bg-blue-100 transition-colors"
-                      >
-                        {isRegeneratingIcon ? (
-                          <Loader2 size={16} className="animate-spin" />
-                        ) : (
-                          <RefreshCw size={16} className="mr-1" />
-                        )}
-                        Icône
-                      </button>
-                    </div>
-                    {scannedItem.confidence !== undefined && (
+                    <div className="flex justify-between items-center w-full gap-2">
+                       <button
+                         onClick={handleRegenerateIcon}
+                         disabled={isRegeneratingIcon}
+                         className="flex items-center justify-center flex-1 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold active:bg-blue-100 transition-colors"
+                       >
+                         {isRegeneratingIcon ? (
+                           <Loader2 size={16} className="animate-spin" />
+                         ) : (
+                           <RefreshCw size={16} className="mr-1" />
+                         )}
+                         Icône
+                       </button>
+                       <button
+                         onClick={() => setShowIconPrompt(!showIconPrompt)}
+                         className={`flex items-center justify-center w-[36px] h-[36px] rounded-xl transition-colors ${
+                           showIconPrompt
+                             ? "bg-blue-600 text-white shadow-sm"
+                             : "bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-200"
+                         }`}
+                         title="Modifier l'instruction"
+                       >
+                          <Edit3 size={15} />
+                       </button>
+                     </div>
+                     <AnimatePresence>
+                       {showIconPrompt && (
+                         <motion.div
+                           initial={{ height: 0, opacity: 0 }}
+                           animate={{ height: "auto", opacity: 1 }}
+                           exit={{ height: 0, opacity: 0 }}
+                           className="overflow-hidden w-full"
+                         >
+                           <input
+                             type="text"
+                             value={iconPrompt}
+                             onChange={(e) => setIconPrompt(e.target.value)}
+                             placeholder="Ex: canette, savon, yaourt..."
+                             className="w-full px-3 py-2 bg-white text-xs text-slate-800 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                             onKeyDown={(e) => {
+                               if (e.key === "Enter") {
+                                 handleRegenerateIcon();
+                               }
+                             }}
+                           />
+                         </motion.div>
+                       )}
+                     </AnimatePresence>
+                     {scannedItem.confidence !== undefined && (
                       <div
                         className={`text-[10px] w-full font-black uppercase tracking-wider px-2 py-1.5 rounded-lg flex items-center justify-center gap-1.5 ${
                           scannedItem.confidence >= 80
