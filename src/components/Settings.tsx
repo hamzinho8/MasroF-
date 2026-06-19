@@ -46,6 +46,12 @@ import {
   Home as HomeLucide,
   HeartPulse,
   Heart,
+  ArrowUp,
+  ArrowDown,
+  Eye,
+  EyeOff,
+  GripVertical,
+  Home,
 } from "lucide-react";
 
 interface SettingsProps {
@@ -189,6 +195,7 @@ export default function Settings({
   const [showReminderManager, setShowReminderManager] = useState(false);
   const [showAlarmManager, setShowAlarmManager] = useState(false);
   const [showNotificationCenter, setShowNotificationCenter] = useState(false);
+  const [showHomeSectionsManager, setShowHomeSectionsManager] = useState(false);
   const [backupReminder, setBackupReminder] = useState(
     () => localStorage.getItem("backupReminderEnabled") === "true"
   );
@@ -410,6 +417,13 @@ export default function Settings({
               showArrow={true}
             />
             <SettingsItem
+              icon={<Home />}
+              title="SECTIONS DE L'ACCUEIL"
+              subtitle="Organiser et masquer les sections"
+              onClick={() => setShowHomeSectionsManager(true)}
+              showArrow={true}
+            />
+            <SettingsItem
               icon={<Download />}
               title="RAPPORT PDF"
               subtitle="Télécharger un rapport PDF"
@@ -622,6 +636,14 @@ export default function Settings({
             onOpenAlarmManager={() => setShowAlarmManager(true)}
             backupReminder={backupReminder}
             setBackupReminder={setBackupReminder}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showHomeSectionsManager && (
+          <HomeSectionsManagerModal
+            onClose={() => setShowHomeSectionsManager(false)}
           />
         )}
       </AnimatePresence>
@@ -2360,5 +2382,157 @@ function SettingsItem({
         />
       )}
     </div>
+  );
+}
+
+function HomeSectionsManagerModal({ onClose }: { onClose: () => void }) {
+  const DEFAULT_HOME_SECTIONS = [
+    { id: "mainWidget", label: "Widget Principal", visible: true },
+    { id: "quickActions", label: "Actions Rapides", visible: true },
+    { id: "credits", label: "Mes Crédits", visible: true },
+    { id: "summary", label: "Sommaire", visible: true },
+    { id: "favorites", label: "Favoris", visible: true },
+    { id: "ras", label: "RAS", visible: true },
+    { id: "budgets", label: "Budgets par Catégorie", visible: true },
+    { id: "inshallah", label: "Estimation du Jour", visible: true },
+  ];
+  
+  const [sections, setSections] = useLocalStorage<any[]>("homeSectionsOrder", DEFAULT_HOME_SECTIONS);
+  const [localSections, setLocalSections] = useState([...sections]);
+
+  // Ensure any newly added sections in code update are present
+  React.useEffect(() => {
+    const defaultIds = DEFAULT_HOME_SECTIONS.map(s => s.id);
+    const localIds = localSections.map(s => s.id);
+    
+    // Add missing
+    const missing = DEFAULT_HOME_SECTIONS.filter(s => !localIds.includes(s.id));
+    if (missing.length > 0) {
+      setLocalSections(prev => [...prev, ...missing]);
+    }
+  }, []);
+
+  const handleToggleVisibility = (id: string) => {
+    setLocalSections(prev => prev.map(s => s.id === id ? { ...s, visible: !s.visible } : s));
+  };
+
+  const handleMoveUp = (index: number) => {
+    if (index === 0) return;
+    setLocalSections(prev => {
+      const next = [...prev];
+      const temp = next[index - 1];
+      next[index - 1] = next[index];
+      next[index] = temp;
+      return next;
+    });
+  };
+
+  const handleMoveDown = (index: number) => {
+    if (index === localSections.length - 1) return;
+    setLocalSections(prev => {
+      const next = [...prev];
+      const temp = next[index + 1];
+      next[index + 1] = next[index];
+      next[index] = temp;
+      return next;
+    });
+  };
+
+  const handleSave = () => {
+    setSections(localSections);
+    onClose();
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4 sm:p-6 bg-slate-900/60 transition-opacity"
+      onClick={onClose}
+    >
+      <motion.div
+        drag="y"
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={0.2}
+        onDragEnd={(e, info) => {
+          if (info.offset.y > 100) onClose();
+        }}
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white w-full max-w-md rounded-t-[32px] sm:rounded-3xl p-6 sm:p-8 flex flex-col max-h-[85vh] shadow-2xl relative"
+      >
+        <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 shrink-0" />
+
+        <div className="flex items-center gap-3 mb-6 shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600">
+            <Layout size={20} />
+          </div>
+          <div>
+            <h3 className="text-xl font-black text-slate-900">
+              Sections de l'Accueil
+            </h3>
+            <p className="text-sm font-medium text-slate-500 mt-0.5">
+              Organisez l'affichage
+            </p>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto min-h-0 -mx-2 px-2 hide-scrollbar">
+          <div className="space-y-3 pb-2">
+            {localSections.map((item, index) => {
+              const isVisible = item.visible;
+              return (
+                <div
+                  key={item.id}
+                  className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all ${isVisible ? 'border-slate-200 bg-white' : 'border-slate-100 bg-slate-50 opacity-60'}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => handleToggleVisibility(item.id)}
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isVisible ? 'bg-teal-500 text-white shadow-sm' : 'bg-slate-200 text-slate-400'}`}
+                    >
+                      {isVisible ? <Eye size={18} /> : <EyeOff size={18} />}
+                    </button>
+                    <span className={`font-bold ${isVisible ? 'text-slate-800' : 'text-slate-500 line-through'}`}>
+                      {item.label}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      disabled={index === 0}
+                      onClick={() => handleMoveUp(index)}
+                      className={`p-2 rounded-lg flex items-center justify-center transition-colors ${index === 0 ? 'text-slate-300' : 'text-slate-500 hover:bg-slate-100 active:bg-slate-200'}`}
+                    >
+                      <ArrowUp size={18} />
+                    </button>
+                    <button
+                      disabled={index === localSections.length - 1}
+                      onClick={() => handleMoveDown(index)}
+                      className={`p-2 rounded-lg flex items-center justify-center transition-colors ${index === localSections.length - 1 ? 'text-slate-300' : 'text-slate-500 hover:bg-slate-100 active:bg-slate-200'}`}
+                    >
+                      <ArrowDown size={18} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="pt-6 mt-2 shrink-0">
+          <button
+            onClick={handleSave}
+            className="w-full h-14 bg-teal-600 active:bg-teal-700 text-white rounded-2xl font-black text-[15px] uppercase tracking-widest transition-colors shadow-lg shadow-teal-600/20"
+          >
+            Appliquer
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }

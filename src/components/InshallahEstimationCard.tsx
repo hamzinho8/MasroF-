@@ -233,7 +233,7 @@ Ne retourne QUE un format JSON exact comme celui-ci, aucun autre texte ni balise
                       itemStyle={{ color: '#fff', fontWeight: 'bold' }}
                       labelStyle={{ color: 'rgba(255,255,255,0.7)', marginBottom: '4px', textTransform: 'capitalize' }}
                       cursor={{ stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1, strokeDasharray: '4 4' }}
-                      formatter={(value: number) => [`${value} ${currency}`, language === "Français" ? "Prévu" : "Expected"]}
+                      formatter={(value: any) => [`${value} ${currency}`, language === "Français" ? "Prévu" : "Expected"]}
                       isAnimationActive={false}
                     />
                   </LineChart>

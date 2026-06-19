@@ -242,6 +242,20 @@ export default function Home({
   const [showScannerFab] = useLocalStorage<boolean>("showScannerFab", true);
   const [isOnline, setIsOnline] = React.useState(true);
 
+  const DEFAULT_HOME_SECTIONS = [
+    { id: "mainWidget", label: "Widget Principal", visible: true },
+    { id: "quickActions", label: "Actions Rapides", visible: true },
+    { id: "credits", label: "Mes Crédits", visible: true },
+    { id: "summary", label: "Sommaire", visible: true },
+    { id: "favorites", label: "Favoris", visible: true },
+    { id: "ras", label: "RAS", visible: true },
+    { id: "budgets", label: "Budgets par Catégorie", visible: true },
+    { id: "inshallah", label: "Estimation du Jour", visible: true },
+  ];
+  const [homeSectionsOrder] = useLocalStorage<any[]>("homeSectionsOrder", DEFAULT_HOME_SECTIONS);
+  const getOrder = (id: string) => homeSectionsOrder.findIndex((s) => s.id === id);
+  const isVisible = (id: string) => homeSectionsOrder.find((s) => s.id === id)?.visible ?? true;
+
   React.useEffect(() => {
     let unmounted = false;
 
@@ -553,12 +567,15 @@ export default function Home({
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
+      className="flex flex-col"
     >
       {/* Main Widget Card */}
-      <div
-        className="relative min-h-[12rem] h-auto rounded-[24px] overflow-hidden shadow-lg mb-8 transition-all hover:scale-[1.01] cursor-pointer"
-        style={{ background: widgetBackground }}
-      >
+      {isVisible("mainWidget") && (
+        <div style={{ order: getOrder("mainWidget") }}>
+          <div
+            className="relative min-h-[12rem] h-auto rounded-[24px] overflow-hidden shadow-lg mb-8 transition-all hover:scale-[1.01] cursor-pointer"
+            style={{ background: widgetBackground }}
+          >
         <div
           className="absolute top-4 right-4 z-20 flex items-center justify-center p-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 shadow-sm"
           title={isOnline ? "Connecté" : "Hors-ligne"}
@@ -782,6 +799,8 @@ export default function Home({
           </div>
         </div>
       )}
+      </div>
+      )}
 
       <AnimatePresence>
         {showCalculator && (
@@ -797,7 +816,8 @@ export default function Home({
       </AnimatePresence>
 
       {/* Quick Actions - Modern Redesign (Moved up) */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      {isVisible("quickActions") && (
+      <div className="grid grid-cols-2 gap-4 mb-4" style={{ order: getOrder("quickActions") }}>
         <button
           onClick={() => onAddClick("EXPENSE")}
           className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-rose-100 hover:bg-rose-50/30 active:scale-95 shadow-sm"
@@ -821,9 +841,11 @@ export default function Home({
           </span>
         </button>
       </div>
+      )}
 
       {/* Credits Buttons - Matching summary card style exactly */}
-      <div className="mb-8">
+      {isVisible("credits") && (
+      <div className="mb-8" style={{ order: getOrder("credits") }}>
         <h3 className="text-slate-900 font-black tracking-tight mb-4 px-1">
           Mes Crédits
         </h3>
@@ -875,9 +897,11 @@ export default function Home({
           </div>
         </div>
       </div>
+      )}
 
       {/* Summary Section */}
-      <div className="mb-8 space-y-4">
+      {isVisible("summary") && (
+      <div className="mb-8 space-y-4" style={{ order: getOrder("summary") }}>
         {/* Summary Title with Filter Icon */}
         <div className="flex justify-between items-center px-1">
           <h3 className="text-slate-900 font-bold">{getSummaryTitle()}</h3>
@@ -952,9 +976,11 @@ export default function Home({
           </button>
         </div>
       </div>
+      )}
 
       {/* Favorites Shortcuts */}
-      <div className="mb-2 overflow-hidden -mx-1 px-1">
+      {isVisible("favorites") && (
+      <div className="mb-2 overflow-hidden -mx-1 px-1" style={{ order: getOrder("favorites") }}>
         <div className="flex justify-between items-center mb-4 px-1">
           <h3 className="text-slate-900 font-black tracking-tight flex items-center gap-2">
             Favoris
@@ -1022,11 +1048,12 @@ export default function Home({
           </div>
         )}
       </div>
+      )}
 
       {/* Inventory Shortcuts */}
-      {inventoryItems &&
+      {isVisible("ras") && inventoryItems &&
         inventoryItems.filter((i) => i.quantity > 0).length > 0 && (
-          <div className="mb-2 overflow-hidden -mx-1 px-1">
+          <div className="mb-2 overflow-hidden -mx-1 px-1" style={{ order: getOrder("ras") }}>
             <div className="flex justify-between items-center mb-4 px-1">
               <h3 className="text-slate-900 font-black tracking-tight flex items-center gap-2">
                 RAS
@@ -1094,7 +1121,8 @@ export default function Home({
         )}
 
       {/* Category Budgets Activity Instead of History */}
-      <div>
+      {isVisible("budgets") && (
+      <div style={{ order: getOrder("budgets") }}>
         <div className="flex justify-between items-center mb-4 px-1">
           <h3 className="text-slate-900 font-black tracking-tight flex items-center gap-2">
             {t.budgetsTitle}
@@ -1200,14 +1228,19 @@ export default function Home({
           )}
         </div>
       </div>
+      )}
 
-      <InshallahEstimationCard 
-        transactions={transactions} 
-        currency={currency} 
-        language={language}
-        balance={balance}
-        bankBalance={bankBalance}
-      />
+      {isVisible("inshallah") && (
+      <div style={{ order: getOrder("inshallah") }}>
+        <InshallahEstimationCard 
+          transactions={transactions} 
+          currency={currency} 
+          language={language}
+          balance={balance}
+          bankBalance={bankBalance}
+        />
+      </div>
+      )}
 
       {/* FAB AI Scanner */}
       {showScannerFab && (
