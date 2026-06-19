@@ -51,6 +51,7 @@ import {
 } from "../constants";
 import CalendarView from "./CalendarView";
 import ReceiptScannerModal from "./ReceiptScannerModal";
+import InshallahEstimationCard from "./InshallahEstimationCard";
 
 interface HomeProps {
   balance: number;
@@ -979,7 +980,7 @@ export default function Home({
                 favoriteItemIds.includes(i.id) &&
                 (!hiddenFavorites[i.id] || hiddenFavorites[i.id] < Date.now())
             ).map((item) => {
-              const info = getArticleInfo(item.name, item.category);
+              const info = getArticleInfo(item.name, item.category, predefinedItems);
               const IconComponent =
                 info.iconName && ICON_MAP[info.iconName]
                   ? (ICON_MAP[info.iconName] as React.ElementType)
@@ -1199,6 +1200,14 @@ export default function Home({
           )}
         </div>
       </div>
+
+      <InshallahEstimationCard 
+        transactions={transactions} 
+        currency={currency} 
+        language={language}
+        balance={balance}
+        bankBalance={bankBalance}
+      />
 
       {/* FAB AI Scanner */}
       {showScannerFab && (
@@ -1816,7 +1825,7 @@ function FavoritesSettingsModal({
         <div className="flex-1 overflow-y-auto min-h-0 -mx-2 px-2 hide-scrollbar">
           <div className="space-y-3 pb-2">
             {predefinedItems.map((item) => {
-              const info = getArticleInfo(item.name, item.category);
+              const info = getArticleInfo(item.name, item.category, predefinedItems);
               const IconComponent =
                 info.iconName && ICON_MAP[info.iconName]
                   ? (ICON_MAP[info.iconName] as React.ElementType)

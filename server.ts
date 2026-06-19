@@ -88,7 +88,7 @@ async function generateAIContent(
     if (!apiKey) throw new Error("Gemini API key missing");
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-3.5-flash",
       contents: [{ role: "user", parts: parts }],
     });
     return response.text || "";
@@ -396,7 +396,7 @@ REQUIREMENTS:
 
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
+        model: "gemini-3.5-flash",
         contents: [
           {
             role: "user",

@@ -830,6 +830,24 @@ export default function App() {
         );
       });
 
+      // Check estimations
+      const dailyStr = localStorage.getItem("inshallah_daily");
+      const remainingStr = localStorage.getItem("inshallah_remaining");
+      
+      if (dailyStr && dailyStr !== "null") {
+        const dVal = parseFloat(dailyStr);
+        if (!isNaN(dVal) && dVal > balance) {
+          newsItems.push(`<b><font color="#E11D48">⚠️ Il faut retirer de l'argent.</font></b>`);
+        }
+      }
+      
+      if (remainingStr && remainingStr !== "null") {
+        const rVal = parseFloat(remainingStr);
+        if (!isNaN(rVal) && rVal > bankBalance) {
+          newsItems.push(`<b><font color="#E11D48">🚨 Alert, il faut économiser tes dépenses.</font></b>`);
+        }
+      }
+
       let newsHtml = newsItems.join("&nbsp;&nbsp;•&nbsp;&nbsp;");
       if (!newsHtml) {
         newsHtml = "<i>Aucun achat programmé.</i>";
@@ -901,6 +919,13 @@ export default function App() {
     };
 
     setTransactions((prev) => [newTx, ...prev]);
+
+    // If an item is bought, remove it from shopping list if it exists
+    if (type === "EXPENSE") {
+      setShoppingList((prev) =>
+        prev.filter((item) => item.name.toLowerCase() !== label.toLowerCase())
+      );
+    }
 
     if (inventoryData) {
       setInventoryItems((prev) => [

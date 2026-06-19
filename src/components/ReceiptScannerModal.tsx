@@ -429,29 +429,89 @@ Génère UNIQUEMENT le code SVG brut. AUCUNE explication. AUCUN texte markdown (
     }
 
     try {
-      const promptContext = iconPrompt.trim()
-        ? `L'utilisateur demande explicitement (The user explicitly requested): "${iconPrompt}". Draw this object.`
-        : `L'objet est (The object is): "${scannedItem.name}". Draw this object.`;
+      const targetArticle = iconPrompt.trim() ? iconPrompt.trim() : scannedItem.name;
 
-      const promptText = `You are an expert SVG icon designer. Your task is to draw a highly recognizable, minimalist line-art icon of the object requested.
-Think about the geometric shapes that make up the object. Use standard SVG elements: <rect>, <circle>, <path>, <line> with viewBox="0 0 24 24".
+      const promptText = `You are a world-class UI/UX icon designer specialized in Android Material icons, Lucide, Heroicons and Phosphor Icons.
 
-Example 1: A water bottle (bouteille d'eau, eau)
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="10" width="8" height="12" rx="2"/><path d="M8 10V7a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/><line x1="10" y1="2" x2="14" y2="2"/></svg>
+Your task is to generate ONE professional SVG icon representing the requested purchase item.
 
-Example 2: An apple (pomme, fruit)
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/><path d="M12 4v-2"/><path d="M10 2s2 0 2 2"/></svg>
+Before drawing, silently think about the object.
 
-Example 3: A book (livre, cahier)
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+Step 1:
+Determine the generic object.
+Ignore brands, logos and packaging whenever possible.
 
-Now, draw: ${promptContext}
-If the object is a liquid (like water/eau or milk), DRAW A BOTTLE OR GLASS.
+Examples:
+Vitalya → plastic water bottle
+Coca-Cola → soda can
+Pepsi → soda can
+Tide → detergent powder bag
+Ariel → detergent powder bag
+Fairy → dishwashing liquid bottle
+Danone → yogurt cup
+Pampers → baby diaper
+Marlboro → cigarette pack
 
-STRICT INSTRUCTIONS:
-1. ONLY output raw SVG code. NO explanations, NO markdown wrappers (like \`\`\`svg).
-2. The SVG MUST start with <svg and end with </svg>.
-3. Use simple, clear geometric paths that resemble the object.`;
+Step 2:
+Reduce the object to its simplest recognizable silhouette.
+
+Imagine the icon must still be recognizable at 24x24 pixels.
+
+Step 3:
+Build the SVG only with simple geometric shapes.
+
+Allowed elements:
+<path>
+<rect>
+<circle>
+<ellipse>
+<line>
+<polyline>
+
+Avoid unnecessary details.
+
+Rules:
+
+• Material Design style
+• Minimal
+• Clean
+• Balanced
+• Centered
+• Monochrome
+• Uniform stroke width="2"
+• stroke-linecap="round"
+• stroke-linejoin="round"
+• fill="none"
+• Transparent background
+• No shadow
+• No gradients
+• No text
+• No logos
+• No brands
+• No decorative elements
+• No realistic details
+• Large empty margins around the object
+
+The icon must immediately identify the object.
+
+If several representations exist, choose the one that is universally recognized.
+
+If the object is unknown,
+draw the closest generic object.
+
+Output ONLY raw SVG.
+
+The SVG MUST start with
+
+<svg xmlns="http://www.w3.org/2000/svg"
+
+and finish with
+
+</svg>
+
+User item:
+
+"${targetArticle}"`;
 
       const response = await fetch("/api/cloudflare-icon", {
         method: "POST",
@@ -498,7 +558,7 @@ STRICT INSTRUCTIONS:
       category: scannedItem.category,
       iconName: scannedItem.iconName,
       iconSvg: scannedItem.iconSvg,
-      frequent: true,
+      frequent: false,
       // barcode: scannedItem.barcode // if the type supported it
     });
 

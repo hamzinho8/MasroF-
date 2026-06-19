@@ -308,78 +308,8 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
 
   return (
     <div className="flex flex-col h-full bg-transparent px-4 pb-24 overflow-y-auto relative">
-      {/* AI Summary */}
-      <div className="mt-6 mb-6">
-        <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#1B7C86] ml-1 mb-3">
-          {language === "Français"
-            ? "Générer Résumé IA (Mois en cours)"
-            : "Generate AI Summary (Current Month)"}
-        </h2>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => generateSummary("gemini")}
-            disabled={isGeneratingSummary}
-            className={`flex flex-col items-center justify-center p-4 rounded-[20px] transition-all disabled:opacity-70 ${
-              isDarkMode
-                ? "bg-slate-800 text-blue-400 hover:bg-slate-700"
-                : "bg-blue-50/50 text-blue-600 hover:bg-blue-50 shadow-sm border border-blue-100/50"
-            }`}
-          >
-            <Sparkles size={24} className="mb-2" />
-            <span className="font-black text-sm uppercase tracking-wider">
-              Gemini
-            </span>
-          </button>
-          <button
-            onClick={() => generateSummary("openrouter")}
-            disabled={isGeneratingSummary}
-            className={`flex flex-col items-center justify-center p-4 rounded-[20px] transition-all disabled:opacity-70 ${
-              isDarkMode
-                ? "bg-slate-800 text-[#2DD4BF] hover:bg-slate-700"
-                : "bg-teal-50 text-teal-600 hover:bg-teal-100 shadow-sm border border-teal-100/50"
-            }`}
-          >
-            <Cpu size={24} className="mb-2" />
-            <span className="font-black text-sm uppercase tracking-wider">
-              OpenRouter
-            </span>
-          </button>
-        </div>
-
-        <AnimatePresence>
-          {summaryText && !isGeneratingSummary && (
-            <motion.div
-              initial={{ opacity: 0, y: -10, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: "auto" }}
-              exit={{ opacity: 0, y: -10, height: 0 }}
-              className={`mt-4 p-5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap font-medium ${
-                isDarkMode
-                  ? "bg-slate-800/80 text-teal-50 border border-slate-700"
-                  : "bg-white text-slate-700 border border-slate-100 shadow-sm"
-              }`}
-            >
-              {summaryText}
-            </motion.div>
-          )}
-          {isGeneratingSummary && (
-            <motion.div
-              initial={{ opacity: 0, y: -10, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: "auto" }}
-              exit={{ opacity: 0, y: -10, height: 0 }}
-              className={`mt-4 justify-center flex items-center p-5 rounded-2xl ${
-                isDarkMode
-                  ? "bg-slate-800/80 border border-slate-700"
-                  : "bg-white border border-slate-100 shadow-sm"
-              }`}
-            >
-              <Loader2 size={24} className="animate-spin text-[#1B7C86] my-2" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
       {/* Title 1 */}
-      <div className="mb-2">
+      <div className="mb-2 mt-6">
         <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#1B7C86] ml-1">
           {language === "Français"
             ? "Récapitulatif par Catégorie"

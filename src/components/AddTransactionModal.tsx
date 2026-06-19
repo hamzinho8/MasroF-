@@ -865,7 +865,8 @@ export default function AddTransactionModal({
                         {scannedItems.map((item) => {
                           const info = getArticleInfo(
                             item.title || "",
-                            item.category
+                            item.category,
+                            predefinedItems
                           );
                           const IconComp = info.iconName
                             ? ICON_MAP[info.iconName]
@@ -886,7 +887,11 @@ export default function AddTransactionModal({
                               <div
                                 className={`shrink-0 w-[52px] h-[52px] rounded-[20px] flex items-center justify-center shadow-sm z-10 bg-opacity-70 ${info.bgColor} ${info.color}`}
                               >
-                                {IconComp && <IconComp size={22} />}
+                                {info.iconSvg ? (
+                                  <div dangerouslySetInnerHTML={{ __html: info.iconSvg }} className="w-[22px] h-[22px] text-current flex items-center justify-center svg-container" />
+                                ) : (
+                                  IconComp && <IconComp size={22} />
+                                )}
                               </div>
 
                               <div className="flex-1 min-w-0 ml-4 z-10 flex flex-col justify-center">
@@ -1074,7 +1079,8 @@ export default function AddTransactionModal({
                               {filteredItems.map((item, index) => {
                                 const info = getArticleInfo(
                                   item.name,
-                                  item.category
+                                  item.category,
+                                  predefinedItems
                                 );
                                 const IconComponent = (ICON_MAP[
                                   info.iconName
@@ -1105,7 +1111,11 @@ export default function AddTransactionModal({
                                     <div
                                       className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${info.bgColor} ${info.color}`}
                                     >
-                                      <IconComponent size={14} />
+                                      {info.iconSvg ? (
+                                        <div dangerouslySetInnerHTML={{ __html: info.iconSvg }} className="w-3.5 h-3.5 flex items-center justify-center text-current svg-container" />
+                                      ) : (
+                                        <IconComponent size={14} />
+                                      )}
                                     </div>
                                     <div className="flex flex-col items-start justify-center overflow-hidden">
                                       <span className="text-[10px] font-black text-slate-700 leading-tight truncate w-full flex-1 text-left">

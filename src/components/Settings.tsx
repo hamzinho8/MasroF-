@@ -2023,7 +2023,14 @@ function ArticleManagerModal({
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${cat.bgColor} ${cat.color} group-active:scale-95 transition-transform`}
                 >
-                  <IconComp size={18} />
+                  {item.iconSvg ? (
+                    <div
+                      dangerouslySetInnerHTML={{ __html: item.iconSvg }}
+                      className="w-5 h-5 text-current"
+                    />
+                  ) : (
+                    <IconComp size={18} />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   {isEditing ? (
