@@ -13,13 +13,14 @@ import {
   AlertTriangle,
   Cpu,
   Edit3,
-  Cloud,
 } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { PredefinedItem } from "../types";
 import { CATEGORIES, ICON_MAP } from "../constants";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { generateAIContent } from "../utils/ai";
+import { IconMatcher, IconMatchResult } from "../utils/iconMatcher";
 
 interface ReceiptScannerModalProps {
   onClose: () => void;
@@ -49,7 +50,8 @@ export default function ReceiptScannerModal({
     barcode?: string | null;
   } | null>(null);
   const [isRegeneratingIcon, setIsRegeneratingIcon] = useState(false);
-  const [isCloudflareGenerating, setIsCloudflareGenerating] = useState(false);
+  const [showIconMatcherResults, setShowIconMatcherResults] = useState(false);
+  const [iconMatcherResults, setIconMatcherResults] = useState<IconMatchResult[]>([]);
   const [showIconPrompt, setShowIconPrompt] = useState(false);
   const [iconPrompt, setIconPrompt] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -414,137 +416,23 @@ Génère UNIQUEMENT le code SVG brut. AUCUNE explication. AUCUN texte markdown (
     setIsRegeneratingIcon(false);
   };
 
-  const handleCloudflareGenerate = async () => {
+  const handleIconMatcher = () => {
     if (!scannedItem) return;
-    setIsCloudflareGenerating(true);
-    setError(null);
+    const targetArticle = iconPrompt.trim() ? iconPrompt.trim() : scannedItem.name;
+    const matches = IconMatcher.findMatches(targetArticle);
+    setIconMatcherResults(matches);
+    setShowIconMatcherResults(true);
+  };
 
-    const cloudflareKey = localStorage.getItem("cloudflare_api_key");
-    if (!cloudflareKey) {
-      setError(
-        "Clé API Cloudflare manquante. Veuillez la configurer dans les paramètres."
-      );
-      setIsCloudflareGenerating(false);
-      return;
-    }
-
-    try {
-      const targetArticle = iconPrompt.trim() ? iconPrompt.trim() : scannedItem.name;
-
-      const promptText = `You are a world-class UI/UX icon designer specialized in Android Material icons, Lucide, Heroicons and Phosphor Icons.
-
-Your task is to generate ONE professional SVG icon representing the requested purchase item.
-
-Before drawing, silently think about the object.
-
-Step 1:
-Determine the generic object.
-Ignore brands, logos and packaging whenever possible.
-
-Examples:
-Vitalya → plastic water bottle
-Coca-Cola → soda can
-Pepsi → soda can
-Tide → detergent powder bag
-Ariel → detergent powder bag
-Fairy → dishwashing liquid bottle
-Danone → yogurt cup
-Pampers → baby diaper
-Marlboro → cigarette pack
-
-Step 2:
-Reduce the object to its simplest recognizable silhouette.
-
-Imagine the icon must still be recognizable at 24x24 pixels.
-
-Step 3:
-Build the SVG only with simple geometric shapes.
-
-Allowed elements:
-<path>
-<rect>
-<circle>
-<ellipse>
-<line>
-<polyline>
-
-Avoid unnecessary details.
-
-Rules:
-
-• Material Design style
-• Minimal
-• Clean
-• Balanced
-• Centered
-• Monochrome
-• Uniform stroke width="2"
-• stroke-linecap="round"
-• stroke-linejoin="round"
-• fill="none"
-• Transparent background
-• No shadow
-• No gradients
-• No text
-• No logos
-• No brands
-• No decorative elements
-• No realistic details
-• Large empty margins around the object
-
-The icon must immediately identify the object.
-
-If several representations exist, choose the one that is universally recognized.
-
-If the object is unknown,
-draw the closest generic object.
-
-Output ONLY raw SVG.
-
-The SVG MUST start with
-
-<svg xmlns="http://www.w3.org/2000/svg"
-
-and finish with
-
-</svg>
-
-User item:
-
-"${targetArticle}"`;
-
-      const response = await fetch("/api/cloudflare-icon", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          promptText,
-          cloudflareKey,
-        }),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => null);
-        console.debug("Cloudflare Backend error", errData);
-        throw new Error(`Erreur Cloudflare: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const aiResponse = data.result?.response || "";
-      const svgMatch = aiResponse.match(/<svg[\s\S]*?<\/svg>/i);
-
-      if (svgMatch) {
-        setScannedItem({ ...scannedItem, iconSvg: svgMatch[0] });
-      } else {
-        console.debug("Aucun SVG Cloudflare", aiResponse);
-        setError("Cloudflare n'a pas généré de SVG valide.");
-      }
-    } catch (e: any) {
-      console.debug("Cloudflare exception", e);
-      setError(e.message || "Erreur Cloudflare.");
-    }
-    setIsCloudflareGenerating(false);
+  const handleSelectIconMatcherResult = (result: IconMatchResult) => {
+    if (!scannedItem) return;
+    setScannedItem({
+      ...scannedItem,
+      iconName: result.icon,
+      category: result.category,
+      iconSvg: undefined, // Clear any SVG to use the standard icon
+    });
+    setShowIconMatcherResults(false);
   };
 
   const handleAdd = () => {
@@ -845,7 +733,7 @@ User item:
                     <div className="flex justify-between items-center w-full gap-2">
                       <button
                         onClick={handleRegenerateIcon}
-                        disabled={isRegeneratingIcon || isCloudflareGenerating}
+                        disabled={isRegeneratingIcon}
                         className="flex items-center justify-center flex-1 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold active:bg-blue-100 transition-colors"
                       >
                         {isRegeneratingIcon ? (
@@ -869,18 +757,39 @@ User item:
                     </div>
 
                     <button
-                      onClick={handleCloudflareGenerate}
-                      disabled={isRegeneratingIcon || isCloudflareGenerating}
+                      onClick={handleIconMatcher}
+                      disabled={isRegeneratingIcon}
                       className="flex items-center justify-center w-full py-2 bg-[#F6821F]/10 text-[#F6821F] rounded-xl text-xs font-bold hover:bg-[#F6821F]/20 active:bg-[#F6821F]/30 transition-colors"
-                      title="Générer avec Cloudflare AI"
+                      title="Chercher une icône locale"
                     >
-                      {isCloudflareGenerating ? (
-                        <Loader2 size={16} className="animate-spin" />
-                      ) : (
-                        <Cloud size={16} className="mr-1" />
-                      )}
-                      Cloudflare AI
+                      <Sparkles size={16} className="mr-1" />
+                      IconMatcher
                     </button>
+
+                    <AnimatePresence>
+                      {showIconMatcherResults && iconMatcherResults.length > 0 && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden w-full flex justify-center gap-2 mt-2"
+                        >
+                          {iconMatcherResults.map((result, idx) => {
+                            const IconComponent = (LucideIcons as any)[result.icon] || LucideIcons.Package;
+                            return (
+                              <button
+                                key={idx}
+                                onClick={() => handleSelectIconMatcherResult(result)}
+                                className="w-12 h-12 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-sm relative group"
+                                title={result.category}
+                              >
+                                <IconComponent size={24} color={result.color} />
+                              </button>
+                            );
+                          })}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
 
                     <AnimatePresence>
                       {showIconPrompt && (

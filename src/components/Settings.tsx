@@ -180,9 +180,6 @@ export default function Settings({
   const [openRouterKeyInput, setOpenRouterKeyInput] = useState(
     () => localStorage.getItem("openrouter_api_key") || ""
   );
-  const [cloudflareKeyInput, setCloudflareKeyInput] = useState(
-    () => localStorage.getItem("cloudflare_api_key") || ""
-  );
   const [aiProvider, setAiProvider] = useState<"gemini" | "openrouter">(
     () =>
       (localStorage.getItem("ai_provider") as "gemini" | "openrouter") ||
@@ -717,17 +714,6 @@ export default function Settings({
                     />
 
                     <p className="text-xs text-[#1B5E66]/70 mb-2 font-bold uppercase tracking-wider">
-                      API Token Cloudflare Workers AI :
-                    </p>
-                    <input
-                      type="text"
-                      className="w-full bg-[#1B5E66]/5 border border-[#1B5E66]/10 rounded-2xl px-4 py-3 text-sm font-bold text-[#1B5E66] focus:outline-none focus:ring-2 focus:ring-[#2D8B96]/50 mb-6"
-                      placeholder="A-Za-z0-9..."
-                      value={cloudflareKeyInput}
-                      onChange={(e) => setCloudflareKeyInput(e.target.value)}
-                    />
-
-                    <p className="text-xs text-[#1B5E66]/70 mb-2 font-bold uppercase tracking-wider">
                       Bouton Magique Scanner IA (FAB) :
                     </p>
                     <div
@@ -764,10 +750,6 @@ export default function Settings({
                         window.localStorage.setItem(
                           "openrouter_api_key",
                           openRouterKeyInput
-                        );
-                        window.localStorage.setItem(
-                          "cloudflare_api_key",
-                          cloudflareKeyInput
                         );
                         window.localStorage.setItem("ai_provider", aiProvider);
                         setShowSelector(null);

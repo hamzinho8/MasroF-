@@ -421,58 +421,6 @@ REQUIREMENTS:
     }
   });
 
-  app.post("/api/cloudflare-icon", async (req, res) => {
-    try {
-      const { promptText, cloudflareKey } = req.body;
-      if (!cloudflareKey) {
-        return res
-          .status(400)
-          .json({ error: "No Cloudflare API key provided" });
-      }
-
-      const accountId = "c662224bb24739b992de58c0d6eda130";
-      const model = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
-      const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`;
-
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${cloudflareKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are a professional SVG icon designer. You only output SVG code. Do not output markdown, DO NOT explain anything, just output the raw SVG element.",
-            },
-            {
-              role: "user",
-              content: promptText,
-            },
-          ],
-        }),
-      });
-
-      if (!response.ok) {
-        const errText = await response.text();
-        console.error("Cloudflare API error", errText);
-        return res
-          .status(response.status)
-          .json({ error: "Erreur Cloudflare API" });
-      }
-
-      const data = await response.json();
-      res.json(data);
-    } catch (e: any) {
-      console.error("Cloudflare exception:", e);
-      res
-        .status(500)
-        .json({ error: e.message || "Failed to generate Cloudflare icon" });
-    }
-  });
-
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
