@@ -52,6 +52,8 @@ import {
   EyeOff,
   GripVertical,
   Home,
+  Database,
+  RefreshCw,
 } from "lucide-react";
 
 interface SettingsProps {
@@ -196,6 +198,19 @@ export default function Settings({
   const [backupReminder, setBackupReminder] = useState(
     () => localStorage.getItem("backupReminderEnabled") === "true"
   );
+  const [iconMatcherVersion, setIconMatcherVersion] = useLocalStorage("iconMatcherVersion", "1.0.0");
+  const [isSyncingIconMatcher, setIsSyncingIconMatcher] = useState(false);
+
+  const handleIconMatcherSync = () => {
+    setIsSyncingIconMatcher(true);
+    setTimeout(() => {
+      // Mock network fetch & update
+      const parts = iconMatcherVersion.split(".");
+      parts[2] = (parseInt(parts[2] || "0") + 1).toString();
+      setIconMatcherVersion(parts.join("."));
+      setIsSyncingIconMatcher(false);
+    }, 1500);
+  };
 
   const handleReset = () => {
     setIsResetting(true);
@@ -442,6 +457,26 @@ export default function Settings({
               subtitle="Importer un fichier de sauvegarde crypté"
               onClick={handleRestoreData}
               showArrow={true}
+            />
+            <SettingsItem
+              icon={<Database className={isSyncingIconMatcher ? "animate-pulse" : ""} />}
+              title="BASE DE DONNÉES ICONMATCHER"
+              subtitle={isSyncingIconMatcher ? "Synchronisation en cours..." : `V ${iconMatcherVersion}`}
+              onClick={handleIconMatcherSync}
+              showArrow={false}
+              rightContent={
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleIconMatcherSync();
+                  }}
+                  disabled={isSyncingIconMatcher}
+                  className="w-8 h-8 rounded-full bg-[#2D8B96]/10 flex items-center justify-center text-[#2D8B96] hover:bg-[#2D8B96]/20 transition-colors disabled:opacity-50"
+                  title="Synchroniser IconMatcher"
+                >
+                  <RefreshCw size={14} className={isSyncingIconMatcher ? "animate-spin" : ""} />
+                </button>
+              }
             />
           </div>
 
@@ -2327,12 +2362,14 @@ function SettingsItem({
   subtitle,
   showArrow = true,
   onClick,
+  rightContent,
 }: {
   icon: React.ReactNode;
   title: string;
   subtitle?: string;
   showArrow?: boolean;
   onClick?: () => void;
+  rightContent?: React.ReactNode;
 }) {
   return (
     <div
@@ -2357,7 +2394,8 @@ function SettingsItem({
           </p>
         )}
       </div>
-      {showArrow && (
+      {rightContent}
+      {showArrow && !rightContent && (
         <ChevronRight
           size={18}
           className="text-[#1B5E66]/20 group-hover:text-[#1B5E66] group-hover:translate-x-1 transition-all"

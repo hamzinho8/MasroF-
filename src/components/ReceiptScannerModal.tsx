@@ -20,7 +20,7 @@ import { PredefinedItem } from "../types";
 import { CATEGORIES, ICON_MAP } from "../constants";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { generateAIContent } from "../utils/ai";
-import { IconMatcher, IconMatchResult } from "../utils/iconMatcher";
+import { IconMatcher, IconMatchResult } from "../iconmatcher/IconMatcher";
 
 interface ReceiptScannerModalProps {
   onClose: () => void;

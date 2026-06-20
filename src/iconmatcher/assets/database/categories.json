@@ -1,0 +1,12 @@
+{
+  "categories": [
+    { "name": "Nourriture", "color": "#5FAE9F", "defaultIcon": "Utensils" },
+    { "name": "Logement", "color": "#7C6EEB", "defaultIcon": "Home" },
+    { "name": "Transport", "color": "#69BCEB", "defaultIcon": "Car" },
+    { "name": "Sanitaire", "color": "#E85C8E", "defaultIcon": "Bath" },
+    { "name": "Shopping", "color": "#B86BEA", "defaultIcon": "ShoppingBag" },
+    { "name": "Loisirs", "color": "#E7B24A", "defaultIcon": "Gamepad2" },
+    { "name": "Devoir", "color": "#E79A62", "defaultIcon": "BookOpen" },
+    { "name": "Autres", "color": "#9CA3AF", "defaultIcon": "Package" }
+  ]
+}
