@@ -10,7 +10,11 @@ import {
   Cherry, Banana, Egg, 
   PaintRoller, Wrench, Scissors, Smartphone, Laptop, Plug, Battery, 
   Umbrella, Glasses, Book, FilePlus, Brush, Pen, PenTool,
-  Paperclip, Camera, MapPin, Ticket, Plane, Ship, Bus
+  Paperclip, Camera, MapPin, Ticket, Plane, Ship, Bus,
+  Droplet, HandMetal, Smile, Wifi, ShoppingCart, Cuboid, Pill, UtensilsCrossed,
+  CarTaxiFront, Footprints, GraduationCap, Cake, Scroll, SprayCan, Trash2,
+  Stethoscope, Cross, Dumbbell,
+  Store, Wallet, CreditCard, Banknote, Coins, Receipt, Tag, Gift, Armchair, Bed, Monitor, Printer, Headphones, Radio, Watch, Mic, Music, Thermometer, Syringe, TreePine, Leaf, Cloud, Sun, Moon, Snowflake, Tent, Compass, Map, Navigation, Truck, Bike, BaggageClaim, Sticker, Puzzle, Building, Briefcase, Key, Lock, Unlock, Shield, ShieldCheck, Globe, Mountain, Palmtree, Clipboard, Archive, Inbox, Mail, Send, PhoneCall, Video, Image, Speaker, Bell, Calendar, Clock, AlarmClock, Timer, Hourglass, Filter, Settings, Sliders, Hammer, Axe, Paintbrush, Palette, Pipette, ThermometerSun, ThermometerSnowflake, Flashlight, Megaphone, Microwave, Refrigerator, ChefHat, Luggage, Sofa, Lamp, ShowerHead, Trees, Clover, Sprout, Citrus, CloudRain, Bone, PartyPopper, Film, Clapperboard, Gamepad, Activity, PiggyBank, BadgePercent, Castle, Church, Rocket
 } from 'lucide-react';
 import { PredefinedItem } from './types';
 
@@ -25,7 +29,11 @@ export const ICON_MAP: Record<string, React.ElementType> = {
   Cherry, Banana, Egg, 
   PaintRoller, Wrench, Scissors, Smartphone, Laptop, Plug, Battery, 
   Umbrella, Glasses, Book, FilePlus, Brush, Pen, PenTool,
-  Paperclip, Camera, MapPin, Ticket, Plane, Ship, Bus
+  Paperclip, Camera, MapPin, Ticket, Plane, Ship, Bus,
+  Droplet, HandMetal, Smile, Wifi, ShoppingCart, Cuboid, Cheese: Pizza, Pill, UtensilsCrossed,
+  CarTaxiFront, Footprints, GraduationCap, Cake, Scroll, SprayCan, Trash2,
+  Stethoscope, Cross, Dumbbell,
+  Store, Wallet, CreditCard, Banknote, Coins, Receipt, Tag, Gift, Armchair, Bed, Monitor, Printer, Headphones, Radio, Watch, Mic, Music, Thermometer, Syringe, TreePine, Leaf, Cloud, Sun, Moon, Snowflake, Tent, Compass, Map, Navigation, Truck, Bike, BaggageClaim, Sticker, Puzzle, Building, Briefcase, Key, Lock, Unlock, Shield, ShieldCheck, Globe, Mountain, Palmtree, Clipboard, Archive, Inbox, Mail, Send, PhoneCall, Video, Image, Speaker, Bell, Calendar, Clock, AlarmClock, Timer, Hourglass, Filter, Settings, Sliders, Hammer, Axe, Paintbrush, Palette, Pipette, ThermometerSun, ThermometerSnowflake, Flashlight, Megaphone, Microwave, Refrigerator, ChefHat, Luggage, Sofa, Lamp, ShowerHead, Trees, Clover, Sprout, Citrus, CloudRain, Bone, PartyPopper, Film, Clapperboard, Gamepad, Activity, PiggyBank, BadgePercent, Castle, Church, Rocket
 };
 
 export const CATEGORIES = [
@@ -90,23 +98,29 @@ const RAW_PREDEFINED_ITEMS: Omit<PredefinedItem, 'colorHex' | 'categoryColorHex'
   { id: '21', name: 'Recherche', price: 10, category: 'Loisirs', iconName: 'Search', frequent: false },
 ];
 
+import { IconMatcher } from './iconmatcher/IconMatcher';
+
 export const INITIAL_PREDEFINED_ITEMS: PredefinedItem[] = RAW_PREDEFINED_ITEMS.map(item => {
   const category = CATEGORIES.find(c => c.id === item.category) || CATEGORIES.find(c => c.id === 'Autres')!;
+  const match = IconMatcher.findMatches(item.name)[0];
+  
   return {
     ...item,
+    iconName: match?.score >= 60 ? match.icon : item.iconName,
     colorHex: category.colorHex,
     categoryColorHex: category.colorHex
   };
 });
 
 export const getArticleInfo = (name: string, categoryId?: string, predefinedItems: PredefinedItem[] = INITIAL_PREDEFINED_ITEMS) => {
+  const match = IconMatcher.findMatches(name)[0];
   const predefined = predefinedItems.find(p => p.name.toLowerCase() === name.toLowerCase());
   
   if (predefined) {
     const category = CATEGORIES.find(c => c.id === predefined.category) || CATEGORIES.find(c => c.id === 'Autres')!;
     return {
       name: predefined.name,
-      iconName: predefined.iconName,
+      iconName: match?.score >= 60 ? match.icon : predefined.iconName,
       iconSvg: predefined.iconSvg,
       colorHex: predefined.colorHex,
       categoryColorHex: predefined.categoryColorHex,
@@ -116,10 +130,10 @@ export const getArticleInfo = (name: string, categoryId?: string, predefinedItem
     };
   }
 
-  const category = CATEGORIES.find(c => c.id === categoryId) || CATEGORIES.find(c => c.id === 'Autres')!;
+  const category = CATEGORIES.find(c => c.id === (match?.score >= 60 ? match.category : categoryId)) || CATEGORIES.find(c => c.id === 'Autres')!;
   return {
     name,
-    iconName: category.iconName,
+    iconName: match?.score >= 60 ? match.icon : category.iconName,
     iconSvg: undefined,
     colorHex: category.colorHex,
     categoryColorHex: category.colorHex,

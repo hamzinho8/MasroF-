@@ -415,11 +415,11 @@ export default function Home({
   };
 
   const totalOweMe = creditEntries
-    .filter((e) => e.type === "OWE_ME")
+    .filter((e) => e.type === "OWE_ME" && !e.settled)
     .reduce((acc, e) => acc + e.amount, 0);
 
   const totalIOwe = creditEntries
-    .filter((e) => e.type === "I_OWE")
+    .filter((e) => e.type === "I_OWE" && !e.settled)
     .reduce((acc, e) => acc + e.amount, 0);
 
   const creditTranslations = {
@@ -1069,19 +1069,20 @@ export default function Home({
               {inventoryItems
                 .filter((i) => i.quantity > 0 && !rasHiddenItems.includes(i.id))
                 .map((item) => {
+                  const info = getArticleInfo(item.name, item.category || "Autres", predefinedItems);
                   const IconComponent =
-                    item.iconName && ICON_MAP[item.iconName]
-                      ? (ICON_MAP[item.iconName] as React.ElementType)
+                    info.iconName && ICON_MAP[info.iconName]
+                      ? (ICON_MAP[info.iconName] as React.ElementType)
                       : PackageOpen;
-                  const bgClass = item.bg || "bg-violet-600";
-                  const textClass = item.color || "text-slate-800";
+                  const bgClass = info.bgColor || item.bg || "bg-violet-600";
+                  const textClass = info.color || item.color || "text-slate-800";
 
                   return (
                     <button
                       key={item.id}
                       onClick={() => handleDecreaseInventory(item)}
                       className={`w-full h-[86px] rounded-[24px] flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-sm border border-white hover:border-slate-200 active:scale-95 group ${
-                        item.bg ? item.bg.replace("100", "50") : "bg-slate-50"
+                        bgClass.replace("100", "50")
                       }`}
                     >
                       {/* Plus/minus icon that appears on hover/active (optional visual cue) */}
@@ -1099,9 +1100,9 @@ export default function Home({
                         <span className="absolute -top-1.5 -left-1.5 text-[11px] font-black leading-none">
                           {item.quantity}
                         </span>
-                        {item.iconSvg ? (
+                        {item.iconSvg || info.iconSvg ? (
                           <div
-                            dangerouslySetInnerHTML={{ __html: item.iconSvg }}
+                            dangerouslySetInnerHTML={{ __html: item.iconSvg || info.iconSvg || "" }}
                             className="w-6 h-6 text-current"
                           />
                         ) : (

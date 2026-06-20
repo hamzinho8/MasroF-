@@ -59,6 +59,7 @@ export interface InventoryItem {
   iconSvg?: string;
   color?: string;
   bg?: string;
+  category?: string;
 }
 
 export interface ShoppingListItem {

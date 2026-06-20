@@ -134,9 +134,9 @@ Ne retourne QUE un format JSON exact comme celui-ci, aucun autre texte ni balise
       `}</style>
       
       <div className="relative flex flex-col justify-center items-center mb-5 px-1 py-4">
-        <div className="flex w-full items-center justify-between mb-2">
+        <div className="flex w-full items-center justify-between">
           <h3 className="inshallah-title font-bold text-center absolute left-1/2 -translate-x-1/2 select-none" dir="rtl">
-            <span className="text-[#0b143a] drop-shadow-sm relative z-10" style={{ fontSize: "2.2rem", wordSpacing: "6px" }}>
+            <span className="text-[#0b143a] drop-shadow-sm relative z-10" style={{ fontSize: "1.8rem", wordSpacing: "4px" }}>
               إِنْ شَاءَ اللَّهُ
             </span>
           </h3>
@@ -148,22 +148,6 @@ Ne retourne QUE un format JSON exact comme celui-ci, aucun autre texte ni balise
             <RefreshCw size={16} className={isGenerating ? "animate-spin text-[#1B7C86]" : ""} />
           </button>
         </div>
-        
-        {/* Progress bar of Daily Estimate vs Pocket Balance */}
-        {dailyEstimate !== null && balance > 0 && (
-          <div className="w-full max-w-[200px] mt-6 flex flex-col gap-1 z-10">
-            <div className="flex justify-between text-[10px] font-medium text-slate-500 px-1">
-              <span>{language === "Français" ? "Estimation" : "Expected"}</span>
-              <span>{language === "Français" ? "Poche" : "Pocket"}</span>
-            </div>
-            <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
-              <div 
-                className={`h-full rounded-full ${dailyEstimate > balance ? "bg-rose-500" : "bg-[#1B7C86]"}`}
-                style={{ width: `${Math.min((dailyEstimate / balance) * 100, 100)}%` }}
-              />
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="mx-1 mb-8 relative">
@@ -178,6 +162,22 @@ Ne retourne QUE un format JSON exact comme celui-ci, aucun autre texte ni balise
           </div>
 
           <div className="relative z-20 py-6 px-6 h-full w-full flex flex-col justify-center text-white">
+            {/* INBOXED PROGRESS BAR */}
+            {dailyEstimate !== null && balance > 0 && (
+              <div className="w-full flex-col gap-1 z-10 mb-6 bg-black/10 p-3 rounded-2xl backdrop-blur-sm border border-white/10">
+                <div className="flex justify-between text-[11px] font-bold text-white/80 px-1 mb-1.5 uppercase tracking-wide">
+                  <span>{language === "Français" ? "Estimation" : "Expected"}</span>
+                  <span>{language === "Français" ? "Poche" : "Pocket"}</span>
+                </div>
+                <div className="h-2 w-full bg-black/20 rounded-full overflow-hidden relative">
+                  <div 
+                    className={`h-full rounded-full transition-all duration-1000 ${dailyEstimate > balance ? "bg-rose-400" : "bg-emerald-400"}`}
+                    style={{ width: `${Math.min((dailyEstimate / balance) * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
             <div className={`grid grid-cols-2 gap-4 divide-x divide-white/20 ${chartData.length > 0 ? "mb-6" : ""}`}>
               <div className="flex flex-col items-start justify-center">
                 <div className="flex items-center gap-2 mb-2 group relative">

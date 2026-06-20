@@ -1465,7 +1465,7 @@ export default function App() {
 
       {/* Main Container */}
       <main
-        className={`flex-1 rounded-t-[32px] p-6 shadow-even transition-colors relative z-10 overflow-y-auto ${
+        className={`flex-1 rounded-t-[32px] p-6 shadow-even transition-colors relative z-10 overflow-y-auto overflow-x-hidden ${
           isDarkMode ? "bg-slate-900 shadow-none" : "bg-white"
         }`}
       >
