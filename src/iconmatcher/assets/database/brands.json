@@ -1,7 +1,27 @@
 {
   "brands": {
-    "vitalya": {
-      "icon": "GlassWater",
+    "jaouda": {
+      "icon": "Milk",
+      "category": "Nourriture"
+    },
+    "centrale": {
+      "icon": "Milk",
+      "category": "Nourriture"
+    },
+    "chergui": {
+      "icon": "Milk",
+      "category": "Nourriture"
+    },
+    "danone": {
+      "icon": "IceCream",
+      "category": "Nourriture"
+    },
+    "la vache qui rit": {
+      "icon": "Cheese",
+      "category": "Nourriture"
+    },
+    "kiri": {
+      "icon": "Cheese",
       "category": "Nourriture"
     },
     "sidi ali": {
@@ -12,51 +32,43 @@
       "icon": "GlassWater",
       "category": "Nourriture"
     },
-    "ain ifrane": {
+    "ain saiss": {
       "icon": "GlassWater",
       "category": "Nourriture"
     },
-    "bahia": {
+    "ciel": {
       "icon": "GlassWater",
       "category": "Nourriture"
     },
-    "jaouda": {
-      "icon": "Milk",
-      "category": "Nourriture"
-    },
-    "danone": {
-      "icon": "IceCream",
-      "category": "Nourriture"
-    },
-    "jibal": {
-      "icon": "Milk",
-      "category": "Nourriture"
-    },
-    "raibi jamila": {
-      "icon": "CupSoda",
+    "oulmes": {
+      "icon": "GlassWater",
       "category": "Nourriture"
     },
     "coca-cola": {
       "icon": "CupSoda",
       "category": "Nourriture"
     },
-    "pepsi": {
+    "hawaii": {
       "icon": "CupSoda",
       "category": "Nourriture"
     },
-    "sprite": {
+    "poms": {
       "icon": "CupSoda",
       "category": "Nourriture"
     },
-    "fanta": {
+    "schweppes": {
       "icon": "CupSoda",
       "category": "Nourriture"
     },
-    "hawai": {
+    "al bustane": {
       "icon": "CupSoda",
       "category": "Nourriture"
     },
-    "pom's": {
+    "miami": {
+      "icon": "CupSoda",
+      "category": "Nourriture"
+    },
+    "sultan": {
       "icon": "CupSoda",
       "category": "Nourriture"
     },
@@ -64,15 +76,51 @@
       "icon": "Droplet",
       "category": "Nourriture"
     },
-    "cristal": {
+    "oued souss": {
       "icon": "Droplet",
       "category": "Nourriture"
     },
-    "omo": {
+    "ennmer": {
+      "icon": "Cuboid",
+      "category": "Nourriture"
+    },
+    "maymouna": {
+      "icon": "Wheat",
+      "category": "Nourriture"
+    },
+    "dari": {
+      "icon": "Soup",
+      "category": "Nourriture"
+    },
+    "tria": {
+      "icon": "Utensils",
+      "category": "Nourriture"
+    },
+    "aicha": {
+      "icon": "Apple",
+      "category": "Nourriture"
+    },
+    "koutoubia": {
+      "icon": "Drumstick",
+      "category": "Nourriture"
+    },
+    "bimo": {
+      "icon": "Cookie",
+      "category": "Nourriture"
+    },
+    "merendina": {
+      "icon": "Cookie",
+      "category": "Nourriture"
+    },
+    "maruja": {
+      "icon": "Candy",
+      "category": "Nourriture"
+    },
+    "tide": {
       "icon": "WashingMachine",
       "category": "Sanitaire"
     },
-    "tide": {
+    "omo": {
       "icon": "WashingMachine",
       "category": "Sanitaire"
     },
@@ -80,39 +128,47 @@
       "icon": "WashingMachine",
       "category": "Sanitaire"
     },
-    "persil": {
-      "icon": "WashingMachine",
-      "category": "Sanitaire"
-    },
-    "dove": {
+    "taous": {
       "icon": "HandMetal",
       "category": "Sanitaire"
     },
-    "palmolive": {
+    "el kef": {
       "icon": "HandMetal",
       "category": "Sanitaire"
     },
-    "colgate": {
-      "icon": "Smile",
+    "fairy": {
+      "icon": "Droplets",
+      "category": "Sanitaire"
+    },
+    "oni": {
+      "icon": "Droplets",
+      "category": "Sanitaire"
+    },
+    "magix": {
+      "icon": "Droplets",
+      "category": "Sanitaire"
+    },
+    "cadum": {
+      "icon": "Droplets",
       "category": "Sanitaire"
     },
     "signal": {
       "icon": "Smile",
       "category": "Sanitaire"
     },
-    "nivea": {
-      "icon": "Droplets",
+    "colgate": {
+      "icon": "Smile",
+      "category": "Sanitaire"
+    },
+    "dalaa": {
+      "icon": "Baby",
       "category": "Sanitaire"
     },
     "afriquia": {
       "icon": "Fuel",
       "category": "Transport"
     },
-    "totalenergies": {
-      "icon": "Fuel",
-      "category": "Transport"
-    },
-    "shell": {
+    "total": {
       "icon": "Fuel",
       "category": "Transport"
     },
@@ -120,17 +176,33 @@
       "icon": "Fuel",
       "category": "Transport"
     },
-    "orange": {
-      "icon": "Phone",
+    "redal": {
+      "icon": "Zap",
+      "category": "Logement"
+    },
+    "lydec": {
+      "icon": "Zap",
+      "category": "Logement"
+    },
+    "amendis": {
+      "icon": "Zap",
+      "category": "Logement"
+    },
+    "maroc telecom": {
+      "icon": "Wifi",
       "category": "Loisirs"
     },
     "inwi": {
       "icon": "Phone",
       "category": "Loisirs"
     },
-    "maroc telecom": {
-      "icon": "Wifi",
-      "category": "Logement"
+    "orange": {
+      "icon": "Phone",
+      "category": "Loisirs"
+    },
+    "doliprane": {
+      "icon": "Pill",
+      "category": "Sanitaire"
     },
     "marjane": {
       "icon": "ShoppingCart",
@@ -144,89 +216,33 @@
       "icon": "ShoppingCart",
       "category": "Shopping"
     },
-    "aswak assalam": {
-      "icon": "ShoppingCart",
-      "category": "Shopping"
+    "nescafé": {
+      "icon": "Coffee",
+      "category": "Nourriture"
     },
-    "acima": {
-      "icon": "ShoppingCart",
-      "category": "Shopping"
+    "dubois": {
+      "icon": "Coffee",
+      "category": "Nourriture"
     },
-    "labelvie": {
-      "icon": "ShoppingCart",
-      "category": "Shopping"
+    "carrion": {
+      "icon": "Coffee",
+      "category": "Nourriture"
     },
-    "sultan": {
+    "samar": {
+      "icon": "Coffee",
+      "category": "Nourriture"
+    },
+    "binto": {
+      "icon": "Cookie",
+      "category": "Nourriture"
+    },
+    "golden": {
+      "icon": "Cookie",
+      "category": "Nourriture"
+    },
+    "tang": {
       "icon": "CupSoda",
       "category": "Nourriture"
-    },
-    "ennmer": {
-      "icon": "Cuboid",
-      "category": "Nourriture"
-    },
-    "maymouna": {
-      "icon": "Wheat",
-      "category": "Nourriture"
-    },
-    "dari": {
-      "icon": "Bowl",
-      "category": "Nourriture"
-    },
-    "la vache qui rit": {
-      "icon": "Cheese",
-      "category": "Nourriture"
-    },
-    "tria": {
-      "icon": "Utensils",
-      "category": "Nourriture"
-    },
-    "taous": {
-      "icon": "HandMetal",
-      "category": "Sanitaire"
-    },
-    "cadum": {
-      "icon": "Droplets",
-      "category": "Sanitaire"
-    },
-    "doliprane": {
-      "icon": "Pill",
-      "category": "Sanitaire"
-    },
-    "oncf": {
-      "icon": "Train",
-      "category": "Transport"
-    },
-    "marwa": {
-      "icon": "Shirt",
-      "category": "Shopping"
-    },
-    "megarama": {
-      "icon": "Film",
-      "category": "Loisirs"
-    },
-    "redal": {
-      "icon": "Zap",
-      "category": "Logement"
-    },
-    "lydec": {
-      "icon": "Zap",
-      "category": "Logement"
-    },
-    "amendis": {
-      "icon": "Umbrella",
-      "category": "Logement"
-    },
-    "koutoubia": {
-      "icon": "Drumstick",
-      "category": "Nourriture"
-    },
-    "mcdonalds": {
-      "icon": "UtensilsCrossed",
-      "category": "Loisirs"
-    },
-    "kfc": {
-      "icon": "Drumstick",
-      "category": "Loisirs"
     }
   }
 }
