@@ -1367,6 +1367,7 @@ export default function Home({
             inventoryItems={inventoryItems}
             rasHiddenItems={rasHiddenItems}
             setRasHiddenItems={setRasHiddenItems}
+            predefinedItems={predefinedItems}
           />
         )}
         {showBudgetModal && (
@@ -1955,11 +1956,13 @@ function RasSettingsModal({
   inventoryItems,
   rasHiddenItems,
   setRasHiddenItems,
+  predefinedItems,
 }: {
   onClose: () => void;
   inventoryItems: any[];
   rasHiddenItems: string[];
   setRasHiddenItems: (ids: string[]) => void;
+  predefinedItems: any[];
 }) {
   const [hiddenIds, setHiddenIds] = useState<string[]>(rasHiddenItems);
 
