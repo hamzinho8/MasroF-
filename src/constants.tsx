@@ -49,9 +49,9 @@ export const CATEGORIES = [
 
 const RAW_PREDEFINED_ITEMS: Omit<PredefinedItem, 'colorHex' | 'categoryColorHex'>[] = [
   { id: '1', name: 'Cafe', price: 10, category: 'Nourriture', iconName: 'Coffee', frequent: true, dailyLimit: 2 },
-  { id: '2', name: 'Taxi', price: 5, category: 'Transport', iconName: 'Car', frequent: true, dailyLimit: 2 },
+  { id: '2', name: 'Taxi', price: 5, category: 'Transport', iconName: 'CarTaxiFront', frequent: true, dailyLimit: 2 },
   { id: '3', name: 'Danone', price: 5, category: 'Nourriture', iconName: 'Milk', frequent: true },
-  { id: '4', name: 'Bampers', price: 4.5, category: 'Sanitaire', iconName: 'Baby', frequent: true },
+  { id: '4', name: 'Bampers', price: 4.5, category: 'Sanitaire', iconName: 'Baby', frequent: true, iconSvg: "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 6h16v4c0 6-4 10-8 10S4 16 4 10V6z'/><path d='M4 11c2 0 4 2 4 5'/><path d='M20 11c-2 0-4 2-4 5'/><path d='M4 9h16'/><path d='M8 6v3'/><path d='M16 6v3'/><path d='M12 15.5l-2-2a1.5 1.5 0 0 1 2-2 1.5 1.5 0 0 1 2 2L12 15.5z'/></svg>" },
   { id: '5', name: 'Farine', price: 4, category: 'Nourriture', iconName: 'Wheat', frequent: true },
   { id: '6', name: 'Sucette', price: 0.5, category: 'Nourriture', iconName: 'Candy', frequent: true },
   { id: '7', name: 'Pisquet', price: 2, category: 'Nourriture', iconName: 'Cookie', frequent: true },
@@ -88,6 +88,7 @@ const RAW_PREDEFINED_ITEMS: Omit<PredefinedItem, 'colorHex' | 'categoryColorHex'
   { id: 'viande', name: 'Viande', price: 0, category: 'Nourriture', iconName: 'Beef', frequent: false },
   { id: 'poulet', name: 'Poulet', price: 0, category: 'Nourriture', iconName: 'Drumstick', frequent: false },
   { id: 'poissons', name: 'Poissons', price: 0, category: 'Nourriture', iconName: 'Fish', frequent: false },
+  { id: 'oeufs', name: 'Oeufs', price: 0, category: 'Nourriture', iconName: 'Egg', frequent: false },
   { id: 'legumes', name: 'Légumes', price: 0, category: 'Nourriture', iconName: 'Carrot', frequent: false },
   { id: 'fruits', name: 'Fruits', price: 0, category: 'Nourriture', iconName: 'Apple', frequent: false },
   { id: 'fruits_seches', name: 'Fruits Séchés', price: 0, category: 'Nourriture', iconName: 'Nut', frequent: false },

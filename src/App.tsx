@@ -269,12 +269,14 @@ export default function App() {
               updatedItem.iconName !== constItem.iconName ||
               updatedItem.category !== constItem.category ||
               updatedItem.colorHex !== constItem.colorHex ||
-              updatedItem.categoryColorHex !== constItem.categoryColorHex
+              updatedItem.categoryColorHex !== constItem.categoryColorHex ||
+              updatedItem.iconSvg !== constItem.iconSvg
             ) {
               updatedItem.iconName = constItem.iconName;
               updatedItem.category = constItem.category;
               updatedItem.colorHex = constItem.colorHex;
               updatedItem.categoryColorHex = constItem.categoryColorHex;
+              updatedItem.iconSvg = constItem.iconSvg;
               migrated = true;
             }
           }

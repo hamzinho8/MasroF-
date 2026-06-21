@@ -1032,36 +1032,56 @@ export default function Home({
                   : PackageOpen;
               const textClass = info.color || "text-slate-800";
 
+              const isSpecialItem = item.id === '1' || item.id === '2';
+              const usageCount = favoriteUsage[item.id]?.count || 0;
+              const remainingUses = (item.dailyLimit || 1) - usageCount;
+              const hasStackEffect = isSpecialItem && remainingUses > 1;
+
               return (
-                <button
-                  key={item.id}
-                  onClick={() => handleFavoriteClick(item)}
-                  className={`w-full aspect-square rounded-full p-2 flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-sm border border-white hover:border-slate-200 active:scale-95 group ${
-                    info.bgColor || "bg-slate-50"
-                  }`}
-                >
-                  <div
-                    className={`z-10 relative flex items-center justify-center ${textClass} mb-0.5`}
+                <div key={item.id} className="relative w-full aspect-square">
+                  {/* Layer 2 (Bottom layer shadow effect) */}
+                  <div 
+                    className={`absolute inset-0 rounded-full border border-white transition-all duration-300 ease-out pointer-events-none ${
+                      info.bgColor || "bg-slate-50"
+                    } ${hasStackEffect ? 'opacity-100 translate-x-[6px] translate-y-[6px]' : 'opacity-0 translate-x-0 translate-y-0'}`} 
+                  />
+                  {/* Layer 1 (Middle layer shadow effect) */}
+                  <div 
+                    className={`absolute inset-0 rounded-full border border-white transition-all duration-300 ease-out delay-75 pointer-events-none ${
+                      info.bgColor || "bg-slate-50"
+                    } ${hasStackEffect ? 'opacity-100 translate-x-[3px] translate-y-[3px]' : 'opacity-0 translate-x-0 translate-y-0'}`} 
+                  />
+                  
+                  {/* Actual Button */}
+                  <button
+                    onClick={() => handleFavoriteClick(item)}
+                    className={`absolute inset-0 w-full h-full rounded-full p-2 flex flex-col items-center justify-center overflow-hidden transition-all duration-300 shadow-sm border border-white hover:border-slate-200 active:scale-95 group ${
+                      info.bgColor || "bg-slate-50"
+                    } ${hasStackEffect ? '-translate-x-[1px] -translate-y-[1px]' : 'translate-x-0 translate-y-0 z-10'}`}
                   >
-                    {item.iconSvg ? (
-                      <div
-                        dangerouslySetInnerHTML={{ __html: item.iconSvg }}
-                        className="w-5 h-5 sm:w-6 sm:h-6 text-current"
-                      />
-                    ) : (
-                      <IconComponent
-                        size={24}
-                        className="sm:w-[26px] sm:h-[26px]"
-                        strokeWidth={2.5}
-                      />
-                    )}
-                  </div>
-                  <span
-                    className={`z-10 text-[8px] sm:text-[9px] font-bold ${textClass} uppercase truncate w-full px-1 text-center mt-0.5`}
-                  >
-                    {item.name}
-                  </span>
-                </button>
+                    <div
+                      className={`z-10 relative flex items-center justify-center ${textClass} mb-0.5`}
+                    >
+                      {item.iconSvg ? (
+                        <div
+                          dangerouslySetInnerHTML={{ __html: item.iconSvg }}
+                          className="w-5 h-5 sm:w-6 sm:h-6 text-current"
+                        />
+                      ) : (
+                        <IconComponent
+                          size={24}
+                          className="sm:w-[26px] sm:h-[26px]"
+                          strokeWidth={2.5}
+                        />
+                      )}
+                    </div>
+                    <span
+                      className={`z-10 text-[8px] sm:text-[9px] font-bold ${textClass} uppercase truncate w-full px-1 text-center mt-0.5`}
+                    >
+                      {item.name}
+                    </span>
+                  </button>
+                </div>
               );
             })}
           </div>

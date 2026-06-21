@@ -494,25 +494,20 @@ Génère UNIQUEMENT le code SVG brut. AUCUNE explication. AUCUN texte markdown (
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
         className="fixed bottom-0 left-0 right-0 max-h-[90vh] h-[85vh] flex flex-col bg-slate-50 rounded-t-[32px] shadow-2xl z-[1001] overflow-hidden max-w-md mx-auto"
       >
-        <div className="flex-shrink-0 flex items-center justify-between p-6 border-b border-slate-200 bg-white">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
-              <Sparkles size={20} />
+        <div className="flex-shrink-0 flex items-center justify-between p-3 border-b border-slate-200 bg-white">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
+              <Sparkles size={14} />
             </div>
-            <div>
-              <h2 className="text-xl font-black text-slate-800">
-                Scanner Article
-              </h2>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mt-0.5">
-                Par Intelligence Artificielle
-              </p>
-            </div>
+            <h2 className="text-base font-black text-slate-800">
+              Scanner Article
+            </h2>
           </div>
           <button
             onClick={onClose}
-            className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 active:bg-slate-300 transition-colors"
+            className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 active:bg-slate-300 transition-colors"
           >
-            <X size={20} />
+            <X size={16} />
           </button>
         </div>
 
