@@ -1,12 +1,12 @@
-import { normalizeInput } from './engine/Normalizer';
-import { findAliasObject } from './engine/AliasMatcher';
-import { findBrandObject } from './engine/BrandMatcher';
-import { findProductObject } from './engine/ProductMatcher';
-import { findObjectByKeyword, getObjectById, objects } from './engine/ObjectMatcher';
-import { findSimilarObject } from './engine/SimilarityEngine';
-import { resolveIconColor } from './engine/IconResolver';
+import { normalizeInput } from './Normalizer';
+import { findAliasObject } from './AliasMatcher';
+import { findBrandObject } from './BrandMatcher';
+import { findProductObject } from './ProductMatcher';
+import { findObjectByKeyword, getObjectById, objects } from './ObjectMatcher';
+import { findSimilarObject } from './SimilarityEngine';
+import { resolveIconColor } from './IconResolver';
 
-export interface IconMatchResult {
+export interface IconMatchResultV2 {
   icon: string;
   category: string;
   color: string;
@@ -14,8 +14,8 @@ export interface IconMatchResult {
   engine: string;
 }
 
-class IconMatcherEngine {
-  public findMatches(query: string): IconMatchResult[] {
+class IconMatcherV2Engine {
+  public findMatches(query: string): IconMatchResultV2[] {
     if (!query) {
       return [{
         icon: "Package",
@@ -27,7 +27,7 @@ class IconMatcherEngine {
     }
 
     const normalized = normalizeInput(query);
-    const results: IconMatchResult[] = [];
+    const results: IconMatchResultV2[] = [];
 
     // 1. Produit exact
     const productId = findProductObject(normalized);
@@ -120,7 +120,7 @@ class IconMatcherEngine {
   public async findMatchesWithAIFallback(
     query: string, 
     options?: { apiKey?: string; openRouterKey?: string; aiProvider?: string }
-  ): Promise<IconMatchResult[]> {
+  ): Promise<IconMatchResultV2[]> {
     const localMatches = this.findMatches(query);
 
     // If we have a very confident result from local Matcher -> just return it
@@ -145,7 +145,7 @@ class IconMatcherEngine {
       if (response.ok) {
         const aiMatch = await response.json();
         if (aiMatch && aiMatch.icon) {
-          const newMatch: IconMatchResult = {
+          const newMatch: IconMatchResultV2 = {
             icon: aiMatch.icon,
             category: aiMatch.category || "Autres",
             color: aiMatch.color || resolveIconColor(aiMatch.category || "Autres"),
@@ -167,4 +167,4 @@ class IconMatcherEngine {
   }
 }
 
-export const IconMatcher = new IconMatcherEngine();
+export const IconMatcherV2 = new IconMatcherV2Engine();

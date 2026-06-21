@@ -53,6 +53,7 @@ export default function ReceiptScannerModal({
   const [showIconMatcherResults, setShowIconMatcherResults] = useState(false);
   const [iconMatcherResults, setIconMatcherResults] = useState<IconMatchResult[]>([]);
   const [isSearchingIconMatcher, setIsSearchingIconMatcher] = useState(false);
+
   const [showIconPrompt, setShowIconPrompt] = useState(false);
   const [iconPrompt, setIconPrompt] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -768,8 +769,8 @@ Génère UNIQUEMENT le code SVG brut. AUCUNE explication. AUCUN texte markdown (
                     <button
                       onClick={handleIconMatcher}
                       disabled={isRegeneratingIcon || isSearchingIconMatcher}
-                      className="flex items-center justify-center w-full py-2 bg-[#F6821F]/10 text-[#F6821F] rounded-xl text-xs font-bold hover:bg-[#F6821F]/20 active:bg-[#F6821F]/30 transition-colors"
-                      title="Chercher une icône locale"
+                      className="flex items-center justify-center w-full py-2 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-bold hover:bg-indigo-100 active:bg-indigo-200 transition-colors border border-indigo-100"
+                      title="Reconnaissance intelligente d'objet"
                     >
                       {isSearchingIconMatcher ? (
                         <Loader2 size={16} className="animate-spin mr-1" />
@@ -785,21 +786,26 @@ Génère UNIQUEMENT le code SVG brut. AUCUNE explication. AUCUN texte markdown (
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
-                          className="overflow-hidden w-full flex justify-center gap-2 mt-2"
+                          className="overflow-hidden w-full flex flex-col gap-2 mt-2"
                         >
-                          {iconMatcherResults.map((result, idx) => {
-                            const IconComponent = (LucideIcons as any)[result.icon] || LucideIcons.Package;
-                            return (
-                              <button
-                                key={idx}
-                                onClick={() => handleSelectIconMatcherResult(result)}
-                                className="w-12 h-12 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-sm relative group"
-                                title={result.category}
-                              >
-                                <IconComponent size={24} color={result.color} />
-                              </button>
-                            );
-                          })}
+                          <div className="flex justify-center gap-2">
+                            {iconMatcherResults.map((result, idx) => {
+                              const IconComponent = (LucideIcons as any)[result.icon] || LucideIcons.Package;
+                              return (
+                                <button
+                                  key={idx}
+                                  onClick={() => handleSelectIconMatcherResult(result)}
+                                  className="w-12 h-12 flex flex-col items-center justify-center bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-sm relative group"
+                                  title={`${result.category} (Score: ${(result.score || 0).toFixed(0)})`}
+                                >
+                                  <IconComponent size={20} color={result.color} />
+                                  {result.engine && (
+                                    <span className="text-[6px] text-slate-400 absolute bottom-1 truncate max-w-[40px] px-0.5">{result.engine}</span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </motion.div>
                       )}
                     </AnimatePresence>

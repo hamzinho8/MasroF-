@@ -1,0 +1,38 @@
+[
+  {
+    "id": "danone_yawmi",
+    "name": "Danone Yawmi",
+    "brand_id": "danone",
+    "object_id": "yogurt_cup"
+  },
+  {
+    "id": "sidi_ali_1l",
+    "name": "Sidi Ali 1L",
+    "brand_id": "sidi_ali",
+    "object_id": "water_bottle"
+  },
+  {
+    "id": "bampers_baby",
+    "name": "Bampers",
+    "brand_id": "pampers",
+    "object_id": "diaper"
+  },
+  {
+    "id": "tide_machine",
+    "name": "Tide",
+    "brand_id": "tide",
+    "object_id": "detergent"
+  },
+  {
+    "id": "fairy_citron",
+    "name": "Fairy",
+    "brand_id": "fairy",
+    "object_id": "dish_soap"
+  },
+  {
+    "id": "pisquet_cookie",
+    "name": "Pisquet",
+    "brand_id": "bimo",
+    "object_id": "cookie"
+  }
+]
