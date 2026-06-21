@@ -421,6 +421,44 @@ REQUIREMENTS:
     }
   });
 
+  app.post("/api/suggest-icon-matcher", async (req, res) => {
+    try {
+      const { query, apiKey, openRouterApiKey, aiProvider } = req.body;
+      const parts = [
+        {
+          text: `The user wants to find the best generic Lucide icon name and a matching category for the item: "${query}".
+          
+Respond purely in JSON format like:
+{
+  "icon": "LucideIconName",
+  "category": "Nourriture", 
+  "color": "#10b981",
+  "score": 85
+}
+Notes:
+- The category MUST be strictly one of: ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres'].
+- The icon MUST be a valid PascalCase Lucide React icon name (e.g., 'Coffee', 'Car', 'Shirt', 'Package').
+- Provide a fitting hex color based on the category.
+Return ONLY valid JSON, no markdown formatting.`,
+        },
+      ];
+
+      const text = await generateAIContent(
+        aiProvider,
+        apiKey,
+        openRouterApiKey,
+        parts,
+        500
+      );
+      const match = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+      const data = JSON.parse(match ? match[0] : text);
+      res.json(data);
+    } catch (e: any) {
+      console.error("Suggest Icon Matcher Error:", e);
+      res.status(500).json({ error: e.message || "Failed to suggest icon" });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

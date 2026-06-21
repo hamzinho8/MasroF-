@@ -173,6 +173,60 @@ class IconMatcherEngine {
     this.cache.set(originalQuery, top4);
     return top4;
   }
+
+  public async findMatchesWithAIFallback(
+    query: string, 
+    options?: { apiKey?: string; openRouterKey?: string; aiProvider?: string }
+  ): Promise<IconMatchResult[]> {
+    const localMatches = this.findMatches(query);
+
+    // If we have a very confident result from local Matcher -> just return it
+    if (localMatches.length > 0 && localMatches[0].score >= 50) {
+      return localMatches;
+    }
+
+    try {
+      const response = await fetch('/api/suggest-icon-matcher', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query,
+          apiKey: options?.apiKey,
+          openRouterApiKey: options?.openRouterKey,
+          aiProvider: options?.aiProvider
+        })
+      });
+
+      if (response.ok) {
+        const aiMatch = await response.json();
+        if (aiMatch && aiMatch.icon) {
+          // Verify format
+          const newMatch: IconMatchResult = {
+            icon: aiMatch.icon,
+            category: aiMatch.category || "Autres",
+            color: aiMatch.color || CATEGORY_COLORS["Autres"],
+            score: 95 // Give high score to AI fallback so it sits at the top
+          };
+
+          // Remove any duplicate
+          const filteredLocal = localMatches.filter(m => m.icon !== newMatch.icon);
+          
+          const combined = [newMatch, ...filteredLocal].slice(0, 4);
+          
+          // Optionally cache this new combined result
+          this.cache.set(query, combined);
+          
+          return combined;
+        }
+      }
+    } catch (e) {
+      console.error("AI Fallback matcher failed:", e);
+    }
+
+    return localMatches;
+  }
 }
 
 export const IconMatcher = new IconMatcherEngine();

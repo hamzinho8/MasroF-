@@ -52,6 +52,7 @@ export default function ReceiptScannerModal({
   const [isRegeneratingIcon, setIsRegeneratingIcon] = useState(false);
   const [showIconMatcherResults, setShowIconMatcherResults] = useState(false);
   const [iconMatcherResults, setIconMatcherResults] = useState<IconMatchResult[]>([]);
+  const [isSearchingIconMatcher, setIsSearchingIconMatcher] = useState(false);
   const [showIconPrompt, setShowIconPrompt] = useState(false);
   const [iconPrompt, setIconPrompt] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -416,12 +417,25 @@ Génère UNIQUEMENT le code SVG brut. AUCUNE explication. AUCUN texte markdown (
     setIsRegeneratingIcon(false);
   };
 
-  const handleIconMatcher = () => {
+  const handleIconMatcher = async () => {
     if (!scannedItem) return;
     const targetArticle = iconPrompt.trim() ? iconPrompt.trim() : scannedItem.name;
-    const matches = IconMatcher.findMatches(targetArticle);
+    
+    setIsSearchingIconMatcher(true);
+    
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem("gemini_api_key") || undefined;
+    const openRouterKey = localStorage.getItem("openrouter_api_key") || undefined;
+    const aiProvider = localStorage.getItem("ai_provider") || "gemini";
+    
+    const matches = await IconMatcher.findMatchesWithAIFallback(targetArticle, {
+      apiKey,
+      openRouterKey,
+      aiProvider
+    });
+    
     setIconMatcherResults(matches);
     setShowIconMatcherResults(true);
+    setIsSearchingIconMatcher(false);
   };
 
   const handleSelectIconMatcherResult = (result: IconMatchResult) => {
@@ -753,11 +767,15 @@ Génère UNIQUEMENT le code SVG brut. AUCUNE explication. AUCUN texte markdown (
 
                     <button
                       onClick={handleIconMatcher}
-                      disabled={isRegeneratingIcon}
+                      disabled={isRegeneratingIcon || isSearchingIconMatcher}
                       className="flex items-center justify-center w-full py-2 bg-[#F6821F]/10 text-[#F6821F] rounded-xl text-xs font-bold hover:bg-[#F6821F]/20 active:bg-[#F6821F]/30 transition-colors"
                       title="Chercher une icône locale"
                     >
-                      <Sparkles size={16} className="mr-1" />
+                      {isSearchingIconMatcher ? (
+                        <Loader2 size={16} className="animate-spin mr-1" />
+                      ) : (
+                        <Sparkles size={16} className="mr-1" />
+                      )}
                       IconMatcher
                     </button>
 
