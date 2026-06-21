@@ -89,7 +89,7 @@
       "name_ar": "دانون",
       "brand": "Danone",
       "category": "Nourriture",
-      "icon": "IceCream",
+      "icon": "Container",
       "keywords": [
         "danone",
         "yaourt",
@@ -103,7 +103,7 @@
       "name_ar": "رايبي",
       "brand": "",
       "category": "Nourriture",
-      "icon": "CupSoda",
+      "icon": "Container",
       "keywords": [
         "raibi",
         "jamila",
@@ -156,7 +156,7 @@
       "name_ar": "ماء",
       "brand": "",
       "category": "Nourriture",
-      "icon": "GlassWater",
+      "icon": "Milk",
       "keywords": [
         "eau",
         "ma",
@@ -171,7 +171,7 @@
       "name_ar": "سيدي علي",
       "brand": "Sidi Ali",
       "category": "Nourriture",
-      "icon": "GlassWater",
+      "icon": "Milk",
       "keywords": [
         "sidi ali",
         "sidiali"
@@ -183,7 +183,7 @@
       "name_ar": "عين أطلس",
       "brand": "Ain Atlas",
       "category": "Nourriture",
-      "icon": "GlassWater",
+      "icon": "Milk",
       "keywords": [
         "ain atlas"
       ],
@@ -194,7 +194,7 @@
       "name_ar": "عين سايس",
       "brand": "Ain Saiss",
       "category": "Nourriture",
-      "icon": "GlassWater",
+      "icon": "Milk",
       "keywords": [
         "saiss",
         "ain saiss"
@@ -206,7 +206,7 @@
       "name_ar": "سييل",
       "brand": "Ciel",
       "category": "Nourriture",
-      "icon": "GlassWater",
+      "icon": "Milk",
       "keywords": [
         "ciel"
       ],
@@ -217,7 +217,7 @@
       "name_ar": "والماس",
       "brand": "Oulmes",
       "category": "Nourriture",
-      "icon": "GlassWater",
+      "icon": "Milk",
       "keywords": [
         "oulmes",
         "walmas",
@@ -917,7 +917,7 @@
       "name_ar": "سائل الأواني",
       "brand": "",
       "category": "Sanitaire",
-      "icon": "Droplets",
+      "icon": "SprayCan",
       "keywords": [
         "liquide vaisselle",
         "vaisselle",
@@ -932,7 +932,7 @@
       "name_ar": "فيري",
       "brand": "Fairy",
       "category": "Sanitaire",
-      "icon": "Droplets",
+      "icon": "SprayCan",
       "keywords": [
         "fairy"
       ],
@@ -943,7 +943,7 @@
       "name_ar": "أوني",
       "brand": "Oni",
       "category": "Sanitaire",
-      "icon": "Droplets",
+      "icon": "SprayCan",
       "keywords": [
         "oni",
         "ony"
@@ -955,7 +955,7 @@
       "name_ar": "ماجيكس",
       "brand": "Magix",
       "category": "Sanitaire",
-      "icon": "Droplets",
+      "icon": "SprayCan",
       "keywords": [
         "magix",
         "majix"

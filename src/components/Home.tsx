@@ -201,9 +201,9 @@ export default function Home({
   );
   const [showFavoritesSettingModal, setShowFavoritesSettingModal] =
     useState(false);
-  const [hiddenFavorites, setHiddenFavorites] = useLocalStorage<
-    Record<string, number>
-  >("hiddenFavorites", {});
+  const [favoriteUsage, setFavoriteUsage] = useLocalStorage<
+    Record<string, { count: number; resetsAt: number }>
+  >("favoriteUsage", {});
 
   const getNext230AM = () => {
     const now = new Date();
@@ -225,7 +225,22 @@ export default function Home({
         false,
         false
       );
-      setHiddenFavorites((prev) => ({ ...prev, [item.id]: getNext230AM() }));
+      
+      const predefinedItem = predefinedItems.find(p => p.id === item.id);
+      const limit = predefinedItem?.dailyLimit || 1;
+
+      setFavoriteUsage((prev) => {
+        const currentUsage = prev[item.id] || { count: 0, resetsAt: 0 };
+        const now = Date.now();
+        const count = currentUsage.resetsAt < now ? 1 : currentUsage.count + 1;
+        return {
+          ...prev,
+          [item.id]: {
+            count,
+            resetsAt: currentUsage.resetsAt < now ? getNext230AM() : currentUsage.resetsAt,
+          }
+        };
+      });
     } else {
       onAddClick("EXPENSE", {
         name: item.name,
@@ -1001,10 +1016,14 @@ export default function Home({
           </div>
         ) : (
           <div className="grid grid-cols-4 gap-2 pb-4 px-1">
-            {INITIAL_PREDEFINED_ITEMS.filter(
-              (i) =>
-                favoriteItemIds.includes(i.id) &&
-                (!hiddenFavorites[i.id] || hiddenFavorites[i.id] < Date.now())
+            {predefinedItems.filter(
+              (i) => {
+                if (!favoriteItemIds.includes(i.id)) return false;
+                const usage = favoriteUsage[i.id];
+                if (!usage || usage.resetsAt < Date.now()) return true;
+                const limit = i.dailyLimit || 1;
+                return usage.count < limit;
+              }
             ).map((item) => {
               const info = getArticleInfo(item.name, item.category, predefinedItems);
               const IconComponent =
@@ -1998,9 +2017,10 @@ function RasSettingsModal({
             {inventoryItems
               .filter((item) => item.quantity > 0)
               .map((item) => {
+                const info = getArticleInfo(item.name, item.category || "Autres", predefinedItems);
                 const IconComponent =
-                  item.iconName && ICON_MAP[item.iconName]
-                    ? (ICON_MAP[item.iconName] as React.ElementType)
+                  info.iconName && ICON_MAP[info.iconName]
+                    ? (ICON_MAP[info.iconName] as React.ElementType)
                     : PackageOpen;
                 const isVisible = !hiddenIds.includes(item.id);
                 const textClass = item.color || "text-slate-800";

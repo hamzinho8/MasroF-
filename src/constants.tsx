@@ -14,7 +14,7 @@ import {
   Droplet, HandMetal, Smile, Wifi, ShoppingCart, Cuboid, Pill, UtensilsCrossed,
   CarTaxiFront, Footprints, GraduationCap, Cake, Scroll, SprayCan, Trash2,
   Stethoscope, Cross, Dumbbell,
-  Store, Wallet, CreditCard, Banknote, Coins, Receipt, Tag, Gift, Armchair, Bed, Monitor, Printer, Headphones, Radio, Watch, Mic, Music, Thermometer, Syringe, TreePine, Leaf, Cloud, Sun, Moon, Snowflake, Tent, Compass, Map, Navigation, Truck, Bike, BaggageClaim, Sticker, Puzzle, Building, Briefcase, Key, Lock, Unlock, Shield, ShieldCheck, Globe, Mountain, Palmtree, Clipboard, Archive, Inbox, Mail, Send, PhoneCall, Phone, Video, Image, Speaker, Bell, Calendar, Clock, AlarmClock, Timer, Hourglass, Filter, Settings, Sliders, Hammer, Axe, Paintbrush, Palette, Pipette, ThermometerSun, ThermometerSnowflake, Flashlight, Megaphone, Microwave, Refrigerator, ChefHat, Luggage, Sofa, Lamp, ShowerHead, Trees, Clover, Sprout, Citrus, CloudRain, Bone, PartyPopper, Film, Clapperboard, Gamepad, Activity, PiggyBank, BadgePercent, Castle, Church, Rocket
+  Store, Wallet, CreditCard, Banknote, Coins, Receipt, Tag, Gift, Armchair, Bed, Monitor, Printer, Headphones, Radio, Watch, Mic, Music, Thermometer, Syringe, TreePine, Leaf, Cloud, Sun, Moon, Snowflake, Tent, Compass, Map, Navigation, Truck, Bike, BaggageClaim, Sticker, Puzzle, Building, Briefcase, Key, Lock, Unlock, Shield, ShieldCheck, Globe, Mountain, Palmtree, Clipboard, Archive, Inbox, Mail, Send, PhoneCall, Phone, Video, Image, Speaker, Bell, Calendar, Clock, AlarmClock, Timer, Hourglass, Filter, Settings, Sliders, Hammer, Axe, Paintbrush, Palette, Pipette, ThermometerSun, ThermometerSnowflake, Flashlight, Megaphone, Microwave, Refrigerator, ChefHat, Luggage, Sofa, Lamp, ShowerHead, Trees, Clover, Sprout, Citrus, CloudRain, Bone, PartyPopper, Film, Clapperboard, Gamepad, Activity, PiggyBank, BadgePercent, Castle, Church, Rocket, Container
 } from 'lucide-react';
 import { PredefinedItem } from './types';
 
@@ -33,7 +33,7 @@ export const ICON_MAP: Record<string, React.ElementType> = {
   Droplet, HandMetal, Smile, Wifi, ShoppingCart, Cuboid, Cheese: Pizza, Pill, UtensilsCrossed,
   CarTaxiFront, Footprints, GraduationCap, Cake, Scroll, SprayCan, Trash2,
   Stethoscope, Cross, Dumbbell,
-  Store, Wallet, CreditCard, Banknote, Coins, Receipt, Tag, Gift, Armchair, Bed, Monitor, Printer, Headphones, Radio, Watch, Mic, Music, Thermometer, Syringe, TreePine, Leaf, Cloud, Sun, Moon, Snowflake, Tent, Compass, Map, Navigation, Truck, Bike, BaggageClaim, Sticker, Puzzle, Building, Briefcase, Key, Lock, Unlock, Shield, ShieldCheck, Globe, Mountain, Palmtree, Clipboard, Archive, Inbox, Mail, Send, PhoneCall, Phone, Video, Image, Speaker, Bell, Calendar, Clock, AlarmClock, Timer, Hourglass, Filter, Settings, Sliders, Hammer, Axe, Paintbrush, Palette, Pipette, ThermometerSun, ThermometerSnowflake, Flashlight, Megaphone, Microwave, Refrigerator, ChefHat, Luggage, Sofa, Lamp, ShowerHead, Trees, Clover, Sprout, Citrus, CloudRain, Bone, PartyPopper, Film, Clapperboard, Gamepad, Activity, PiggyBank, BadgePercent, Castle, Church, Rocket
+  Store, Wallet, CreditCard, Banknote, Coins, Receipt, Tag, Gift, Armchair, Bed, Monitor, Printer, Headphones, Radio, Watch, Mic, Music, Thermometer, Syringe, TreePine, Leaf, Cloud, Sun, Moon, Snowflake, Tent, Compass, Map, Navigation, Truck, Bike, BaggageClaim, Sticker, Puzzle, Building, Briefcase, Key, Lock, Unlock, Shield, ShieldCheck, Globe, Mountain, Palmtree, Clipboard, Archive, Inbox, Mail, Send, PhoneCall, Phone, Video, Image, Speaker, Bell, Calendar, Clock, AlarmClock, Timer, Hourglass, Filter, Settings, Sliders, Hammer, Axe, Paintbrush, Palette, Pipette, ThermometerSun, ThermometerSnowflake, Flashlight, Megaphone, Microwave, Refrigerator, ChefHat, Luggage, Sofa, Lamp, ShowerHead, Trees, Clover, Sprout, Citrus, CloudRain, Bone, PartyPopper, Film, Clapperboard, Gamepad, Activity, PiggyBank, BadgePercent, Castle, Church, Rocket, Container
 };
 
 export const CATEGORIES = [
@@ -48,8 +48,8 @@ export const CATEGORIES = [
 ];
 
 const RAW_PREDEFINED_ITEMS: Omit<PredefinedItem, 'colorHex' | 'categoryColorHex'>[] = [
-  { id: '1', name: 'Cafe', price: 10, category: 'Nourriture', iconName: 'Coffee', frequent: true },
-  { id: '2', name: 'Taxi', price: 5, category: 'Transport', iconName: 'Car', frequent: true },
+  { id: '1', name: 'Cafe', price: 10, category: 'Nourriture', iconName: 'Coffee', frequent: true, dailyLimit: 2 },
+  { id: '2', name: 'Taxi', price: 5, category: 'Transport', iconName: 'Car', frequent: true, dailyLimit: 2 },
   { id: '3', name: 'Danone', price: 5, category: 'Nourriture', iconName: 'Milk', frequent: true },
   { id: '4', name: 'Bampers', price: 4.5, category: 'Sanitaire', iconName: 'Baby', frequent: true },
   { id: '5', name: 'Farine', price: 4, category: 'Nourriture', iconName: 'Wheat', frequent: true },
@@ -117,10 +117,18 @@ export const getArticleInfo = (name: string, categoryId?: string, predefinedItem
   const predefined = predefinedItems.find(p => p.name.toLowerCase() === name.toLowerCase());
   
   if (predefined) {
+    const initialItem = INITIAL_PREDEFINED_ITEMS.find(p => p.id === predefined.id);
+    const isStandardIcon = initialItem && initialItem.iconName === predefined.iconName && initialItem.iconSvg === predefined.iconSvg;
+    
+    let iconName = predefined.iconName;
+    if (isStandardIcon && match?.score >= 60) {
+      iconName = match.icon;
+    }
+
     const category = CATEGORIES.find(c => c.id === predefined.category) || CATEGORIES.find(c => c.id === 'Autres')!;
     return {
       name: predefined.name,
-      iconName: match?.score >= 60 ? match.icon : predefined.iconName,
+      iconName,
       iconSvg: predefined.iconSvg,
       colorHex: predefined.colorHex,
       categoryColorHex: predefined.categoryColorHex,

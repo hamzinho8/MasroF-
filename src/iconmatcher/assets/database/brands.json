@@ -13,7 +13,7 @@
       "category": "Nourriture"
     },
     "danone": {
-      "icon": "IceCream",
+      "icon": "Container",
       "category": "Nourriture"
     },
     "la vache qui rit": {
@@ -25,23 +25,23 @@
       "category": "Nourriture"
     },
     "sidi ali": {
-      "icon": "GlassWater",
+      "icon": "Milk",
       "category": "Nourriture"
     },
     "ain atlas": {
-      "icon": "GlassWater",
+      "icon": "Milk",
       "category": "Nourriture"
     },
     "ain saiss": {
-      "icon": "GlassWater",
+      "icon": "Milk",
       "category": "Nourriture"
     },
     "ciel": {
-      "icon": "GlassWater",
+      "icon": "Milk",
       "category": "Nourriture"
     },
     "oulmes": {
-      "icon": "GlassWater",
+      "icon": "Milk",
       "category": "Nourriture"
     },
     "coca-cola": {
@@ -137,15 +137,15 @@
       "category": "Sanitaire"
     },
     "fairy": {
-      "icon": "Droplets",
+      "icon": "SprayCan",
       "category": "Sanitaire"
     },
     "oni": {
-      "icon": "Droplets",
+      "icon": "SprayCan",
       "category": "Sanitaire"
     },
     "magix": {
-      "icon": "Droplets",
+      "icon": "SprayCan",
       "category": "Sanitaire"
     },
     "cadum": {

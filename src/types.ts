@@ -8,6 +8,7 @@ export interface PredefinedItem {
   frequent: boolean;
   colorHex?: string;
   categoryColorHex?: string;
+  dailyLimit?: number;
 }
 
 export interface Transaction {

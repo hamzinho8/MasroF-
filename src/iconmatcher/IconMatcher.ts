@@ -142,14 +142,14 @@ class IconMatcherEngine {
     // 4. Recherche approximative (Levenshtein) sur les objets/keywords
     for (const p of PRODUCTS) {
       const dist = this.levenshtein(term, this.normalize(p.name));
-      const allowedDist = term.length > 5 ? 3 : 2;
+      const allowedDist = term.length > 6 ? 2 : 1;
       if (dist <= allowedDist && term.length > 3) {
         addResult(p.icon, p.category, 60 - dist * 10);
       }
       for (const keyword of p.keywords) {
         const normedKW = this.normalize(keyword);
         const kDist = this.levenshtein(term, normedKW);
-        const kwAllowedDist = term.length > 5 ? 2 : 1;
+        const kwAllowedDist = term.length > 6 ? 2 : 1;
         if (kDist <= kwAllowedDist && term.length > 3) {
           addResult(p.icon, p.category, 50 - kDist * 10);
         }
