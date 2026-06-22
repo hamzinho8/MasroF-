@@ -1778,12 +1778,12 @@
     "keywords": [
       "cigarette",
       "marlboro",
-      "marquise",
-      "winston",
       "camel",
+      "winston",
+      "garo",
+      "gauloises",
       "سجائر",
-      "كارو",
-      "ماركيز"
+      "جارو"
     ],
     "category": "Loisirs",
     "icon": "Cigarette"
@@ -4106,5 +4106,31 @@
     ],
     "category": "Nourriture",
     "icon": "Store"
+  },
+  {
+    "id": "allumettes",
+    "name_fr": "Allumettes",
+    "name_ar": "وقيد",
+    "name_en": "Matches",
+    "keywords": [
+      "allumettes",
+      "waqid",
+      "وقيد"
+    ],
+    "category": "Logement",
+    "icon": "Flame"
+  },
+  {
+    "id": "briquet",
+    "name_fr": "Briquet",
+    "name_ar": "بريكة",
+    "name_en": "Lighter",
+    "keywords": [
+      "briquet",
+      "brika",
+      "بريكة"
+    ],
+    "category": "Loisirs",
+    "icon": "Flame"
   }
 ]

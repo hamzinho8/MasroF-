@@ -61,6 +61,7 @@ const RAW_PREDEFINED_ITEMS: Omit<PredefinedItem, 'colorHex' | 'categoryColorHex'
 
   { id: 'gaz', name: 'Gaz', price: 15, category: 'Logement', iconName: 'Cylinder', frequent: false },
   { id: 'loc', name: 'Location', price: 1500, category: 'Logement', iconName: 'Home', frequent: false },
+  { id: 'logement', name: 'Logement', price: 0, category: 'Logement', iconName: 'Home', frequent: false },
   { id: 'elec', name: 'Électricité', price: 150, category: 'Logement', iconName: 'Lightbulb', frequent: false },
   
   // Nouveaux articles Sanitaire
@@ -103,43 +104,35 @@ import { IconMatcher } from './iconmatcher/IconMatcher';
 
 export const INITIAL_PREDEFINED_ITEMS: PredefinedItem[] = RAW_PREDEFINED_ITEMS.map(item => {
   const category = CATEGORIES.find(c => c.id === item.category) || CATEGORIES.find(c => c.id === 'Autres')!;
-  const match = IconMatcher.findMatches(item.name)[0];
   
   return {
     ...item,
-    iconName: match?.score >= 60 ? match.icon : item.iconName,
     colorHex: category.colorHex,
     categoryColorHex: category.colorHex
   };
 });
 
 export const getArticleInfo = (name: string, categoryId?: string, predefinedItems: PredefinedItem[] = INITIAL_PREDEFINED_ITEMS) => {
-  const match = IconMatcher.findMatches(name)[0];
   const predefined = predefinedItems.find(p => p.name.toLowerCase() === name.toLowerCase());
   
   if (predefined) {
-    const initialItem = INITIAL_PREDEFINED_ITEMS.find(p => p.id === predefined.id);
-    const isStandardIcon = initialItem && initialItem.iconName === predefined.iconName && initialItem.iconSvg === predefined.iconSvg;
-    
-    let iconName = predefined.iconName;
-    if (isStandardIcon && match?.score >= 60) {
-      iconName = match.icon;
-    }
-
     const category = CATEGORIES.find(c => c.id === predefined.category) || CATEGORIES.find(c => c.id === 'Autres')!;
     return {
       name: predefined.name,
-      iconName,
+      iconName: predefined.iconName,
       iconSvg: predefined.iconSvg,
-      colorHex: predefined.colorHex,
-      categoryColorHex: predefined.categoryColorHex,
+      colorHex: category.colorHex,
+      categoryColorHex: category.colorHex,
       color: category.color,
       bgColor: category.bgColor,
       lightBg: category.lightBg
     };
   }
 
-  const category = CATEGORIES.find(c => c.id === (match?.score >= 60 ? match.category : categoryId)) || CATEGORIES.find(c => c.id === 'Autres')!;
+  const match = IconMatcher.findMatches(name)[0];
+  const matchedCategoryId = match?.score >= 60 ? match.category : categoryId;
+  const category = CATEGORIES.find(c => c.id === categoryId) || CATEGORIES.find(c => c.id === matchedCategoryId) || CATEGORIES.find(c => c.id === 'Autres')!;
+  
   return {
     name,
     iconName: match?.score >= 60 ? match.icon : category.iconName,

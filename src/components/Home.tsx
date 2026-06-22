@@ -1062,10 +1062,10 @@ export default function Home({
                     <div
                       className={`z-10 relative flex items-center justify-center ${textClass} mb-0.5`}
                     >
-                      {item.iconSvg ? (
+                      {info.iconSvg || item.iconSvg ? (
                         <div
-                          dangerouslySetInnerHTML={{ __html: item.iconSvg }}
-                          className="w-5 h-5 sm:w-6 sm:h-6 text-current"
+                          dangerouslySetInnerHTML={{ __html: info.iconSvg || item.iconSvg }}
+                          className="w-5 h-5 sm:w-6 sm:h-6 text-current svg-container"
                         />
                       ) : (
                         <IconComponent
@@ -1917,7 +1917,14 @@ function FavoritesSettingsModal({
                     <div
                       className={`w-10 h-10 rounded-xl flex items-center justify-center ${textClass} ${bgClass}`}
                     >
-                      <IconComponent size={20} />
+                      {info.iconSvg || item.iconSvg ? (
+                        <div
+                          dangerouslySetInnerHTML={{ __html: info.iconSvg || item.iconSvg }}
+                          className="w-5 h-5 text-current svg-container"
+                        />
+                      ) : (
+                        <IconComponent size={20} />
+                      )}
                     </div>
                     <div className="flex flex-col">
                       <span className="font-bold text-slate-700 leading-none mb-1">
