@@ -1,0 +1,33 @@
+{
+  "atay": "tea_cup",
+  "ataye": "tea_cup",
+  "thé": "tea_cup",
+  "tea": "tea_cup",
+  "أتاي": "tea_cup",
+  
+  "dwa": "medicine",
+  "dwâ": "medicine",
+  "دواء": "medicine",
+  "medicament": "medicine",
+  
+  "cocacola": "juice",
+  "coca cola": "juice",
+  "coca-cola": "juice",
+  "كوكا": "juice",
+
+  "cafe": "coffee_cup",
+  "café": "coffee_cup",
+  "قهوة": "coffee_cup",
+
+  "khobz": "bread",
+  "خبز": "bread",
+  "pain": "bread",
+
+  "pampers": "diaper",
+  "bampers": "diaper",
+  "couche": "diaper",
+
+  "tide": "detergent",
+  "omo": "detergent",
+  "ariel": "detergent"
+}
