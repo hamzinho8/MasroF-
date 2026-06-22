@@ -42,6 +42,7 @@ export interface CreditEntry {
   source?: 'poche' | 'compte' | 'rien';
   settled?: boolean;
   settledDate?: string;
+  showOnWidget?: boolean;
 }
 
 export interface InventoryDecreaseAction {

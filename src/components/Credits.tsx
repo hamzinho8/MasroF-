@@ -26,6 +26,8 @@ import {
   CalendarRange,
   CalendarDays,
   Landmark,
+  Bell,
+  BellOff,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { CreditEntry, Transaction } from "../types";
@@ -37,6 +39,7 @@ interface CreditsProps {
   entries: CreditEntry[];
   setEntries: React.Dispatch<React.SetStateAction<CreditEntry[]>>;
   onSettle?: (id: string, settleSource: 'compte' | 'poche') => void;
+  onPartialSettle?: (id: string, amount: number, settleSource: 'compte' | 'poche') => void;
   transactions?: Transaction[];
   onAddClick?: (type: "INCOME" | "EXPENSE") => void;
   onAddTransaction?: (label: string, amount: number, type: "INCOME" | "EXPENSE", category?: string, paidByBank?: boolean, isPureInflow?: boolean) => void;
@@ -51,6 +54,7 @@ export default function Credits({
   entries,
   setEntries,
   onSettle,
+  onPartialSettle,
   transactions = [],
   onAddClick,
   onAddTransaction,
@@ -84,7 +88,10 @@ export default function Credits({
       owedToMe: "ON ME DOIT",
       owedByMe: "JE DOIS",
       settle: "Régler (Solder)",
+      partialSettle: "Déduire (Partiel)",
       edit: "Modifier",
+      reminder: "Rappel",
+      hideReminder: "Masquer",
     },
     العربية: {
       title: "إدارة الديون",
@@ -104,7 +111,10 @@ export default function Credits({
       owedToMe: "مستحقات لي",
       owedByMe: "ديون علي",
       settle: "تسوية (سداد)",
+      partialSettle: "خصم (جزئي)",
       edit: "تعديل",
+      reminder: "تذكير",
+      hideReminder: "إخفاء",
     },
     English: {
       title: "Credits Management",
@@ -124,7 +134,10 @@ export default function Credits({
       owedToMe: "Loans",
       owedByMe: "Debts",
       settle: "Settle (Delete)",
+      partialSettle: "Deduct (Partial)",
       edit: "Modify",
+      reminder: "Reminder",
+      hideReminder: "Hide",
     },
   };
 
@@ -212,6 +225,8 @@ export default function Credits({
   };
 
   const [settlingId, setSettlingId] = useState<string | null>(null);
+  const [partialSettlingId, setPartialSettlingId] = useState<string | null>(null);
+  const [partialAmount, setPartialAmount] = useState<string>("");
 
   const handleSettleEntry = (id: string, settleSource: 'compte' | 'poche') => {
     if (onSettle) {
@@ -221,6 +236,27 @@ export default function Credits({
     }
     setActiveMenuId(null);
     setSettlingId(null);
+  };
+
+  const handlePartialSettleEntry = (id: string, settleSource: 'compte' | 'poche') => {
+    const amount = parseFloat(partialAmount);
+    if (isNaN(amount) || amount <= 0) return;
+    
+    if (onPartialSettle) {
+      onPartialSettle(id, amount, settleSource);
+    } // else fallback could be here, but ignored for simplicity as onPartialSettle is provided
+    setActiveMenuId(null);
+    setPartialSettlingId(null);
+    setPartialAmount("");
+  };
+
+  const toggleReminder = (id: string) => {
+    setEntries((prev) =>
+      prev.map((e) =>
+        e.id === id ? { ...e, showOnWidget: !e.showOnWidget } : e
+      )
+    );
+    setActiveMenuId(null);
   };
 
   const [bankTimeframe, setBankTimeframe] = useState<"day" | "week" | "month">(
@@ -682,11 +718,36 @@ export default function Credits({
                               onClick={(e) => e.stopPropagation()}
                             >
                               <button
+                                onClick={() => toggleReminder(entry.id)}
+                                className={`w-full px-5 py-3.5 text-left text-xs font-black flex items-center gap-3 transition-colors uppercase tracking-widest whitespace-nowrap ${entry.showOnWidget ? 'text-slate-500 hover:bg-slate-50 active:bg-slate-100' : 'text-blue-500 hover:bg-blue-50 active:bg-blue-100'}`}
+                              >
+                                {entry.showOnWidget ? (
+                                  <>
+                                    <BellOff size={15} />
+                                    {t.hideReminder}
+                                  </>
+                                ) : (
+                                  <>
+                                    <Bell size={15} />
+                                    {t.reminder}
+                                  </>
+                                )}
+                              </button>
+                              <div className="h-px bg-slate-50 mx-4 my-1" />
+                              <button
                                 onClick={() => handleEditClick(entry)}
                                 className="w-full px-5 py-3.5 text-left text-xs font-black text-slate-600 hover:bg-slate-50 hover:text-teal-600 flex items-center gap-3 transition-colors uppercase tracking-widest whitespace-nowrap active:bg-slate-100"
                               >
                                 <Pencil size={15} />
                                 {t.edit}
+                              </button>
+                              <div className="h-px bg-slate-50 mx-4 my-1" />
+                              <button
+                                onClick={() => { setPartialSettlingId(entry.id); setActiveMenuId(null); }}
+                                className="w-full px-5 py-3.5 text-left text-xs font-black text-amber-500 hover:bg-amber-50 flex items-center gap-3 transition-colors uppercase tracking-widest whitespace-nowrap active:bg-amber-100"
+                              >
+                                <Minus size={15} />
+                                {t.partialSettle}
                               </button>
                               <div className="h-px bg-slate-50 mx-4 my-1" />
                               <button
@@ -738,6 +799,9 @@ export default function Credits({
                       <span className="text-[9px] flex items-center gap-1 font-bold uppercase tracking-wider text-slate-400 shrink-0">
                         <Calendar size={10} className="text-slate-400" />
                         {entry.settledDate || entry.date}
+                      </span>
+                      <span className="text-[9px] font-black uppercase tracking-[0.1em] truncate max-w-[100px] text-slate-400 line-through">
+                        {isReceive ? t.owedToMe : t.owedByMe}
                       </span>
                     </div>
                   </div>
@@ -795,6 +859,74 @@ export default function Credits({
                 <button
                   onClick={() => handleSettleEntry(settlingId, "compte")}
                   className="w-full h-16 rounded-[24px] bg-indigo-600 text-white shadow-xl shadow-indigo-600/20 active:scale-95 transition-all text-sm uppercase tracking-widest font-black flex items-center justify-center gap-3"
+                >
+                  <Landmark size={20} />
+                  {language === "Français" ? "Mon compte" : language === "العربية" ? "حسابي" : "Bank Account"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Partial Settlement Modal */}
+      <AnimatePresence>
+        {partialSettlingId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+            onClick={() => { setPartialSettlingId(null); setPartialAmount(""); }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-[32px] p-6 w-full max-w-sm shadow-2xl border border-slate-100 flex flex-col gap-6"
+            >
+              <div className="flex flex-col gap-2">
+                <h3 className="text-xl font-black text-slate-800 tracking-tight text-center">
+                  {language === "Français" ? "Règlement Partiel" : language === "العربية" ? "تسوية جزئية" : "Partial Settlement"}
+                </h3>
+                <p className="text-sm font-medium text-slate-500 text-center">
+                  {language === "Français" ? "Entrez le montant à déduire" : language === "العربية" ? "أدخل المبلغ للخصم" : "Enter the amount to deduct"}
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                  {t.amountPlaceholder}
+                </label>
+                <div className="flex gap-4">
+                  <input
+                    type="number"
+                    placeholder="0.00"
+                    value={partialAmount}
+                    onChange={(e) => setPartialAmount(e.target.value)}
+                    className="flex-1 h-14 px-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-amber-500/20 focus:bg-white outline-none font-black text-slate-800 transition-all text-2xl shadow-inner"
+                    autoFocus
+                  />
+                  <div className="h-14 flex items-center px-5 bg-white border-2 border-slate-50 rounded-2xl font-black text-slate-400 shadow-sm">
+                    {currency}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => handlePartialSettleEntry(partialSettlingId, "poche")}
+                  disabled={!partialAmount || parseFloat(partialAmount) <= 0}
+                  className="w-full h-16 rounded-[24px] bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900 font-black flex items-center justify-center gap-3 active:scale-95 transition-all text-sm uppercase tracking-widest disabled:opacity-50 disabled:active:scale-100"
+                >
+                  <Wallet size={20} />
+                  {language === "Français" ? "Ma poche" : language === "العربية" ? "جيبي" : "Pocket"}
+                </button>
+                <button
+                  onClick={() => handlePartialSettleEntry(partialSettlingId, "compte")}
+                  disabled={!partialAmount || parseFloat(partialAmount) <= 0}
+                  className="w-full h-16 rounded-[24px] bg-amber-500 text-white shadow-xl shadow-amber-500/20 active:scale-95 transition-all text-sm uppercase tracking-widest font-black flex items-center justify-center gap-3 disabled:opacity-50 disabled:active:scale-100"
                 >
                   <Landmark size={20} />
                   {language === "Français" ? "Mon compte" : language === "العربية" ? "حسابي" : "Bank Account"}

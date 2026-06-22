@@ -850,6 +850,16 @@ export default function App() {
         }
       }
 
+      creditEntries.forEach((c) => {
+        if (!c.settled && c.showOnWidget) {
+          if (c.type === "OWE_ME") {
+            newsItems.push(`<b><font color="#10B981">${c.name} ➡️➡️➡️🤜💴${c.amount} ${currency}</font></b>`);
+          } else {
+            newsItems.push(`<b><font color="#EF4444">${c.amount} ${currency} ➡️➡️➡️🤜💴${c.name}</font></b>`);
+          }
+        }
+      });
+
       let newsHtml = newsItems.join("&nbsp;&nbsp;•&nbsp;&nbsp;");
       if (!newsHtml) {
         newsHtml = "<i>Aucun achat programmé.</i>";
@@ -878,6 +888,7 @@ export default function App() {
     widgetTextColor,
     reminders,
     shoppingList,
+    creditEntries,
   ]);
 
   const markUnbackedChanges = () => {
@@ -1118,6 +1129,7 @@ export default function App() {
           ? {
               ...e,
               settled: true,
+              showOnWidget: false,
               settledDate: new Date().toLocaleDateString(
                 language === "Français" ? "fr-FR" : "en-US"
               ),
@@ -1125,6 +1137,60 @@ export default function App() {
           : e
       )
     );
+  };
+
+  const handlePartialCreditSettlement = (
+    id: string,
+    amount: number,
+    settleSource: "compte" | "poche" = "poche"
+  ) => {
+    const entry = creditEntries.find((e) => e.id === id);
+    if (!entry) return;
+
+    if (amount <= 0 || amount >= entry.amount) {
+      handleCreditSettlement(id, settleSource);
+      return;
+    }
+
+    // Add corresponding transaction
+    const paidByBank = settleSource === "compte";
+    if (entry.type === "OWE_ME") {
+      // Someone paid me back partially (Income)
+      const label =
+        language === "العربية"
+          ? `استرداد جزئي: ${entry.name}`
+          : `Remboursement partiel : ${entry.name}`;
+      addTransaction(label, amount, "INCOME", t.owedToMe, paidByBank, true);
+    } else {
+      // I paid someone back partially (Expense)
+      const label =
+        language === "العربية"
+          ? `تسديد دين جزئي: ${entry.name}`
+          : `Paiement partiel dette : ${entry.name}`;
+      addTransaction(label, amount, "EXPENSE", t.owedByMe, paidByBank, true);
+    }
+
+    // Modify the active entry and create a new settled entry
+    setCreditEntries((prev) => {
+      const updatedEntries = prev.map((e) =>
+        e.id === id
+          ? { ...e, amount: e.amount - amount, showOnWidget: false }
+          : e
+      );
+
+      const settledEntry = {
+        ...entry,
+        id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+        amount: amount,
+        settled: true,
+        showOnWidget: false,
+        settledDate: new Date().toLocaleDateString(
+          language === "Français" ? "fr-FR" : "en-US"
+        ),
+      };
+      
+      return [settledEntry, ...updatedEntries];
+    });
   };
 
   const handleAddBankBalance = (amount: number) => {
@@ -1215,6 +1281,7 @@ export default function App() {
             entries={creditEntries}
             setEntries={setCreditEntries}
             onSettle={handleCreditSettlement}
+            onPartialSettle={handlePartialCreditSettlement}
             transactions={transactions}
             onAddClick={openModal}
             onAddTransaction={addTransaction}
