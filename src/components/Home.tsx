@@ -1015,7 +1015,7 @@ export default function Home({
             Appuyez sur l'icône réglage pour épingler vos achats fréquents
           </div>
         ) : (
-          <div className="grid grid-cols-4 gap-2 pb-4 px-1">
+          <div className="grid grid-cols-4 gap-3 pb-6 px-2 pt-2">
             {predefinedItems.filter(
               (i) => {
                 if (!favoriteItemIds.includes(i.id)) return false;
@@ -1043,21 +1043,21 @@ export default function Home({
                   <div 
                     className={`absolute inset-0 rounded-full border border-white transition-all duration-300 ease-out pointer-events-none ${
                       info.bgColor || "bg-slate-50"
-                    } ${hasStackEffect ? 'opacity-100 translate-x-[6px] translate-y-[6px]' : 'opacity-0 translate-x-0 translate-y-0'}`} 
+                    } ${hasStackEffect ? 'opacity-100 translate-x-[8px] translate-y-[8px] shadow-sm' : 'opacity-0 translate-x-0 translate-y-0'}`} 
                   />
                   {/* Layer 1 (Middle layer shadow effect) */}
                   <div 
                     className={`absolute inset-0 rounded-full border border-white transition-all duration-300 ease-out delay-75 pointer-events-none ${
                       info.bgColor || "bg-slate-50"
-                    } ${hasStackEffect ? 'opacity-100 translate-x-[3px] translate-y-[3px]' : 'opacity-0 translate-x-0 translate-y-0'}`} 
+                    } ${hasStackEffect ? 'opacity-100 translate-x-[4px] translate-y-[4px] shadow-sm' : 'opacity-0 translate-x-0 translate-y-0'}`} 
                   />
                   
                   {/* Actual Button */}
                   <button
                     onClick={() => handleFavoriteClick(item)}
-                    className={`absolute inset-0 w-full h-full rounded-full p-2 flex flex-col items-center justify-center overflow-hidden transition-all duration-300 shadow-sm border border-white hover:border-slate-200 active:scale-95 group ${
+                    className={`absolute inset-0 w-full h-full rounded-full p-2 flex flex-col items-center justify-center overflow-hidden transition-all duration-300 shadow-md border border-white hover:border-slate-200 active:scale-95 group ${
                       info.bgColor || "bg-slate-50"
-                    } ${hasStackEffect ? '-translate-x-[1px] -translate-y-[1px]' : 'translate-x-0 translate-y-0 z-10'}`}
+                    } ${hasStackEffect ? '-translate-x-[2px] -translate-y-[2px]' : 'translate-x-0 translate-y-0 z-10'}`}
                   >
                     <div
                       className={`z-10 relative flex items-center justify-center ${textClass} mb-0.5`}

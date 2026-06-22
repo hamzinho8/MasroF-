@@ -108,7 +108,13 @@
     "name_fr": "Oeuf",
     "name_ar": "بيضة",
     "name_en": "Egg",
-    "keywords": ["oeuf", "egg", "plateau oeuf", "بيض", "بيضة"],
+    "keywords": [
+      "oeuf",
+      "egg",
+      "plateau oeuf",
+      "بيض",
+      "بيضة"
+    ],
     "category": "Nourriture",
     "icon": "Egg"
   },
@@ -137,7 +143,13 @@
     "name_fr": "Bidon d'eau",
     "name_ar": "بيدون ماء",
     "name_en": "Large water bottle",
-    "keywords": ["bidon eau", "5L", "ain ifrane", "ماء 5 لتر", "بيدون"],
+    "keywords": [
+      "bidon eau",
+      "5L",
+      "ain ifrane",
+      "ماء 5 لتر",
+      "بيدون"
+    ],
     "category": "Nourriture",
     "icon": "Droplets"
   },
@@ -205,7 +217,12 @@
     "name_fr": "Café soluble",
     "name_ar": "قهوة سريعة الذوبان",
     "name_en": "Instant coffee",
-    "keywords": ["nescafe", "soluble", "instant", "نيسكافي"],
+    "keywords": [
+      "nescafe",
+      "soluble",
+      "instant",
+      "نيسكافي"
+    ],
     "category": "Nourriture",
     "icon": "Coffee"
   },
@@ -234,7 +251,14 @@
     "name_fr": "Pain",
     "name_ar": "خبز",
     "name_en": "Bread",
-    "keywords": ["pain", "bread", "khobz", "batbout", "خبز", "بطبوط"],
+    "keywords": [
+      "pain",
+      "bread",
+      "khobz",
+      "batbout",
+      "خبز",
+      "بطبوط"
+    ],
     "category": "Nourriture",
     "icon": "Wheat"
   },
@@ -243,7 +267,13 @@
     "name_fr": "Baguette",
     "name_ar": "باغيت",
     "name_en": "Baguette",
-    "keywords": ["baguette", "pain", "parisien", "خبز", "كومير"],
+    "keywords": [
+      "baguette",
+      "pain",
+      "parisien",
+      "خبز",
+      "كومير"
+    ],
     "category": "Nourriture",
     "icon": "Wheat"
   },
@@ -339,7 +369,15 @@
     "name_fr": "Sac de riz",
     "name_ar": "كيس أرز",
     "name_en": "Rice bag",
-    "keywords": ["riz", "rice", "arroz", "cigogne", "أرز", "روز", "الروز"],
+    "keywords": [
+      "riz",
+      "rice",
+      "arroz",
+      "cigogne",
+      "أرز",
+      "روز",
+      "الروز"
+    ],
     "category": "Nourriture",
     "icon": "Wheat"
   },
@@ -368,7 +406,14 @@
     "name_fr": "Paquet de couscous",
     "name_ar": "كسكس",
     "name_en": "Couscous pack",
-    "keywords": ["couscous", "dari", "tria", "كسكس", "كسكسو", "داري"],
+    "keywords": [
+      "couscous",
+      "dari",
+      "tria",
+      "كسكس",
+      "كسكسو",
+      "داري"
+    ],
     "category": "Nourriture",
     "icon": "CookingPot"
   },
@@ -395,7 +440,14 @@
     "name_fr": "Bouteille d'huile",
     "name_ar": "قارورة زيت",
     "name_en": "Oil bottle",
-    "keywords": ["huile", "oil", "lesieur", "olio", "زيت", "لوسيور"],
+    "keywords": [
+      "huile",
+      "oil",
+      "lesieur",
+      "olio",
+      "زيت",
+      "لوسيور"
+    ],
     "category": "Nourriture",
     "icon": "Droplets"
   },
@@ -437,7 +489,12 @@
     "name_fr": "Pain de sucre",
     "name_ar": "قالب سكر",
     "name_en": "Sugar loaf",
-    "keywords": ["pain de sucre", "qaleb", "سكر قالب", "قالب"],
+    "keywords": [
+      "pain de sucre",
+      "qaleb",
+      "سكر قالب",
+      "قالب"
+    ],
     "category": "Nourriture",
     "icon": "Cone"
   },
@@ -446,7 +503,12 @@
     "name_fr": "Sel",
     "name_ar": "ملح",
     "name_en": "Salt",
-    "keywords": ["sel", "salt", "ملح", "ملحة"],
+    "keywords": [
+      "sel",
+      "salt",
+      "ملح",
+      "ملحة"
+    ],
     "category": "Nourriture",
     "icon": "GlassWater"
   },
@@ -490,7 +552,14 @@
     "name_fr": "Pot de confiture",
     "name_ar": "مربى",
     "name_en": "Jam jar",
-    "keywords": ["confiture", "jam", "aicha", "مربى", "كونفيتير", "عائشة"],
+    "keywords": [
+      "confiture",
+      "jam",
+      "aicha",
+      "مربى",
+      "كونفيتير",
+      "عائشة"
+    ],
     "category": "Nourriture",
     "icon": "Cherry"
   },
@@ -499,7 +568,12 @@
     "name_fr": "Pot de miel",
     "name_ar": "عسل",
     "name_en": "Honey jar",
-    "keywords": ["miel", "honey", "عسل", "عسيلة"],
+    "keywords": [
+      "miel",
+      "honey",
+      "عسل",
+      "عسيلة"
+    ],
     "category": "Nourriture",
     "icon": "Hexagon"
   },
@@ -508,7 +582,12 @@
     "name_fr": "Ketchup",
     "name_ar": "كاتشب",
     "name_en": "Ketchup",
-    "keywords": ["ketchup", "heinz", "star", "كاتشب"],
+    "keywords": [
+      "ketchup",
+      "heinz",
+      "star",
+      "كاتشب"
+    ],
     "category": "Nourriture",
     "icon": "Bottle"
   },
@@ -517,7 +596,11 @@
     "name_fr": "Mayonnaise",
     "name_ar": "مايونيز",
     "name_en": "Mayonnaise",
-    "keywords": ["mayonnaise", "lesieur", "مايونيز"],
+    "keywords": [
+      "mayonnaise",
+      "lesieur",
+      "مايونيز"
+    ],
     "category": "Nourriture",
     "icon": "Egg"
   },
@@ -526,7 +609,12 @@
     "name_fr": "Moutarde",
     "name_ar": "خردل",
     "name_en": "Mustard",
-    "keywords": ["moutarde", "mustard", "موطارد", "خردل"],
+    "keywords": [
+      "moutarde",
+      "mustard",
+      "موطارد",
+      "خردل"
+    ],
     "category": "Nourriture",
     "icon": "Flame"
   },
@@ -535,7 +623,11 @@
     "name_fr": "Vinaigre",
     "name_ar": "خل",
     "name_en": "Vinegar",
-    "keywords": ["vinaigre", "vinegar", "خل"],
+    "keywords": [
+      "vinaigre",
+      "vinegar",
+      "خل"
+    ],
     "category": "Nourriture",
     "icon": "TestTube"
   },
@@ -544,7 +636,15 @@
     "name_fr": "Boîte de thon",
     "name_ar": "تونة",
     "name_en": "Canned tuna",
-    "keywords": ["thon", "tuna", "mario", "joly", "isabel", "طون", "تونة"],
+    "keywords": [
+      "thon",
+      "tuna",
+      "mario",
+      "joly",
+      "isabel",
+      "طون",
+      "تونة"
+    ],
     "category": "Nourriture",
     "icon": "Fish"
   },
@@ -553,7 +653,12 @@
     "name_fr": "Boîte de sardines",
     "name_ar": "سردين",
     "name_en": "Canned sardines",
-    "keywords": ["sardine", "mido", "سردين", "معلب"],
+    "keywords": [
+      "sardine",
+      "mido",
+      "سردين",
+      "معلب"
+    ],
     "category": "Nourriture",
     "icon": "Fish"
   },
@@ -562,7 +667,14 @@
     "name_fr": "Viande",
     "name_ar": "لحم",
     "name_en": "Meat",
-    "keywords": ["viande", "meat", "beef", "لحم", "بكري", "غنمي"],
+    "keywords": [
+      "viande",
+      "meat",
+      "beef",
+      "لحم",
+      "بكري",
+      "غنمي"
+    ],
     "category": "Nourriture",
     "icon": "Beef"
   },
@@ -571,7 +683,13 @@
     "name_fr": "Poulet",
     "name_ar": "دجاج",
     "name_en": "Chicken",
-    "keywords": ["poulet", "chicken", "djaj", "دجاج", "دجاجة"],
+    "keywords": [
+      "poulet",
+      "chicken",
+      "djaj",
+      "دجاج",
+      "دجاجة"
+    ],
     "category": "Nourriture",
     "icon": "Drumstick"
   },
@@ -580,7 +698,11 @@
     "name_fr": "Viande hachée",
     "name_ar": "كفتة",
     "name_en": "Minced meat",
-    "keywords": ["viande hachée", "kefta", "كفتة"],
+    "keywords": [
+      "viande hachée",
+      "kefta",
+      "كفتة"
+    ],
     "category": "Nourriture",
     "icon": "Beef"
   },
@@ -606,7 +728,15 @@
     "name_fr": "Poisson frais",
     "name_ar": "سمك طازج",
     "name_en": "Fresh fish",
-    "keywords": ["poisson", "fish", "merlan", "sole", "سمك", "حوت", "ميرلان"],
+    "keywords": [
+      "poisson",
+      "fish",
+      "merlan",
+      "sole",
+      "سمك",
+      "حوت",
+      "ميرلان"
+    ],
     "category": "Nourriture",
     "icon": "Fish"
   },
@@ -615,7 +745,13 @@
     "name_fr": "Légumes",
     "name_ar": "خضار",
     "name_en": "Vegetables",
-    "keywords": ["légumes", "vegetables", "khodra", "خضرة", "خضار"],
+    "keywords": [
+      "légumes",
+      "vegetables",
+      "khodra",
+      "خضرة",
+      "خضار"
+    ],
     "category": "Nourriture",
     "icon": "Carrot"
   },
@@ -624,7 +760,13 @@
     "name_fr": "Fruits",
     "name_ar": "فواكه",
     "name_en": "Fruits",
-    "keywords": ["fruits", "disser", "فاكهة", "ديسير", "فواكه"],
+    "keywords": [
+      "fruits",
+      "disser",
+      "فاكهة",
+      "ديسير",
+      "فواكه"
+    ],
     "category": "Nourriture",
     "icon": "Apple"
   },
@@ -633,7 +775,12 @@
     "name_fr": "Oignon",
     "name_ar": "بصل",
     "name_en": "Onion",
-    "keywords": ["oignon", "basla", "بصل", "بصلة"],
+    "keywords": [
+      "oignon",
+      "basla",
+      "بصل",
+      "بصلة"
+    ],
     "category": "Nourriture",
     "icon": "Circle"
   },
@@ -642,7 +789,12 @@
     "name_fr": "Pomme de terre",
     "name_ar": "بطاطس",
     "name_en": "Potato",
-    "keywords": ["pomme de terre", "batata", "بطاطس", "بطاطا"],
+    "keywords": [
+      "pomme de terre",
+      "batata",
+      "بطاطس",
+      "بطاطا"
+    ],
     "category": "Nourriture",
     "icon": "Circle"
   },
@@ -651,7 +803,12 @@
     "name_fr": "Tomate",
     "name_ar": "طماطم",
     "name_en": "Tomato",
-    "keywords": ["tomate", "maticha", "طماطم", "مطيشة"],
+    "keywords": [
+      "tomate",
+      "maticha",
+      "طماطم",
+      "مطيشة"
+    ],
     "category": "Nourriture",
     "icon": "Apple"
   },
@@ -660,7 +817,12 @@
     "name_fr": "Ail",
     "name_ar": "ثوم",
     "name_en": "Garlic",
-    "keywords": ["ail", "touma", "ثوم", "تومة"],
+    "keywords": [
+      "ail",
+      "touma",
+      "ثوم",
+      "تومة"
+    ],
     "category": "Nourriture",
     "icon": "Droplet"
   },
@@ -669,7 +831,11 @@
     "name_fr": "Menthe",
     "name_ar": "نعناع",
     "name_en": "Mint",
-    "keywords": ["menthe", "na3na3", "نعناع"],
+    "keywords": [
+      "menthe",
+      "na3na3",
+      "نعناع"
+    ],
     "category": "Nourriture",
     "icon": "Leaf"
   },
@@ -678,7 +844,12 @@
     "name_fr": "Olives",
     "name_ar": "زيتون",
     "name_en": "Olives",
-    "keywords": ["olives", "zaitoun", "zitoon", "زيتون"],
+    "keywords": [
+      "olives",
+      "zaitoun",
+      "zitoon",
+      "زيتون"
+    ],
     "category": "Nourriture",
     "icon": "Circle"
   },
@@ -687,7 +858,12 @@
     "name_fr": "Dattes",
     "name_ar": "تمر",
     "name_en": "Dates",
-    "keywords": ["dattes", "tmar", "medjool", "تمر"],
+    "keywords": [
+      "dattes",
+      "tmar",
+      "medjool",
+      "تمر"
+    ],
     "category": "Nourriture",
     "icon": "Nut"
   },
@@ -696,7 +872,11 @@
     "name_fr": "Amandes",
     "name_ar": "لوز",
     "name_en": "Almonds",
-    "keywords": ["amandes", "louz", "لوز"],
+    "keywords": [
+      "amandes",
+      "louz",
+      "لوز"
+    ],
     "category": "Nourriture",
     "icon": "Nut"
   },
@@ -705,7 +885,12 @@
     "name_fr": "Noix",
     "name_ar": "جوز",
     "name_en": "Walnuts",
-    "keywords": ["noix", "garga3", "جوز", "كركاع"],
+    "keywords": [
+      "noix",
+      "garga3",
+      "جوز",
+      "كركاع"
+    ],
     "category": "Nourriture",
     "icon": "Nut"
   },
@@ -732,7 +917,12 @@
     "name_fr": "Gel douche",
     "name_ar": "جل استحمام",
     "name_en": "Shower gel",
-    "keywords": ["gel douche", "ushuaia", "tahiti", "جل استحمام"],
+    "keywords": [
+      "gel douche",
+      "ushuaia",
+      "tahiti",
+      "جل استحمام"
+    ],
     "category": "Sanitaire",
     "icon": "Droplet"
   },
@@ -741,7 +931,15 @@
     "name_fr": "Savon",
     "name_ar": "صابون",
     "name_en": "Soap bar",
-    "keywords": ["savon", "soap", "dove", "taous", "صابون", "طاووس", "دوف"],
+    "keywords": [
+      "savon",
+      "soap",
+      "dove",
+      "taous",
+      "صابون",
+      "طاووس",
+      "دوف"
+    ],
     "category": "Sanitaire",
     "icon": "Box"
   },
@@ -750,7 +948,11 @@
     "name_fr": "Savon noir",
     "name_ar": "صابون بلدي",
     "name_en": "Black soap",
-    "keywords": ["savon noir", "saboun beldi", "صابون بلدي"],
+    "keywords": [
+      "savon noir",
+      "saboun beldi",
+      "صابون بلدي"
+    ],
     "category": "Sanitaire",
     "icon": "Circle"
   },
@@ -759,7 +961,13 @@
     "name_fr": "Dentifrice",
     "name_ar": "معجون أسنان",
     "name_en": "Toothpaste",
-    "keywords": ["dentifrice", "signal", "colgate", "معجون أسنان", "سينيال"],
+    "keywords": [
+      "dentifrice",
+      "signal",
+      "colgate",
+      "معجون أسنان",
+      "سينيال"
+    ],
     "category": "Sanitaire",
     "icon": "Smile"
   },
@@ -768,7 +976,12 @@
     "name_fr": "Brosse à dents",
     "name_ar": "فرشاة أسنان",
     "name_en": "Toothbrush",
-    "keywords": ["brosse à dents", "toothbrush", "فرشاة أسنان", "شيتة سنان"],
+    "keywords": [
+      "brosse à dents",
+      "toothbrush",
+      "فرشاة أسنان",
+      "شيتة سنان"
+    ],
     "category": "Sanitaire",
     "icon": "Brush"
   },
@@ -777,7 +990,14 @@
     "name_fr": "Déodorant",
     "name_ar": "مزيل عرق",
     "name_en": "Deodorant",
-    "keywords": ["déodorant", "rexona", "axe", "nivea", "ديودوران", "مزيل عرق"],
+    "keywords": [
+      "déodorant",
+      "rexona",
+      "axe",
+      "nivea",
+      "ديودوران",
+      "مزيل عرق"
+    ],
     "category": "Sanitaire",
     "icon": "Wind"
   },
@@ -786,7 +1006,14 @@
     "name_fr": "Parfum",
     "name_ar": "عطر",
     "name_en": "Perfume",
-    "keywords": ["parfum", "eau de toilette", "perfume", "riha", "عطر", "ريحة"],
+    "keywords": [
+      "parfum",
+      "eau de toilette",
+      "perfume",
+      "riha",
+      "عطر",
+      "ريحة"
+    ],
     "category": "Sanitaire",
     "icon": "Sparkles"
   },
@@ -795,7 +1022,13 @@
     "name_fr": "Rasoir",
     "name_ar": "شفرة حلاقة",
     "name_en": "Razor",
-    "keywords": ["rasoir", "gillette", "bic", "شفرة", "ماكينة حلاقة"],
+    "keywords": [
+      "rasoir",
+      "gillette",
+      "bic",
+      "شفرة",
+      "ماكينة حلاقة"
+    ],
     "category": "Sanitaire",
     "icon": "Scissors"
   },
@@ -804,7 +1037,12 @@
     "name_fr": "Mousse à raser",
     "name_ar": "رغوة حلاقة",
     "name_en": "Shaving foam",
-    "keywords": ["mousse à raser", "mousse gillette", "رغوة", "موس حلاقة"],
+    "keywords": [
+      "mousse à raser",
+      "mousse gillette",
+      "رغوة",
+      "موس حلاقة"
+    ],
     "category": "Sanitaire",
     "icon": "Cloud"
   },
@@ -813,7 +1051,14 @@
     "name_fr": "Serviettes hygiéniques",
     "name_ar": "فوط صحية",
     "name_en": "Sanitary pads",
-    "keywords": ["serviette", "always", "nana", "mia", "فوط صحية", "اولويز"],
+    "keywords": [
+      "serviette",
+      "always",
+      "nana",
+      "mia",
+      "فوط صحية",
+      "اولويز"
+    ],
     "category": "Sanitaire",
     "icon": "Shield"
   },
@@ -840,7 +1085,12 @@
     "name_fr": "Lingettes bébé",
     "name_ar": "مناديل مبللة",
     "name_en": "Baby wipes",
-    "keywords": ["lingettes", "wipes", "مناديل", "لينجيت"],
+    "keywords": [
+      "lingettes",
+      "wipes",
+      "مناديل",
+      "لينجيت"
+    ],
     "category": "Sanitaire",
     "icon": "Square"
   },
@@ -863,7 +1113,13 @@
     "name_fr": "Mouchoirs",
     "name_ar": "مناديل ورقية",
     "name_en": "Tissues",
-    "keywords": ["mouchoirs", "kleenex", "tempo", "مناديل", "كلينيكس"],
+    "keywords": [
+      "mouchoirs",
+      "kleenex",
+      "tempo",
+      "مناديل",
+      "كلينيكس"
+    ],
     "category": "Sanitaire",
     "icon": "Square"
   },
@@ -872,7 +1128,12 @@
     "name_fr": "Coton tige",
     "name_ar": "قطن أذن",
     "name_en": "Cotton swab",
-    "keywords": ["coton tige", "q-tips", "قطن", "كوطون تيج"],
+    "keywords": [
+      "coton tige",
+      "q-tips",
+      "قطن",
+      "كوطون تيج"
+    ],
     "category": "Sanitaire",
     "icon": "MoreHorizontal"
   },
@@ -899,7 +1160,11 @@
     "name_fr": "Lessive liquide",
     "name_ar": "سائل غسيل",
     "name_en": "Liquid detergent",
-    "keywords": ["lessive liquide", "ariel liquide", "سائل غسيل"],
+    "keywords": [
+      "lessive liquide",
+      "ariel liquide",
+      "سائل غسيل"
+    ],
     "category": "Sanitaire",
     "icon": "Droplets"
   },
@@ -908,7 +1173,12 @@
     "name_fr": "Adoucissant",
     "name_ar": "معطر ملابس",
     "name_en": "Fabric softener",
-    "keywords": ["adoucissant", "soupline", "معطر", "سوبلين"],
+    "keywords": [
+      "adoucissant",
+      "soupline",
+      "معطر",
+      "سوبلين"
+    ],
     "category": "Sanitaire",
     "icon": "Feather"
   },
@@ -935,7 +1205,12 @@
     "name_fr": "Eau de Javel",
     "name_ar": "ماء جافيل",
     "name_en": "Bleach",
-    "keywords": ["javel", "eau de javel", "la croix", "جافيل"],
+    "keywords": [
+      "javel",
+      "eau de javel",
+      "la croix",
+      "جافيل"
+    ],
     "category": "Sanitaire",
     "icon": "Droplet"
   },
@@ -944,7 +1219,13 @@
     "name_fr": "Nettoyant sol",
     "name_ar": "منظف أرضيات",
     "name_en": "Floor cleaner",
-    "keywords": ["sanicrio", "sanicroix", "nettoyant sol", "سانيكروا", "منظف"],
+    "keywords": [
+      "sanicrio",
+      "sanicroix",
+      "nettoyant sol",
+      "سانيكروا",
+      "منظف"
+    ],
     "category": "Sanitaire",
     "icon": "Sparkles"
   },
@@ -953,7 +1234,11 @@
     "name_fr": "Nettoyant vitres",
     "name_ar": "منظف زجاج",
     "name_en": "Glass cleaner",
-    "keywords": ["lave vitre", "glassex", "منظف زجاج"],
+    "keywords": [
+      "lave vitre",
+      "glassex",
+      "منظف زجاج"
+    ],
     "category": "Sanitaire",
     "icon": "SprayCan"
   },
@@ -962,7 +1247,12 @@
     "name_fr": "Éponge",
     "name_ar": "إسفنجة",
     "name_en": "Sponge",
-    "keywords": ["éponge", "jikes", "بونجة", "جيكس"],
+    "keywords": [
+      "éponge",
+      "jikes",
+      "بونجة",
+      "جيكس"
+    ],
     "category": "Sanitaire",
     "icon": "Square"
   },
@@ -971,7 +1261,13 @@
     "name_fr": "Sacs poubelle",
     "name_ar": "أكياس قمامة",
     "name_en": "Trash bags",
-    "keywords": ["sacs poubelle", "mika", "أكياس", "ميكا", "زبل"],
+    "keywords": [
+      "sacs poubelle",
+      "mika",
+      "أكياس",
+      "ميكا",
+      "زبل"
+    ],
     "category": "Sanitaire",
     "icon": "Trash2"
   },
@@ -980,7 +1276,13 @@
     "name_fr": "Insecticide",
     "name_ar": "مبيد حشرات",
     "name_en": "Insecticide",
-    "keywords": ["insecticide", "baygon", "pif paf", "مبيد", "بايغون"],
+    "keywords": [
+      "insecticide",
+      "baygon",
+      "pif paf",
+      "مبيد",
+      "بايغون"
+    ],
     "category": "Sanitaire",
     "icon": "Bug"
   },
@@ -1005,7 +1307,12 @@
     "name_fr": "Pharmacie",
     "name_ar": "صيدلية",
     "name_en": "Pharmacy",
-    "keywords": ["pharmacie", "ordonnance", "صيدلية", "فرماسيان"],
+    "keywords": [
+      "pharmacie",
+      "ordonnance",
+      "صيدلية",
+      "فرماسيان"
+    ],
     "category": "Sanitaire",
     "icon": "Crosshair"
   },
@@ -1048,7 +1355,12 @@
     "name_fr": "Grand Taxi",
     "name_ar": "طاكسي كبير",
     "name_en": "Grand Taxi",
-    "keywords": ["grand taxi", "taxi blanc", "taxi kbir", "طاكسي كبير"],
+    "keywords": [
+      "grand taxi",
+      "taxi blanc",
+      "taxi kbir",
+      "طاكسي كبير"
+    ],
     "category": "Transport",
     "icon": "Car"
   },
@@ -1057,16 +1369,26 @@
     "name_fr": "Bus",
     "name_ar": "حافلة",
     "name_en": "Bus",
-    "keywords": ["bus", "alsa", "tobis", "طوبيس", "حافلة"],
+    "keywords": [
+      "bus",
+      "alsa",
+      "tobis",
+      "طوبيس",
+      "حافلة"
+    ],
     "category": "Transport",
     "icon": "Bus"
   },
   {
     "id": "tramway",
     "name_fr": "Tramway",
-    "name_ar": "ترامواي",
+    "name_ar": "طرام",
     "name_en": "Tram",
-    "keywords": ["tramway", "tram", "ترام", "طرامواي"],
+    "keywords": [
+      "tramway",
+      "tram",
+      "طرام"
+    ],
     "category": "Transport",
     "icon": "TrainFront"
   },
@@ -1075,7 +1397,14 @@
     "name_fr": "Train (ONCF)",
     "name_ar": "قطار",
     "name_en": "Train",
-    "keywords": ["train", "oncf", "tgv", "alboraq", "قطار", "تران"],
+    "keywords": [
+      "train",
+      "oncf",
+      "tgv",
+      "alboraq",
+      "قطار",
+      "تران"
+    ],
     "category": "Transport",
     "icon": "Train"
   },
@@ -1084,7 +1413,12 @@
     "name_fr": "Lavage Auto",
     "name_ar": "غسيل سيارات",
     "name_en": "Car wash",
-    "keywords": ["lavage", "lavage auto", "غسيل سيارات", "لافاج"],
+    "keywords": [
+      "lavage",
+      "lavage auto",
+      "غسيل سيارات",
+      "لافاج"
+    ],
     "category": "Transport",
     "icon": "Waves"
   },
@@ -1093,7 +1427,13 @@
     "name_fr": "Parking",
     "name_ar": "موقف سيارات",
     "name_en": "Parking",
-    "keywords": ["parking", "barcking", "guardien", "موقف سيارات", "باركينك"],
+    "keywords": [
+      "parking",
+      "barcking",
+      "guardien",
+      "موقف سيارات",
+      "باركينك"
+    ],
     "category": "Transport",
     "icon": "ParkingSquare"
   },
@@ -1102,7 +1442,13 @@
     "name_fr": "Péage",
     "name_ar": "محطة أداء",
     "name_en": "Toll booth",
-    "keywords": ["péage", "autoroute", "jawaz", "محطة أداء", "لوطوروت"],
+    "keywords": [
+      "péage",
+      "autoroute",
+      "jawaz",
+      "محطة أداء",
+      "لوطوروت"
+    ],
     "category": "Transport",
     "icon": "Ticket"
   },
@@ -1201,7 +1547,12 @@
     "name_fr": "Loyer",
     "name_ar": "كراء",
     "name_en": "Rent",
-    "keywords": ["loyer", "kraya", "كراء", "كرا"],
+    "keywords": [
+      "loyer",
+      "kraya",
+      "كراء",
+      "كرا"
+    ],
     "category": "Logement",
     "icon": "Home"
   },
@@ -1210,7 +1561,10 @@
     "name_fr": "Syndic",
     "name_ar": "سانديك",
     "name_en": "Syndic",
-    "keywords": ["syndic", "سانديك"],
+    "keywords": [
+      "syndic",
+      "سانديك"
+    ],
     "category": "Logement",
     "icon": "Building"
   },
@@ -1270,7 +1624,11 @@
     "name_fr": "Produits Bim",
     "name_ar": "بيم",
     "name_en": "Bim products",
-    "keywords": ["bim", "b.i.m", "بيم"],
+    "keywords": [
+      "bim",
+      "b.i.m",
+      "بيم"
+    ],
     "category": "Shopping",
     "icon": "ShoppingCart"
   },
@@ -1296,7 +1654,12 @@
     "name_fr": "Boulangerie",
     "name_ar": "مخبزة",
     "name_en": "Bakery",
-    "keywords": ["boulangerie", "pâtisserie", "مخبزة", "باتيسري"],
+    "keywords": [
+      "boulangerie",
+      "pâtisserie",
+      "مخبزة",
+      "باتيسري"
+    ],
     "category": "Nourriture",
     "icon": "Cake"
   },
@@ -1305,7 +1668,13 @@
     "name_fr": "Boucherie",
     "name_ar": "جزار",
     "name_en": "Butcher",
-    "keywords": ["boucherie", "gzar", "gazzar", "جزار", "كزار"],
+    "keywords": [
+      "boucherie",
+      "gzar",
+      "gazzar",
+      "جزار",
+      "كزار"
+    ],
     "category": "Nourriture",
     "icon": "Beef"
   },
@@ -1314,7 +1683,13 @@
     "name_fr": "Café (Sortie)",
     "name_ar": "مقهى",
     "name_en": "Cafe output",
-    "keywords": ["café terrasse", "qahwa", "sortie café", "مقهى", "قهوة"],
+    "keywords": [
+      "café terrasse",
+      "qahwa",
+      "sortie café",
+      "مقهى",
+      "قهوة"
+    ],
     "category": "Loisirs",
     "icon": "Coffee"
   },
@@ -1342,7 +1717,13 @@
     "name_fr": "Cinéma",
     "name_ar": "سينما",
     "name_en": "Cinema",
-    "keywords": ["cinéma", "megarama", "film", "سينما", "فيلم"],
+    "keywords": [
+      "cinéma",
+      "megarama",
+      "film",
+      "سينما",
+      "فيلم"
+    ],
     "category": "Loisirs",
     "icon": "Film"
   },
@@ -1367,7 +1748,12 @@
     "name_fr": "Coiffeur / Barbier",
     "name_ar": "حلاق",
     "name_en": "Barber",
-    "keywords": ["coiffeur", "barbier", "hallaq", "حلاق"],
+    "keywords": [
+      "coiffeur",
+      "barbier",
+      "hallaq",
+      "حلاق"
+    ],
     "category": "Sanitaire",
     "icon": "Scissors"
   },
@@ -1375,10 +1761,14 @@
     "id": "hammam",
     "name_fr": "Hammam",
     "name_ar": "حمام",
-    "name_en": "Hammam",
-    "keywords": ["hammam", "bain maure", "حمام"],
+    "name_en": "Moroccan Bath",
+    "keywords": [
+      "hammam",
+      "حمام",
+      "spa"
+    ],
     "category": "Sanitaire",
-    "icon": "Waves"
+    "icon": "Bath"
   },
   {
     "id": "cigarette",
@@ -1403,7 +1793,13 @@
     "name_fr": "Aumône / Sadaqa",
     "name_ar": "صدقة",
     "name_en": "Charity",
-    "keywords": ["sadaqa", "zakat", "aumône", "صدقة", "زكاة"],
+    "keywords": [
+      "sadaqa",
+      "zakat",
+      "aumône",
+      "صدقة",
+      "زكاة"
+    ],
     "category": "Autres",
     "icon": "Heart"
   },
@@ -1412,7 +1808,13 @@
     "name_fr": "Pourboire",
     "name_ar": "بقشيش",
     "name_en": "Tips",
-    "keywords": ["pourboire", "kahwa", "gardien", "بقشيش", "قهوة"],
+    "keywords": [
+      "pourboire",
+      "kahwa",
+      "gardien",
+      "بقشيش",
+      "قهوة"
+    ],
     "category": "Autres",
     "icon": "Coins"
   },
@@ -1421,7 +1823,11 @@
     "name_fr": "Javel parfumé",
     "name_ar": "جافيل معطر",
     "name_en": "Scented bleach",
-    "keywords": ["javel ace", "javel parfumé", "جافيل معطر"],
+    "keywords": [
+      "javel ace",
+      "javel parfumé",
+      "جافيل معطر"
+    ],
     "category": "Sanitaire",
     "icon": "Droplet"
   },
@@ -1430,7 +1836,11 @@
     "name_fr": "Gratte-éponge",
     "name_ar": "جيكس",
     "name_en": "Scrub sponge",
-    "keywords": ["spontex", "éponge gratte", "جيكس"],
+    "keywords": [
+      "spontex",
+      "éponge gratte",
+      "جيكس"
+    ],
     "category": "Sanitaire",
     "icon": "Square"
   },
@@ -1439,7 +1849,12 @@
     "name_fr": "Film alimentaire",
     "name_ar": "سلوفان",
     "name_en": "Plastic wrap",
-    "keywords": ["film", "cellophane", "slofane", "سلوفان"],
+    "keywords": [
+      "film",
+      "cellophane",
+      "slofane",
+      "سلوفان"
+    ],
     "category": "Sanitaire",
     "icon": "Package"
   },
@@ -1448,7 +1863,11 @@
     "name_fr": "Papier aluminium",
     "name_ar": "ألمنيوم",
     "name_en": "Aluminum foil",
-    "keywords": ["aluminium", "papier alu", "المنيوم"],
+    "keywords": [
+      "aluminium",
+      "papier alu",
+      "المنيوم"
+    ],
     "category": "Sanitaire",
     "icon": "Package"
   },
@@ -1457,7 +1876,11 @@
     "name_fr": "Poubelle",
     "name_ar": "سلة مهملات",
     "name_en": "Trash bin",
-    "keywords": ["poubelle", "سلة مهملات", "طرو زبل"],
+    "keywords": [
+      "poubelle",
+      "سلة مهملات",
+      "طرو زبل"
+    ],
     "category": "Logement",
     "icon": "Trash2"
   },
@@ -1466,7 +1889,13 @@
     "name_fr": "Ampoule",
     "name_ar": "مصباح",
     "name_en": "Lightbulb",
-    "keywords": ["ampoule", "lamp", "bola", "مصباح", "بولة"],
+    "keywords": [
+      "ampoule",
+      "lamp",
+      "bola",
+      "مصباح",
+      "بولة"
+    ],
     "category": "Logement",
     "icon": "Lightbulb"
   },
@@ -1475,7 +1904,13 @@
     "name_fr": "Piles",
     "name_ar": "بطاريات",
     "name_en": "Batteries",
-    "keywords": ["piles", "battery", "hjar", "بطاريات", "حجر"],
+    "keywords": [
+      "piles",
+      "battery",
+      "hjar",
+      "بطاريات",
+      "حجر"
+    ],
     "category": "Logement",
     "icon": "Battery"
   },
@@ -1484,7 +1919,12 @@
     "name_fr": "Allumettes",
     "name_ar": "كبريت",
     "name_en": "Matches",
-    "keywords": ["allumettes", "waqid", "كبريت", "وقيد"],
+    "keywords": [
+      "allumettes",
+      "waqid",
+      "كبريت",
+      "وقيد"
+    ],
     "category": "Logement",
     "icon": "Flame"
   },
@@ -1493,7 +1933,12 @@
     "name_fr": "Briquet",
     "name_ar": "ولاعة",
     "name_en": "Lighter",
-    "keywords": ["briquet", "brika", "ولاعة", "بريكة"],
+    "keywords": [
+      "briquet",
+      "brika",
+      "ولاعة",
+      "بريكة"
+    ],
     "category": "Loisirs",
     "icon": "Flame"
   },
@@ -1502,7 +1947,10 @@
     "name_fr": "Pâte de dattes",
     "name_ar": "عجينة التمر",
     "name_en": "Dates paste",
-    "keywords": ["pâte de datte", "عجينة التمر"],
+    "keywords": [
+      "pâte de datte",
+      "عجينة التمر"
+    ],
     "category": "Nourriture",
     "icon": "Box"
   },
@@ -1511,7 +1959,12 @@
     "name_fr": "Margarine",
     "name_ar": "مارغرين",
     "name_en": "Margarine",
-    "keywords": ["magarine", "lilia", "مارغرين", "ليليا"],
+    "keywords": [
+      "magarine",
+      "lilia",
+      "مارغرين",
+      "ليليا"
+    ],
     "category": "Nourriture",
     "icon": "Box"
   },
@@ -1520,7 +1973,13 @@
     "name_fr": "Céréales",
     "name_ar": "حبوب",
     "name_en": "Cereal",
-    "keywords": ["céréales", "kelloggs", "chocapic", "حبوب", "سيريال"],
+    "keywords": [
+      "céréales",
+      "kelloggs",
+      "chocapic",
+      "حبوب",
+      "سيريال"
+    ],
     "category": "Nourriture",
     "icon": "Wheat"
   },
@@ -1529,7 +1988,13 @@
     "name_fr": "Chocolat en poudre",
     "name_ar": "كاكاو",
     "name_en": "Chocolate powder",
-    "keywords": ["chocolat poudre", "caobel", "nesquik", "كاكاو", "كاوبيل"],
+    "keywords": [
+      "chocolat poudre",
+      "caobel",
+      "nesquik",
+      "كاكاو",
+      "كاوبيل"
+    ],
     "category": "Nourriture",
     "icon": "Coffee"
   },
@@ -1538,7 +2003,12 @@
     "name_fr": "Sirop",
     "name_ar": "سيرو",
     "name_en": "Syrup",
-    "keywords": ["sirop", "grenadine", "menthe", "سيرو"],
+    "keywords": [
+      "sirop",
+      "grenadine",
+      "menthe",
+      "سيرو"
+    ],
     "category": "Nourriture",
     "icon": "Bottle"
   },
@@ -1547,7 +2017,13 @@
     "name_fr": "Eau gazeuse",
     "name_ar": "ماء غازي",
     "name_en": "Sparkling water",
-    "keywords": ["eau gazeuse", "oulmes", "ain atlas", "ماء غازي", "والماس"],
+    "keywords": [
+      "eau gazeuse",
+      "oulmes",
+      "ain atlas",
+      "ماء غازي",
+      "والماس"
+    ],
     "category": "Nourriture",
     "icon": "GlassWater"
   },
@@ -1556,7 +2032,11 @@
     "name_fr": "Harissa",
     "name_ar": "هريسة",
     "name_en": "Harissa",
-    "keywords": ["harissa", "piment", "هريسة"],
+    "keywords": [
+      "harissa",
+      "piment",
+      "هريسة"
+    ],
     "category": "Nourriture",
     "icon": "Flame"
   },
@@ -1565,7 +2045,11 @@
     "name_fr": "Cumin",
     "name_ar": "كمون",
     "name_en": "Cumin",
-    "keywords": ["cumin", "kamoun", "كمون"],
+    "keywords": [
+      "cumin",
+      "kamoun",
+      "كمون"
+    ],
     "category": "Nourriture",
     "icon": "Circle"
   },
@@ -1574,7 +2058,12 @@
     "name_fr": "Poivre",
     "name_ar": "فلفل أسود",
     "name_en": "Pepper",
-    "keywords": ["poivre", "ibzar", "فلفل أسود", "ابزار"],
+    "keywords": [
+      "poivre",
+      "ibzar",
+      "فلفل أسود",
+      "ابزار"
+    ],
     "category": "Nourriture",
     "icon": "Circle"
   },
@@ -1583,7 +2072,12 @@
     "name_fr": "Gingembre",
     "name_ar": "زنجبيل",
     "name_en": "Ginger",
-    "keywords": ["gingembre", "skinjbir", "زنجبيل", "سكينجبير"],
+    "keywords": [
+      "gingembre",
+      "skinjbir",
+      "زنجبيل",
+      "سكينجبير"
+    ],
     "category": "Nourriture",
     "icon": "Circle"
   },
@@ -1592,7 +2086,12 @@
     "name_fr": "Curcuma",
     "name_ar": "كركم",
     "name_en": "Curcuma",
-    "keywords": ["curcuma", "kharkoum", "كركم", "خرقوم"],
+    "keywords": [
+      "curcuma",
+      "kharkoum",
+      "كركم",
+      "خرقوم"
+    ],
     "category": "Nourriture",
     "icon": "Circle"
   },
@@ -1601,7 +2100,12 @@
     "name_fr": "Maïs en conserve",
     "name_ar": "ذرة معلبة",
     "name_en": "Canned corn",
-    "keywords": ["maïs", "corn", "ذرة", "ماييس"],
+    "keywords": [
+      "maïs",
+      "corn",
+      "ذرة",
+      "ماييس"
+    ],
     "category": "Nourriture",
     "icon": "Circle"
   },
@@ -1610,7 +2114,12 @@
     "name_fr": "Petits pois en conserve",
     "name_ar": "بازلاء",
     "name_en": "Canned peas",
-    "keywords": ["petits pois", "jelbana", "بازلاء", "جلبانة"],
+    "keywords": [
+      "petits pois",
+      "jelbana",
+      "بازلاء",
+      "جلبانة"
+    ],
     "category": "Nourriture",
     "icon": "Circle"
   },
@@ -1619,7 +2128,11 @@
     "name_fr": "Lentilles",
     "name_ar": "عدس",
     "name_en": "Lentils",
-    "keywords": ["lentilles", "3dess", "عدس"],
+    "keywords": [
+      "lentilles",
+      "3dess",
+      "عدس"
+    ],
     "category": "Nourriture",
     "icon": "Circle"
   },
@@ -1628,7 +2141,11 @@
     "name_fr": "Pois chiches",
     "name_ar": "حمص",
     "name_en": "Chickpeas",
-    "keywords": ["pois chiches", "hommos", "حمص"],
+    "keywords": [
+      "pois chiches",
+      "hommos",
+      "حمص"
+    ],
     "category": "Nourriture",
     "icon": "Circle"
   },
@@ -1637,7 +2154,12 @@
     "name_fr": "Haricots",
     "name_ar": "فاصوليا",
     "name_en": "Beans",
-    "keywords": ["haricots", "loubia", "فاصوليا", "لوبيا"],
+    "keywords": [
+      "haricots",
+      "loubia",
+      "فاصوليا",
+      "لوبيا"
+    ],
     "category": "Nourriture",
     "icon": "Circle"
   },
@@ -1646,7 +2168,12 @@
     "name_fr": "Viande de bœuf",
     "name_ar": "لحم بقر",
     "name_en": "Beef meat",
-    "keywords": ["bœuf", "bagri", "لحم بقر", "بكري"],
+    "keywords": [
+      "bœuf",
+      "bagri",
+      "لحم بقر",
+      "بكري"
+    ],
     "category": "Nourriture",
     "icon": "Beef"
   },
@@ -1655,7 +2182,12 @@
     "name_fr": "Viande d'agneau",
     "name_ar": "لحم غنم",
     "name_en": "Lamb meat",
-    "keywords": ["agneau", "rhanmi", "لحم غنم", "غنمي"],
+    "keywords": [
+      "agneau",
+      "rhanmi",
+      "لحم غنم",
+      "غنمي"
+    ],
     "category": "Nourriture",
     "icon": "Beef"
   },
@@ -1664,7 +2196,12 @@
     "name_fr": "Dinde",
     "name_ar": "ديك رومي",
     "name_en": "Turkey meat",
-    "keywords": ["dinde", "ladand", "بيبى", "لاداند"],
+    "keywords": [
+      "dinde",
+      "ladand",
+      "بيبى",
+      "لاداند"
+    ],
     "category": "Nourriture",
     "icon": "Drumstick"
   },
@@ -1673,7 +2210,12 @@
     "name_fr": "Mortadelle",
     "name_ar": "كاشير",
     "name_en": "Mortadella",
-    "keywords": ["mortadelle", "kashir", "كاشير", "مورتاديلا"],
+    "keywords": [
+      "mortadelle",
+      "kashir",
+      "كاشير",
+      "مورتاديلا"
+    ],
     "category": "Nourriture",
     "icon": "Circle"
   },
@@ -1682,7 +2224,14 @@
     "name_fr": "Glace",
     "name_ar": "مثلجات",
     "name_en": "Ice cream",
-    "keywords": ["glace", "ice cream", "magnum", "polo", "مثلجات", "كلاص"],
+    "keywords": [
+      "glace",
+      "ice cream",
+      "magnum",
+      "polo",
+      "مثلجات",
+      "كلاص"
+    ],
     "category": "Nourriture",
     "icon": "Popsicle"
   },
@@ -1691,7 +2240,13 @@
     "name_fr": "Bonbons",
     "name_ar": "حلوى",
     "name_en": "Candies",
-    "keywords": ["bonbons", "halwa", "fanid", "حلوى", "فنيد"],
+    "keywords": [
+      "bonbons",
+      "halwa",
+      "fanid",
+      "حلوى",
+      "فنيد"
+    ],
     "category": "Nourriture",
     "icon": "Candy"
   },
@@ -1700,7 +2255,13 @@
     "name_fr": "Chewing-gum",
     "name_ar": "علكة",
     "name_en": "Chewing gum",
-    "keywords": ["chewing-gum", "meska", "hollywood", "علكة", "مسكة"],
+    "keywords": [
+      "chewing-gum",
+      "meska",
+      "hollywood",
+      "علكة",
+      "مسكة"
+    ],
     "category": "Nourriture",
     "icon": "Smile"
   },
@@ -1709,7 +2270,10 @@
     "name_fr": "Pringles",
     "name_ar": "برينجلز",
     "name_en": "Pringles",
-    "keywords": ["pringles", "برينجلز"],
+    "keywords": [
+      "pringles",
+      "برينجلز"
+    ],
     "category": "Nourriture",
     "icon": "Cylinder"
   },
@@ -1733,7 +2297,12 @@
     "name_fr": "Gel coiffant",
     "name_ar": "جل شعر",
     "name_en": "Hair gel",
-    "keywords": ["gel", "hair", "جل شعر", "جيل"],
+    "keywords": [
+      "gel",
+      "hair",
+      "جل شعر",
+      "جيل"
+    ],
     "category": "Sanitaire",
     "icon": "Wind"
   },
@@ -1742,7 +2311,13 @@
     "name_fr": "Crème corps",
     "name_ar": "كريم جسم",
     "name_en": "Body lotion",
-    "keywords": ["lotion", "crème", "nivea", "كريم", "بومادا"],
+    "keywords": [
+      "lotion",
+      "crème",
+      "nivea",
+      "كريم",
+      "بومادا"
+    ],
     "category": "Sanitaire",
     "icon": "Droplet"
   },
@@ -1751,7 +2326,10 @@
     "name_fr": "Couches",
     "name_ar": "حفاظات",
     "name_en": "Diapers",
-    "keywords": ["couches", "ليكوش"],
+    "keywords": [
+      "couches",
+      "ليكوش"
+    ],
     "category": "Sanitaire",
     "icon": "Baby"
   },
@@ -1760,7 +2338,11 @@
     "name_fr": "Cahier",
     "name_ar": "دفتر",
     "name_en": "Notebook",
-    "keywords": ["cahier", "daftar", "دفتر"],
+    "keywords": [
+      "cahier",
+      "daftar",
+      "دفتر"
+    ],
     "category": "Devoir",
     "icon": "Book"
   },
@@ -1769,7 +2351,13 @@
     "name_fr": "Stylos",
     "name_ar": "أقلام",
     "name_en": "Pens",
-    "keywords": ["stylo", "bic", "pen", "ستيلو", "أقلام"],
+    "keywords": [
+      "stylo",
+      "bic",
+      "pen",
+      "ستيلو",
+      "أقلام"
+    ],
     "category": "Devoir",
     "icon": "Pen"
   },
@@ -1778,7 +2366,12 @@
     "name_fr": "Cartable",
     "name_ar": "محفظة",
     "name_en": "School bag",
-    "keywords": ["cartable", "shkara", "محفظة", "شكارة"],
+    "keywords": [
+      "cartable",
+      "shkara",
+      "محفظة",
+      "شكارة"
+    ],
     "category": "Devoir",
     "icon": "Briefcase"
   },
@@ -1787,7 +2380,12 @@
     "name_fr": "Livres",
     "name_ar": "كتب",
     "name_en": "Books",
-    "keywords": ["livre", "ktab", "كتب", "كتاب"],
+    "keywords": [
+      "livre",
+      "ktab",
+      "كتب",
+      "كتاب"
+    ],
     "category": "Devoir",
     "icon": "BookOpen"
   },
@@ -1796,7 +2394,12 @@
     "name_fr": "Fournitures scolaires",
     "name_ar": "أدوات مدرسية",
     "name_en": "School supplies",
-    "keywords": ["fournitures", "scolaires", "أدوات", "مدرسية"],
+    "keywords": [
+      "fournitures",
+      "scolaires",
+      "أدوات",
+      "مدرسية"
+    ],
     "category": "Devoir",
     "icon": "Ruler"
   },
@@ -1805,7 +2408,12 @@
     "name_fr": "Jouets",
     "name_ar": "ألعاب",
     "name_en": "Toys",
-    "keywords": ["jouet", "lo3ba", "ألعاب", "لعبة"],
+    "keywords": [
+      "jouet",
+      "lo3ba",
+      "ألعاب",
+      "لعبة"
+    ],
     "category": "Loisirs",
     "icon": "Puzzle"
   },
@@ -1814,7 +2422,12 @@
     "name_fr": "Jeux vidéos",
     "name_ar": "ألعاب فيديو",
     "name_en": "Video games",
-    "keywords": ["jeux", "playstation", "ألعاب", "بلايستيشن"],
+    "keywords": [
+      "jeux",
+      "playstation",
+      "ألعاب",
+      "بلايستيشن"
+    ],
     "category": "Loisirs",
     "icon": "Gamepad"
   },
@@ -1823,7 +2436,13 @@
     "name_fr": "Equipement sport",
     "name_ar": "معدات رياضية",
     "name_en": "Sport equipment",
-    "keywords": ["sport", "ballon", "koora", "كرة", "رياضة"],
+    "keywords": [
+      "sport",
+      "ballon",
+      "koora",
+      "كرة",
+      "رياضة"
+    ],
     "category": "Loisirs",
     "icon": "Dumbbell"
   },
@@ -1832,7 +2451,14 @@
     "name_fr": "Plantes",
     "name_ar": "نباتات",
     "name_en": "Plants",
-    "keywords": ["plante", "fleur", "wrad", "نبات", "ورد", "محبق"],
+    "keywords": [
+      "plante",
+      "fleur",
+      "wrad",
+      "نبات",
+      "ورد",
+      "محبق"
+    ],
     "category": "Logement",
     "icon": "Flower"
   },
@@ -1841,7 +2467,12 @@
     "name_fr": "Décoration",
     "name_ar": "ديكور",
     "name_en": "Home decor",
-    "keywords": ["décor", "tableau", "dikor", "ديكور"],
+    "keywords": [
+      "décor",
+      "tableau",
+      "dikor",
+      "ديكور"
+    ],
     "category": "Logement",
     "icon": "Image"
   },
@@ -1850,7 +2481,13 @@
     "name_fr": "Meubles",
     "name_ar": "أثاث",
     "name_en": "Furniture",
-    "keywords": ["meuble", "canape", "salon", "أثاث", "صالون"],
+    "keywords": [
+      "meuble",
+      "canape",
+      "salon",
+      "أثاث",
+      "صالون"
+    ],
     "category": "Logement",
     "icon": "Armchair"
   },
@@ -1859,7 +2496,13 @@
     "name_fr": "Bricolage",
     "name_ar": "أدوات بناء",
     "name_en": "Hardware",
-    "keywords": ["bricolage", "droguerie", "مسامير", "بريكولاج", "دروكري"],
+    "keywords": [
+      "bricolage",
+      "droguerie",
+      "مسامير",
+      "بريكولاج",
+      "دروكري"
+    ],
     "category": "Logement",
     "icon": "Wrench"
   },
@@ -1868,7 +2511,13 @@
     "name_fr": "Entretien voiture",
     "name_ar": "صيانة سيارة",
     "name_en": "Car maintenance",
-    "keywords": ["vidange", "pneu", "pieces auto", "صيانة", "طوموبيل"],
+    "keywords": [
+      "vidange",
+      "pneu",
+      "pieces auto",
+      "صيانة",
+      "طوموبيل"
+    ],
     "category": "Transport",
     "icon": "Wrench"
   },
@@ -1877,7 +2526,13 @@
     "name_fr": "Médecin",
     "name_ar": "طبيب",
     "name_en": "Doctor",
-    "keywords": ["médecin", "docteur", "visite", "طبيب", "دكتور"],
+    "keywords": [
+      "médecin",
+      "docteur",
+      "visite",
+      "طبيب",
+      "دكتور"
+    ],
     "category": "Sanitaire",
     "icon": "Stethoscope"
   },
@@ -1886,7 +2541,13 @@
     "name_fr": "Hôpital / Clinique",
     "name_ar": "مستشفى",
     "name_en": "Hospital",
-    "keywords": ["hôpital", "clinique", "sbitar", "مستشفى", "سبيطار"],
+    "keywords": [
+      "hôpital",
+      "clinique",
+      "sbitar",
+      "مستشفى",
+      "سبيطار"
+    ],
     "category": "Sanitaire",
     "icon": "Hospital"
   },
@@ -1895,7 +2556,12 @@
     "name_fr": "Cadeau",
     "name_ar": "هدية",
     "name_en": "Gift",
-    "keywords": ["cadeau", "kado", "هدية", "كادو"],
+    "keywords": [
+      "cadeau",
+      "kado",
+      "هدية",
+      "كادو"
+    ],
     "category": "Autres",
     "icon": "Gift"
   },
@@ -1904,7 +2570,12 @@
     "name_fr": "Donation",
     "name_ar": "تبرع",
     "name_en": "Donation",
-    "keywords": ["don", "mousa3ada", "تبرع", "مساعدة"],
+    "keywords": [
+      "don",
+      "mousa3ada",
+      "تبرع",
+      "مساعدة"
+    ],
     "category": "Autres",
     "icon": "HeartHandshake"
   },
@@ -1913,7 +2584,14 @@
     "name_fr": "Nourriture animaux",
     "name_ar": "أكل حيوانات",
     "name_en": "Pet food",
-    "keywords": ["croquettes", "chat", "chien", "mackla", "أكل قطط", "كلب"],
+    "keywords": [
+      "croquettes",
+      "chat",
+      "chien",
+      "mackla",
+      "أكل قطط",
+      "كلب"
+    ],
     "category": "Autres",
     "icon": "Dog"
   },
@@ -1922,7 +2600,12 @@
     "name_fr": "Taxes",
     "name_ar": "ضرائب",
     "name_en": "Taxes",
-    "keywords": ["taxe", "dariba", "impôt", "ضريبة"],
+    "keywords": [
+      "taxe",
+      "dariba",
+      "impôt",
+      "ضريبة"
+    ],
     "category": "Logement",
     "icon": "Briefcase"
   },
@@ -1931,8 +2614,1497 @@
     "name_fr": "Assurance",
     "name_ar": "تأمين",
     "name_en": "Insurance",
-    "keywords": ["assurance", "lassurance", "تأمين", "لاسيرانس"],
+    "keywords": [
+      "assurance",
+      "lassurance",
+      "تأمين",
+      "لاسيرانس"
+    ],
     "category": "Logement",
     "icon": "ShieldCheck"
+  },
+  {
+    "id": "moroccan_tea",
+    "name_fr": "Thé marocain",
+    "name_ar": "أتاي",
+    "name_en": "Moroccan Tea",
+    "keywords": [
+      "atay",
+      "thé",
+      "atchay",
+      "نعناع",
+      "شاي",
+      "أتاي"
+    ],
+    "category": "Nourriture",
+    "icon": "CupSoda"
+  },
+  {
+    "id": "bimo_cookie",
+    "name_fr": "Bimo / Biscuits",
+    "name_ar": "بيمو",
+    "name_en": "Cookies",
+    "keywords": [
+      "bimo",
+      "biscuits",
+      "merendina",
+      "tonik",
+      "بيمو"
+    ],
+    "category": "Nourriture",
+    "icon": "Cookie"
+  },
+  {
+    "id": "msmen",
+    "name_fr": "Msemen",
+    "name_ar": "مسمن",
+    "name_en": "Msemen",
+    "keywords": [
+      "msemen",
+      "msmen",
+      "rghayef",
+      "مسمن",
+      "رغايف"
+    ],
+    "category": "Nourriture",
+    "icon": "Croissant"
+  },
+  {
+    "id": "baghrir",
+    "name_fr": "Baghrir",
+    "name_ar": "بغرير",
+    "name_en": "Baghrir",
+    "keywords": [
+      "baghrir",
+      "crepe",
+      "بغرير"
+    ],
+    "category": "Nourriture",
+    "icon": "CircleDot"
+  },
+  {
+    "id": "harira",
+    "name_fr": "Harira",
+    "name_ar": "حريرة",
+    "name_en": "Harira Soup",
+    "keywords": [
+      "harira",
+      "soupe",
+      "hrira",
+      "حريرة"
+    ],
+    "category": "Nourriture",
+    "icon": "Soup"
+  },
+  {
+    "id": "tajine",
+    "name_fr": "Tajine",
+    "name_ar": "طاجين",
+    "name_en": "Tajine",
+    "keywords": [
+      "tajine",
+      "tanjia",
+      "طاجين",
+      "طنجية"
+    ],
+    "category": "Nourriture",
+    "icon": "Utensils"
+  },
+  {
+    "id": "couscous",
+    "name_fr": "Couscous",
+    "name_ar": "كسكس",
+    "name_en": "Couscous",
+    "keywords": [
+      "couscous",
+      "ksksou",
+      "كسكس",
+      "سكسو"
+    ],
+    "category": "Nourriture",
+    "icon": "Wheat"
+  },
+  {
+    "id": "sfenj",
+    "name_fr": "Sfenj",
+    "name_ar": "سفنج",
+    "name_en": "Sfenj",
+    "keywords": [
+      "sfenj",
+      "beignet",
+      "سفنج"
+    ],
+    "category": "Nourriture",
+    "icon": "CircleDot"
+  },
+  {
+    "id": "zite_zitoune",
+    "name_fr": "Huile d'olive",
+    "name_ar": "زيت الزيتون",
+    "name_en": "Olive Oil",
+    "keywords": [
+      "zite",
+      "olive",
+      "zitoun",
+      "زيت",
+      "الزيتون"
+    ],
+    "category": "Nourriture",
+    "icon": "Droplet"
+  },
+  {
+    "id": "khobz",
+    "name_fr": "Pain marocain",
+    "name_ar": "خبز",
+    "name_en": "Bread",
+    "keywords": [
+      "khobz",
+      "pain",
+      "خبز",
+      "كومير"
+    ],
+    "category": "Nourriture",
+    "icon": "Wheat"
+  },
+  {
+    "id": "la_vache_qui_rit",
+    "name_fr": "Fromage Kiri/Vache qui rit",
+    "name_ar": "فرماج",
+    "name_en": "Cheese",
+    "keywords": [
+      "fromage",
+      "kiri",
+      "frmaj",
+      "فرماج"
+    ],
+    "category": "Nourriture",
+    "icon": "Cheese"
+  },
+  {
+    "id": "danoen",
+    "name_fr": "Yaourt Danone",
+    "name_ar": "دانـون",
+    "name_en": "Yogurt",
+    "keywords": [
+      "danone",
+      "yaourt",
+      "raibi",
+      "دانون",
+      "رايبي"
+    ],
+    "category": "Nourriture",
+    "icon": "Milk"
+  },
+  {
+    "id": "marjane_shopping",
+    "name_fr": "Courses Marjane",
+    "name_ar": "مرجان",
+    "name_en": "Marjane Groceries",
+    "keywords": [
+      "marjane",
+      "courses",
+      "مرجان",
+      "تقضية"
+    ],
+    "category": "Shopping",
+    "icon": "ShoppingCart"
+  },
+  {
+    "id": "bim_shopping",
+    "name_fr": "Courses Bim",
+    "name_ar": "بيم",
+    "name_en": "Bim Groceries",
+    "keywords": [
+      "bim",
+      "courses",
+      "بيم"
+    ],
+    "category": "Shopping",
+    "icon": "ShoppingCart"
+  },
+  {
+    "id": "carrefour_shopping",
+    "name_fr": "Courses Carrefour",
+    "name_ar": "كارفور",
+    "name_en": "Carrefour",
+    "keywords": [
+      "carrefour",
+      "كارفور"
+    ],
+    "category": "Shopping",
+    "icon": "ShoppingCart"
+  },
+  {
+    "id": "koulchi_b_5",
+    "name_fr": "Tout à 5 Dhs",
+    "name_ar": "كلشي بـ 5",
+    "name_en": "5 Dhs Shop",
+    "keywords": [
+      "5dh",
+      "5dhs",
+      "khamsa",
+      "خمسة"
+    ],
+    "category": "Shopping",
+    "icon": "Store"
+  },
+  {
+    "id": "taxi_sghir",
+    "name_fr": "Petit Taxi",
+    "name_ar": "طاكسي صغير",
+    "name_en": "Small Taxi",
+    "keywords": [
+      "taxi",
+      "petit taxi",
+      "طاكسي"
+    ],
+    "category": "Transport",
+    "icon": "CarTaxiFront"
+  },
+  {
+    "id": "taxi_kbir",
+    "name_fr": "Grand Taxi",
+    "name_ar": "طاكسي كبير",
+    "name_en": "Grand Taxi",
+    "keywords": [
+      "grand taxi",
+      "blasa",
+      "طاكسي كبير"
+    ],
+    "category": "Transport",
+    "icon": "CarTaxiFront"
+  },
+  {
+    "id": "yassir_indrive",
+    "name_fr": "VTC (InDrive, Yassir)",
+    "name_ar": "ياصيـر / إندرايف",
+    "name_en": "InDrive/Yassir",
+    "keywords": [
+      "indrive",
+      "yassir",
+      "careem",
+      "vtc",
+      "إندرايف",
+      "ياسير"
+    ],
+    "category": "Transport",
+    "icon": "Car"
+  },
+  {
+    "id": "oncf_train",
+    "name_fr": "Train ONCF / Al Boraq",
+    "name_ar": "قطار",
+    "name_en": "ONCF Train",
+    "keywords": [
+      "oncf",
+      "alboraq",
+      "train",
+      "tran",
+      "قطار",
+      "تران"
+    ],
+    "category": "Transport",
+    "icon": "TrainFront"
+  },
+  {
+    "id": "gazoil_afriquia",
+    "name_fr": "Gasoil Afriquia/Total",
+    "name_ar": "مازوط",
+    "name_en": "Diesel",
+    "keywords": [
+      "mazout",
+      "essence",
+      "essence",
+      "afriquia",
+      "total",
+      "مازوط",
+      "ليصانص",
+      "بنزين"
+    ],
+    "category": "Transport",
+    "icon": "Fuel"
+  },
+  {
+    "id": "kis_hammam",
+    "name_fr": "Gant de Hammam",
+    "name_ar": "كيس",
+    "name_en": "Hammam Glove",
+    "keywords": [
+      "kيس",
+      "kis",
+      "gant",
+      "كيس"
+    ],
+    "category": "Sanitaire",
+    "icon": "HandMetal"
+  },
+  {
+    "id": "savon_beldi",
+    "name_fr": "Savon Beldi",
+    "name_ar": "صابون بلدي",
+    "name_en": "Black Soap",
+    "keywords": [
+      "savon beldi",
+      "صابون بلدي"
+    ],
+    "category": "Sanitaire",
+    "icon": "Droplet"
+  },
+  {
+    "id": "coupe_cheveux_barber",
+    "name_fr": "Coiffeur",
+    "name_ar": "حلاق",
+    "name_en": "Barber",
+    "keywords": [
+      "hssana",
+      "coiffeur",
+      "barbier",
+      "حلاق",
+      "حسانة"
+    ],
+    "category": "Sanitaire",
+    "icon": "Scissors"
+  },
+  {
+    "id": "bota",
+    "name_fr": "Bouteille de Gaz",
+    "name_ar": "بوطاغاس",
+    "name_en": "Gas Bottle",
+    "keywords": [
+      "bota",
+      "gaz",
+      "بوطا",
+      "بوطاغاس"
+    ],
+    "category": "Logement",
+    "icon": "Cylinder"
+  },
+  {
+    "id": "facture_redal",
+    "name_fr": "Facture Redal/Lydec",
+    "name_ar": "فاتورة الماء والكهرباء",
+    "name_en": "Utility Bill",
+    "keywords": [
+      "redal",
+      "lydec",
+      "amendis",
+      "maa",
+      "dou",
+      "ماء",
+      "ضو",
+      "فاتورة"
+    ],
+    "category": "Logement",
+    "icon": "Lightbulb"
+  },
+  {
+    "id": "facture_iam",
+    "name_fr": "Facture Inwi/IAM",
+    "name_ar": "تعبئة",
+    "name_en": "Recharge / Phone Bill",
+    "keywords": [
+      "iam",
+      "inwi",
+      "orange",
+      "tasbi2a",
+      "recharge",
+      "تعبئة",
+      "اتصالات"
+    ],
+    "category": "Autres",
+    "icon": "Smartphone"
+  },
+  {
+    "id": "cafe_noir",
+    "name_fr": "Café Noir",
+    "name_ar": "قهوة كحلة",
+    "name_en": "Black Coffee",
+    "keywords": [
+      "qahwa",
+      "kahwa",
+      "cafe",
+      "قهوة"
+    ],
+    "category": "Nourriture",
+    "icon": "Coffee"
+  },
+  {
+    "id": "nos_nos",
+    "name_fr": "Café Nouss Nouss",
+    "name_ar": "نص نص",
+    "name_en": "Half-half Coffee",
+    "keywords": [
+      "nouss",
+      "nos nos",
+      "نص نص",
+      "قهوة بحليب"
+    ],
+    "category": "Nourriture",
+    "icon": "Coffee"
+  },
+  {
+    "id": "chfenj",
+    "name_fr": "Beignet",
+    "name_ar": "بينيي",
+    "name_en": "Donut",
+    "keywords": [
+      "beignet",
+      "بينيي"
+    ],
+    "category": "Nourriture",
+    "icon": "CircleDot"
+  },
+  {
+    "id": "zraia",
+    "name_fr": "Pépites (Zerri3a)",
+    "name_ar": "زريعة",
+    "name_en": "Sunflower Seeds",
+    "keywords": [
+      "pipa",
+      "zri3a",
+      "zerri3a",
+      "زريعة",
+      "بيبا"
+    ],
+    "category": "Nourriture",
+    "icon": "Nut"
+  },
+  {
+    "id": "lben",
+    "name_fr": "Lait Fermenté (Lben)",
+    "name_ar": "لبن",
+    "name_en": "Lben (Butter milk)",
+    "keywords": [
+      "lben",
+      "لبن",
+      "rayeb"
+    ],
+    "category": "Nourriture",
+    "icon": "Milk"
+  },
+  {
+    "id": "jben",
+    "name_fr": "Fromage frais (Jben)",
+    "name_ar": "جبن",
+    "name_en": "Fresh Cheese",
+    "keywords": [
+      "jben",
+      "جبن"
+    ],
+    "category": "Nourriture",
+    "icon": "Box"
+  },
+  {
+    "id": "khli3",
+    "name_fr": "Viande Séchée (Khli3)",
+    "name_ar": "خليع",
+    "name_en": "Khlea",
+    "keywords": [
+      "khli3",
+      "خليع"
+    ],
+    "category": "Nourriture",
+    "icon": "Beef"
+  },
+  {
+    "id": "zbib",
+    "name_fr": "Raisins secs",
+    "name_ar": "زبيب",
+    "name_en": "Raisins",
+    "keywords": [
+      "zbib",
+      "raisin sec",
+      "زبيب"
+    ],
+    "category": "Nourriture",
+    "icon": "Grape"
+  },
+  {
+    "id": "looz",
+    "name_fr": "Amandes",
+    "name_ar": "لوز",
+    "name_en": "Almonds",
+    "keywords": [
+      "looz",
+      "louz",
+      "amande",
+      "لوز"
+    ],
+    "category": "Nourriture",
+    "icon": "Nut"
+  },
+  {
+    "id": "karkroub",
+    "name_fr": "Noix",
+    "name_ar": "كركاع",
+    "name_en": "Walnuts",
+    "keywords": [
+      "gargaa",
+      "grga3",
+      "garga3",
+      "كركاع"
+    ],
+    "category": "Nourriture",
+    "icon": "Nut"
+  },
+  {
+    "id": "marjane_item_0",
+    "name_fr": "Article Marjane 0",
+    "name_ar": "منتج مرجان 0",
+    "name_en": "Marjane Item 0",
+    "keywords": [
+      "marjane 0",
+      "bim 0"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_1",
+    "name_fr": "Article Marjane 1",
+    "name_ar": "منتج مرجان 1",
+    "name_en": "Marjane Item 1",
+    "keywords": [
+      "marjane 1",
+      "bim 1"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_2",
+    "name_fr": "Article Marjane 2",
+    "name_ar": "منتج مرجان 2",
+    "name_en": "Marjane Item 2",
+    "keywords": [
+      "marjane 2",
+      "bim 2"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_3",
+    "name_fr": "Article Marjane 3",
+    "name_ar": "منتج مرجان 3",
+    "name_en": "Marjane Item 3",
+    "keywords": [
+      "marjane 3",
+      "bim 3"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_4",
+    "name_fr": "Article Marjane 4",
+    "name_ar": "منتج مرجان 4",
+    "name_en": "Marjane Item 4",
+    "keywords": [
+      "marjane 4",
+      "bim 4"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_5",
+    "name_fr": "Article Marjane 5",
+    "name_ar": "منتج مرجان 5",
+    "name_en": "Marjane Item 5",
+    "keywords": [
+      "marjane 5",
+      "bim 5"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_6",
+    "name_fr": "Article Marjane 6",
+    "name_ar": "منتج مرجان 6",
+    "name_en": "Marjane Item 6",
+    "keywords": [
+      "marjane 6",
+      "bim 6"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_7",
+    "name_fr": "Article Marjane 7",
+    "name_ar": "منتج مرجان 7",
+    "name_en": "Marjane Item 7",
+    "keywords": [
+      "marjane 7",
+      "bim 7"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_8",
+    "name_fr": "Article Marjane 8",
+    "name_ar": "منتج مرجان 8",
+    "name_en": "Marjane Item 8",
+    "keywords": [
+      "marjane 8",
+      "bim 8"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_9",
+    "name_fr": "Article Marjane 9",
+    "name_ar": "منتج مرجان 9",
+    "name_en": "Marjane Item 9",
+    "keywords": [
+      "marjane 9",
+      "bim 9"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_10",
+    "name_fr": "Article Marjane 10",
+    "name_ar": "منتج مرجان 10",
+    "name_en": "Marjane Item 10",
+    "keywords": [
+      "marjane 10",
+      "bim 10"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_11",
+    "name_fr": "Article Marjane 11",
+    "name_ar": "منتج مرجان 11",
+    "name_en": "Marjane Item 11",
+    "keywords": [
+      "marjane 11",
+      "bim 11"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_12",
+    "name_fr": "Article Marjane 12",
+    "name_ar": "منتج مرجان 12",
+    "name_en": "Marjane Item 12",
+    "keywords": [
+      "marjane 12",
+      "bim 12"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_13",
+    "name_fr": "Article Marjane 13",
+    "name_ar": "منتج مرجان 13",
+    "name_en": "Marjane Item 13",
+    "keywords": [
+      "marjane 13",
+      "bim 13"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_14",
+    "name_fr": "Article Marjane 14",
+    "name_ar": "منتج مرجان 14",
+    "name_en": "Marjane Item 14",
+    "keywords": [
+      "marjane 14",
+      "bim 14"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_15",
+    "name_fr": "Article Marjane 15",
+    "name_ar": "منتج مرجان 15",
+    "name_en": "Marjane Item 15",
+    "keywords": [
+      "marjane 15",
+      "bim 15"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_16",
+    "name_fr": "Article Marjane 16",
+    "name_ar": "منتج مرجان 16",
+    "name_en": "Marjane Item 16",
+    "keywords": [
+      "marjane 16",
+      "bim 16"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_17",
+    "name_fr": "Article Marjane 17",
+    "name_ar": "منتج مرجان 17",
+    "name_en": "Marjane Item 17",
+    "keywords": [
+      "marjane 17",
+      "bim 17"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_18",
+    "name_fr": "Article Marjane 18",
+    "name_ar": "منتج مرجان 18",
+    "name_en": "Marjane Item 18",
+    "keywords": [
+      "marjane 18",
+      "bim 18"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_19",
+    "name_fr": "Article Marjane 19",
+    "name_ar": "منتج مرجان 19",
+    "name_en": "Marjane Item 19",
+    "keywords": [
+      "marjane 19",
+      "bim 19"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_20",
+    "name_fr": "Article Marjane 20",
+    "name_ar": "منتج مرجان 20",
+    "name_en": "Marjane Item 20",
+    "keywords": [
+      "marjane 20",
+      "bim 20"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_21",
+    "name_fr": "Article Marjane 21",
+    "name_ar": "منتج مرجان 21",
+    "name_en": "Marjane Item 21",
+    "keywords": [
+      "marjane 21",
+      "bim 21"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_22",
+    "name_fr": "Article Marjane 22",
+    "name_ar": "منتج مرجان 22",
+    "name_en": "Marjane Item 22",
+    "keywords": [
+      "marjane 22",
+      "bim 22"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_23",
+    "name_fr": "Article Marjane 23",
+    "name_ar": "منتج مرجان 23",
+    "name_en": "Marjane Item 23",
+    "keywords": [
+      "marjane 23",
+      "bim 23"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_24",
+    "name_fr": "Article Marjane 24",
+    "name_ar": "منتج مرجان 24",
+    "name_en": "Marjane Item 24",
+    "keywords": [
+      "marjane 24",
+      "bim 24"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_25",
+    "name_fr": "Article Marjane 25",
+    "name_ar": "منتج مرجان 25",
+    "name_en": "Marjane Item 25",
+    "keywords": [
+      "marjane 25",
+      "bim 25"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_26",
+    "name_fr": "Article Marjane 26",
+    "name_ar": "منتج مرجان 26",
+    "name_en": "Marjane Item 26",
+    "keywords": [
+      "marjane 26",
+      "bim 26"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_27",
+    "name_fr": "Article Marjane 27",
+    "name_ar": "منتج مرجان 27",
+    "name_en": "Marjane Item 27",
+    "keywords": [
+      "marjane 27",
+      "bim 27"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_28",
+    "name_fr": "Article Marjane 28",
+    "name_ar": "منتج مرجان 28",
+    "name_en": "Marjane Item 28",
+    "keywords": [
+      "marjane 28",
+      "bim 28"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_29",
+    "name_fr": "Article Marjane 29",
+    "name_ar": "منتج مرجان 29",
+    "name_en": "Marjane Item 29",
+    "keywords": [
+      "marjane 29",
+      "bim 29"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_30",
+    "name_fr": "Article Marjane 30",
+    "name_ar": "منتج مرجان 30",
+    "name_en": "Marjane Item 30",
+    "keywords": [
+      "marjane 30",
+      "bim 30"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_31",
+    "name_fr": "Article Marjane 31",
+    "name_ar": "منتج مرجان 31",
+    "name_en": "Marjane Item 31",
+    "keywords": [
+      "marjane 31",
+      "bim 31"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_32",
+    "name_fr": "Article Marjane 32",
+    "name_ar": "منتج مرجان 32",
+    "name_en": "Marjane Item 32",
+    "keywords": [
+      "marjane 32",
+      "bim 32"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_33",
+    "name_fr": "Article Marjane 33",
+    "name_ar": "منتج مرجان 33",
+    "name_en": "Marjane Item 33",
+    "keywords": [
+      "marjane 33",
+      "bim 33"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_34",
+    "name_fr": "Article Marjane 34",
+    "name_ar": "منتج مرجان 34",
+    "name_en": "Marjane Item 34",
+    "keywords": [
+      "marjane 34",
+      "bim 34"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_35",
+    "name_fr": "Article Marjane 35",
+    "name_ar": "منتج مرجان 35",
+    "name_en": "Marjane Item 35",
+    "keywords": [
+      "marjane 35",
+      "bim 35"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_36",
+    "name_fr": "Article Marjane 36",
+    "name_ar": "منتج مرجان 36",
+    "name_en": "Marjane Item 36",
+    "keywords": [
+      "marjane 36",
+      "bim 36"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_37",
+    "name_fr": "Article Marjane 37",
+    "name_ar": "منتج مرجان 37",
+    "name_en": "Marjane Item 37",
+    "keywords": [
+      "marjane 37",
+      "bim 37"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_38",
+    "name_fr": "Article Marjane 38",
+    "name_ar": "منتج مرجان 38",
+    "name_en": "Marjane Item 38",
+    "keywords": [
+      "marjane 38",
+      "bim 38"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_39",
+    "name_fr": "Article Marjane 39",
+    "name_ar": "منتج مرجان 39",
+    "name_en": "Marjane Item 39",
+    "keywords": [
+      "marjane 39",
+      "bim 39"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_40",
+    "name_fr": "Article Marjane 40",
+    "name_ar": "منتج مرجان 40",
+    "name_en": "Marjane Item 40",
+    "keywords": [
+      "marjane 40",
+      "bim 40"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_41",
+    "name_fr": "Article Marjane 41",
+    "name_ar": "منتج مرجان 41",
+    "name_en": "Marjane Item 41",
+    "keywords": [
+      "marjane 41",
+      "bim 41"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_42",
+    "name_fr": "Article Marjane 42",
+    "name_ar": "منتج مرجان 42",
+    "name_en": "Marjane Item 42",
+    "keywords": [
+      "marjane 42",
+      "bim 42"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_43",
+    "name_fr": "Article Marjane 43",
+    "name_ar": "منتج مرجان 43",
+    "name_en": "Marjane Item 43",
+    "keywords": [
+      "marjane 43",
+      "bim 43"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_44",
+    "name_fr": "Article Marjane 44",
+    "name_ar": "منتج مرجان 44",
+    "name_en": "Marjane Item 44",
+    "keywords": [
+      "marjane 44",
+      "bim 44"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_45",
+    "name_fr": "Article Marjane 45",
+    "name_ar": "منتج مرجان 45",
+    "name_en": "Marjane Item 45",
+    "keywords": [
+      "marjane 45",
+      "bim 45"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_46",
+    "name_fr": "Article Marjane 46",
+    "name_ar": "منتج مرجان 46",
+    "name_en": "Marjane Item 46",
+    "keywords": [
+      "marjane 46",
+      "bim 46"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_47",
+    "name_fr": "Article Marjane 47",
+    "name_ar": "منتج مرجان 47",
+    "name_en": "Marjane Item 47",
+    "keywords": [
+      "marjane 47",
+      "bim 47"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_48",
+    "name_fr": "Article Marjane 48",
+    "name_ar": "منتج مرجان 48",
+    "name_en": "Marjane Item 48",
+    "keywords": [
+      "marjane 48",
+      "bim 48"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "marjane_item_49",
+    "name_fr": "Article Marjane 49",
+    "name_ar": "منتج مرجان 49",
+    "name_en": "Marjane Item 49",
+    "keywords": [
+      "marjane 49",
+      "bim 49"
+    ],
+    "category": "Shopping",
+    "icon": "PackageOpen"
+  },
+  {
+    "id": "epicerie_item_0",
+    "name_fr": "Epicerie 0",
+    "name_ar": "حنوت 0",
+    "name_en": "Hanout Item 0",
+    "keywords": [
+      "hanout 0",
+      "epicerie 0"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_1",
+    "name_fr": "Epicerie 1",
+    "name_ar": "حنوت 1",
+    "name_en": "Hanout Item 1",
+    "keywords": [
+      "hanout 1",
+      "epicerie 1"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_2",
+    "name_fr": "Epicerie 2",
+    "name_ar": "حنوت 2",
+    "name_en": "Hanout Item 2",
+    "keywords": [
+      "hanout 2",
+      "epicerie 2"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_3",
+    "name_fr": "Epicerie 3",
+    "name_ar": "حنوت 3",
+    "name_en": "Hanout Item 3",
+    "keywords": [
+      "hanout 3",
+      "epicerie 3"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_4",
+    "name_fr": "Epicerie 4",
+    "name_ar": "حنوت 4",
+    "name_en": "Hanout Item 4",
+    "keywords": [
+      "hanout 4",
+      "epicerie 4"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_5",
+    "name_fr": "Epicerie 5",
+    "name_ar": "حنوت 5",
+    "name_en": "Hanout Item 5",
+    "keywords": [
+      "hanout 5",
+      "epicerie 5"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_6",
+    "name_fr": "Epicerie 6",
+    "name_ar": "حنوت 6",
+    "name_en": "Hanout Item 6",
+    "keywords": [
+      "hanout 6",
+      "epicerie 6"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_7",
+    "name_fr": "Epicerie 7",
+    "name_ar": "حنوت 7",
+    "name_en": "Hanout Item 7",
+    "keywords": [
+      "hanout 7",
+      "epicerie 7"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_8",
+    "name_fr": "Epicerie 8",
+    "name_ar": "حنوت 8",
+    "name_en": "Hanout Item 8",
+    "keywords": [
+      "hanout 8",
+      "epicerie 8"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_9",
+    "name_fr": "Epicerie 9",
+    "name_ar": "حنوت 9",
+    "name_en": "Hanout Item 9",
+    "keywords": [
+      "hanout 9",
+      "epicerie 9"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_10",
+    "name_fr": "Epicerie 10",
+    "name_ar": "حنوت 10",
+    "name_en": "Hanout Item 10",
+    "keywords": [
+      "hanout 10",
+      "epicerie 10"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_11",
+    "name_fr": "Epicerie 11",
+    "name_ar": "حنوت 11",
+    "name_en": "Hanout Item 11",
+    "keywords": [
+      "hanout 11",
+      "epicerie 11"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_12",
+    "name_fr": "Epicerie 12",
+    "name_ar": "حنوت 12",
+    "name_en": "Hanout Item 12",
+    "keywords": [
+      "hanout 12",
+      "epicerie 12"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_13",
+    "name_fr": "Epicerie 13",
+    "name_ar": "حنوت 13",
+    "name_en": "Hanout Item 13",
+    "keywords": [
+      "hanout 13",
+      "epicerie 13"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_14",
+    "name_fr": "Epicerie 14",
+    "name_ar": "حنوت 14",
+    "name_en": "Hanout Item 14",
+    "keywords": [
+      "hanout 14",
+      "epicerie 14"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_15",
+    "name_fr": "Epicerie 15",
+    "name_ar": "حنوت 15",
+    "name_en": "Hanout Item 15",
+    "keywords": [
+      "hanout 15",
+      "epicerie 15"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_16",
+    "name_fr": "Epicerie 16",
+    "name_ar": "حنوت 16",
+    "name_en": "Hanout Item 16",
+    "keywords": [
+      "hanout 16",
+      "epicerie 16"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_17",
+    "name_fr": "Epicerie 17",
+    "name_ar": "حنوت 17",
+    "name_en": "Hanout Item 17",
+    "keywords": [
+      "hanout 17",
+      "epicerie 17"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_18",
+    "name_fr": "Epicerie 18",
+    "name_ar": "حنوت 18",
+    "name_en": "Hanout Item 18",
+    "keywords": [
+      "hanout 18",
+      "epicerie 18"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_19",
+    "name_fr": "Epicerie 19",
+    "name_ar": "حنوت 19",
+    "name_en": "Hanout Item 19",
+    "keywords": [
+      "hanout 19",
+      "epicerie 19"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_20",
+    "name_fr": "Epicerie 20",
+    "name_ar": "حنوت 20",
+    "name_en": "Hanout Item 20",
+    "keywords": [
+      "hanout 20",
+      "epicerie 20"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_21",
+    "name_fr": "Epicerie 21",
+    "name_ar": "حنوت 21",
+    "name_en": "Hanout Item 21",
+    "keywords": [
+      "hanout 21",
+      "epicerie 21"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_22",
+    "name_fr": "Epicerie 22",
+    "name_ar": "حنوت 22",
+    "name_en": "Hanout Item 22",
+    "keywords": [
+      "hanout 22",
+      "epicerie 22"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_23",
+    "name_fr": "Epicerie 23",
+    "name_ar": "حنوت 23",
+    "name_en": "Hanout Item 23",
+    "keywords": [
+      "hanout 23",
+      "epicerie 23"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_24",
+    "name_fr": "Epicerie 24",
+    "name_ar": "حنوت 24",
+    "name_en": "Hanout Item 24",
+    "keywords": [
+      "hanout 24",
+      "epicerie 24"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_25",
+    "name_fr": "Epicerie 25",
+    "name_ar": "حنوت 25",
+    "name_en": "Hanout Item 25",
+    "keywords": [
+      "hanout 25",
+      "epicerie 25"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_26",
+    "name_fr": "Epicerie 26",
+    "name_ar": "حنوت 26",
+    "name_en": "Hanout Item 26",
+    "keywords": [
+      "hanout 26",
+      "epicerie 26"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_27",
+    "name_fr": "Epicerie 27",
+    "name_ar": "حنوت 27",
+    "name_en": "Hanout Item 27",
+    "keywords": [
+      "hanout 27",
+      "epicerie 27"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_28",
+    "name_fr": "Epicerie 28",
+    "name_ar": "حنوت 28",
+    "name_en": "Hanout Item 28",
+    "keywords": [
+      "hanout 28",
+      "epicerie 28"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
+  },
+  {
+    "id": "epicerie_item_29",
+    "name_fr": "Epicerie 29",
+    "name_ar": "حنوت 29",
+    "name_en": "Hanout Item 29",
+    "keywords": [
+      "hanout 29",
+      "epicerie 29"
+    ],
+    "category": "Nourriture",
+    "icon": "Store"
   }
 ]
