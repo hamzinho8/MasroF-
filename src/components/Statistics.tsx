@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 import { Transaction, PredefinedItem } from "../types";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sankey, Layer } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, ScatterChart, Scatter, ZAxis, XAxis, YAxis, CartesianGrid, ComposedChart, BarChart, Bar, AreaChart, Area, ReferenceLine } from "recharts";
 import { createPortal } from "react-dom";
 import {
   ICON_MAP,
@@ -54,27 +54,6 @@ const CATEGORY_STYLES: Record<
     },
   ])
 );
-
-const CustomSankeyNode = (props: any) => {
-  const { x, y, width, height, index, payload } = props;
-  const isOut = x > 150;
-  return (
-    <Layer key={`CustomNode${index}`}>
-      <rect x={x} y={y} width={width} height={height} fill={payload.fill || '#94a3b8'} rx={4} />
-      <text
-        x={isOut ? x - 8 : x + width + 8}
-        y={y + height / 2}
-        textAnchor={isOut ? 'end' : 'start'}
-        fill={payload.fill || '#94a3b8'}
-        fontSize="11"
-        fontWeight="900"
-        dy={4}
-      >
-        {payload.name}
-      </text>
-    </Layer>
-  );
-};
 
 export default function Statistics({
   transactions,
@@ -183,20 +162,49 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
     );
   };
 
-  const periodStats = useMemo(() => {
+  const timeRange = useMemo(() => {
     const now = new Date();
-    const startOfPeriod = new Date();
-    if (period === "day") startOfPeriod.setHours(0, 0, 0, 0);
-    else if (period === "week") {
+    let start = new Date();
+    let end = new Date();
+    let startPrev = new Date();
+    let endPrev = new Date();
+    let daysIn = 1;
+    let elapsed = 1;
+
+    if (period === "day") {
+      start.setHours(0,0,0,0);
+      end.setHours(23,59,59,999);
+      startPrev = new Date(start.getTime() - 86400000);
+      endPrev = new Date(end.getTime() - 86400000);
+      daysIn = 1;
+      elapsed = 1;
+    } else if (period === "week") {
       const d = now.getDay();
       const diff = now.getDate() - d + (d === 0 ? -6 : 1);
-      startOfPeriod.setDate(diff);
-      startOfPeriod.setHours(0, 0, 0, 0);
+      start.setDate(diff);
+      start.setHours(0,0,0,0);
+      end = new Date(start.getTime() + 6 * 86400000);
+      end.setHours(23,59,59,999);
+      startPrev = new Date(start.getTime() - 7 * 86400000);
+      endPrev = new Date(end.getTime() - 7 * 86400000);
+      daysIn = 7;
+      elapsed = Math.max(1, Math.min(7, Math.floor((now.getTime() - start.getTime()) / 86400000) + 1));
     } else if (period === "month") {
-      startOfPeriod.setDate(1);
-      startOfPeriod.setHours(0, 0, 0, 0);
+      start.setDate(1);
+      start.setHours(0,0,0,0);
+      end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+      end.setHours(23,59,59,999);
+      startPrev = new Date(start.getFullYear(), start.getMonth() - 1, 1);
+      endPrev = new Date(startPrev.getFullYear(), startPrev.getMonth() + 1, 0);
+      endPrev.setHours(23,59,59,999);
+      daysIn = end.getDate();
+      elapsed = Math.max(1, Math.min(daysIn, now.getDate()));
     }
+    return { start, end, startPrev, endPrev, daysIn, elapsed };
+  }, [period]);
 
+  const periodStats = useMemo(() => {
+    const { start } = timeRange;
     const expenses = transactions.filter((t) => {
       const isCredit =
         t.category &&
@@ -214,7 +222,7 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
         ].includes(t.category.toLowerCase());
       const isExpense =
         (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit;
-      return isExpense && t.timestamp >= startOfPeriod.getTime();
+      return isExpense && t.timestamp >= start.getTime();
     });
 
     const grouped: Record<
@@ -246,7 +254,142 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
     });
 
     return grouped;
-  }, [transactions, period]);
+  }, [transactions, timeRange]);
+
+  const { currentTotal, prevTotal, popPercentage, runRate, projectedTotal } = useMemo(() => {
+    const { start, end, startPrev, endPrev, daysIn, elapsed } = timeRange;
+    
+    const filterExp = (t: Transaction, s: Date, e: Date) => {
+      const isCredit = t.category && ["on me doit", "je dois", "مستحقات لي", "ديون علي", "owed to me", "i owe", "loans", "debts", "crédit +", "crédit --"].includes(t.category.toLowerCase());
+      return (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit && t.timestamp >= s.getTime() && t.timestamp <= e.getTime();
+    };
+
+    const currExp = transactions.filter(t => filterExp(t, start, end));
+    const prevExp = transactions.filter(t => filterExp(t, startPrev, endPrev));
+
+    const cTotal = currExp.reduce((sum, t) => sum + t.amount, 0);
+    const pTotal = prevExp.reduce((sum, t) => sum + t.amount, 0);
+
+    let pop = 0;
+    if (pTotal > 0) {
+      pop = ((cTotal - pTotal) / pTotal) * 100;
+    }
+
+    const rRate = cTotal / elapsed;
+    const projected = rRate * daysIn;
+
+    return { currentTotal: cTotal, prevTotal: pTotal, popPercentage: pop, runRate: rRate, projectedTotal: projected };
+  }, [transactions, timeRange]);
+
+  // Waterfall Chart Data
+  const waterfallData = useMemo(() => {
+    const { start, end } = timeRange;
+    const periodTx = transactions.filter(t => t.timestamp >= start.getTime() && t.timestamp <= end.getTime());
+    
+    let totalIncome = 0;
+    const categoryExpenses: Record<string, number> = {};
+
+    periodTx.forEach(t => {
+      const isCredit = t.category && ["on me doit", "je dois", "مستحقات لي", "ديون علي", "owed to me", "i owe", "loans", "debts", "crédit +", "crédit --"].includes(t.category.toLowerCase());
+      if (isCredit) return;
+
+      if (t.type === 'INCOME' || (t.type as any) === 'income') {
+        totalIncome += t.amount;
+      } else if (t.type === 'EXPENSE' || (t.type as any) === 'expense') {
+        let cat = t.category || "Autres";
+        if (cat === "Food") cat = "Nourriture";
+        else if (cat === "Leisure") cat = "Loisirs";
+        else if (cat === "Others") cat = "Autres";
+        categoryExpenses[cat] = (categoryExpenses[cat] || 0) + t.amount;
+      }
+    });
+
+    const data: any[] = [];
+    let currentBalance = totalIncome;
+    
+    data.push({
+      name: language === 'العربية' ? 'مداخيل' : "Revenus",
+      start: 0,
+      end: totalIncome,
+      amount: totalIncome,
+      isExpense: false
+    });
+
+    Object.entries(categoryExpenses).sort((a, b) => b[1] - a[1]).forEach(([cat, amount]) => {
+      if (amount <= 0) return;
+      data.push({
+        name: cat,
+        start: currentBalance - amount,
+        end: currentBalance,
+        amount: amount,
+        isExpense: true
+      });
+      currentBalance -= amount;
+    });
+
+    data.push({
+      name: language === 'العربية' ? 'رصيد نهائي' : "Solde",
+      start: 0,
+      end: currentBalance,
+      amount: currentBalance,
+      isExpense: false,
+      isTotal: true
+    });
+
+    return data;
+  }, [transactions, timeRange, language]);
+
+  // Vampire Expenses (Scatter Chart)
+  const vampireData = useMemo(() => {
+    const { start, end } = timeRange;
+    const expenses = transactions.filter((t) => {
+      const isCredit = t.category && ["on me doit", "je dois"].some(c => t.category!.toLowerCase().includes(c));
+      return (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit && t.timestamp >= start.getTime() && t.timestamp <= end.getTime();
+    });
+
+    const map: Record<string, { count: number; total: number; category: string }> = {};
+    expenses.forEach(t => {
+      const name = t.label || "Article";
+      if (!map[name]) map[name] = { count: 0, total: 0, category: t.category || "Autres" };
+      map[name].count += 1;
+      map[name].total += t.amount;
+    });
+
+    return Object.entries(map).map(([name, data]) => ({
+      name,
+      count: data.count,
+      avgCost: data.total / data.count,
+      total: data.total,
+      category: data.category,
+      color: CATEGORY_STYLES[data.category]?.color || "#64748B"
+    })).filter(d => d.count > 1).sort((a, b) => b.total - a.total).slice(0, 15);
+  }, [transactions, timeRange]);
+
+  // Heatmap Data (Activity by day for current month/week)
+  const heatmapData = useMemo(() => {
+    const { start, end } = timeRange;
+    const days = [];
+    let current = new Date(start);
+    while (current <= end) {
+      days.push({
+        date: new Date(current),
+        dateStr: current.toLocaleDateString(),
+        amount: 0
+      });
+      current.setDate(current.getDate() + 1);
+    }
+
+    transactions.forEach(t => {
+      const isCredit = t.category && ["on me doit", "je dois"].some(c => t.category!.toLowerCase().includes(c));
+      if ((t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit && t.timestamp >= start.getTime() && t.timestamp <= end.getTime()) {
+        const dStr = new Date(t.timestamp).toLocaleDateString();
+        const day = days.find(d => d.dateStr === dStr);
+        if (day) day.amount += t.amount;
+      }
+    });
+
+    return days;
+  }, [transactions, timeRange]);
 
   const periods = [
     {
@@ -276,125 +419,10 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
       }));
   }, [periodStats]);
 
-  const sankeyData = useMemo(() => {
-    const now = new Date();
-    const startOfPeriod = new Date();
-    if (period === "day") startOfPeriod.setHours(0, 0, 0, 0);
-    else if (period === "week") {
-      const d = now.getDay();
-      const diff = now.getDate() - d + (d === 0 ? -6 : 1);
-      startOfPeriod.setDate(diff);
-      startOfPeriod.setHours(0, 0, 0, 0);
-    } else if (period === "month") {
-      startOfPeriod.setDate(1);
-      startOfPeriod.setHours(0, 0, 0, 0);
-    }
-
-    let totalSalaire = 0;
-    let totalAutresEntrees = 0;
-    let totalExpense = 0;
-    const categoriesExp: Record<string, number> = {};
-
-    transactions.filter(t => t.timestamp >= startOfPeriod.getTime()).forEach(t => {
-      const isCredit =
-        t.category &&
-        [
-          "on me doit",
-          "je dois",
-          "مستحقات لي",
-          "ديون علي",
-          "owed to me",
-          "i owe",
-          "loans",
-          "debts",
-          "crédit +",
-          "crédit --",
-        ].includes(t.category.toLowerCase());
-
-      if (isCredit) return;
-
-      if (t.type === 'INCOME' || (t.type as any) === 'income') {
-        if (t.label.toLowerCase().includes('salaire')) {
-          totalSalaire += t.amount;
-        } else {
-          totalAutresEntrees += t.amount;
-        }
-      } else if (t.type === 'EXPENSE' || (t.type as any) === 'expense') {
-        totalExpense += t.amount;
-        const cat = t.category || "Autres";
-        categoriesExp[cat] = (categoriesExp[cat] || 0) + t.amount;
-      }
-    });
-
-    if (totalExpense === 0) return null;
-
-    const totalIncome = totalSalaire + totalAutresEntrees;
-    let deficit = 0;
-    if (totalExpense > totalIncome) {
-      deficit = totalExpense - totalIncome;
-    }
-
-    const nodes: any[] = [];
-    const nodeMap: Record<string, number> = {};
-    let nodeIndex = 0;
-
-    const addNode = (name: string, color: string) => {
-      nodes.push({ name, fill: color });
-      nodeMap[name] = nodeIndex++;
-    };
-
-    if (totalSalaire > 0) addNode(language === 'العربية' ? 'راتب' : "Salaire", "#10B981");
-    if (totalAutresEntrees > 0) addNode(language === 'العربية' ? 'مداخيل أخرى' : "Autres Entrées", "#3B82F6");
-    if (deficit > 0) addNode(language === 'العربية' ? 'توفير / رصيد' : "Épargne/Solde", "#F59E0B");
-
-    const totalSource = totalSalaire + totalAutresEntrees + deficit;
-
-    Object.keys(categoriesExp).forEach(cat => {
-      const color = CATEGORY_STYLES[cat]?.color || "#64748B";
-      addNode(cat, color);
-    });
-
-    const links: any[] = [];
-
-    const addLinksForSource = (sourceName: string, sourceAmount: number) => {
-      if (sourceAmount > 0 && nodeMap[sourceName] !== undefined) {
-        Object.keys(categoriesExp).forEach(cat => {
-          const val = categoriesExp[cat] * (sourceAmount / totalSource);
-          if (val > 0.01) {
-            links.push({
-              source: nodeMap[sourceName],
-              target: nodeMap[cat],
-              value: Number(val.toFixed(2))
-            });
-          }
-        });
-      }
-    };
-
-    addLinksForSource(language === 'العربية' ? 'راتب' : "Salaire", totalSalaire);
-    addLinksForSource(language === 'العربية' ? 'مداخيل أخرى' : "Autres Entrées", totalAutresEntrees);
-    addLinksForSource(language === 'العربية' ? 'توفير / رصيد' : "Épargne/Solde", deficit);
-
-    if (links.length === 0) return null;
-
-    return { nodes, links };
-  }, [transactions, period, language]);
-
   const selectedCategoryTransactions = useMemo(() => {
     if (!selectedPieCategory) return [];
 
-    const now = new Date();
-    const startOfPeriod = new Date();
-    if (period === "day") startOfPeriod.setHours(0, 0, 0, 0);
-    else if (period === "week") {
-      const d = now.getDay();
-      const diff = now.getDate() - d + (d === 0 ? -6 : 1);
-      startOfPeriod.setDate(diff);
-      startOfPeriod.setHours(0, 0, 0, 0);
-    } else if (period === "month") {
-      startOfPeriod.setDate(1);
-      startOfPeriod.setHours(0, 0, 0, 0);
-    }
+    const { start, end } = timeRange;
 
     return transactions
       .filter((t) => {
@@ -414,7 +442,7 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
           ].includes(t.category.toLowerCase());
         const isExpense =
           (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit;
-        if (!isExpense || t.timestamp < startOfPeriod.getTime()) return false;
+        if (!isExpense || t.timestamp < start.getTime() || t.timestamp > end.getTime()) return false;
         let category = t.category || "Autres";
         if (category === "Food") category = "Nourriture";
         else if (category === "Leisure") category = "Loisirs";
@@ -422,7 +450,7 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
         return category === selectedPieCategory;
       })
       .sort((a, b) => b.timestamp - a.timestamp);
-  }, [transactions, selectedPieCategory, period]);
+  }, [transactions, selectedPieCategory, timeRange]);
 
   const handlePieClick = (data: any) => {
     const categoryName = data?.name || data?.payload?.name;
@@ -458,6 +486,35 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
             {p.label}
           </button>
         ))}
+      </div>
+
+      {/* KPI Dashboard (PoP & Run-Rate) */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className={`p-4 rounded-[24px] border ${isDarkMode ? "bg-slate-800/40 border-slate-700" : "bg-white border-slate-100 shadow-sm"}`}>
+          <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
+            {language === 'Français' ? 'Dépenses Totales' : language === 'العربية' ? 'إجمالي النفقات' : 'Total Expenses'}
+          </div>
+          <div className={`text-xl font-black tracking-tight ${isDarkMode ? "text-white" : "text-slate-800"}`}>
+            {currentTotal.toLocaleString()} <span className="text-[10px] uppercase opacity-50">{currency}</span>
+          </div>
+          {prevTotal > 0 && (
+            <div className={`text-[10px] font-bold uppercase mt-2 flex items-center gap-1 ${popPercentage > 0 ? 'text-rose-500 bg-rose-500/10' : 'text-emerald-500 bg-emerald-500/10'} px-2 py-1 rounded-lg w-max`}>
+              {popPercentage > 0 ? '+' : ''}{popPercentage.toFixed(1)}% 
+              <span className="opacity-70 ml-1">{language === 'Français' ? 'vs préc.' : 'vs prev.'}</span>
+            </div>
+          )}
+        </div>
+        <div className={`p-4 rounded-[24px] border ${isDarkMode ? "bg-slate-800/40 border-slate-700" : "bg-white border-slate-100 shadow-sm"}`}>
+          <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
+            {language === 'Français' ? 'Projection Fin Période' : language === 'العربية' ? 'التوقعات' : 'Projected'}
+          </div>
+          <div className={`text-xl font-black tracking-tight ${isDarkMode ? "text-white" : "text-slate-800"}`}>
+            {projectedTotal.toLocaleString(undefined, { maximumFractionDigits: 0 })} <span className="text-[10px] uppercase opacity-50">{currency}</span>
+          </div>
+          <div className="text-[10px] font-bold text-slate-500 uppercase mt-2 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg w-max">
+            {runRate.toLocaleString(undefined, { maximumFractionDigits: 0 })} {currency} / {language === 'Français' ? 'jour' : 'day'}
+          </div>
+        </div>
       </div>
 
       {/* Pie Chart */}
@@ -513,50 +570,126 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
         </div>
       )}
 
-      {/* Sankey Chart */}
-      {sankeyData && (
+      {/* Heatmap (Activité) */}
+      {heatmapData.length > 0 && period === "month" && (
         <div className="mb-6">
           <div className="mb-4">
             <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#1B7C86] ml-1">
-              {language === "Français"
-                ? "Flux de trésorerie"
-                : language === 'العربية' ? 'التدفقات النقدية' : "Cash Flow"}
+              {language === "Français" ? "Intensité des Dépenses" : "Spending Heatmap"}
             </h2>
           </div>
-          <div
-            className={`rounded-[32px] overflow-hidden border p-4 h-[350px] w-full ${
-              isDarkMode
-                ? "bg-slate-800/40 border-slate-700"
-                : "bg-white border-slate-100 shadow-sm"
-            }`}
-          >
+          <div className={`rounded-[32px] overflow-hidden border p-4 h-[120px] w-full ${isDarkMode ? "bg-slate-800/40 border-slate-700" : "bg-white border-slate-100 shadow-sm"} flex items-end gap-1`}>
+            {heatmapData.map((day, idx) => {
+              const maxAmt = Math.max(...heatmapData.map(d => d.amount), 1);
+              const heightPct = Math.max((day.amount / maxAmt) * 100, 4);
+              const isToday = day.date.toLocaleDateString() === new Date().toLocaleDateString();
+              
+              return (
+                <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full group relative">
+                  <div 
+                    className={`w-full rounded-sm transition-all duration-300 ${day.amount > 0 ? 'bg-rose-500' : 'bg-slate-200 dark:bg-slate-700'}`} 
+                    style={{ height: `${heightPct}%`, opacity: day.amount > 0 ? Math.max(0.3, day.amount / maxAmt) : 0.3 }}
+                  />
+                  {isToday && <div className="absolute -bottom-2 w-1 h-1 rounded-full bg-slate-800 dark:bg-white" />}
+                  
+                  {/* Tooltip on hover */}
+                  <div className="absolute bottom-full mb-2 hidden group-hover:block z-10 w-max pointer-events-none">
+                    <div className={`text-[10px] font-bold px-2 py-1 rounded-lg shadow-lg ${isDarkMode ? "bg-slate-700 text-white" : "bg-slate-800 text-white"}`}>
+                      {day.date.getDate()} {day.date.toLocaleDateString(undefined, {month: 'short'})}: {day.amount.toLocaleString()} {currency}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Waterfall Chart */}
+      {waterfallData.length > 0 && (
+        <div className="mb-6">
+          <div className="mb-4">
+            <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#1B7C86] ml-1">
+              {language === "Français" ? "Cascade Cash Flow" : "Cash Flow Waterfall"}
+            </h2>
+          </div>
+          <div className={`rounded-[32px] overflow-hidden border p-4 h-[300px] w-full ${isDarkMode ? "bg-slate-800/40 border-slate-700" : "bg-white border-slate-100 shadow-sm"}`}>
             <ResponsiveContainer width="100%" height="100%">
-              <Sankey
-                data={sankeyData}
-                node={<CustomSankeyNode />}
-                nodePadding={30}
-                margin={{ left: 20, right: 20, top: 20, bottom: 20 }}
-                link={{ strokeOpacity: 0.2 }}
-              >
+              <ComposedChart data={waterfallData} margin={{ top: 20, right: 0, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? "#334155" : "#e2e8f0"} />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? "#94a3b8" : "#64748b" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: isDarkMode ? "#94a3b8" : "#64748b" }} axisLine={false} tickLine={false} tickFormatter={(val) => `${val/1000}k`} />
                 <Tooltip
-                  formatter={(value: any) => [
-                    `${Number(value).toLocaleString()} ${currency}`,
-                    "",
-                  ]}
-                  contentStyle={{
-                    borderRadius: "16px",
-                    border: "none",
-                    padding: "12px",
-                    boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
-                    background: isDarkMode ? "#1e293b" : "#ffffff",
-                  }}
-                  itemStyle={{
-                    color: isDarkMode ? "#ffffff" : "#0F172A",
-                    fontWeight: "900",
-                    fontSize: "14px",
+                  cursor={{ fill: 'transparent' }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className={`p-3 rounded-2xl shadow-lg border ${isDarkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-white border-slate-100 text-slate-800"}`}>
+                          <p className="font-bold text-xs mb-1">{data.name}</p>
+                          <p className={`font-black text-sm ${data.isExpense ? "text-rose-500" : "text-emerald-500"}`}>
+                            {data.isExpense ? "-" : (data.isTotal ? "" : "+")}{data.amount.toLocaleString()} {currency}
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
                   }}
                 />
-              </Sankey>
+                <Bar dataKey="start" stackId="a" fill="transparent" />
+                <Bar dataKey="amount" stackId="a" radius={[4,4,4,4]}>
+                  {waterfallData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.isTotal ? "#3b82f6" : entry.isExpense ? "#ef4444" : "#10b981"} />
+                  ))}
+                </Bar>
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {/* Vampire Expenses (Matrice Coût vs Fréquence) */}
+      {vampireData.length > 0 && (
+        <div className="mb-6">
+          <div className="mb-4">
+            <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#1B7C86] ml-1">
+              {language === "Français" ? "Dépenses Vampires" : "Vampire Expenses"}
+            </h2>
+            <p className="text-[10px] text-slate-400 ml-1 font-bold uppercase tracking-widest mt-1">
+              {language === "Français" ? "Coût Moyen vs Fréquence" : "Avg Cost vs Frequency"}
+            </p>
+          </div>
+          <div className={`rounded-[32px] overflow-hidden border p-4 h-[300px] w-full ${isDarkMode ? "bg-slate-800/40 border-slate-700" : "bg-white border-slate-100 shadow-sm"}`}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: -20 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? "#334155" : "#e2e8f0"} />
+                <XAxis type="number" dataKey="count" name="Fréquence" tick={{ fontSize: 10, fill: isDarkMode ? "#94a3b8" : "#64748b" }} axisLine={false} tickLine={false} />
+                <YAxis type="number" dataKey="avgCost" name="Coût Moyen" tick={{ fontSize: 10, fill: isDarkMode ? "#94a3b8" : "#64748b" }} axisLine={false} tickLine={false} tickFormatter={(val) => `${val}`} />
+                <ZAxis type="number" dataKey="total" range={[100, 1000]} name="Total" />
+                <Tooltip cursor={{ strokeDasharray: '3 3' }} 
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className={`p-3 rounded-2xl shadow-lg border ${isDarkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-white border-slate-100 text-slate-800"}`}>
+                          <p className="font-bold text-xs mb-1 capitalize">{data.name}</p>
+                          <div className="flex flex-col gap-1 text-[10px] uppercase font-bold text-slate-500">
+                            <p>Fréq: <span className="text-slate-800 dark:text-white font-black">{data.count}x</span></p>
+                            <p>Moyen: <span className="text-slate-800 dark:text-white font-black">{Math.round(data.avgCost).toLocaleString()} {currency}</span></p>
+                            <p className="text-rose-500 mt-1 font-black">Total: {data.total.toLocaleString()} {currency}</p>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Scatter data={vampireData} shape="circle">
+                  {vampireData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} opacity={0.8} />
+                  ))}
+                </Scatter>
+              </ScatterChart>
             </ResponsiveContainer>
           </div>
         </div>
