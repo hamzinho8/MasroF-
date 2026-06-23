@@ -783,16 +783,24 @@ export default function Credits({
               return (
                 <div
                   key={entry.id}
-                  className="flex items-center gap-4 p-5 rounded-[32px] border bg-slate-50/50 border-slate-100 opacity-60 grayscale"
+                  className={`group flex items-center gap-4 p-5 rounded-[32px] border transition-all relative backdrop-blur-sm shadow-sm ${
+                    isReceive
+                      ? "bg-indigo-50/30 border-indigo-100/50"
+                      : "bg-amber-50/30 border-amber-100/50"
+                  }`}
                 >
                   <div
-                    className="shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center bg-slate-200 text-slate-400"
+                    className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 shadow-sm ${
+                      isReceive
+                        ? "bg-indigo-600 text-white shadow-indigo-600/20"
+                        : "bg-amber-500 text-white shadow-amber-500/20"
+                    }`}
                   >
                     <HandCoins size={24} />
                   </div>
 
                   <div className="flex-1 min-w-0 py-1">
-                    <p className="font-black text-slate-600 text-sm tracking-tight truncate mb-1 italic select-none line-through">
+                    <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1 italic select-none">
                       {entry.name}
                     </p>
                     <div className="flex flex-col gap-1 mt-1">
@@ -801,7 +809,7 @@ export default function Credits({
                           <Calendar size={10} className="text-slate-400" />
                           {entry.date}
                         </span>
-                        <span className="text-[9px] font-black uppercase tracking-[0.1em] truncate max-w-[100px] text-slate-400 line-through">
+                        <span className="text-[9px] font-black uppercase tracking-[0.1em] truncate max-w-[100px] text-slate-400">
                           {isReceive ? t.owedToMe : t.owedByMe}
                         </span>
                       </div>
@@ -818,7 +826,7 @@ export default function Credits({
 
                   <div className="shrink-0 flex items-center gap-2 pl-2 border-l border-slate-100">
                     <div className="flex flex-col items-end">
-                      <p className="font-black tracking-tighter text-base leading-none text-slate-500 line-through">
+                      <p className="font-black tracking-tighter text-base leading-none text-slate-500">
                         {entry.amount.toLocaleString("fr-FR")}
                       </p>
                       <span className="text-[9px] font-bold uppercase text-slate-400 mt-0.5">

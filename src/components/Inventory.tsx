@@ -303,9 +303,9 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
                       key={item.id}
                       layoutId={`card-${item.id}`}
                       onClick={() => setSelectedItemInfo(item)}
-                      className="group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm bg-slate-50 border-slate-200 hover:border-slate-300 cursor-pointer overflow-hidden opacity-60 hover:opacity-100 grayscale hover:grayscale-0 z-0"
+                      className="group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm bg-slate-50/90 border-slate-100 hover:border-slate-200 hover:shadow-xl hover:shadow-slate-500/10 cursor-pointer overflow-hidden z-0"
                     >
-                      <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 shadow-sm relative z-10 ${cat.bgColor} ${cat.color}`}>
+                      <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 shadow-sm relative z-10 ${cat.bgColor} ${cat.color} opacity-90`}>
                         {predefinedItem?.iconSvg ? (
                            <div dangerouslySetInnerHTML={{ __html: predefinedItem.iconSvg }} className="w-6 h-6 text-current" />
                         ) : (
@@ -315,7 +315,7 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
 
                       <div className="flex-1 min-w-0 flex flex-col justify-center py-1 relative z-10">
                         <div className="flex items-center gap-2 mb-1">
-                          <p className="font-black text-slate-800 text-sm tracking-tight truncate italic select-none line-through">
+                          <p className="font-black text-slate-800 text-sm tracking-tight truncate italic select-none">
                             {item.name}
                           </p>
                           <button 
@@ -325,11 +325,21 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
                             <Tag size={14} className={item.isImportant ? "fill-amber-500" : ""} />
                           </button>
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
-                          <span className="text-[9px] flex items-center gap-1 font-bold uppercase tracking-wider text-slate-400 shrink-0">
-                            <IconComponent size={10} className="text-slate-400" />
-                            {new Date(item.addedAt).toLocaleDateString(language === 'Français' ? 'fr-FR' : language === 'العربية' ? 'ar-MA' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
-                          </span>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                            <span className="text-[9px] flex items-center gap-1 font-bold uppercase tracking-wider text-emerald-500 shrink-0">
+                              <IconComponent size={10} className="text-emerald-500" />
+                              {new Date(item.addedAt).toLocaleDateString(language === 'Français' ? 'fr-FR' : language === 'العربية' ? 'ar-MA' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </span>
+                          </div>
+                          {item.history && item.history.length > 0 && (
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                              <span className="text-[9px] flex items-center gap-1 font-bold uppercase tracking-wider text-rose-500 shrink-0">
+                                <IconComponent size={10} className="text-rose-500" />
+                                {new Date(item.history[item.history.length - 1].timestamp).toLocaleDateString(language === 'Français' ? 'fr-FR' : language === 'العربية' ? 'ar-MA' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
 

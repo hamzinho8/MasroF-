@@ -28,7 +28,8 @@ import {
   Landmark,
   Home as HomeIcon,
   HeartPulse,
-  Heart
+  Heart,
+  Search
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -377,7 +378,7 @@ export default function History({ transactions, predefinedItems, language, curre
       </div>
 
       {/* New Professional Filter Pills Section */}
-      <div className="grid grid-cols-3 gap-2 px-1">
+      <div className="grid grid-cols-2 gap-2 px-1">
         {/* Date Filter Pill */}
         <button 
           onClick={() => setActiveInlineMenu(activeInlineMenu === 'DATE' ? null : 'DATE')}
@@ -422,6 +423,22 @@ export default function History({ transactions, predefinedItems, language, curre
             <span className={`text-[8px] font-bold uppercase tracking-tighter shrink-0 ${activeInlineMenu === 'CATEGORY' ? 'text-rose-100/60' : 'text-slate-400'}`}>{language === 'العربية' ? 'فئة' : 'Catégorie'}</span>
             <span className={`text-[10px] font-black truncate w-full ${activeInlineMenu === 'CATEGORY' ? 'text-white' : 'text-rose-700'}`}>
               {selectedCategory === t.tous ? (language === 'العربية' ? 'الكل' : 'Toutes') : selectedCategory}
+            </span>
+          </div>
+        </button>
+
+        {/* Search Filter Pill */}
+        <button 
+          onClick={() => setActiveInlineMenu(activeInlineMenu === 'SEARCH' ? null : 'SEARCH')}
+          className={`flex items-center gap-2 px-2 py-2.5 rounded-[28px] transition-all active:scale-95 shadow-sm border ${activeInlineMenu === 'SEARCH' ? 'bg-amber-900 border-amber-900 text-white' : 'bg-amber-50/40 border-amber-100/50 hover:bg-amber-100/40'}`}
+        >
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border transition-colors ${activeInlineMenu === 'SEARCH' ? 'bg-white/20 border-white/20 text-white' : 'bg-white border-amber-50 text-amber-600'}`}>
+            <Search size={16} strokeWidth={2.5} />
+          </div>
+          <div className="flex flex-col items-start leading-none min-w-0 text-left">
+            <span className={`text-[8px] font-bold uppercase tracking-tighter shrink-0 ${activeInlineMenu === 'SEARCH' ? 'text-amber-100/60' : 'text-slate-400'}`}>{language === 'العربية' ? 'بحث' : 'Recherche'}</span>
+            <span className={`text-[10px] font-black truncate w-full ${activeInlineMenu === 'SEARCH' ? 'text-white' : 'text-amber-800'}`}>
+              {searchQuery ? searchQuery : (language === 'العربية' ? 'الكل' : 'Tous')}
             </span>
           </div>
         </button>
@@ -520,6 +537,31 @@ export default function History({ transactions, predefinedItems, language, curre
                       <span className="text-[9px] font-black uppercase tracking-tight line-clamp-1 w-full text-center">{cat.label}</span>
                     </button>
                   ))}
+                </div>
+              )}
+
+              {activeInlineMenu === 'SEARCH' && (
+                <div className="space-y-4 text-center">
+                  <div className="flex justify-between items-center px-1">
+                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{language === 'العربية' ? 'بحث بالإسم' : 'Recherche par nom'}</span>
+                    {searchQuery && (
+                      <button onClick={() => setSearchQuery('')} className="px-3 py-1.5 rounded-lg bg-rose-50 text-[9px] font-black uppercase text-rose-500 flex items-center gap-2 transition-all hover:bg-rose-100">
+                        <X size={12} />
+                        Effacer
+                      </button>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      className="w-full bg-slate-50 border-none rounded-2xl py-4 px-12 text-sm font-black text-slate-700 outline-none transition-all focus:bg-slate-100 placeholder:text-slate-300 placeholder:font-bold"
+                      placeholder={language === 'العربية' ? 'ابحث عن عنصر...' : 'Rechercher un article...'}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      autoFocus
+                    />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} strokeWidth={2.5} />
+                  </div>
                 </div>
               )}
             </div>

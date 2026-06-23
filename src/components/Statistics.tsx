@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 import { Transaction, PredefinedItem } from "../types";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sankey, Layer } from "recharts";
 import { createPortal } from "react-dom";
 import {
   ICON_MAP,
@@ -54,6 +54,27 @@ const CATEGORY_STYLES: Record<
     },
   ])
 );
+
+const CustomSankeyNode = (props: any) => {
+  const { x, y, width, height, index, payload } = props;
+  const isOut = x > 150;
+  return (
+    <Layer key={`CustomNode${index}`}>
+      <rect x={x} y={y} width={width} height={height} fill={payload.fill || '#94a3b8'} rx={4} />
+      <text
+        x={isOut ? x - 8 : x + width + 8}
+        y={y + height / 2}
+        textAnchor={isOut ? 'end' : 'start'}
+        fill={payload.fill || '#94a3b8'}
+        fontSize="11"
+        fontWeight="900"
+        dy={4}
+      >
+        {payload.name}
+      </text>
+    </Layer>
+  );
+};
 
 export default function Statistics({
   transactions,
@@ -255,6 +276,110 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
       }));
   }, [periodStats]);
 
+  const sankeyData = useMemo(() => {
+    const now = new Date();
+    const startOfPeriod = new Date();
+    if (period === "day") startOfPeriod.setHours(0, 0, 0, 0);
+    else if (period === "week") {
+      const d = now.getDay();
+      const diff = now.getDate() - d + (d === 0 ? -6 : 1);
+      startOfPeriod.setDate(diff);
+      startOfPeriod.setHours(0, 0, 0, 0);
+    } else if (period === "month") {
+      startOfPeriod.setDate(1);
+      startOfPeriod.setHours(0, 0, 0, 0);
+    }
+
+    let totalSalaire = 0;
+    let totalAutresEntrees = 0;
+    let totalExpense = 0;
+    const categoriesExp: Record<string, number> = {};
+
+    transactions.filter(t => t.timestamp >= startOfPeriod.getTime()).forEach(t => {
+      const isCredit =
+        t.category &&
+        [
+          "on me doit",
+          "je dois",
+          "مستحقات لي",
+          "ديون علي",
+          "owed to me",
+          "i owe",
+          "loans",
+          "debts",
+          "crédit +",
+          "crédit --",
+        ].includes(t.category.toLowerCase());
+
+      if (isCredit) return;
+
+      if (t.type === 'INCOME' || (t.type as any) === 'income') {
+        if (t.label.toLowerCase().includes('salaire')) {
+          totalSalaire += t.amount;
+        } else {
+          totalAutresEntrees += t.amount;
+        }
+      } else if (t.type === 'EXPENSE' || (t.type as any) === 'expense') {
+        totalExpense += t.amount;
+        const cat = t.category || "Autres";
+        categoriesExp[cat] = (categoriesExp[cat] || 0) + t.amount;
+      }
+    });
+
+    if (totalExpense === 0) return null;
+
+    const totalIncome = totalSalaire + totalAutresEntrees;
+    let deficit = 0;
+    if (totalExpense > totalIncome) {
+      deficit = totalExpense - totalIncome;
+    }
+
+    const nodes: any[] = [];
+    const nodeMap: Record<string, number> = {};
+    let nodeIndex = 0;
+
+    const addNode = (name: string, color: string) => {
+      nodes.push({ name, fill: color });
+      nodeMap[name] = nodeIndex++;
+    };
+
+    if (totalSalaire > 0) addNode(language === 'العربية' ? 'راتب' : "Salaire", "#10B981");
+    if (totalAutresEntrees > 0) addNode(language === 'العربية' ? 'مداخيل أخرى' : "Autres Entrées", "#3B82F6");
+    if (deficit > 0) addNode(language === 'العربية' ? 'توفير / رصيد' : "Épargne/Solde", "#F59E0B");
+
+    const totalSource = totalSalaire + totalAutresEntrees + deficit;
+
+    Object.keys(categoriesExp).forEach(cat => {
+      const color = CATEGORY_STYLES[cat]?.color || "#64748B";
+      addNode(cat, color);
+    });
+
+    const links: any[] = [];
+
+    const addLinksForSource = (sourceName: string, sourceAmount: number) => {
+      if (sourceAmount > 0 && nodeMap[sourceName] !== undefined) {
+        Object.keys(categoriesExp).forEach(cat => {
+          const val = categoriesExp[cat] * (sourceAmount / totalSource);
+          if (val > 0.01) {
+            links.push({
+              source: nodeMap[sourceName],
+              target: nodeMap[cat],
+              value: Number(val.toFixed(2))
+            });
+          }
+        });
+      }
+    };
+
+    addLinksForSource(language === 'العربية' ? 'راتب' : "Salaire", totalSalaire);
+    addLinksForSource(language === 'العربية' ? 'مداخيل أخرى' : "Autres Entrées", totalAutresEntrees);
+    addLinksForSource(language === 'العربية' ? 'توفير / رصيد' : "Épargne/Solde", deficit);
+
+    if (links.length === 0) return null;
+
+    return { nodes, links };
+  }, [transactions, period, language]);
+
   const selectedCategoryTransactions = useMemo(() => {
     if (!selectedPieCategory) return [];
 
@@ -383,6 +508,55 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
                   }}
                 />
               </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {/* Sankey Chart */}
+      {sankeyData && (
+        <div className="mb-6">
+          <div className="mb-4">
+            <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#1B7C86] ml-1">
+              {language === "Français"
+                ? "Flux de trésorerie"
+                : language === 'العربية' ? 'التدفقات النقدية' : "Cash Flow"}
+            </h2>
+          </div>
+          <div
+            className={`rounded-[32px] overflow-hidden border p-4 h-[350px] w-full ${
+              isDarkMode
+                ? "bg-slate-800/40 border-slate-700"
+                : "bg-white border-slate-100 shadow-sm"
+            }`}
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <Sankey
+                data={sankeyData}
+                node={<CustomSankeyNode />}
+                nodePadding={30}
+                margin={{ left: 20, right: 20, top: 20, bottom: 20 }}
+                link={{ strokeOpacity: 0.2 }}
+              >
+                <Tooltip
+                  formatter={(value: any) => [
+                    `${Number(value).toLocaleString()} ${currency}`,
+                    "",
+                  ]}
+                  contentStyle={{
+                    borderRadius: "16px",
+                    border: "none",
+                    padding: "12px",
+                    boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+                    background: isDarkMode ? "#1e293b" : "#ffffff",
+                  }}
+                  itemStyle={{
+                    color: isDarkMode ? "#ffffff" : "#0F172A",
+                    fontWeight: "900",
+                    fontSize: "14px",
+                  }}
+                />
+              </Sankey>
             </ResponsiveContainer>
           </div>
         </div>
