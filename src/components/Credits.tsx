@@ -795,14 +795,24 @@ export default function Credits({
                     <p className="font-black text-slate-600 text-sm tracking-tight truncate mb-1 italic select-none line-through">
                       {entry.name}
                     </p>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
-                      <span className="text-[9px] flex items-center gap-1 font-bold uppercase tracking-wider text-slate-400 shrink-0">
-                        <Calendar size={10} className="text-slate-400" />
-                        {entry.settledDate || entry.date}
-                      </span>
-                      <span className="text-[9px] font-black uppercase tracking-[0.1em] truncate max-w-[100px] text-slate-400 line-through">
-                        {isReceive ? t.owedToMe : t.owedByMe}
-                      </span>
+                    <div className="flex flex-col gap-1 mt-1">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                        <span className="text-[9px] flex items-center gap-1 font-bold uppercase tracking-wider text-slate-400 shrink-0">
+                          <Calendar size={10} className="text-slate-400" />
+                          {entry.date}
+                        </span>
+                        <span className="text-[9px] font-black uppercase tracking-[0.1em] truncate max-w-[100px] text-slate-400 line-through">
+                          {isReceive ? t.owedToMe : t.owedByMe}
+                        </span>
+                      </div>
+                      {entry.settledDate && (
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                          <span className="text-[9px] flex items-center gap-1 font-bold uppercase tracking-wider text-emerald-500 shrink-0">
+                            <Calendar size={10} className="text-emerald-500" />
+                            {language === "Français" ? "RÉGLÉ LE: " : language === "العربية" ? "تمت التسوية في: " : "SETTLED: "} {entry.settledDate}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 

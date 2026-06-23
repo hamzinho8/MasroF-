@@ -38,7 +38,7 @@ import {
   InventoryItem,
   ShoppingListItem,
 } from "./types";
-import { INITIAL_PREDEFINED_ITEMS } from "./constants";
+import { INITIAL_PREDEFINED_ITEMS, getArticleInfo } from "./constants";
 import { useSwipeable } from "react-swipeable";
 
 type Tab =
@@ -270,13 +270,15 @@ export default function App() {
               updatedItem.category !== constItem.category ||
               updatedItem.colorHex !== constItem.colorHex ||
               updatedItem.categoryColorHex !== constItem.categoryColorHex ||
-              updatedItem.iconSvg !== constItem.iconSvg
+              updatedItem.iconSvg !== constItem.iconSvg ||
+              updatedItem.dailyLimit !== constItem.dailyLimit
             ) {
               updatedItem.iconName = constItem.iconName;
               updatedItem.category = constItem.category;
               updatedItem.colorHex = constItem.colorHex;
               updatedItem.categoryColorHex = constItem.categoryColorHex;
               updatedItem.iconSvg = constItem.iconSvg;
+              updatedItem.dailyLimit = constItem.dailyLimit;
               migrated = true;
             }
           }
@@ -853,10 +855,18 @@ export default function App() {
       creditEntries.forEach((c) => {
         if (!c.settled && c.showOnWidget) {
           if (c.type === "OWE_ME") {
-            newsItems.push(`<b><font color="#10B981">${c.name} ➡️➡️➡️🤜💴${c.amount} ${currency}</font></b>`);
+            newsItems.push(`<b><font color="#4F46E5">${c.name} ➡️➡️➡️🤜💴${c.amount} ${currency}</font></b>`);
           } else {
-            newsItems.push(`<b><font color="#EF4444">${c.amount} ${currency} ➡️➡️➡️🤜💴${c.name}</font></b>`);
+            newsItems.push(`<b><font color="#F59E0B">${c.amount} ${currency} ➡️➡️➡️🤜💴${c.name}</font></b>`);
           }
+        }
+      });
+
+      inventoryItems.forEach((item) => {
+        if (item.isImportant && item.quantity === 0) {
+          const info = getArticleInfo(item.name, item.category || "Autres", predefinedItems);
+          const colorHex = info.colorHex || "#64748B";
+          newsItems.push(`<b><font color="${colorHex}">${item.name} est épuisé .</font></b>`);
         }
       });
 
@@ -889,6 +899,7 @@ export default function App() {
     reminders,
     shoppingList,
     creditEntries,
+    predefinedItems,
   ]);
 
   const markUnbackedChanges = () => {

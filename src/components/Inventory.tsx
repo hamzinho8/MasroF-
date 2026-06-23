@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Package, PackageOpen, Plus, Minus, X, Info, Search, History as HistoryIcon, User, ListTodo, ShoppingCart } from 'lucide-react';
+import { Package, PackageOpen, Plus, Minus, X, Info, Search, History as HistoryIcon, User, ListTodo, ShoppingCart, Tag } from 'lucide-react';
 import { InventoryItem, InventoryDecreaseAction, ShoppingListItem, PredefinedItem } from '../types';
 import { ICON_MAP, CATEGORIES } from '../constants';
 
@@ -146,6 +146,14 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
     }
   };
 
+  const toggleImportant = (id: string) => {
+    const updatedItems = items.map(i => i.id === id ? { ...i, isImportant: !i.isImportant } : i);
+    onItemsChange(updatedItems);
+    if (selectedItemInfo?.id === id) {
+      setSelectedItemInfo({ ...selectedItemInfo, isImportant: !selectedItemInfo.isImportant });
+    }
+  };
+
   const activeItems = items.filter(item => item.quantity > 0);
   const consumedItems = items.filter(item => item.quantity === 0);
 
@@ -239,9 +247,17 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
                     </div>
 
                     <div className="flex-1 min-w-0 flex flex-col justify-center py-1 relative z-10">
-                      <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1 italic select-none">
-                        {item.name}
-                      </p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-black text-slate-800 text-sm tracking-tight truncate italic select-none">
+                          {item.name}
+                        </p>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); toggleImportant(item.id); }}
+                          className={`shrink-0 transition-colors z-20 relative p-1 rounded-full ${item.isImportant ? 'text-amber-500' : 'text-slate-300 hover:text-slate-400 bg-white/50 hover:bg-white border border-transparent hover:border-slate-200'}`}
+                        >
+                          <Tag size={14} className={item.isImportant ? "fill-amber-500" : ""} />
+                        </button>
+                      </div>
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
                         <span className="text-[9px] flex items-center gap-1 font-bold uppercase tracking-wider text-slate-400 shrink-0">
                           <IconComponent size={10} className="text-slate-400" />
@@ -298,9 +314,17 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
                       </div>
 
                       <div className="flex-1 min-w-0 flex flex-col justify-center py-1 relative z-10">
-                        <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1 italic select-none line-through">
-                          {item.name}
-                        </p>
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="font-black text-slate-800 text-sm tracking-tight truncate italic select-none line-through">
+                            {item.name}
+                          </p>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); toggleImportant(item.id); }}
+                            className={`shrink-0 transition-colors z-20 relative p-1 rounded-full ${item.isImportant ? 'text-amber-500' : 'text-slate-300 hover:text-slate-400 bg-white/50 hover:bg-white border border-transparent hover:border-slate-200'}`}
+                          >
+                            <Tag size={14} className={item.isImportant ? "fill-amber-500" : ""} />
+                          </button>
+                        </div>
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
                           <span className="text-[9px] flex items-center gap-1 font-bold uppercase tracking-wider text-slate-400 shrink-0">
                             <IconComponent size={10} className="text-slate-400" />

@@ -62,6 +62,7 @@ export interface InventoryItem {
   color?: string;
   bg?: string;
   category?: string;
+  isImportant?: boolean;
 }
 
 export interface ShoppingListItem {
