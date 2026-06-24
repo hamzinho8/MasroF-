@@ -1204,19 +1204,14 @@ export default function App() {
     });
   };
 
-  const handleAddBankBalance = (amount: number) => {
+  const handleAddBankBalance = (amount: number, label: string, category: string) => {
     setBankBalance((prev) => prev + amount);
     const tx = {
       id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
-      label:
-        language === "Français"
-          ? "Salaire / Dépôt"
-          : language === "العربية"
-          ? "راتب / إيداع"
-          : "Salary / Deposit",
+      label: label || (language === "Français" ? "Salaire / Dépôt" : language === "العربية" ? "راتب / إيداع" : "Salary / Deposit"),
       amount,
       type: "INCOME",
-      category: "Banque",
+      category: category || "Banque",
       date: new Date()
         .toLocaleString("fr-FR", {
           day: "2-digit",
@@ -1320,6 +1315,8 @@ export default function App() {
             predefinedItems={predefinedItems}
             onAddClick={(type) => openModal(type)}
             onAddBankBalance={handleAddBankBalance}
+            onDelete={deleteTransaction}
+            onUpdate={updateTransaction}
           />
         );
       case "inventory":

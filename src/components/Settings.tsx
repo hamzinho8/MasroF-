@@ -29,6 +29,7 @@ import {
   Palette,
   Smartphone,
   Upload,
+  Search,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import MasrofLogo from "./Logo";
@@ -156,6 +157,7 @@ export default function Settings({
   const [isResetting, setIsResetting] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [showScannerFab, setShowScannerFab] = useLocalStorage<boolean>(
     "showScannerFab",
     true
@@ -198,7 +200,10 @@ export default function Settings({
   const [backupReminder, setBackupReminder] = useState(
     () => localStorage.getItem("backupReminderEnabled") === "true"
   );
-  const [iconMatcherVersion, setIconMatcherVersion] = useLocalStorage("iconMatcherVersion", "1.0.0");
+  const [iconMatcherVersion, setIconMatcherVersion] = useLocalStorage(
+    "iconMatcherVersion",
+    "1.0.0"
+  );
   const [isSyncingIconMatcher, setIsSyncingIconMatcher] = useState(false);
 
   const handleIconMatcherSync = () => {
@@ -333,91 +338,70 @@ export default function Settings({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="relative min-h-screen bg-[#F0F7F8] text-[#1B5E66] font-sans selection:bg-[#2D8B96]/30 pb-24 overflow-hidden"
+      className="relative min-h-screen bg-slate-50 text-slate-800 font-sans pb-24"
     >
       {/* Background Holographic Motif */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-30">
-        <svg width="100%" height="100%" className="w-full h-full opacity-10">
-          <pattern
-            id="grid-light"
-            width="50"
-            height="50"
-            patternUnits="userSpaceOnUse"
-          >
-            <path
-              d="M 50 0 L 0 0 0 50"
-              fill="none"
-              stroke="#2D8B96"
-              strokeWidth="0.5"
-            />
-            <circle cx="0" cy="0" r="1.5" fill="#2D8B96" />
-          </pattern>
-          <rect width="100%" height="100%" fill="url(#grid-light)" />
-        </svg>
-        <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-white to-transparent opacity-60" />
-        <motion.div
-          animate={{ opacity: [0.1, 0.2, 0.1], scale: [1, 1.1, 1] }}
-          transition={{ duration: 8, repeat: Infinity }}
-          className="absolute -top-20 -left-20 w-[400px] h-[400px] bg-[#2D8B96]/20 rounded-full blur-[120px]"
-        />
+        <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-b from-indigo-50 to-transparent opacity-80" />
       </div>
 
-      <div className="relative z-10 space-y-0">
-        {/* Refined Header */}
-        <div className="bg-white/80 backdrop-blur-xl border-b border-teal-brand/10 p-10 flex items-center justify-center shadow-[0_4px_30px_rgba(45,139,150,0.05)]">
-          <div className="flex flex-col items-center">
-            <h2 className="text-4xl font-display font-black tracking-[-0.04em] text-teal-brand">
-              Masrof<span className="text-gold-soft">.</span>
-              <span className="text-slate-900/10 font-light">Config</span>
+      <div className="relative z-10 max-w-2xl mx-auto space-y-6 px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-3xl font-black tracking-tight text-slate-800">
+              Paramètres
             </h2>
-            <div className="flex items-center gap-3 mt-3">
-              <div className="w-1 h-1 rounded-full bg-gold-soft animate-pulse" />
-              <p className="text-[10px] font-display font-bold uppercase tracking-[0.4em] text-slate-400">
-                Paramètres du Système
-              </p>
-            </div>
+            <p className="text-sm font-bold text-slate-400 mt-1">
+              Personnalisez votre expérience
+            </p>
+          </div>
+          <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center border border-slate-100">
+            <Settings2 size={24} className="text-purple-500" />
           </div>
         </div>
 
-        {/* Edge-to-Edge Content Panel */}
-        <div className="divide-y divide-[#2D8B96]/10 bg-white/40 backdrop-blur-sm">
-          {/* Section: Language & Export */}
-          <div className="p-0">
+        {/* Quick Search Bar */}
+        <div className="relative mb-8">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Search size={18} className="text-purple-400" />
+          </div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Rechercher un paramètre..."
+            className="w-full bg-white border border-slate-100 rounded-[20px] py-4 pl-12 pr-4 text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-purple-200 focus:ring-4 focus:ring-purple-50 transition-all shadow-sm"
+          />
+        </div>
+
+        {/* Group: Général */}
+        <div className="space-y-2">
+          <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-4">
+            Général
+          </h3>
+          <div className="bg-white rounded-[24px] overflow-hidden shadow-sm border border-slate-100">
             <SettingsItem
               icon={<Sparkles />}
-              title="LANGUE"
+              title="Langue"
               subtitle={language}
               onClick={() => setShowSelector("LANGUAGE")}
-              showArrow={true}
             />
             <SettingsItem
-              icon={<Brain />}
-              title="INTELLIGENCE ARTIFICIELLE"
-              subtitle={
-                apiKeyInput || openRouterKeyInput
-                  ? "Clé configurée"
-                  : "Non configurée (Requise pour scan OCR)"
-              }
-              onClick={() => setShowSelector("API_SETTINGS")}
-              showArrow={true}
+              icon={<Coins />}
+              title="Devise"
+              subtitle={`Devise par défaut: ${currency}`}
+              onClick={() => setShowSelector("CURRENCY")}
             />
             <SettingsItem
-              icon={<Plus />}
-              title="GESTION DES ARTICLES"
-              subtitle={`${predefinedItems.length} ARTICLES CONFIGURÉS`}
-              onClick={() => setShowArticleManager(true)}
-              showArrow={true}
-            />
-            <SettingsItem
-              icon={<Bell />}
-              title="NOTIFICATIONS & ALERTES"
-              subtitle="Rappels, alarmes et sauvegarde"
-              onClick={() => setShowNotificationCenter(true)}
-              showArrow={true}
+              icon={<Home />}
+              title="Sections de l'accueil"
+              subtitle="Organiser et masquer les sections"
+              onClick={() => setShowHomeSectionsManager(true)}
             />
             <SettingsItem
               icon={<Smartphone />}
-              title="RÉGLAGES WIDGET ANDROID"
+              title="Réglages Widget"
               subtitle={
                 widgetMode === "spending"
                   ? "Dépenses hebdo"
@@ -426,70 +410,25 @@ export default function Settings({
                   : "Solde Bancaire"
               }
               onClick={() => setShowSelector("WIDGET_SETTINGS")}
-              showArrow={true}
-            />
-            <SettingsItem
-              icon={<Home />}
-              title="SECTIONS DE L'ACCUEIL"
-              subtitle="Organiser et masquer les sections"
-              onClick={() => setShowHomeSectionsManager(true)}
-              showArrow={true}
-            />
-            <SettingsItem
-              icon={<Download />}
-              title="RAPPORT PDF"
-              subtitle="Télécharger un rapport PDF"
-              onClick={exportToPDF}
-              showArrow={true}
-            />
-            <SettingsItem
-              icon={<Download />}
-              title="SAUVEGARDER MES DONNÉES"
-              subtitle="Créer un fichier de sauvegarde (.dat)"
-              onClick={async () => {
-                await exportDataToFile();
-              }}
-              showArrow={true}
-            />
-            <SettingsItem
-              icon={<Upload />}
-              title="RESTAURATION DE DONNÉES"
-              subtitle="Importer un fichier de sauvegarde crypté"
-              onClick={handleRestoreData}
-              showArrow={true}
-            />
-            <SettingsItem
-              icon={<Database className={isSyncingIconMatcher ? "animate-pulse" : ""} />}
-              title="BASE DE DONNÉES ICONMATCHER"
-              subtitle={isSyncingIconMatcher ? "Synchronisation en cours..." : `V ${iconMatcherVersion}`}
-              onClick={handleIconMatcherSync}
-              showArrow={false}
-              rightContent={
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleIconMatcherSync();
-                  }}
-                  disabled={isSyncingIconMatcher}
-                  className="w-8 h-8 rounded-full bg-[#2D8B96]/10 flex items-center justify-center text-[#2D8B96] hover:bg-[#2D8B96]/20 transition-colors disabled:opacity-50"
-                  title="Synchroniser IconMatcher"
-                >
-                  <RefreshCw size={14} className={isSyncingIconMatcher ? "animate-spin" : ""} />
-                </button>
-              }
             />
           </div>
+        </div>
 
-          <div className="py-2 px-0">
-            <div className="px-6 py-4 flex items-center gap-4 bg-white/40 border-y border-[#2D8B96]/5">
-              <div className="w-10 h-10 rounded-full border border-[#2D8B96]/30 flex items-center justify-center text-[#2D8B96] shadow-[0_0_10px_rgba(45,139,150,0.1)]">
-                <Moon size={18} />
+        {/* Group: Personnalisation */}
+        <div className="space-y-2">
+          <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-4">
+            Personnalisation
+          </h3>
+          <div className="bg-white rounded-[24px] overflow-hidden shadow-sm border border-slate-100">
+            <div className="px-5 py-4 flex items-center gap-4 bg-white border-b border-slate-100">
+              <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-500">
+                <Moon size={20} strokeWidth={2} />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-bold text-[#1B5E66] uppercase tracking-tight">
+                <p className="text-[14px] font-bold text-slate-800 tracking-tight">
                   Mode Sombre
                 </p>
-                <p className="text-[10px] font-black text-[#2D8B96] tracking-widest uppercase">
+                <p className="text-[11px] font-medium text-slate-400">
                   {isDarkMode ? "Activé" : "Désactivé"}
                 </p>
               </div>
@@ -499,30 +438,35 @@ export default function Settings({
               />
             </div>
             <SettingsItem
-              icon={<Coins />}
-              title="MONNAIE"
-              subtitle={`Devise par défaut: ${currency}`}
-              onClick={() => setShowSelector("CURRENCY")}
-              showArrow={true}
+              icon={<Plus />}
+              title="Gestion des articles"
+              subtitle={`${predefinedItems.length} articles configurés`}
+              onClick={() => setShowArticleManager(true)}
             />
           </div>
+        </div>
 
-          <div className="py-2 px-0">
-            <div className="px-6 py-4 flex items-center justify-between bg-white/40 border-y border-[#2D8B96]/5">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full border border-[#2D8B96]/30 flex items-center justify-center text-[#2D8B96] shadow-[0_0_10px_rgba(45,139,150,0.1)]">
-                  <Shield size={18} />
+        {/* Group: Sécurité */}
+        <div className="space-y-2">
+          <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-4">
+            Sécurité
+          </h3>
+          <div className="bg-white rounded-[24px] overflow-hidden shadow-sm border border-slate-100">
+            <div className="px-5 py-4 flex items-center justify-between bg-white border-b border-slate-100">
+              <div className="flex items-center gap-4 flex-1">
+                <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-500">
+                  <Shield size={20} strokeWidth={2} />
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-[#1B5E66] uppercase tracking-tight">
+                <div className="flex-1">
+                  <p className="text-[14px] font-bold text-slate-800 tracking-tight">
                     Verrouillage App (Code)
                   </p>
-                  <p className="text-[10px] font-black text-[#2D8B96] tracking-widest uppercase">
+                  <p className="text-[11px] font-medium text-slate-400">
                     {appPin ? "Activé" : "Désactivé"}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 {appPin && (
                   <button
                     onClick={() => {
@@ -530,7 +474,7 @@ export default function Settings({
                       setTempPin("");
                       setShowSelector("PIN_SETUP");
                     }}
-                    className="text-[10px] font-black uppercase text-[#2D8B96] border border-[#2D8B96]/30 px-3 py-1.5 rounded-full active:scale-95 transition-all"
+                    className="text-[10px] font-black uppercase text-indigo-500 bg-indigo-50 px-3 py-1.5 rounded-full active:scale-95 transition-all"
                   >
                     Modifier
                   </button>
@@ -549,73 +493,144 @@ export default function Settings({
                 />
               </div>
             </div>
-
-            <div className="px-6 py-4 flex items-center justify-between bg-white/40 border-b border-[#2D8B96]/5">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full border border-[#2D8B96]/30 flex items-center justify-center text-[#2D8B96] shadow-[0_0_10px_rgba(45,139,150,0.1)]">
-                  <Sparkles size={18} />
+            <div className="px-5 py-4 flex items-center justify-between bg-white">
+              <div className="flex items-center gap-4 flex-1">
+                <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-500">
+                  <Sparkles size={20} strokeWidth={2} />
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-[#1B5E66] uppercase tracking-tight">
-                    Empreinte / Biométrie
+                <div className="flex-1">
+                  <p className="text-[14px] font-bold text-slate-800 tracking-tight">
+                    Biométrie
                   </p>
-                  <p className="text-[10px] font-black text-[#2D8B96] tracking-widest uppercase">
+                  <p className="text-[11px] font-medium text-slate-400">
                     {appBiometric ? "Activée" : "Désactivée"}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <Switch
-                  active={appBiometric}
-                  onToggle={() => onAppBiometricChange(!appBiometric)}
-                />
-              </div>
+              <Switch
+                active={appBiometric}
+                onToggle={() => onAppBiometricChange(!appBiometric)}
+              />
             </div>
           </div>
+        </div>
 
-          {/* Final Actions */}
-          <div className="p-0">
+        {/* Group: Fonctionnalités Avancées */}
+        <div className="space-y-2">
+          <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-4">
+            Fonctionnalités
+          </h3>
+          <div className="bg-white rounded-[24px] overflow-hidden shadow-sm border border-slate-100">
+            <SettingsItem
+              icon={<Brain />}
+              title="Intelligence Artificielle"
+              subtitle={
+                apiKeyInput || openRouterKeyInput
+                  ? "Clé configurée"
+                  : "Non configurée (Requise pour scan OCR)"
+              }
+              onClick={() => setShowSelector("API_SETTINGS")}
+            />
+            <SettingsItem
+              icon={<Bell />}
+              title="Notifications & Alertes"
+              subtitle="Rappels, alarmes et sauvegarde"
+              onClick={() => setShowNotificationCenter(true)}
+            />
+            <SettingsItem
+              icon={<Database />}
+              title="Base de données IconMatcher"
+              subtitle={
+                isSyncingIconMatcher
+                  ? "Synchronisation..."
+                  : `Version ${iconMatcherVersion}`
+              }
+              onClick={handleIconMatcherSync}
+              showArrow={false}
+              rightContent={
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleIconMatcherSync();
+                  }}
+                  disabled={isSyncingIconMatcher}
+                  className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-500 hover:bg-purple-100 transition-colors disabled:opacity-50"
+                  title="Synchroniser"
+                >
+                  <RefreshCw
+                    size={14}
+                    className={isSyncingIconMatcher ? "animate-spin" : ""}
+                  />
+                </button>
+              }
+            />
+          </div>
+        </div>
+
+        {/* Group: Données */}
+        <div className="space-y-2">
+          <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-4">
+            Données
+          </h3>
+          <div className="bg-white rounded-[24px] overflow-hidden shadow-sm border border-slate-100">
+            <SettingsItem
+              icon={<Download />}
+              title="Rapport PDF"
+              subtitle="Télécharger un rapport détaillé"
+              onClick={exportToPDF}
+            />
+            <SettingsItem
+              icon={<Download />}
+              title="Sauvegarder"
+              subtitle="Créer un fichier de sauvegarde"
+              onClick={async () => await exportDataToFile()}
+            />
+            <SettingsItem
+              icon={<Upload />}
+              title="Restaurer"
+              subtitle="Importer une sauvegarde"
+              onClick={handleRestoreData}
+            />
+          </div>
+        </div>
+
+        {/* Group: Support & Danger */}
+        <div className="space-y-2">
+          <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-4">
+            Support
+          </h3>
+          <div className="bg-white rounded-[24px] overflow-hidden shadow-sm border border-slate-100">
             <SettingsItem
               icon={<HelpCircle />}
-              title="AIDE & SUPPORT"
+              title="Aide & Support"
+              subtitle="Questions fréquentes et tutoriels"
               onClick={() => setShowHelp(true)}
-              showArrow={true}
             />
-            <button
+            <SettingsItem
+              icon={<Trash2 />}
+              title="Réinitialiser"
+              subtitle="Effacer toutes les données"
               onClick={() => setShowResetConfirm(true)}
-              className="w-full flex items-center gap-4 p-7 hover:bg-rose-50/50 transition-all border-b border-[#2D8B96]/5 group"
-            >
-              <div className="w-11 h-11 rounded-full border border-rose-500/30 flex items-center justify-center text-rose-500 group-hover:shadow-[0_0_15px_rgba(239,68,68,0.3)] transition-all">
-                <Trash2 size={20} />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="text-sm font-black text-rose-600 uppercase tracking-[0.05em] italic">
-                  REINITIALISER TOUTES LES DONNÉES
-                </p>
-                <p className="text-[10px] font-bold text-[#1B5E66]/40 uppercase tracking-tighter mt-0.5">
-                  Effacer l'historique et remettre le solde à zéro
-                </p>
-              </div>
-              <ChevronRight size={18} className="text-[#1B5E66]/20" />
-            </button>
+              danger={true}
+            />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="text-center py-12">
-          <p className="text-[10px] font-black uppercase tracking-[0.6em] text-[#1B5E66]/20 italic">
-            MASROF.PULSE v1.2.0 • CORE_SYSTEM_ACTIVE
-          </p>
-          <div className="flex items-center justify-center gap-2 mt-4">
-            {[1, 2, 3].map((i) => (
-              <motion.div
-                key={i}
-                animate={{ opacity: [0.2, 1, 0.2] }}
-                transition={{ duration: 2, delay: i * 0.4, repeat: Infinity }}
-                className="w-1 h-1 bg-[#2D8B96] rounded-full shadow-[0_0_5px_#2D8B96]"
-              />
-            ))}
+        <div className="text-center py-8">
+          <div className="flex justify-center mb-4">
+            <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm">
+              <Settings2 size={24} className="text-purple-500 opacity-50" />
+            </div>
           </div>
+          <h3 className="text-lg font-black text-slate-800 tracking-tight">Masrof</h3>
+          <p className="text-[11px] font-bold text-slate-400 mt-1">Version 2.0.0</p>
+          <div className="flex items-center justify-center gap-4 mt-6">
+            <button className="text-xs font-bold text-slate-500 hover:text-purple-500 transition-colors">Conditions</button>
+            <div className="w-1 h-1 rounded-full bg-slate-300" />
+            <button className="text-xs font-bold text-slate-500 hover:text-purple-500 transition-colors">Confidentialité</button>
+          </div>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-8">© 2026 Masrof. Tous droits réservés.</p>
         </div>
       </div>
 
@@ -1102,41 +1117,43 @@ export default function Settings({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => !isResetting && setShowResetConfirm(false)}
-              className="fixed inset-0 bg-[#00FFFF]/5 backdrop-blur-sm z-[110] max-w-md mx-auto"
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[110] max-w-md mx-auto"
             />
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-[120] bg-white/95 backdrop-blur-2xl border border-rose-200 rounded-[40px] p-8 max-w-[340px] mx-auto shadow-[0_0_50px_rgba(239,68,68,0.2)] text-center"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-x-0 bottom-0 z-[120] bg-white rounded-t-[32px] p-8 max-w-md mx-auto shadow-2xl text-center"
             >
-              <div className="w-20 h-20 bg-rose-50 border border-rose-200 rounded-full flex items-center justify-center text-rose-500 mx-auto mb-6">
+              <div className="w-16 h-16 bg-rose-50 rounded-[24px] flex items-center justify-center text-rose-500 mx-auto mb-6">
                 <AlertTriangle
-                  size={40}
+                  size={32}
+                  strokeWidth={2}
                   className={isResetting ? "animate-pulse" : ""}
                 />
               </div>
-              <h3 className="text-xl font-black text-rose-600 mb-3 tracking-tighter uppercase italic">
-                {isResetting ? "PURGE EN COURS..." : "ZONE CRITIQUE"}
+              <h3 className="text-2xl font-black text-rose-600 mb-3 tracking-tight">
+                {isResetting ? "Réinitialisation..." : "Zone Critique"}
               </h3>
-              <p className="text-[#000080]/50 font-bold text-[10px] leading-relaxed mb-8 uppercase tracking-tight">
+              <p className="text-slate-500 font-medium text-sm leading-relaxed mb-8">
                 {isResetting
-                  ? "Veuillez patienter pendant que nous effaçons les vecteurs de données."
-                  : "Cette action est irréversible. Toutes les séquences temporelles seront purgées."}
+                  ? "Veuillez patienter pendant la suppression de vos données."
+                  : "Cette action est irréversible. Toutes vos transactions et historiques seront définitivement supprimés."}
               </p>
               {!isResetting && (
                 <div className="flex flex-col gap-3">
                   <button
                     onClick={handleReset}
-                    className="w-full h-14 bg-rose-500 text-white font-black rounded-2xl shadow-[0_0_20px_rgba(239,68,68,0.3)] active:scale-95 transition-transform text-xs tracking-widest italic"
+                    className="w-full py-4 bg-rose-500 text-white font-black rounded-2xl shadow-lg shadow-rose-500/30 active:scale-95 transition-transform text-sm tracking-wide"
                   >
-                    CONFIRMER LA PURGE
+                    Confirmer la suppression
                   </button>
                   <button
                     onClick={() => setShowResetConfirm(false)}
-                    className="w-full h-14 bg-slate-100 text-[#000080]/40 font-black rounded-2xl active:scale-95 transition-transform text-xs tracking-widest"
+                    className="w-full py-4 bg-slate-100 text-slate-600 font-black rounded-2xl active:scale-95 transition-transform text-sm tracking-wide hover:bg-slate-200"
                   >
-                    ANNULER
+                    Annuler
                   </button>
                 </div>
               )}
@@ -1161,19 +1178,16 @@ function Switch({
         e.stopPropagation();
         onToggle();
       }}
-      className={`relative w-12 h-6 rounded-full border border-[#1B5E66]/20 transition-all duration-300 ${
-        active
-          ? "bg-[#1B5E66]/10 shadow-[0_0_10px_rgba(45,139,150,0.2)]"
-          : "bg-slate-200/50"
+      className={`relative w-12 h-6 rounded-full transition-all duration-300 ${
+        active ? "bg-indigo-500" : "bg-slate-200"
       }`}
     >
       <motion.div
         animate={{
-          x: active ? 26 : 4,
-          backgroundColor: active ? "#E5C366" : "#475569",
-          boxShadow: active ? "0 0 10px #E5C366" : "none",
+          x: active ? 26 : 2,
         }}
-        className="absolute top-1 w-4 h-4 rounded-full shadow-sm"
+        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
       />
     </button>
   );
@@ -2279,80 +2293,82 @@ function NotificationCenterModal({
   setBackupReminder: (v: boolean) => void;
 }) {
   return (
-    <motion.div
-      initial={{ x: "100%" }}
-      animate={{ x: 0 }}
-      exit={{ x: "100%" }}
-      transition={{ type: "spring", damping: 25, stiffness: 200 }}
-      className="fixed inset-0 z-[70] bg-slate-50 flex flex-col font-sans"
-    >
-      <div className="pt-12 pb-4 px-6 bg-white shrink-0 border-b border-slate-100 flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-display font-black text-slate-800 tracking-tight">
-            NOTIFICATIONS
-          </h2>
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
-            Alertes & Rappels
-          </p>
-        </div>
-        <button
-          onClick={onClose}
-          className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200"
-        >
-          <X size={20} />
-        </button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto pb-20 p-4 space-y-4">
-        <div className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm flex flex-col divide-y divide-slate-50">
-          <SettingsItem
-            icon={<AlarmClock />}
-            title="GESTION DES RAPPELS"
-            subtitle={`${remindersCount} RAPPELS ACTIFS`}
-            onClick={onOpenReminderManager}
-            showArrow={true}
-          />
-          <SettingsItem
-            icon={<AlertTriangle />}
-            title="SEUILS D'ALERTES ET ALARMES"
-            subtitle="Compte Bancaire, Poche, Stock, Budget"
-            onClick={onOpenAlarmManager}
-            showArrow={true}
-          />
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[110] max-w-md mx-auto"
+      />
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        className="fixed inset-x-0 bottom-0 z-[120] bg-slate-50 border-t border-slate-100 rounded-t-[32px] max-h-[85vh] overflow-y-auto max-w-md mx-auto shadow-2xl pb-safe"
+      >
+        <div className="sticky top-0 bg-slate-50/95 backdrop-blur-xl z-10 px-8 py-6 border-b border-slate-100 flex items-center justify-between">
+          <h3 className="text-xl font-black text-slate-800 tracking-tight">
+            Notifications
+          </h3>
+          <button
+            onClick={onClose}
+            className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-slate-500 hover:bg-slate-100 border border-slate-100"
+          >
+            <X size={20} />
+          </button>
         </div>
 
-        <div className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm">
-          <div className="px-6 py-4 flex items-center gap-4 border-[#2D8B96]/5">
-            <div className="w-10 h-10 rounded-full border border-sky-100 flex items-center justify-center text-sky-500 bg-sky-50 shadow-sm">
-              <Bell size={18} />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-bold text-[#1B5E66] uppercase tracking-tight">
-                RAPPEL DE SAUVEGARDE
-              </p>
-              <p className="text-[10px] font-black text-slate-500 uppercase leading-snug mt-0.5">
-                Notifie si des modifications ne sont pas sauvegardées
-              </p>
-            </div>
-            <Switch
-              active={backupReminder}
-              onToggle={async () => {
-                const newValue = !backupReminder;
-                setBackupReminder(newValue);
-                localStorage.setItem(
-                  "backupReminderEnabled",
-                  newValue.toString()
-                );
-                const extSync = await import("../utils/notifications");
-                if (newValue) {
-                  extSync.scheduleBackupReminder();
-                }
-              }}
+        <div className="p-6 space-y-4">
+          <div className="bg-white rounded-[24px] overflow-hidden border border-slate-100 shadow-sm flex flex-col">
+            <SettingsItem
+              icon={<AlarmClock />}
+              title="Gestion des rappels"
+              subtitle={`${remindersCount} actifs`}
+              onClick={onOpenReminderManager}
+            />
+            <SettingsItem
+              icon={<AlertTriangle />}
+              title="Seuils d'alertes et alarmes"
+              subtitle="Compte Bancaire, Poche, Stock, Budget"
+              onClick={onOpenAlarmManager}
             />
           </div>
+
+          <div className="bg-white rounded-[24px] overflow-hidden border border-slate-100 shadow-sm">
+            <div className="px-5 py-4 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center text-purple-500 bg-purple-50">
+                <Bell size={20} strokeWidth={2} />
+              </div>
+              <div className="flex-1">
+                <p className="text-[14px] font-bold text-slate-800 tracking-tight">
+                  Rappel de Sauvegarde
+                </p>
+                <p className="text-[11px] font-medium text-slate-400 mt-0.5">
+                  Notifie si non sauvegardées
+                </p>
+              </div>
+              <Switch
+                active={backupReminder}
+                onToggle={async () => {
+                  const newValue = !backupReminder;
+                  setBackupReminder(newValue);
+                  localStorage.setItem(
+                    "backupReminderEnabled",
+                    newValue.toString()
+                  );
+                  const extSync = await import("../utils/notifications");
+                  if (newValue) {
+                    extSync.scheduleBackupReminder();
+                  }
+                }}
+              />
+            </div>
+          </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </>
   );
 }
 
@@ -2363,6 +2379,7 @@ function SettingsItem({
   showArrow = true,
   onClick,
   rightContent,
+  danger = false,
 }: {
   icon: React.ReactNode;
   title: string;
@@ -2370,26 +2387,37 @@ function SettingsItem({
   showArrow?: boolean;
   onClick?: () => void;
   rightContent?: React.ReactNode;
+  danger?: boolean;
 }) {
   return (
     <div
       onClick={onClick}
-      className={`flex items-center gap-5 p-7 hover:bg-[#2D8B96]/5 transition-all cursor-pointer group border-b border-[#2D8B96]/10 last:border-none ${
-        onClick ? "active:scale-[0.98]" : ""
+      className={`flex items-center gap-4 px-5 py-4 bg-white hover:bg-slate-50 transition-colors cursor-pointer group border-b border-slate-100 last:border-none ${
+        onClick ? "active:bg-slate-100" : ""
       }`}
     >
-      <div className="w-12 h-12 rounded-2xl border-2 border-[#2D8B96]/20 flex items-center justify-center text-[#2D8B96] shadow-[0_4px_12px_rgba(45,139,150,0.1)] group-hover:bg-[#2D8B96] group-hover:text-white transition-all duration-300">
+      <div
+        className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+          danger
+            ? "bg-rose-50 text-rose-500"
+            : "bg-purple-50 text-purple-500 group-hover:bg-purple-100 group-hover:text-purple-600"
+        }`}
+      >
         {React.cloneElement(icon as React.ReactElement<any>, {
-          size: 22,
-          strokeWidth: 1.5,
+          size: 20,
+          strokeWidth: 2,
         })}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[14px] font-display font-bold text-slate-800 tracking-tight group-hover:translate-x-1 transition-transform">
+        <p
+          className={`text-[14px] font-bold tracking-tight ${
+            danger ? "text-rose-600" : "text-slate-800"
+          }`}
+        >
           {title}
         </p>
         {subtitle && (
-          <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mt-1.5 line-clamp-1">
+          <p className="text-[11px] font-medium text-slate-400 mt-0.5 line-clamp-1">
             {subtitle}
           </p>
         )}
@@ -2398,7 +2426,7 @@ function SettingsItem({
       {showArrow && !rightContent && (
         <ChevronRight
           size={18}
-          className="text-[#1B5E66]/20 group-hover:text-[#1B5E66] group-hover:translate-x-1 transition-all"
+          className="text-slate-300 group-hover:text-slate-400 transition-colors"
         />
       )}
     </div>
@@ -2416,29 +2444,36 @@ function HomeSectionsManagerModal({ onClose }: { onClose: () => void }) {
     { id: "budgets", label: "Budgets par Catégorie", visible: true },
     { id: "inshallah", label: "Estimation du Jour", visible: true },
   ];
-  
-  const [sections, setSections] = useLocalStorage<any[]>("homeSectionsOrder", DEFAULT_HOME_SECTIONS);
+
+  const [sections, setSections] = useLocalStorage<any[]>(
+    "homeSectionsOrder",
+    DEFAULT_HOME_SECTIONS
+  );
   const [localSections, setLocalSections] = useState([...sections]);
 
   // Ensure any newly added sections in code update are present
   React.useEffect(() => {
-    const defaultIds = DEFAULT_HOME_SECTIONS.map(s => s.id);
-    const localIds = localSections.map(s => s.id);
-    
+    const defaultIds = DEFAULT_HOME_SECTIONS.map((s) => s.id);
+    const localIds = localSections.map((s) => s.id);
+
     // Add missing
-    const missing = DEFAULT_HOME_SECTIONS.filter(s => !localIds.includes(s.id));
+    const missing = DEFAULT_HOME_SECTIONS.filter(
+      (s) => !localIds.includes(s.id)
+    );
     if (missing.length > 0) {
-      setLocalSections(prev => [...prev, ...missing]);
+      setLocalSections((prev) => [...prev, ...missing]);
     }
   }, []);
 
   const handleToggleVisibility = (id: string) => {
-    setLocalSections(prev => prev.map(s => s.id === id ? { ...s, visible: !s.visible } : s));
+    setLocalSections((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, visible: !s.visible } : s))
+    );
   };
 
   const handleMoveUp = (index: number) => {
     if (index === 0) return;
-    setLocalSections(prev => {
+    setLocalSections((prev) => {
       const next = [...prev];
       const temp = next[index - 1];
       next[index - 1] = next[index];
@@ -2449,7 +2484,7 @@ function HomeSectionsManagerModal({ onClose }: { onClose: () => void }) {
 
   const handleMoveDown = (index: number) => {
     if (index === localSections.length - 1) return;
-    setLocalSections(prev => {
+    setLocalSections((prev) => {
       const next = [...prev];
       const temp = next[index + 1];
       next[index + 1] = next[index];
@@ -2508,16 +2543,30 @@ function HomeSectionsManagerModal({ onClose }: { onClose: () => void }) {
               return (
                 <div
                   key={item.id}
-                  className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all ${isVisible ? 'border-slate-200 bg-white' : 'border-slate-100 bg-slate-50 opacity-60'}`}
+                  className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                    isVisible
+                      ? "border-slate-200 bg-white"
+                      : "border-slate-100 bg-slate-50 opacity-60"
+                  }`}
                 >
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => handleToggleVisibility(item.id)}
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isVisible ? 'bg-teal-500 text-white shadow-sm' : 'bg-slate-200 text-slate-400'}`}
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                        isVisible
+                          ? "bg-teal-500 text-white shadow-sm"
+                          : "bg-slate-200 text-slate-400"
+                      }`}
                     >
                       {isVisible ? <Eye size={18} /> : <EyeOff size={18} />}
                     </button>
-                    <span className={`font-bold ${isVisible ? 'text-slate-800' : 'text-slate-500 line-through'}`}>
+                    <span
+                      className={`font-bold ${
+                        isVisible
+                          ? "text-slate-800"
+                          : "text-slate-500 line-through"
+                      }`}
+                    >
                       {item.label}
                     </span>
                   </div>
@@ -2526,14 +2575,22 @@ function HomeSectionsManagerModal({ onClose }: { onClose: () => void }) {
                     <button
                       disabled={index === 0}
                       onClick={() => handleMoveUp(index)}
-                      className={`p-2 rounded-lg flex items-center justify-center transition-colors ${index === 0 ? 'text-slate-300' : 'text-slate-500 hover:bg-slate-100 active:bg-slate-200'}`}
+                      className={`p-2 rounded-lg flex items-center justify-center transition-colors ${
+                        index === 0
+                          ? "text-slate-300"
+                          : "text-slate-500 hover:bg-slate-100 active:bg-slate-200"
+                      }`}
                     >
                       <ArrowUp size={18} />
                     </button>
                     <button
                       disabled={index === localSections.length - 1}
                       onClick={() => handleMoveDown(index)}
-                      className={`p-2 rounded-lg flex items-center justify-center transition-colors ${index === localSections.length - 1 ? 'text-slate-300' : 'text-slate-500 hover:bg-slate-100 active:bg-slate-200'}`}
+                      className={`p-2 rounded-lg flex items-center justify-center transition-colors ${
+                        index === localSections.length - 1
+                          ? "text-slate-300"
+                          : "text-slate-500 hover:bg-slate-100 active:bg-slate-200"
+                      }`}
                     >
                       <ArrowDown size={18} />
                     </button>

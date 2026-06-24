@@ -214,10 +214,15 @@ export default function History({ transactions, predefinedItems, language, curre
       }
       
       if (include) {
-        const isCredit = (tx.category && ["on me doit","je dois","مستحقات لي","ديون علي","owed to me","i owe","loans","debts","crédit +","crédit --"].includes(tx.category.toLowerCase()));
-        if (!isCredit) {
-          if (tx.type === 'EXPENSE') totalExpense += tx.amount;
-          else if (tx.type === 'INCOME' && !tx.paidByBank) totalIncome += tx.amount;
+        const isBankAddedBalance = tx.type === "INCOME" && tx.paidByBank && ["Salaire", "Dépôt", "Autre", "Banque"].includes(tx.category || "");
+        const isRetrait = tx.type === "INCOME" && !tx.paidByBank && tx.label === "Retrait Banque";
+
+        if (!isBankAddedBalance && !isRetrait) {
+          const isCredit = (tx.category && ["on me doit","je dois","مستحقات لي","ديون علي","owed to me","i owe","loans","debts","crédit +","crédit --"].includes(tx.category.toLowerCase()));
+          if (!isCredit) {
+            if (tx.type === 'EXPENSE') totalExpense += tx.amount;
+            else if (tx.type === 'INCOME' && !tx.paidByBank) totalIncome += tx.amount;
+          }
         }
       }
     });
@@ -240,6 +245,13 @@ export default function History({ transactions, predefinedItems, language, curre
 
   const filteredTransactions = transactions
     .filter(tx => {
+      // Hide bank transactions
+      const isBankAddedBalance = tx.type === "INCOME" && tx.paidByBank && ["Salaire", "Dépôt", "Autre", "Banque"].includes(tx.category || "");
+      const isRetrait = tx.type === "INCOME" && !tx.paidByBank && tx.label === "Retrait Banque";
+      
+      if (isBankAddedBalance || isRetrait) {
+        return false;
+      }
       
       const matchesFilter = filter === 'ALL' || tx.type === filter;
       const matchesSearch = tx.label.toLowerCase().includes(searchQuery.toLowerCase());
