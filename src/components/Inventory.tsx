@@ -276,8 +276,8 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
                 
                 return (
                   <motion.div
-                    key={item.id}
-                    layoutId={`card-${item.id}`}
+                    key={`${item.id}-${index}`}
+                    layoutId={`card-${item.id}-${index}`}
                     onClick={() => setSelectedItemInfo(item)}
                     className="group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm bg-slate-50/90 border-slate-100 hover:border-slate-200 hover:shadow-xl hover:shadow-slate-500/10 cursor-pointer overflow-hidden"
                   >
@@ -397,7 +397,7 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
                               className="border-t border-slate-100 pt-3 mt-1 flex flex-col gap-2"
                             >
                               {group.items.map((item, idx) => (
-                                <div key={item.id} className="flex items-center justify-between py-2 px-3 bg-white rounded-2xl shadow-sm border border-slate-50">
+                                <div key={`${item.id}-${idx}`} className="flex items-center justify-between py-2 px-3 bg-white rounded-2xl shadow-sm border border-slate-50">
                                   <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
                                       <span className="text-[10px] font-black">{idx + 1}</span>
@@ -453,13 +453,13 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
               </div>
             ) : (
               <div className="flex flex-col gap-3">
-                {shoppingList.map((item) => {
+                {shoppingList.map((item, idx) => {
                   const IconComp = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : PackageOpen;
                   const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES.find(c => c.id === 'Autres')!;
                   
                   return (
                     <motion.div
-                      key={item.id}
+                      key={`${item.id}-${idx}`}
                       onClick={() => onCheckoutShoppingItem(item)}
                       className={`group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm hover:shadow-xl cursor-pointer overflow-hidden ${cat.lightBg} border-slate-100`}
                     >

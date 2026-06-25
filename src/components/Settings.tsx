@@ -715,15 +715,16 @@ export default function Settings({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowSelector(null)}
-              className="fixed inset-0 bg-[#00FFFF]/5 backdrop-blur-md z-[110] max-w-md mx-auto"
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[110] max-w-md mx-auto"
             />
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              className="fixed inset-x-0 bottom-0 z-[120] bg-white/95 backdrop-blur-2xl border-t border-[#2D8B96]/30 rounded-t-[40px] p-8 max-w-md mx-auto shadow-[0_-10px_40px_rgba(45,139,150,0.15)]"
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-x-0 bottom-0 z-[120] bg-slate-50 border-t border-slate-100 rounded-t-[32px] p-8 max-h-[85vh] overflow-y-auto max-w-md mx-auto shadow-2xl pb-safe"
             >
-              <h3 className="text-xl font-black text-[#1B5E66] mb-6 italic uppercase tracking-tighter">
+              <h3 className="text-xl font-black text-slate-800 mb-6 tracking-tight">
                 {showSelector === "WIDGET_SETTINGS"
                   ? "Réglages Widget"
                   : showSelector === "PIN_SETUP"
@@ -741,41 +742,41 @@ export default function Settings({
               <div className="space-y-3">
                 {showSelector === "API_SETTINGS" ? (
                   <div className="flex flex-col py-2">
-                    <p className="text-xs text-[#1B5E66]/70 mb-2 font-bold uppercase tracking-wider">
+                    <p className="text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest">
                       Clé API Google Gemini :
                     </p>
                     <input
                       type="text"
-                      className="w-full bg-[#1B5E66]/5 border border-[#1B5E66]/10 rounded-2xl px-4 py-3 text-sm font-bold text-[#1B5E66] focus:outline-none focus:ring-2 focus:ring-[#2D8B96]/50 mb-4"
+                      className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-4 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 mb-4 transition-all"
                       placeholder="AIzaSy..."
                       value={apiKeyInput}
                       onChange={(e) => setApiKeyInput(e.target.value)}
                     />
 
-                    <p className="text-xs text-[#1B5E66]/70 mb-2 font-bold uppercase tracking-wider">
+                    <p className="text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest">
                       Clé API OpenRouter :
                     </p>
                     <input
                       type="text"
-                      className="w-full bg-[#1B5E66]/5 border border-[#1B5E66]/10 rounded-2xl px-4 py-3 text-sm font-bold text-[#1B5E66] focus:outline-none focus:ring-2 focus:ring-[#2D8B96]/50 mb-4"
+                      className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-4 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 mb-4 transition-all"
                       placeholder="sk-or-v1-..."
                       value={openRouterKeyInput}
                       onChange={(e) => setOpenRouterKeyInput(e.target.value)}
                     />
 
-                    <p className="text-xs text-[#1B5E66]/70 mb-2 font-bold uppercase tracking-wider">
+                    <p className="text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest">
                       Bouton Magique Scanner IA (FAB) :
                     </p>
                     <div
-                      className="flex items-center justify-between px-4 py-4 mb-6 bg-[#1B5E66]/5 border border-[#1B5E66]/10 rounded-2xl cursor-pointer"
+                      className="flex items-center justify-between px-4 py-4 mb-6 bg-slate-50 border border-slate-100 rounded-2xl cursor-pointer hover:bg-slate-100 transition-colors"
                       onClick={() => setShowScannerFab(!showScannerFab)}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-[12px] bg-[#1B5E66]/10 flex items-center justify-center text-[#1B5E66]">
-                          <Sparkles size={16} />
+                        <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-500">
+                          <Sparkles size={20} strokeWidth={2} />
                         </div>
                         <div>
-                          <h4 className="text-sm font-bold text-[#1B5E66]">
+                          <h4 className="text-[14px] font-bold text-slate-800 tracking-tight">
                             Afficher le bouton
                           </h4>
                         </div>
@@ -787,7 +788,7 @@ export default function Settings({
                     </div>
 
                     <button
-                      className="w-full bg-[#2D8B96] hover:bg-[#1B5E66] text-white font-black italic uppercase tracking-wider py-4 rounded-2xl transition-colors shadow-lg shadow-[#2D8B96]/20"
+                      className="w-full bg-purple-500 hover:bg-purple-600 text-white font-black py-4 rounded-2xl transition-colors shadow-lg shadow-purple-500/20 active:scale-95 text-sm"
                       onClick={() => {
                         window.localStorage.setItem(
                           "userGeminiApiKey",
@@ -807,14 +808,14 @@ export default function Settings({
                     >
                       Enregistrer
                     </button>
-                    <p className="text-[10px] text-[#1B5E66]/50 mt-4 text-center font-bold">
+                    <p className="text-[11px] text-slate-400 mt-4 text-center font-medium">
                       Nécessaire pour le scan des factures et articles. Stocké
                       localement.
                     </p>
                   </div>
                 ) : showSelector === "PIN_SETUP" ? (
                   <div className="flex flex-col items-center py-6">
-                    <p className="text-sm font-bold text-[#1B5E66]/60 mb-8 uppercase tracking-widest text-center">
+                    <p className="text-sm font-bold text-slate-500 mb-8 uppercase tracking-widest text-center">
                       {pinSetupStep === 1
                         ? "Saisissez un code à 4 chiffres"
                         : "Confirmez votre code"}
@@ -831,8 +832,8 @@ export default function Settings({
                             tempPin.length > i
                               ? pinError
                                 ? "bg-red-500 scale-110 shadow-[0_0_10px_rgba(239,68,68,0.5)]"
-                                : "bg-[#2D8B96] scale-110 shadow-[0_0_10px_rgba(45,139,150,0.5)]"
-                              : "bg-[#2D8B96]/20"
+                                : "bg-purple-500 scale-110 shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+                              : "bg-purple-100"
                           }`}
                         />
                       ))}
@@ -876,7 +877,7 @@ export default function Settings({
                               }
                             }
                           }}
-                          className="h-14 rounded-full bg-[#F0F7F8] text-[#1B5E66] text-xl font-black shadow-sm active:bg-[#2D8B96]/20 active:scale-95 transition-all flex items-center justify-center"
+                          className="h-14 rounded-full bg-slate-50 text-slate-800 text-xl font-black active:bg-slate-100 active:scale-95 transition-all flex items-center justify-center border border-slate-100"
                         >
                           {num}
                         </button>
@@ -887,7 +888,7 @@ export default function Settings({
                           setTempPin("");
                           setShowSelector(null);
                         }}
-                        className="h-14 rounded-full bg-transparent text-[#1B5E66]/60 active:text-[#2D8B96] active:scale-95 transition-all flex items-center justify-center text-xs font-bold uppercase"
+                        className="h-14 rounded-full bg-transparent text-slate-400 active:text-purple-500 active:scale-95 transition-all flex items-center justify-center text-xs font-bold uppercase"
                       >
                         Annuler
                       </button>
@@ -926,13 +927,13 @@ export default function Settings({
                             }
                           }
                         }}
-                        className="h-14 rounded-full bg-[#F0F7F8] text-[#1B5E66] text-xl font-black shadow-sm active:bg-[#2D8B96]/20 active:scale-95 transition-all flex items-center justify-center"
+                        className="h-14 rounded-full bg-slate-50 text-slate-800 text-xl font-black active:bg-slate-100 active:scale-95 transition-all flex items-center justify-center border border-slate-100"
                       >
                         0
                       </button>
                       <button
                         onClick={() => setTempPin((p) => p.slice(0, -1))}
-                        className="h-14 rounded-full bg-transparent text-[#1B5E66]/60 active:text-[#2D8B96] active:scale-95 transition-all flex items-center justify-center"
+                        className="h-14 rounded-full bg-transparent text-slate-400 active:text-purple-500 active:scale-95 transition-all flex items-center justify-center"
                       >
                         <X size={24} />
                       </button>
@@ -941,7 +942,7 @@ export default function Settings({
                 ) : showSelector === "WIDGET_SETTINGS" ? (
                   <div className="space-y-6">
                     <div>
-                      <h4 className="text-[10px] font-black uppercase tracking-widest text-[#1B5E66]/60 mb-3">
+                      <h4 className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-3">
                         Données à afficher
                       </h4>
                       <div className="grid grid-cols-1 gap-2">
@@ -980,15 +981,15 @@ export default function Settings({
                               onClick={() => opt.action()}
                               className={`w-full p-4 rounded-2xl border transition-all flex items-center justify-between ${
                                 isActive
-                                  ? "bg-[#2D8B96]/10 border-[#2D8B96] text-[#1B5E66] shadow-[0_0_15px_rgba(45,139,150,0.2)]"
-                                  : "border-[#2D8B96]/10 text-[#1B5E66]/40"
+                                  ? "bg-purple-50 border-purple-200 text-purple-600 shadow-sm"
+                                  : "border-slate-100 text-slate-500 hover:bg-slate-50"
                               }`}
                             >
-                              <span className="font-bold text-sm tracking-widest uppercase italic">
+                              <span className="font-bold text-sm tracking-tight">
                                 {opt.label}
                               </span>
                               {isActive && (
-                                <div className="w-5 h-5 rounded-full bg-[#E5C366] shadow-[0_0_8px_#E5C366]" />
+                                <div className="w-5 h-5 rounded-full bg-purple-500 shadow-sm" />
                               )}
                             </button>
                           );
@@ -996,7 +997,7 @@ export default function Settings({
                       </div>
                     </div>
                     <div>
-                      <h4 className="text-[10px] font-black uppercase tracking-widest text-[#1B5E66]/60 mb-3">
+                      <h4 className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-3">
                         Couleur du texte
                       </h4>
                       <div className="flex gap-3">
@@ -1010,11 +1011,11 @@ export default function Settings({
                           <button
                             key={c.id}
                             onClick={() => onWidgetTextColorChange(c.id)}
-                            className={`w-10 h-10 rounded-full border border-gray-300 transition-all ${
+                            className={`w-10 h-10 rounded-full border border-slate-200 transition-all ${
                               c.color
                             } ${
                               widgetTextColor === c.id
-                                ? "ring-2 ring-offset-2 ring-[#1B5E66] scale-110 shadow-md opacity-100"
+                                ? "ring-2 ring-offset-2 ring-purple-500 scale-110 shadow-md opacity-100"
                                 : "opacity-60 hover:opacity-100"
                             }`}
                           />
@@ -1023,7 +1024,7 @@ export default function Settings({
                     </div>
                     <button
                       onClick={() => setShowSelector(null)}
-                      className="w-full bg-[#2D8B96] text-white rounded-2xl p-5 font-bold uppercase tracking-widest text-sm mt-2 active:scale-95 transition-transform"
+                      className="w-full bg-slate-800 text-white rounded-2xl p-4 font-bold tracking-wide text-sm mt-4 active:scale-95 transition-transform shadow-lg shadow-slate-800/20"
                     >
                       Terminé
                     </button>
@@ -1055,10 +1056,10 @@ export default function Settings({
                             onLanguageChange(opt.id);
                           setShowSelector(null);
                         }}
-                        className={`w-full p-5 rounded-2xl border transition-all flex items-center justify-between group ${
+                        className={`w-full p-4 rounded-2xl border transition-all flex items-center justify-between group ${
                           activeValue === opt.id
-                            ? "border-[#2D8B96] bg-[#2D8B96]/10 text-[#1B5E66] shadow-[0_0_15px_rgba(45,139,150,0.2)]"
-                            : "border-[#2D8B96]/10 text-[#1B5E66]/40"
+                            ? "border-purple-200 bg-purple-50 text-purple-600 shadow-sm"
+                            : "border-slate-100 text-slate-500 hover:bg-slate-50"
                         }`}
                       >
                         <div className="flex items-center gap-3">
@@ -1067,7 +1068,7 @@ export default function Settings({
                               className={`w-6 h-6 rounded-full shadow-sm border border-black/10 ${opt.color}`}
                             />
                           )}
-                          <span className="font-bold italic uppercase tracking-widest text-sm">
+                          <span className="font-bold tracking-tight text-sm">
                             {opt.label}
                           </span>
                         </div>
@@ -1124,9 +1125,9 @@ export default function Settings({
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-x-0 bottom-0 z-[120] bg-white rounded-t-[32px] p-8 max-w-md mx-auto shadow-2xl text-center"
+              className="fixed inset-x-0 bottom-0 z-[120] bg-slate-50 border-t border-slate-100 rounded-t-[32px] p-8 max-w-md mx-auto shadow-2xl text-center pb-safe"
             >
-              <div className="w-16 h-16 bg-rose-50 rounded-[24px] flex items-center justify-center text-rose-500 mx-auto mb-6">
+              <div className="w-16 h-16 bg-rose-50 border border-rose-100 rounded-[24px] flex items-center justify-center text-rose-500 mx-auto mb-6 shadow-sm">
                 <AlertTriangle
                   size={32}
                   strokeWidth={2}
@@ -1145,13 +1146,13 @@ export default function Settings({
                 <div className="flex flex-col gap-3">
                   <button
                     onClick={handleReset}
-                    className="w-full py-4 bg-rose-500 text-white font-black rounded-2xl shadow-lg shadow-rose-500/30 active:scale-95 transition-transform text-sm tracking-wide"
+                    className="w-full h-14 bg-rose-500 text-white font-bold rounded-2xl shadow-lg shadow-rose-500/20 active:scale-95 transition-transform text-[13px] uppercase tracking-widest"
                   >
                     Confirmer la suppression
                   </button>
                   <button
                     onClick={() => setShowResetConfirm(false)}
-                    className="w-full py-4 bg-slate-100 text-slate-600 font-black rounded-2xl active:scale-95 transition-transform text-sm tracking-wide hover:bg-slate-200"
+                    className="w-full h-14 bg-white border border-slate-200 text-slate-600 font-bold rounded-2xl active:scale-95 transition-colors text-[13px] tracking-widest uppercase hover:bg-slate-50 shadow-sm"
                   >
                     Annuler
                   </button>
@@ -1233,21 +1234,22 @@ function AlarmSettingsModal({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="fixed inset-0 bg-[#00FFFF]/5 backdrop-blur-md z-[110] max-w-md mx-auto"
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[110] max-w-md mx-auto"
       />
       <motion.div
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
-        className="fixed inset-x-0 bottom-0 z-[120] bg-white/95 backdrop-blur-2xl border-t border-[#2D8B96]/30 rounded-t-[40px] max-h-[90vh] overflow-y-auto max-w-md mx-auto shadow-[0_-10px_40px_rgba(45,139,150,0.15)] pb-safe"
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        className="fixed inset-x-0 bottom-0 z-[120] bg-slate-50 border-t border-slate-100 rounded-t-[32px] max-h-[85vh] overflow-y-auto max-w-md mx-auto shadow-2xl pb-safe"
       >
-        <div className="sticky top-0 bg-white/95 backdrop-blur-xl z-10 px-8 py-6 border-b border-[#2D8B96]/10 flex items-center justify-between">
-          <h3 className="text-xl font-black text-[#1B5E66] italic uppercase tracking-tighter">
+        <div className="sticky top-0 bg-slate-50/95 backdrop-blur-xl z-10 px-8 py-6 border-b border-slate-100 flex items-center justify-between">
+          <h3 className="text-xl font-black text-slate-800 tracking-tight">
             Seuils d'Alertes
           </h3>
           <button
             onClick={onClose}
-            className="w-10 h-10 rounded-full bg-[#2D8B96]/10 text-[#2D8B96] flex items-center justify-center hover:bg-[#2D8B96] hover:text-white transition-colors"
+            className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-slate-500 hover:bg-slate-100 border border-slate-100 transition-colors"
           >
             <X size={20} />
           </button>
@@ -1255,7 +1257,7 @@ function AlarmSettingsModal({
 
         <div className="p-8 space-y-6">
           <div className="space-y-4">
-            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
+            <label className="text-[11px] font-bold uppercase text-slate-400 tracking-widest ml-1">
               Solde Compte Bancaire
             </label>
             <div className="flex gap-4">
@@ -1268,7 +1270,7 @@ function AlarmSettingsModal({
                     e.target.value ? Number(e.target.value) : null
                   )
                 }
-                className="w-1/3 h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
+                className="w-1/3 h-14 bg-white border border-slate-100 rounded-2xl px-5 font-bold text-slate-800 outline-none focus:border-purple-200 focus:ring-4 focus:ring-purple-50 transition-all shadow-sm"
               />
               <input
                 type="text"
@@ -1277,13 +1279,13 @@ function AlarmSettingsModal({
                 onChange={(e) =>
                   onBankBalanceCustomMessageChange(e.target.value)
                 }
-                className="w-2/3 h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
+                className="w-2/3 h-14 bg-white border border-slate-100 rounded-2xl px-5 font-bold text-slate-800 outline-none focus:border-purple-200 focus:ring-4 focus:ring-purple-50 transition-all shadow-sm"
               />
             </div>
           </div>
 
           <div className="space-y-4">
-            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
+            <label className="text-[11px] font-bold uppercase text-slate-400 tracking-widest ml-1">
               Argent dans ma Poche
             </label>
             <div className="flex gap-4">
@@ -1296,20 +1298,20 @@ function AlarmSettingsModal({
                     e.target.value ? Number(e.target.value) : null
                   )
                 }
-                className="w-1/3 h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
+                className="w-1/3 h-14 bg-white border border-slate-100 rounded-2xl px-5 font-bold text-slate-800 outline-none focus:border-purple-200 focus:ring-4 focus:ring-purple-50 transition-all shadow-sm"
               />
               <input
                 type="text"
                 placeholder="Message (Optionnel)"
                 value={balanceCustomMessage}
                 onChange={(e) => onBalanceCustomMessageChange(e.target.value)}
-                className="w-2/3 h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
+                className="w-2/3 h-14 bg-white border border-slate-100 rounded-2xl px-5 font-bold text-slate-800 outline-none focus:border-purple-200 focus:ring-4 focus:ring-purple-50 transition-all shadow-sm"
               />
             </div>
           </div>
 
           <div className="space-y-4">
-            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
+            <label className="text-[11px] font-bold uppercase text-slate-400 tracking-widest ml-1">
               Quantité Stock Article
             </label>
             <div className="flex gap-4">
@@ -1322,13 +1324,13 @@ function AlarmSettingsModal({
                     e.target.value ? Number(e.target.value) : null
                   )
                 }
-                className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
+                className="w-full h-14 bg-white border border-slate-100 rounded-2xl px-5 font-bold text-slate-800 outline-none focus:border-purple-200 focus:ring-4 focus:ring-purple-50 transition-all shadow-sm"
               />
             </div>
           </div>
 
           <div className="space-y-4">
-            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
+            <label className="text-[11px] font-bold uppercase text-slate-400 tracking-widest ml-1">
               Budget de Catégorie (%)
             </label>
             <div className="flex gap-4">
@@ -1343,13 +1345,13 @@ function AlarmSettingsModal({
                     e.target.value ? Number(e.target.value) : null
                   )
                 }
-                className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
+                className="w-full h-14 bg-white border border-slate-100 rounded-2xl px-5 font-bold text-slate-800 outline-none focus:border-purple-200 focus:ring-4 focus:ring-purple-50 transition-all shadow-sm"
               />
             </div>
           </div>
 
           <div className="space-y-4">
-            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
+            <label className="text-[11px] font-bold uppercase text-slate-400 tracking-widest ml-1">
               Intervalle Alarme Sauvegarde (Min)
             </label>
             <div className="flex gap-4">
@@ -1362,7 +1364,7 @@ function AlarmSettingsModal({
                     e.target.value ? Number(e.target.value) : null
                   )
                 }
-                className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none focus:border-[#2D8B96]"
+                className="w-full h-14 bg-white border border-slate-100 rounded-2xl px-5 font-bold text-slate-800 outline-none focus:border-purple-200 focus:ring-4 focus:ring-purple-50 transition-all shadow-sm"
               />
             </div>
           </div>
@@ -1412,21 +1414,22 @@ function ReminderManagerModal({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[110] max-w-md mx-auto"
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[110] max-w-md mx-auto"
       />
       <motion.div
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
-        className="fixed inset-x-0 bottom-0 z-[120] bg-white rounded-t-[40px] p-8 max-w-md mx-auto shadow-2xl max-h-[90vh] overflow-y-auto"
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        className="fixed inset-x-0 bottom-0 z-[120] bg-slate-50 border-t border-slate-100 rounded-t-[32px] p-8 max-w-md mx-auto shadow-2xl max-h-[85vh] overflow-y-auto pb-safe"
       >
         <div className="flex justify-between items-center mb-8">
-          <h3 className="text-xl font-black text-teal-brand tracking-tight uppercase italic">
+          <h3 className="text-xl font-black text-slate-800 tracking-tight">
             Gestion des Rappels
           </h3>
           <button
             onClick={onClose}
-            className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400"
+            className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-500 border border-slate-100 hover:bg-slate-100 transition-colors"
           >
             <X size={20} />
           </button>
@@ -1434,18 +1437,18 @@ function ReminderManagerModal({
 
         <button
           onClick={() => setShowAddForm(true)}
-          className="w-full mb-8 py-4 bg-teal-brand/10 border border-dashed border-teal-brand/30 rounded-2xl flex items-center justify-center gap-2 text-teal-brand font-black uppercase text-xs tracking-widest hover:bg-teal-brand/20 transition-all"
+          className="w-full mb-8 py-4 bg-purple-50 border border-dashed border-purple-200 rounded-2xl flex items-center justify-center gap-2 text-purple-500 font-bold tracking-wide hover:bg-purple-100 transition-all text-sm"
         >
-          <Plus size={16} />
+          <Plus size={18} />
           Nouveau Rappel
         </button>
 
         <AnimatePresence>
           {showAddForm && (
-            <div className="mb-10 p-6 bg-slate-50 rounded-[32px] border border-teal-brand/10 relative">
+            <div className="mb-10 p-6 bg-white rounded-[24px] border border-slate-100 relative shadow-sm">
               <button
                 onClick={() => setShowAddForm(false)}
-                className="absolute top-4 right-4 text-slate-300 hover:text-slate-500"
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
               >
                 <X size={16} />
               </button>
@@ -1458,7 +1461,7 @@ function ReminderManagerModal({
         </AnimatePresence>
 
         <div className="space-y-3">
-          <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
+          <label className="text-[11px] font-bold uppercase text-slate-400 tracking-widest ml-1">
             Vos Rappels ({reminders.length})
           </label>
           {reminders.map((reminder) => {
@@ -1466,15 +1469,15 @@ function ReminderManagerModal({
             return (
               <div
                 key={reminder.id}
-                className="bg-white border border-slate-100 rounded-3xl p-4 flex items-center gap-4 transition-all hover:shadow-md group shadow-sm"
+                className="bg-white border border-slate-100 rounded-[24px] p-4 flex items-center gap-4 transition-all hover:shadow-md group shadow-sm"
               >
                 <div
                   className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
                     reminder.type === "ACHAT"
-                      ? "bg-rose-50 text-rose-600"
+                      ? "bg-rose-50 text-rose-500"
                       : reminder.type === "RETRAIT"
-                      ? "bg-teal-50 text-teal-600"
-                      : "bg-indigo-600 text-white"
+                      ? "bg-purple-50 text-purple-500"
+                      : "bg-sky-50 text-sky-500"
                   }`}
                 >
                   {reminder.type === "ACHAT" ? (
@@ -1487,14 +1490,14 @@ function ReminderManagerModal({
                 </div>
                 <div className="flex-1 min-w-0">
                   {isEditing ? (
-                    <div className="space-y-3 p-2 bg-slate-50 rounded-2xl border border-teal-brand/5">
+                    <div className="space-y-3 p-2 bg-slate-50 rounded-[16px] border border-slate-100">
                       <input
                         type="text"
                         value={reminder.title}
                         onChange={(e) =>
                           handleUpdate(reminder.id, { title: e.target.value })
                         }
-                        className="w-full bg-white border-none px-3 py-2 text-sm font-bold rounded-xl"
+                        className="w-full bg-white border border-slate-100 px-3 py-2 text-sm font-bold rounded-[12px] text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
                         placeholder="Titre"
                       />
                       <div className="grid grid-cols-2 gap-2">
@@ -1511,11 +1514,11 @@ function ReminderManagerModal({
                             }
                             handleUpdate(reminder.id, { time: val });
                           }}
-                          className="bg-white border-none px-3 py-2 text-sm font-bold rounded-xl"
+                          className="bg-white border border-slate-100 px-3 py-2 text-sm font-bold rounded-[12px] text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
                         />
                         <button
                           onClick={() => setEditingId(null)}
-                          className="bg-teal-brand text-white text-[10px] font-black uppercase rounded-xl"
+                          className="bg-purple-500 text-white text-[12px] font-bold tracking-wide rounded-[12px]"
                         >
                           OK
                         </button>
@@ -1523,10 +1526,10 @@ function ReminderManagerModal({
                     </div>
                   ) : (
                     <>
-                      <p className="text-sm font-black text-slate-800 uppercase tracking-tight">
+                      <p className="text-[14px] font-bold text-slate-800 tracking-tight">
                         {reminder.title}
                       </p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                      <p className="text-[11px] font-medium text-slate-400 mt-0.5">
                         {reminder.time} • {reminder.frequency}
                       </p>
                     </>
@@ -1543,15 +1546,15 @@ function ReminderManagerModal({
                     onClick={() => setEditingId(isEditing ? null : reminder.id)}
                     className={`w-8 h-8 rounded-full flex items-center justify-center ${
                       isEditing
-                        ? "bg-teal-brand text-white"
-                        : "bg-slate-100 text-slate-400"
+                        ? "bg-purple-500 text-white"
+                        : "bg-slate-50 text-slate-400 hover:bg-slate-100"
                     }`}
                   >
                     {isEditing ? <Check size={14} /> : <Settings2 size={14} />}
                   </button>
                   <button
                     onClick={() => handleDelete(reminder.id)}
-                    className="w-8 h-8 rounded-full bg-rose-50 text-rose-400 flex items-center justify-center transition-opacity"
+                    className="w-8 h-8 rounded-full bg-rose-50 text-rose-400 flex items-center justify-center transition-colors hover:bg-rose-100"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -1560,9 +1563,9 @@ function ReminderManagerModal({
             );
           })}
           {reminders.length === 0 && !showAddForm && (
-            <div className="text-center py-10 opacity-30">
-              <Bell size={40} className="mx-auto mb-2" />
-              <p className="text-[10px] font-black uppercase tracking-widest">
+            <div className="text-center py-10 opacity-50">
+              <Bell size={40} className="mx-auto mb-3 text-slate-400" />
+              <p className="text-[11px] font-bold text-slate-400">
                 Aucun rappel actif
               </p>
             </div>
@@ -1600,7 +1603,7 @@ function ReminderFormFields({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
-        <label className="text-[10px] font-black uppercase text-[#1B5E66]/40 tracking-widest ml-1">
+        <label className="text-[11px] font-bold uppercase text-slate-400 tracking-widest ml-1">
           Type de Rappel
         </label>
         <div className="grid grid-cols-3 gap-3">
@@ -1612,11 +1615,11 @@ function ReminderFormFields({
               className={`py-3 px-2 border-2 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all ${
                 type === t
                   ? t === "ACHAT"
-                    ? "border-rose-100 bg-rose-50 text-rose-600 shadow-sm"
+                    ? "border-rose-100 bg-rose-50 text-rose-500 shadow-sm"
                     : t === "RETRAIT"
-                    ? "border-teal-100 bg-teal-50 text-teal-600 shadow-sm"
-                    : "border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
-                  : "border-slate-50 bg-white text-slate-400 hover:border-slate-100"
+                    ? "border-purple-200 bg-purple-50 text-purple-600 shadow-sm"
+                    : "border-sky-200 bg-sky-50 text-sky-500 shadow-sm"
+                  : "border-slate-100 bg-white text-slate-400 hover:border-slate-200"
               }`}
             >
               {t === "ACHAT" ? (
@@ -1626,7 +1629,7 @@ function ReminderFormFields({
               ) : (
                 <Coins size={18} strokeWidth={2.5} />
               )}
-              <span className="text-[10px] font-black uppercase tracking-wider">
+              <span className="text-[10px] font-bold uppercase tracking-wider">
                 {t}
               </span>
             </button>
@@ -1634,7 +1637,7 @@ function ReminderFormFields({
         </div>
       </div>
       <div className="space-y-2">
-        <label className="text-[10px] font-black uppercase text-[#1B5E66]/40 tracking-widest ml-1">
+        <label className="text-[11px] font-bold uppercase text-slate-400 tracking-widest ml-1">
           Titre / Description
         </label>
         <input
@@ -1642,12 +1645,12 @@ function ReminderFormFields({
           placeholder="ex: Rappel mensuel..."
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full h-14 bg-white border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] placeholder-[#1B5E66]/20 outline-none focus:border-[#2D8B96] focus:shadow-[0_0_15px_rgba(45,139,150,0.2)] transition-all"
+          className="w-full h-14 bg-white border border-slate-100 rounded-2xl px-5 font-bold text-slate-800 placeholder-slate-300 outline-none focus:border-purple-200 focus:ring-4 focus:ring-purple-50 transition-all shadow-sm"
           required
         />
       </div>
       <div className="space-y-2">
-        <label className="text-[10px] font-black uppercase text-[#1B5E66]/40 tracking-widest ml-1">
+        <label className="text-[11px] font-bold uppercase text-slate-400 tracking-widest ml-1">
           Fréquence
         </label>
         <div className="grid grid-cols-2 gap-3">
@@ -1656,10 +1659,10 @@ function ReminderFormFields({
               key={f}
               type="button"
               onClick={() => setFrequency(f)}
-              className={`p-3 rounded-2xl border text-[10px] font-black uppercase tracking-wider transition-all ${
+              className={`p-3 rounded-2xl border text-[11px] font-bold uppercase tracking-wider transition-all ${
                 frequency === f
-                  ? "border-[#2D8B96] bg-[#2D8B96]/10 text-[#1B5E66] shadow-[0_0_10px_rgba(45,139,150,0.1)]"
-                  : "border-[#2D8B96]/10 text-[#1B5E66]/40"
+                  ? "border-purple-200 bg-purple-50 text-purple-600 shadow-sm"
+                  : "border-slate-100 text-slate-400 hover:bg-slate-50"
               }`}
             >
               {f === "ONCE"
@@ -1675,7 +1678,7 @@ function ReminderFormFields({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase text-[#1B5E66]/40 tracking-widest ml-1">
+          <label className="text-[11px] font-bold uppercase text-slate-400 tracking-widest ml-1">
             Heure
           </label>
           <input
@@ -1691,12 +1694,12 @@ function ReminderFormFields({
               }
               setTime(val);
             }}
-            className="w-full h-14 bg-white border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none"
+            className="w-full h-14 bg-white border border-slate-100 rounded-2xl px-5 font-bold text-slate-800 outline-none focus:border-purple-200 focus:ring-4 focus:ring-purple-50 transition-all shadow-sm"
             required
           />
         </div>
         <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase text-[#1B5E66]/40 tracking-widest ml-1">
+          <label className="text-[11px] font-bold uppercase text-slate-400 tracking-widest ml-1">
             Date
           </label>
           <input
@@ -1709,7 +1712,7 @@ function ReminderFormFields({
               } catch (e) {}
             }}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full h-14 bg-white border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none"
+            className="w-full h-14 bg-white border border-slate-100 rounded-2xl px-5 font-bold text-slate-800 outline-none focus:border-purple-200 focus:ring-4 focus:ring-purple-50 transition-all shadow-sm"
           />
         </div>
       </div>
@@ -1717,13 +1720,13 @@ function ReminderFormFields({
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 h-14 bg-slate-100 text-slate-400 font-black rounded-2xl uppercase tracking-widest text-[10px]"
+          className="flex-1 h-14 bg-slate-100 text-slate-500 font-bold rounded-2xl uppercase tracking-widest text-[11px] hover:bg-slate-200 transition-colors"
         >
           Annuler
         </button>
         <button
           type="submit"
-          className="flex-2 h-14 bg-[#2D8B96] text-white font-black rounded-2xl shadow-[0_0_20px_rgba(45,139,150,0.4)] uppercase tracking-widest active:scale-95 transition-all text-[10px] italic"
+          className="flex-2 px-6 h-14 bg-purple-500 text-white font-bold rounded-2xl shadow-lg shadow-purple-500/20 uppercase tracking-widest active:scale-95 transition-all text-[11px]"
         >
           Activer le Rappel
         </button>
@@ -1763,28 +1766,29 @@ function ReminderForm({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="fixed inset-0 bg-[#00FFFF]/5 backdrop-blur-md z-[110] max-w-md mx-auto"
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[110] max-w-md mx-auto"
       />
       <motion.div
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
-        className="fixed inset-x-0 bottom-0 z-[120] bg-white/95 backdrop-blur-2xl border-t border-[#2D8B96]/30 rounded-t-[40px] p-8 max-w-md mx-auto shadow-[0_-10px_40px_rgba(45,139,150,0.15)]"
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        className="fixed inset-x-0 bottom-0 z-[120] bg-slate-50 border-t border-slate-100 rounded-t-[32px] p-8 max-w-md mx-auto shadow-2xl pb-safe"
       >
         <div className="flex justify-between items-center mb-8">
-          <h3 className="text-xl font-black text-[#1B5E66] tracking-tight italic uppercase">
+          <h3 className="text-xl font-black text-slate-800 tracking-tight">
             Nouveau Rappel
           </h3>
           <button
             onClick={onClose}
-            className="w-10 h-10 bg-[#2D8B96]/10 border border-[#2D8B96]/20 rounded-full flex items-center justify-center text-[#2D8B96]"
+            className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 border border-slate-100 transition-colors"
           >
             <X size={20} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase text-[#1B5E66]/40 tracking-widest ml-1">
+            <label className="text-[11px] font-bold uppercase text-slate-400 tracking-widest ml-1">
               Type de Rappel
             </label>
             <div className="grid grid-cols-3 gap-3">
@@ -1796,11 +1800,11 @@ function ReminderForm({
                   className={`py-3 px-2 border-2 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all ${
                     type === t
                       ? t === "ACHAT"
-                        ? "border-rose-100 bg-rose-50 text-rose-600 shadow-sm"
+                        ? "border-rose-100 bg-rose-50 text-rose-500 shadow-sm"
                         : t === "RETRAIT"
-                        ? "border-teal-100 bg-teal-50 text-teal-600 shadow-sm"
-                        : "border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
-                      : "border-slate-50 bg-white text-slate-400 hover:border-slate-100"
+                        ? "border-purple-200 bg-purple-50 text-purple-600 shadow-sm"
+                        : "border-sky-200 bg-sky-50 text-sky-500 shadow-sm"
+                      : "border-slate-100 bg-white text-slate-400 hover:border-slate-200"
                   }`}
                 >
                   {t === "ACHAT" ? (
@@ -1810,7 +1814,7 @@ function ReminderForm({
                   ) : (
                     <Coins size={18} strokeWidth={2.5} />
                   )}
-                  <span className="text-[10px] font-black uppercase tracking-wider">
+                  <span className="text-[10px] font-bold uppercase tracking-wider">
                     {t}
                   </span>
                 </button>
@@ -1818,7 +1822,7 @@ function ReminderForm({
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase text-[#1B5E66]/40 tracking-widest ml-1">
+            <label className="text-[11px] font-bold uppercase text-slate-400 tracking-widest ml-1">
               Titre / Description
             </label>
             <input
@@ -1826,12 +1830,12 @@ function ReminderForm({
               placeholder="ex: Rappel mensuel..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] placeholder-[#1B5E66]/20 outline-none focus:border-[#2D8B96] focus:shadow-[0_0_15px_rgba(45,139,150,0.2)] transition-all"
+              className="w-full h-14 bg-white border border-slate-100 rounded-2xl px-5 font-bold text-slate-800 placeholder-slate-300 outline-none focus:border-purple-200 focus:ring-4 focus:ring-purple-50 transition-all shadow-sm"
               required
             />
           </div>
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase text-[#1B5E66]/40 tracking-widest ml-1">
+            <label className="text-[11px] font-bold uppercase text-slate-400 tracking-widest ml-1">
               Fréquence
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -1840,10 +1844,10 @@ function ReminderForm({
                   key={f}
                   type="button"
                   onClick={() => setFrequency(f)}
-                  className={`p-3 rounded-2xl border text-[10px] font-black uppercase tracking-wider transition-all ${
+                  className={`p-3 rounded-2xl border text-[11px] font-bold uppercase tracking-wider transition-all ${
                     frequency === f
-                      ? "border-[#2D8B96] bg-[#2D8B96]/10 text-[#1B5E66] shadow-[0_0_10px_rgba(45,139,150,0.1)]"
-                      : "border-[#2D8B96]/10 text-[#1B5E66]/40"
+                      ? "border-purple-200 bg-purple-50 text-purple-600 shadow-sm"
+                      : "border-slate-100 text-slate-400 hover:bg-slate-50"
                   }`}
                 >
                   {f === "ONCE"
@@ -1859,7 +1863,7 @@ function ReminderForm({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-[#1B5E66]/40 tracking-widest ml-1">
+              <label className="text-[11px] font-bold uppercase text-slate-400 tracking-widest ml-1">
                 Heure
               </label>
               <input
@@ -1875,12 +1879,12 @@ function ReminderForm({
                   }
                   setTime(val);
                 }}
-                className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none"
+                className="w-full h-14 bg-white border border-slate-100 rounded-2xl px-5 font-bold text-slate-800 outline-none focus:border-purple-200 focus:ring-4 focus:ring-purple-50 transition-all shadow-sm"
                 required
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-[#1B5E66]/40 tracking-widest ml-1">
+              <label className="text-[11px] font-bold uppercase text-slate-400 tracking-widest ml-1">
                 Date
               </label>
               <input
@@ -1893,15 +1897,15 @@ function ReminderForm({
                   } catch (e) {}
                 }}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full h-14 bg-white/50 border border-[#2D8B96]/30 rounded-2xl px-5 font-bold text-[#1B5E66] outline-none"
+                className="w-full h-14 bg-white border border-slate-100 rounded-2xl px-5 font-bold text-slate-800 outline-none focus:border-purple-200 focus:ring-4 focus:ring-purple-50 transition-all shadow-sm"
               />
             </div>
           </div>
           <button
             type="submit"
-            className="w-full h-16 bg-[#2D8B96] text-white font-black rounded-2xl shadow-[0_0_20px_rgba(45,139,150,0.4)] uppercase tracking-widest active:scale-95 transition-all text-sm italic"
+            className="w-full h-16 bg-purple-500 text-white font-bold rounded-2xl shadow-lg shadow-purple-500/20 uppercase tracking-widest active:scale-95 transition-all text-[13px]"
           >
-            ACTIVER LE RAPPEL
+            Activer le Rappel
           </button>
         </form>
       </motion.div>
@@ -1972,31 +1976,32 @@ function ArticleManagerModal({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[110] max-w-md mx-auto"
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[110] max-w-md mx-auto"
       />
       <motion.div
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
-        className="fixed inset-x-0 bottom-0 z-[120] bg-white rounded-t-[40px] p-8 max-w-md mx-auto shadow-2xl max-h-[90vh] overflow-y-auto"
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        className="fixed inset-x-0 bottom-0 z-[120] bg-slate-50 border-t border-slate-100 rounded-t-[32px] p-8 max-w-md mx-auto shadow-2xl max-h-[85vh] overflow-y-auto pb-safe"
       >
         <div className="flex justify-between items-center mb-8">
-          <h3 className="text-xl font-black text-teal-brand tracking-tight uppercase italic">
+          <h3 className="text-xl font-black text-slate-800 tracking-tight">
             Gestion des Articles
           </h3>
           <button
             onClick={onClose}
-            className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400"
+            className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-500 border border-slate-100 hover:bg-slate-100 transition-colors"
           >
             <X size={20} />
           </button>
         </div>
 
         <div className="space-y-4 mb-10">
-          <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
+          <label className="text-[11px] font-bold uppercase text-slate-400 tracking-widest ml-1">
             Ajouter un Article
           </label>
-          <div className="bg-slate-50 p-4 rounded-3xl border border-teal-brand/10 space-y-3">
+          <div className="bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <input
                 type="text"
@@ -2005,7 +2010,7 @@ function ArticleManagerModal({
                 onChange={(e) =>
                   setNewItem({ ...newItem, name: e.target.value })
                 }
-                className="bg-white border border-teal-brand/5 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-teal-brand"
+                className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-purple-200 focus:ring-4 focus:ring-purple-50 transition-all text-slate-800 placeholder-slate-400"
               />
               <input
                 type="number"
@@ -2014,7 +2019,7 @@ function ArticleManagerModal({
                 onChange={(e) =>
                   setNewItem({ ...newItem, price: e.target.value })
                 }
-                className="bg-white border border-teal-brand/5 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-teal-brand"
+                className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-purple-200 focus:ring-4 focus:ring-purple-50 transition-all text-slate-800 placeholder-slate-400"
               />
             </div>
             <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -2023,10 +2028,10 @@ function ArticleManagerModal({
                   key={cat.id}
                   type="button"
                   onClick={() => setNewItem({ ...newItem, category: cat.id })}
-                  className={`flex-shrink-0 px-3 py-2 rounded-xl border text-[9px] font-black uppercase tracking-wider transition-all ${
+                  className={`flex-shrink-0 px-3 py-2 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-all ${
                     newItem.category === cat.id
-                      ? "border-teal-brand bg-teal-brand text-white shadow-md shadow-teal-brand/20"
-                      : "border-teal-brand/10 text-teal-brand/50 bg-white"
+                      ? "border-purple-500 bg-purple-500 text-white shadow-sm shadow-purple-500/20"
+                      : "border-slate-100 text-slate-500 bg-slate-50 hover:bg-slate-100"
                   }`}
                 >
                   {cat.id}
@@ -2040,14 +2045,14 @@ function ArticleManagerModal({
                   setNewItem({ ...newItem, frequent: !newItem.frequent })
                 }
               />
-              <span className="text-[10px] font-black uppercase text-teal-brand/60 tracking-wider">
+              <span className="text-[11px] font-bold uppercase text-slate-500 tracking-wider">
                 Achat fréquent ?
               </span>
             </label>
             <button
               onClick={handleAdd}
               disabled={!newItem.name || !newItem.price}
-              className="w-full h-12 bg-teal-brand text-white font-black rounded-xl shadow-lg shadow-teal-brand/20 uppercase tracking-widest text-[11px] disabled:opacity-50"
+              className="w-full h-12 bg-purple-500 text-white font-bold rounded-xl shadow-sm shadow-purple-500/20 uppercase tracking-widest text-[11px] disabled:opacity-50 active:scale-95 transition-transform"
             >
               Ajouter à la liste
             </button>
@@ -2055,10 +2060,38 @@ function ArticleManagerModal({
         </div>
 
         <div className="space-y-3">
-          <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
-            Articles Existants ({items.length})
-          </label>
-          {items.map((item) => {
+          <div className="flex items-center justify-between mb-4">
+            <label className="text-[11px] font-bold uppercase text-slate-400 tracking-widest ml-1">
+              Articles Existants ({items.length})
+            </label>
+          </div>
+          
+          <div className="relative mb-4">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search size={16} className="text-purple-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Rechercher un article..."
+              onChange={(e) => {
+                const query = e.target.value.toLowerCase();
+                // We'll implement a simple client-side filter
+                // However, state is needed. We can just use standard HTML input filtering
+                const els = document.querySelectorAll('.article-item-row');
+                els.forEach((el) => {
+                  const text = el.getAttribute('data-name')?.toLowerCase() || "";
+                  if (text.includes(query)) {
+                    (el as HTMLElement).style.display = 'flex';
+                  } else {
+                    (el as HTMLElement).style.display = 'none';
+                  }
+                });
+              }}
+              className="w-full bg-white border border-slate-100 rounded-2xl py-3 pl-11 pr-4 text-xs font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-purple-200 focus:ring-4 focus:ring-purple-50 transition-all shadow-sm"
+            />
+          </div>
+
+          {items.map((item, index) => {
             const IconComp = (ICON_MAP[item.iconName] ||
               ICON_MAP["Box"]) as React.ElementType;
             const cat =
@@ -2068,13 +2101,12 @@ function ArticleManagerModal({
 
             return (
               <div
-                key={item.id}
-                className={`bg-white border border-slate-100 rounded-full p-4 flex items-center gap-4 transition-all hover:bg-slate-50 group hover:border-${
-                  cat.color ? cat.color.replace("text-", "") : "teal-500"
-                }`}
+                key={`${item.id}-${index}`}
+                data-name={item.name}
+                className={`article-item-row bg-white border border-slate-100 rounded-[24px] p-4 flex items-center gap-4 transition-all hover:shadow-md group shadow-sm`}
               >
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${cat.bgColor} ${cat.color} group-active:scale-95 transition-transform`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${cat.bgColor} ${cat.color} group-active:scale-95 transition-transform shadow-sm`}
                 >
                   {item.iconSvg ? (
                     <div
@@ -2094,7 +2126,7 @@ function ArticleManagerModal({
                         onChange={(e) =>
                           handleUpdate(item.id, { name: e.target.value })
                         }
-                        className="bg-slate-50 border-none px-2 py-1 text-sm font-bold rounded"
+                        className="bg-white border border-slate-100 px-3 py-2 text-sm font-bold rounded-[12px] text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 shadow-sm"
                       />
                       <input
                         type="number"
@@ -2104,15 +2136,15 @@ function ArticleManagerModal({
                             price: parseFloat(e.target.value),
                           })
                         }
-                        className="bg-slate-50 border-none px-2 py-1 text-sm font-bold rounded"
+                        className="bg-white border border-slate-100 px-3 py-2 text-sm font-bold rounded-[12px] text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 shadow-sm"
                       />
                     </div>
                   ) : (
                     <>
-                      <p className="text-sm font-black text-slate-800 uppercase tracking-tight">
+                      <p className="text-[14px] font-bold text-slate-800 tracking-tight">
                         {item.name}
                       </p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                      <p className="text-[11px] font-medium text-slate-400 mt-0.5">
                         {item.price} {currency} • {item.category}
                       </p>
                     </>
@@ -2125,8 +2157,8 @@ function ArticleManagerModal({
                     }
                     className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                       item.frequent
-                        ? "bg-amber-400 text-white"
-                        : "bg-slate-100 text-slate-300"
+                        ? "bg-amber-100 text-amber-500"
+                        : "bg-slate-50 text-slate-300 hover:bg-slate-100"
                     }`}
                   >
                     <Sparkles
@@ -2138,15 +2170,15 @@ function ArticleManagerModal({
                     onClick={() => setEditingId(isEditing ? null : item.id)}
                     className={`w-8 h-8 rounded-full flex items-center justify-center ${
                       isEditing
-                        ? "bg-teal-brand text-white"
-                        : "bg-slate-100 text-slate-400"
+                        ? "bg-purple-500 text-white"
+                        : "bg-slate-50 text-slate-400 hover:bg-slate-100"
                     }`}
                   >
                     {isEditing ? <Check size={14} /> : <Settings2 size={14} />}
                   </button>
                   <button
                     onClick={() => handleDelete(item.id)}
-                    className="w-8 h-8 rounded-full bg-rose-50 text-rose-400 flex items-center justify-center transition-opacity"
+                    className="w-8 h-8 rounded-full bg-rose-50 text-rose-400 flex items-center justify-center transition-colors hover:bg-rose-100"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -2189,21 +2221,22 @@ function SupportModal({ onClose }: { onClose: () => void }) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="fixed inset-0 bg-[#00FFFF]/5 backdrop-blur-md z-[110] max-w-md mx-auto"
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[110] max-w-md mx-auto"
       />
       <motion.div
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
-        className="fixed inset-x-0 bottom-0 z-[120] bg-white/95 backdrop-blur-2xl border-t border-[#2D8B96]/30 rounded-t-[40px] p-8 max-w-md mx-auto shadow-[0_-10px_40px_rgba(45,139,150,0.15)] max-h-[85vh] overflow-y-auto scrollbar-hide"
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        className="fixed inset-x-0 bottom-0 z-[120] bg-slate-50 border-t border-slate-100 rounded-t-[32px] p-8 max-w-md mx-auto shadow-2xl max-h-[85vh] overflow-y-auto scrollbar-hide pb-safe"
       >
         <div className="flex justify-between items-center mb-8">
-          <h3 className="text-xl font-black text-[#1B5E66] tracking-tight italic uppercase">
+          <h3 className="text-xl font-black text-slate-800 tracking-tight">
             Aide & Support
           </h3>
           <button
             onClick={onClose}
-            className="w-10 h-10 bg-[#2D8B96]/10 border border-[#2D8B96]/20 rounded-full flex items-center justify-center text-[#2D8B96]"
+            className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 transition-colors"
           >
             <X size={20} />
           </button>
@@ -2211,19 +2244,19 @@ function SupportModal({ onClose }: { onClose: () => void }) {
 
         <div className="space-y-8">
           <section>
-            <div className="bg-[#B0E0E6]/10 border border-[#2D8B96]/20 rounded-3xl p-6 mb-8 text-center shadow-[0_0_20px_rgba(45,139,150,0.05)]">
-              <div className="w-20 h-20 bg-white border border-[#2D8B96]/30 rounded-full flex items-center justify-center text-[#2D8B96] mx-auto mb-4 shadow-[0_0_15px_rgba(45,139,150,0.2)]">
+            <div className="bg-purple-50 border border-purple-100 rounded-[24px] p-6 mb-8 text-center shadow-sm">
+              <div className="w-20 h-20 bg-white border border-purple-100 rounded-full flex items-center justify-center text-purple-500 mx-auto mb-4 shadow-sm">
                 <HelpCircle size={40} strokeWidth={1} />
               </div>
-              <h4 className="text-sm font-black text-[#1B5E66] mb-2 uppercase italic">
+              <h4 className="text-sm font-black text-purple-600 mb-2 uppercase">
                 Besoin d'assistance ?
               </h4>
-              <p className="text-[10px] text-[#1B5E66]/50 font-bold mb-6 leading-relaxed uppercase tracking-tighter">
+              <p className="text-[11px] text-purple-400 font-bold mb-6 leading-relaxed uppercase tracking-tighter">
                 L'IA MasroF et notre équipe sont à votre service 24/7.
               </p>
               <button
                 onClick={() => window.open("mailto:support@masrof.app")}
-                className="w-full h-14 bg-[#2D8B96] text-white font-black rounded-2xl text-[10px] uppercase tracking-[0.3em] shadow-[0_0_15px_rgba(45,139,150,0.3)] active:scale-95 transition-transform"
+                className="w-full h-14 bg-purple-500 text-white font-bold rounded-2xl text-[11px] uppercase tracking-widest shadow-lg shadow-purple-500/20 active:scale-95 transition-transform"
               >
                 Ouvrir un ticket support
               </button>
@@ -2231,25 +2264,25 @@ function SupportModal({ onClose }: { onClose: () => void }) {
           </section>
 
           <section>
-            <h4 className="text-[10px] font-black text-[#1B5E66]/30 uppercase tracking-[0.3em] mb-4 ml-2 italic">
+            <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4 ml-2">
               Protocoles & FAQ
             </h4>
             <div className="space-y-3">
               {faqs.map((faq, idx) => (
                 <div
                   key={idx}
-                  className="bg-white/50 rounded-2xl overflow-hidden border border-[#2D8B96]/10 shadow-sm"
+                  className="bg-white rounded-[20px] overflow-hidden border border-slate-100 shadow-sm"
                 >
                   <button
                     onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
-                    className="w-full p-5 text-left flex items-center justify-between"
+                    className="w-full p-5 text-left flex items-center justify-between hover:bg-slate-50 transition-colors"
                   >
-                    <span className="text-[11px] font-bold text-[#1B5E66] tracking-tight uppercase italic">
+                    <span className="text-[12px] font-bold text-slate-800 tracking-tight uppercase">
                       {faq.q}
                     </span>
                     <ChevronRight
                       size={16}
-                      className={`text-[#2D8B96] transition-transform ${
+                      className={`text-purple-500 transition-transform ${
                         activeFaq === idx ? "rotate-90" : ""
                       }`}
                     />
@@ -2261,7 +2294,7 @@ function SupportModal({ onClose }: { onClose: () => void }) {
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                       >
-                        <div className="p-5 pt-0 text-[10px] text-[#1B5E66]/60 leading-relaxed font-medium border-t border-[#2D8B96]/5">
+                        <div className="p-5 pt-0 text-[12px] text-slate-500 leading-relaxed font-medium border-t border-slate-100/50">
                           {faq.a}
                         </div>
                       </motion.div>
@@ -2523,14 +2556,14 @@ function HomeSectionsManagerModal({ onClose }: { onClose: () => void }) {
         <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 shrink-0" />
 
         <div className="flex items-center gap-3 mb-6 shrink-0">
-          <div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600">
+          <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-500">
             <Layout size={20} />
           </div>
           <div>
-            <h3 className="text-xl font-black text-slate-900">
+            <h3 className="text-xl font-black text-slate-800 tracking-tight">
               Sections de l'Accueil
             </h3>
-            <p className="text-sm font-medium text-slate-500 mt-0.5">
+            <p className="text-sm font-medium text-slate-400 mt-0.5">
               Organisez l'affichage
             </p>
           </div>
@@ -2543,10 +2576,10 @@ function HomeSectionsManagerModal({ onClose }: { onClose: () => void }) {
               return (
                 <div
                   key={item.id}
-                  className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                  className={`w-full flex items-center justify-between p-3 rounded-[20px] border transition-all shadow-sm ${
                     isVisible
-                      ? "border-slate-200 bg-white"
-                      : "border-slate-100 bg-slate-50 opacity-60"
+                      ? "border-slate-100 bg-white"
+                      : "border-slate-50 bg-slate-50 opacity-70"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -2554,7 +2587,7 @@ function HomeSectionsManagerModal({ onClose }: { onClose: () => void }) {
                       onClick={() => handleToggleVisibility(item.id)}
                       className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
                         isVisible
-                          ? "bg-teal-500 text-white shadow-sm"
+                          ? "bg-purple-500 text-white shadow-sm shadow-purple-500/20"
                           : "bg-slate-200 text-slate-400"
                       }`}
                     >
@@ -2564,7 +2597,7 @@ function HomeSectionsManagerModal({ onClose }: { onClose: () => void }) {
                       className={`font-bold ${
                         isVisible
                           ? "text-slate-800"
-                          : "text-slate-500 line-through"
+                          : "text-slate-400 line-through"
                       }`}
                     >
                       {item.label}
@@ -2577,7 +2610,7 @@ function HomeSectionsManagerModal({ onClose }: { onClose: () => void }) {
                       onClick={() => handleMoveUp(index)}
                       className={`p-2 rounded-lg flex items-center justify-center transition-colors ${
                         index === 0
-                          ? "text-slate-300"
+                          ? "text-slate-200"
                           : "text-slate-500 hover:bg-slate-100 active:bg-slate-200"
                       }`}
                     >
@@ -2588,7 +2621,7 @@ function HomeSectionsManagerModal({ onClose }: { onClose: () => void }) {
                       onClick={() => handleMoveDown(index)}
                       className={`p-2 rounded-lg flex items-center justify-center transition-colors ${
                         index === localSections.length - 1
-                          ? "text-slate-300"
+                          ? "text-slate-200"
                           : "text-slate-500 hover:bg-slate-100 active:bg-slate-200"
                       }`}
                     >
@@ -2604,7 +2637,7 @@ function HomeSectionsManagerModal({ onClose }: { onClose: () => void }) {
         <div className="pt-6 mt-2 shrink-0">
           <button
             onClick={handleSave}
-            className="w-full h-14 bg-teal-600 active:bg-teal-700 text-white rounded-2xl font-black text-[15px] uppercase tracking-widest transition-colors shadow-lg shadow-teal-600/20"
+            className="w-full h-14 bg-purple-500 active:bg-purple-600 text-white rounded-2xl font-bold text-[13px] uppercase tracking-widest transition-colors shadow-lg shadow-purple-500/20"
           >
             Appliquer
           </button>

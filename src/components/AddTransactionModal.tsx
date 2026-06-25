@@ -862,7 +862,7 @@ export default function AddTransactionModal({
                       </div>
 
                       <div className="space-y-3 mt-4">
-                        {scannedItems.map((item) => {
+                        {scannedItems.map((item, index) => {
                           const info = getArticleInfo(
                             item.title || "",
                             item.category,
@@ -879,7 +879,7 @@ export default function AddTransactionModal({
 
                           return (
                             <div
-                              key={item.id}
+                              key={`${item.id}-${index}`}
                               className={`flex items-center p-3 rounded-[32px] ${cardBg} border border-white/60 backdrop-blur-sm relative overflow-hidden group shadow-sm transition-all hover:bg-white`}
                             >
                               <ShoppingCart className="absolute -right-4 -bottom-4 w-24 h-24 text-slate-900/5 rotate-12 pointer-events-none" />

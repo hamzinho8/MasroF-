@@ -23,41 +23,39 @@ export const exportDataToFile = async () => {
         const encryptedData = getBackupData();
 
         if (Capacitor.isNativePlatform()) {
+            let fileUri = '';
             try {
+                // Try to write to Cache first, as it doesn't require extra permissions on most Android versions
                 const writeResult = await Filesystem.writeFile({
                     path: BACKUP_FILE_NAME,
                     data: encryptedData,
-                    directory: Directory.Documents,
+                    directory: Directory.Cache,
                     encoding: Encoding.UTF8,
                 });
-                try {
-                    await Share.share({
-                        title: 'Sauvegarde Masrof',
-                        text: 'Fichier de sauvegarde des données Masrof.',
-                        url: writeResult.uri,
-                        dialogTitle: 'Enregistrer la sauvegarde'
-                    });
-                } catch (shareErr: any) {
-                    // Si le partage échoue, ce n'est pas grave car le fichier est déjà dans Documents
-                    console.log('Share prompt failed or was cancelled', shareErr);
-                }
-                setTimeout(() => {
-                    alert("Sauvegarde réussie !\nLe fichier 'masrof_backup_latest.dat' se trouve dans le dossier 'Documents' de votre téléphone.");
-                }, 500);
-            } catch (fsErr: any) {
-                 // Fallback to cache + share if Documents fails
-                 const writeResult = await Filesystem.writeFile({
-                     path: BACKUP_FILE_NAME,
-                     data: encryptedData,
-                     directory: Directory.Cache,
-                     encoding: Encoding.UTF8,
-                 });
-                 await Share.share({
+                fileUri = writeResult.uri;
+            } catch (cacheErr: any) {
+                // Fallback to Data directory
+                const writeResult = await Filesystem.writeFile({
+                    path: BACKUP_FILE_NAME,
+                    data: encryptedData,
+                    directory: Directory.Data,
+                    encoding: Encoding.UTF8,
+                });
+                fileUri = writeResult.uri;
+            }
+            
+            try {
+                await Share.share({
                     title: 'Sauvegarde Masrof',
                     text: 'Fichier de sauvegarde des données Masrof.',
-                    url: writeResult.uri,
+                    url: fileUri,
                     dialogTitle: 'Enregistrer la sauvegarde'
-                 });
+                });
+            } catch (shareErr: any) {
+                console.log('Share prompt failed or was cancelled', shareErr);
+                if (shareErr.name !== 'AbortError' && !shareErr.message?.toLowerCase().includes('cancel')) {
+                    throw shareErr;
+                }
             }
         } else {
             const blob = new Blob([encryptedData], { type: 'application/octet-stream' });

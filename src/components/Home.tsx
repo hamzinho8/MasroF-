@@ -52,11 +52,12 @@ import {
 import CalendarView from "./CalendarView";
 import ReceiptScannerModal from "./ReceiptScannerModal";
 import InshallahEstimationCard from "./InshallahEstimationCard";
+import AddBankBalanceModal from "./AddBankBalanceModal";
 
 interface HomeProps {
   balance: number;
   bankBalance: number;
-  onAddBankBalance: (amount: number) => void;
+  onAddBankBalance: (amount: number, label: string, category: string) => void;
   transactions: Transaction[];
   onAddClick: (
     type: "INCOME" | "EXPENSE",
@@ -1024,7 +1025,7 @@ export default function Home({
                 const limit = i.dailyLimit || 1;
                 return usage.count < limit;
               }
-            ).map((item) => {
+            ).map((item, index) => {
               const info = getArticleInfo(item.name, item.category, predefinedItems);
               const IconComponent =
                 info.iconName && ICON_MAP[info.iconName]
@@ -1038,7 +1039,7 @@ export default function Home({
               const hasStackEffect = isSpecialItem && remainingUses > 1;
 
               return (
-                <div key={item.id} className="relative w-full aspect-square">
+                <div key={`${item.id}-${index}`} className="relative w-full aspect-square">
                   {/* Layer 2 (Bottom layer shadow effect) */}
                   <div 
                     className={`absolute inset-0 rounded-full border transition-all duration-300 ease-out pointer-events-none ${isSpecialItem ? `${info.bgColor || "bg-slate-50"} ${info.borderColor || "border-white"} brightness-90` : 'bg-white border-slate-100'} ${hasStackEffect ? 'opacity-100 translate-x-[6px] translate-y-[6px] shadow-sm' : 'opacity-0 translate-x-0 translate-y-0'}`} 
@@ -1103,7 +1104,7 @@ export default function Home({
             <div className="grid grid-cols-4 gap-2 pb-4 px-1">
               {inventoryItems
                 .filter((i) => i.quantity > 0 && !rasHiddenItems.includes(i.id))
-                .map((item) => {
+                .map((item, index) => {
                   const info = getArticleInfo(item.name, item.category || "Autres", predefinedItems);
                   const IconComponent =
                     info.iconName && ICON_MAP[info.iconName]
@@ -1114,7 +1115,7 @@ export default function Home({
 
                   return (
                     <button
-                      key={item.id}
+                      key={`${item.id}-${index}`}
                       onClick={() => handleDecreaseInventory(item)}
                       className={`w-full h-[86px] rounded-[24px] flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-sm border border-white hover:border-slate-200 active:scale-95 group ${
                         bgClass.replace("100", "50")
@@ -1755,81 +1756,6 @@ function CalculatorModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-function AddBankBalanceModal({
-  onClose,
-  onAdd,
-  currency,
-}: {
-  onClose: () => void;
-  onAdd: (amount: number) => void;
-  currency: string;
-}) {
-  const [amount, setAmount] = useState("");
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (amount && !isNaN(Number(amount))) {
-      onAdd(Number(amount));
-      onClose();
-    }
-  };
-
-  return (
-    <>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[1000] max-w-md mx-auto"
-      />
-      <motion.div
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="fixed bottom-0 left-0 right-0 z-[1001] bg-white rounded-t-[40px] p-8 max-w-md mx-auto shadow-2xl max-h-[90vh] overflow-y-auto"
-      >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-black text-slate-800 tracking-tight">
-            Ajouter Salaire / Dépôt
-          </h2>
-          <button
-            onClick={onClose}
-            className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors"
-          >
-            <X size={20} />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-1.5">
-            <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">
-              Montant ({currency})
-            </label>
-            <input
-              type="number"
-              step="0.1"
-              required
-              autoFocus
-              placeholder="0.0"
-              className="w-full h-16 bg-slate-50 border border-slate-100 rounded-2xl px-5 font-black text-slate-800 text-3xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all text-center font-mono"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full h-16 rounded-3xl flex items-center justify-center gap-3 font-black text-white text-lg shadow-lg transform transition-all active:scale-[0.98] bg-blue-600 shadow-blue-600/20"
-          >
-            <Check size={24} strokeWidth={3} />
-            <span>Confirmer</span>
-          </button>
-        </form>
-      </motion.div>
-    </>
-  );
-}
-
 function FavoritesSettingsModal({
   onClose,
   predefinedItems,
@@ -1894,7 +1820,7 @@ function FavoritesSettingsModal({
 
         <div className="flex-1 overflow-y-auto min-h-0 -mx-2 px-2 hide-scrollbar">
           <div className="space-y-3 pb-2">
-            {predefinedItems.map((item) => {
+            {predefinedItems.map((item, index) => {
               const info = getArticleInfo(item.name, item.category, predefinedItems);
               const IconComponent =
                 info.iconName && ICON_MAP[info.iconName]
@@ -1905,7 +1831,7 @@ function FavoritesSettingsModal({
               const bgClass = info.bgColor || "bg-slate-100";
               return (
                 <button
-                  key={item.id}
+                  key={`${item.id}-${index}`}
                   onClick={() => handleToggle(item.id)}
                   className="w-full flex items-center justify-between p-3 rounded-2xl border border-slate-100 active:bg-slate-50 transition-colors text-left group"
                 >
@@ -2042,7 +1968,7 @@ function RasSettingsModal({
           <div className="space-y-3 pb-2">
             {inventoryItems
               .filter((item) => item.quantity > 0)
-              .map((item) => {
+              .map((item, index) => {
                 const info = getArticleInfo(item.name, item.category || "Autres", predefinedItems);
                 const IconComponent =
                   info.iconName && ICON_MAP[info.iconName]
@@ -2055,7 +1981,7 @@ function RasSettingsModal({
                   : "bg-slate-100";
                 return (
                   <button
-                    key={item.id}
+                    key={`${item.id}-${index}`}
                     onClick={() => handleToggle(item.id)}
                     className="w-full flex items-center justify-between p-3 rounded-2xl border border-slate-100 active:bg-slate-50 transition-colors text-left group"
                   >

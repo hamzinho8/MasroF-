@@ -43,7 +43,7 @@ interface CreditsProps {
   transactions?: Transaction[];
   onAddClick?: (type: "INCOME" | "EXPENSE") => void;
   onAddTransaction?: (label: string, amount: number, type: "INCOME" | "EXPENSE", category?: string, paidByBank?: boolean, isPureInflow?: boolean) => void;
-  onAddBankBalance?: (amount: number) => void;
+  onAddBankBalance?: (amount: number, label: string, category: string) => void;
 }
 
 // decorative backgrounds removed

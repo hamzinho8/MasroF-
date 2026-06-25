@@ -317,9 +317,9 @@ export default function Bank({
           {showBankModal && (
             <AddBankBalanceModal
               onClose={() => setShowBankModal(false)}
-              onAdd={(amount) => {
+              onAdd={(amount, label, category) => {
                 if (onAddBankBalance) {
-                  onAddBankBalance(amount);
+                  onAddBankBalance(amount, label, category);
                 }
               }}
               currency={currency}
@@ -791,12 +791,12 @@ export default function Bank({
                       indicatorColor = "bg-sky-500";
                     } else if (isOwedToMe) {
                       style = {
-                        bg: "bg-indigo-100",
-                        text: "text-indigo-600",
-                        border: "border-indigo-200",
+                        bg: "bg-indigo-600 shadow-sm shadow-indigo-600/20",
+                        text: "text-white",
+                        border: "border-indigo-100",
                         icon: <TrendingUp size={20} />,
                       };
-                      indicatorColor = "bg-indigo-500";
+                      indicatorColor = "bg-indigo-600";
                     } else {
                       style = styleMap.autreEntree;
                       indicatorColor = "bg-purple-500";
@@ -807,9 +807,9 @@ export default function Bank({
                   } else {
                     if (isOwedByMe) {
                       style = {
-                        bg: "bg-amber-100",
-                        text: "text-amber-600",
-                        border: "border-amber-200",
+                        bg: "bg-amber-500 shadow-sm shadow-amber-500/20",
+                        text: "text-white",
+                        border: "border-amber-100",
                         icon: <TrendingDown size={20} />,
                       };
                       indicatorColor = "bg-amber-500";
@@ -846,7 +846,9 @@ export default function Bank({
                       <div
                         className={`shrink-0 w-12 h-12 rounded-[20px] flex items-center justify-center transition-transform group-hover:scale-110 ${style.bg} ${style.text}`}
                       >
-                        {info.iconSvg ? (
+                        {isIncome || isRetrait || isOwedToMe || isOwedByMe ? (
+                          style.icon
+                        ) : info.iconSvg ? (
                           <div
                             dangerouslySetInnerHTML={{ __html: info.iconSvg }}
                             className="w-5 h-5 text-current"
@@ -865,6 +867,12 @@ export default function Bank({
                               ? "Salaire"
                               : isIncome && tx.category === "Dépôt"
                               ? "Dépôt"
+                              : isRetrait
+                              ? "Retrait"
+                              : isIncome && !isOwedToMe
+                              ? "Autre"
+                              : isOwedToMe || isOwedByMe
+                              ? tx.label.replace(/^(Emprunt de |Prêt à |Remboursement : |Remboursement partiel : |Paiement partiel dette : |استرداد مستحق: |استرداد جزئي: |تسديد دين جزئي: |Borrow from |Loan to |Repayment : |Partial repayment : )/i, "")
                               : tx.label}
                           </p>
                           {info.frequent && (
