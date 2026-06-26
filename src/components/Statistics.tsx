@@ -368,7 +368,7 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
   // Heatmap Data (Activity by day for current month/week)
   const heatmapData = useMemo(() => {
     const { start, end } = timeRange;
-    const days = [];
+    const days: Array<{ date: Date, dateStr: string, amount: number }> = [];
     let current = new Date(start);
     while (current <= end) {
       days.push({

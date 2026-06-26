@@ -155,7 +155,7 @@ export default function History({ transactions, predefinedItems, language, curre
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>(t.tous);
-  const [activeInlineMenu, setActiveInlineMenu] = useState<'DATE' | 'TYPE' | 'CATEGORY' | null>(null);
+  const [activeInlineMenu, setActiveInlineMenu] = useState<'DATE' | 'TYPE' | 'CATEGORY' | 'SEARCH' | null>(null);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
   const [visibleCount, setVisibleCount] = useState(30);

@@ -1061,7 +1061,7 @@ export default function Home({
                     >
                       {info.iconSvg || item.iconSvg ? (
                         <div
-                          dangerouslySetInnerHTML={{ __html: info.iconSvg || item.iconSvg }}
+                          dangerouslySetInnerHTML={{ __html: (info.iconSvg || item.iconSvg) as string }}
                           className="w-5 h-5 sm:w-6 sm:h-6 text-current svg-container"
                         />
                       ) : (

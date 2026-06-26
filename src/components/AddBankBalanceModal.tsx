@@ -16,7 +16,7 @@ export default function AddBankBalanceModal({ onClose, onAdd, currency }: AddBan
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (amount && !isNaN(Number(amount))) {
-      let finalLabel = source;
+      let finalLabel: string = source;
       let finalCategory = "Banque";
       if (source === 'Salaire') {
         finalLabel = "Salaire";

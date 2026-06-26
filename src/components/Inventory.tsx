@@ -264,7 +264,7 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
               <div className="flex flex-col gap-6">
                 {activeItems.length > 0 && (
             <div className="flex flex-col gap-3">
-              {activeItems.map((item) => {
+              {activeItems.map((item, index) => {
                 const predefinedItem = predefinedItems.find(p => p.name.toLowerCase() === item.name.toLowerCase());
                 const categoryId = predefinedItem?.category || 'Autres';
                 const cat = CATEGORIES.find(c => c.id === categoryId) || CATEGORIES.find(c => c.id === 'Autres')!;

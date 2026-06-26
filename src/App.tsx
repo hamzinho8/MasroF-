@@ -1311,6 +1311,7 @@ export default function App() {
           <Bank
             language={language}
             currency={currency}
+            bankBalance={bankBalance}
             transactions={transactions}
             predefinedItems={predefinedItems}
             onAddClick={(type) => openModal(type)}

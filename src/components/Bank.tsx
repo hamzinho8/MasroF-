@@ -55,6 +55,7 @@ import { ICON_MAP, getArticleInfo, CATEGORIES } from "../constants";
 interface BankProps {
   language: string;
   currency: string;
+  bankBalance: number;
   transactions?: Transaction[];
   predefinedItems?: PredefinedItem[];
   onAddClick?: (type: "INCOME" | "EXPENSE") => void;
@@ -66,6 +67,7 @@ interface BankProps {
 export default function Bank({
   language,
   currency,
+  bankBalance,
   transactions = [],
   predefinedItems = [],
   onAddClick,
@@ -136,16 +138,6 @@ export default function Bank({
 
     let tIncome = 0;
     let tExpense = 0;
-    let currentBalance = 0;
-
-    // Calculate total absolute balance
-    bankTransactions.reverse().forEach((tx) => {
-      const isIncome = tx.type === "INCOME" && tx.paidByBank;
-      if (isIncome) currentBalance += tx.amount;
-      else currentBalance -= tx.amount;
-    });
-
-    bankTransactions.reverse(); // Restore descending order
 
     const periodTx = bankTransactions.filter(
       (tx) =>
@@ -153,7 +145,6 @@ export default function Bank({
     );
 
     const chartPoints: Record<string, number> = {};
-    let tempBalance = currentBalance;
 
     // Build chart data backwards
     periodTx.forEach((tx) => {
@@ -166,13 +157,13 @@ export default function Bank({
     });
 
     // We can simulate a curve by just tracking daily aggregated balance for the period
-    const startBalance = currentBalance - tIncome + tExpense;
+    const startBalance = bankBalance - tIncome + tExpense;
     let runBalance = startBalance;
     const sortedPeriodTx = [...periodTx].reverse();
 
     if (sortedPeriodTx.length === 0) {
-      chartPoints[now.toLocaleDateString()] = currentBalance;
-      chartPoints[startOfPeriod.toLocaleDateString()] = currentBalance;
+      chartPoints[now.toLocaleDateString()] = bankBalance;
+      chartPoints[startOfPeriod.toLocaleDateString()] = bankBalance;
     } else {
       sortedPeriodTx.forEach((tx) => {
         const isIncome = tx.type === "INCOME" && tx.paidByBank;
@@ -189,10 +180,10 @@ export default function Bank({
     return {
       totalIncome: tIncome,
       totalExpense: tExpense,
-      balance: currentBalance,
+      balance: bankBalance,
       chartData: cData,
     };
-  }, [bankTransactions, bankTimeframe]);
+  }, [bankTransactions, bankTimeframe, bankBalance]);
 
   const getTimeframeLabel = (frame: "day" | "week" | "month") => {
     if (language === "Français")
@@ -365,7 +356,7 @@ export default function Bank({
                   {showBalance ? <Eye size={20} /> : <EyeOff size={20} />}
                 </button>
                 <span className="text-4xl font-black tracking-tighter">
-                  {showBalance ? balance.toLocaleString("fr-FR") : "****"}
+                  {showBalance ? bankBalance.toLocaleString("fr-FR") : "****"}
                 </span>
                 {showBalance && (
                   <span className="text-xl font-bold opacity-70 uppercase">
@@ -452,7 +443,7 @@ export default function Bank({
                   animate={{
                     width: `${Math.min(
                       100,
-                      Math.max(0, (balance / savingsGoal) * 100)
+                      Math.max(0, (bankBalance / savingsGoal) * 100)
                     )}%`,
                   }}
                   transition={{ duration: 1, ease: "easeOut" }}
@@ -462,7 +453,7 @@ export default function Bank({
               <div className="mt-1.5 text-right">
                 <span className="text-[10px] font-bold text-white">
                   {Math.round(
-                    Math.min(100, Math.max(0, (balance / savingsGoal) * 100))
+                    Math.min(100, Math.max(0, (bankBalance / savingsGoal) * 100))
                   )}
                   %
                 </span>
@@ -587,7 +578,7 @@ export default function Bank({
                         border: "none",
                         boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                       }}
-                      formatter={(val: number) => [
+                      formatter={(val: any) => [
                         `${val} ${currency}`,
                         "Balance",
                       ]}
@@ -870,18 +861,11 @@ export default function Bank({
                               : isRetrait
                               ? "Retrait"
                               : isIncome && !isOwedToMe
-                              ? "Autre"
+                              ? tx.label
                               : isOwedToMe || isOwedByMe
                               ? tx.label.replace(/^(Emprunt de |Prêt à |Remboursement : |Remboursement partiel : |Paiement partiel dette : |استرداد مستحق: |استرداد جزئي: |تسديد دين جزئي: |Borrow from |Loan to |Repayment : |Partial repayment : )/i, "")
                               : tx.label}
                           </p>
-                          {info.frequent && (
-                            <Repeat
-                              size={12}
-                              className="text-indigo-400"
-                              strokeWidth={3}
-                            />
-                          )}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-[10px] font-bold text-slate-400 capitalize">
