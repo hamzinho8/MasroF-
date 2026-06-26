@@ -33,6 +33,8 @@ import {
   Check,
   ArrowRight,
   Settings,
+  Home,
+  MonitorPlay,
 } from "lucide-react";
 import {
   motion,
@@ -51,6 +53,8 @@ import {
 import { Transaction, PredefinedItem } from "../types";
 import AddBankBalanceModal from "./AddBankBalanceModal";
 import { ICON_MAP, getArticleInfo, CATEGORIES } from "../constants";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import ManageUpcomingModal, { UpcomingTransaction } from "./ManageUpcomingModal";
 
 interface BankProps {
   language: string;
@@ -84,10 +88,41 @@ export default function Bank({
   const [filter, setFilter] = useState<"ALL" | "IN" | "OUT">("ALL");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
-  const [savingsGoal, setSavingsGoal] = useState<number>(10000); // Target
+  const [savingsGoal, setSavingsGoal] = useLocalStorage<number>("bankSavingsGoal", 10000); // Target
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null); // For bottom sheet
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [tempGoal, setTempGoal] = useState(savingsGoal.toString());
+  const [isManageUpcomingModalOpen, setIsManageUpcomingModalOpen] = useState(false);
+
+  const [upcomingTransactions, setUpcomingTransactions] = useLocalStorage<UpcomingTransaction[]>(
+    "upcomingTransactions",
+    [
+      {
+        id: "upc-1",
+        label: "Loyer",
+        amount: 2500,
+        dateStr: "Le 1er du mois",
+        iconName: "Home",
+        colorHex: "#6366f1",
+      },
+      {
+        id: "upc-2",
+        label: "Internet",
+        amount: 200,
+        dateStr: "Le 5 du mois",
+        iconName: "Wifi",
+        colorHex: "#3b82f6",
+      },
+      {
+        id: "upc-3",
+        label: "Netflix",
+        amount: 95,
+        dateStr: "Le 15 du mois",
+        iconName: "MonitorPlay",
+        colorHex: "#ef4444",
+      }
+    ]
+  );
 
   const bankTransactions = useMemo(() => {
     return transactions
@@ -629,6 +664,64 @@ export default function Bank({
           </button>
         </div>
 
+        {/* Transactions à Venir */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between px-1 mb-4">
+            <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-800 flex items-center gap-2">
+              {language === "Français"
+                ? "Prévues"
+                : language === "العربية"
+                ? "المعاملات القادمة"
+                : "Upcoming"}
+            </h3>
+            <button
+              onClick={() => setIsManageUpcomingModalOpen(true)}
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition-colors"
+            >
+              <Settings size={16} />
+            </button>
+          </div>
+          
+          <div className="flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar -mx-1 px-1">
+            {upcomingTransactions.map((tx) => {
+              const IconComp =
+                tx.iconName === "Home" ? Home :
+                tx.iconName === "Wifi" ? Wifi :
+                tx.iconName === "MonitorPlay" ? MonitorPlay :
+                Calendar;
+
+              return (
+                <div
+                  key={tx.id}
+                  className="snap-start shrink-0 w-[120px] bg-white border border-slate-100 rounded-[20px] p-3 flex flex-col shadow-sm relative overflow-hidden group"
+                >
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <div
+                        className="w-8 h-8 rounded-xl flex items-center justify-center"
+                        style={{ backgroundColor: `${tx.colorHex}20`, color: tx.colorHex }}
+                      >
+                        <IconComp size={16} />
+                      </div>
+                      <span className="text-[9px] font-black uppercase text-slate-400 bg-slate-50 px-2 py-1 rounded-md">
+                        {tx.dateStr.replace("Le ", "").replace(" du mois", "")}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-black text-slate-800 text-[12px] truncate">
+                        {tx.label}
+                      </p>
+                      <p className="text-rose-600 font-black text-[13px] mt-0.5 truncate">
+                        -{tx.amount} <span className="text-[9px] uppercase">{currency}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Transactions Header & Search */}
         <div className="flex flex-col gap-3 mb-4 mt-8">
           <div className="flex items-center justify-between px-1">
@@ -882,7 +975,7 @@ export default function Bank({
                       <div className="shrink-0 flex flex-col items-end pr-1">
                         <p
                           className={`font-black tracking-tighter text-[15px] ${
-                            isIncome ? "text-emerald-600" : "text-slate-800"
+                            isIncome ? "text-emerald-600" : "text-rose-600"
                           }`}
                         >
                           {isIncome ? "+" : "-"}
@@ -1110,6 +1203,15 @@ export default function Bank({
           </div>
         )}
       </AnimatePresence>
+
+      <ManageUpcomingModal
+        isOpen={isManageUpcomingModalOpen}
+        onClose={() => setIsManageUpcomingModalOpen(false)}
+        transactions={upcomingTransactions}
+        onSave={setUpcomingTransactions}
+        language={language}
+        currency={currency}
+      />
     </motion.div>
   );
 }
