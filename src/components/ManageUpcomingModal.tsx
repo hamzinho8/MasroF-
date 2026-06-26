@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Trash2, Edit2, Home, Wifi, MonitorPlay, Calendar } from "lucide-react";
+import { X, Plus, Trash2, Edit2, Wallet, Landmark, ShoppingBag, Box, Home, Wifi, MonitorPlay, Calendar } from "lucide-react";
+import { ICON_MAP, CATEGORIES, INITIAL_PREDEFINED_ITEMS } from "../constants";
 
 export interface UpcomingTransaction {
   id: string;
@@ -9,6 +10,9 @@ export interface UpcomingTransaction {
   dateStr: string;
   iconName: string;
   colorHex: string;
+  categoryId?: string;
+  dayOfMonth?: number;
+  paidByBank?: boolean;
 }
 
 interface ManageUpcomingModalProps {
@@ -33,12 +37,9 @@ export default function ManageUpcomingModal({
   
   const [editLabel, setEditLabel] = useState("");
   const [editAmount, setEditAmount] = useState("");
-  const [editDateStr, setEditDateStr] = useState("");
-  const [editIconName, setEditIconName] = useState("Home");
-  const [editColorHex, setEditColorHex] = useState("#6366f1");
-
-  const ICONS = ["Home", "Wifi", "MonitorPlay", "Calendar"];
-  const COLORS = ["#6366f1", "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6"];
+  const [editDayOfMonth, setEditDayOfMonth] = useState<number>(1);
+  const [editPaidByBank, setEditPaidByBank] = useState<boolean>(true);
+  const [editCategoryId, setEditCategoryId] = useState<string>("Nourriture");
 
   React.useEffect(() => {
     if (isOpen) {
@@ -50,14 +51,20 @@ export default function ManageUpcomingModal({
   const handleSaveEdit = () => {
     if (!editLabel || !editAmount) return;
 
+    const dateStr = `Le ${editDayOfMonth} du mois`;
+    const selectedCat = CATEGORIES.find(c => c.id === editCategoryId) || CATEGORIES[7]; // fallback to Autres
+
     if (editingId === "new") {
       const newTx: UpcomingTransaction = {
         id: "upc-" + Date.now(),
         label: editLabel,
         amount: parseFloat(editAmount),
-        dateStr: editDateStr || "Le 1er du mois",
-        iconName: editIconName,
-        colorHex: editColorHex,
+        dateStr: dateStr,
+        dayOfMonth: editDayOfMonth,
+        paidByBank: editPaidByBank,
+        categoryId: editCategoryId,
+        iconName: selectedCat.iconName,
+        colorHex: selectedCat.colorHex,
       };
       const newLocal = [...localTx, newTx];
       setLocalTx(newLocal);
@@ -67,9 +74,12 @@ export default function ManageUpcomingModal({
         ...t,
         label: editLabel,
         amount: parseFloat(editAmount),
-        dateStr: editDateStr,
-        iconName: editIconName,
-        colorHex: editColorHex,
+        dateStr: dateStr,
+        dayOfMonth: editDayOfMonth,
+        paidByBank: editPaidByBank,
+        categoryId: editCategoryId,
+        iconName: selectedCat.iconName,
+        colorHex: selectedCat.colorHex,
       } : t);
       setLocalTx(newLocal);
       onSave(newLocal);
@@ -88,17 +98,26 @@ export default function ManageUpcomingModal({
       setEditingId(tx.id);
       setEditLabel(tx.label);
       setEditAmount(tx.amount.toString());
-      setEditDateStr(tx.dateStr);
-      setEditIconName(tx.iconName);
-      setEditColorHex(tx.colorHex);
+      setEditDayOfMonth(tx.dayOfMonth || parseInt(tx.dateStr.replace(/\D/g, "")) || 1);
+      setEditPaidByBank(tx.paidByBank !== false); // default to true
+      setEditCategoryId(tx.categoryId || "Nourriture");
     } else {
       setEditingId("new");
       setEditLabel("");
       setEditAmount("");
-      setEditDateStr("");
-      setEditIconName("Home");
-      setEditColorHex("#6366f1");
+      setEditDayOfMonth(1);
+      setEditPaidByBank(true);
+      setEditCategoryId("Nourriture");
     }
+  };
+
+  const handleCategoryClick = (catId: string) => {
+    setEditCategoryId(catId);
+  };
+
+  const handleItemClick = (item: any) => {
+    setEditLabel(item.name);
+    setEditAmount(item.price ? item.price.toString() : editAmount);
   };
 
   if (!isOpen) return null;
@@ -134,15 +153,98 @@ export default function ManageUpcomingModal({
 
           <div className="p-6 overflow-y-auto flex-1">
             {editingId ? (
-              <div className="space-y-4">
+              <div className="space-y-6">
+                
+                {/* Category Selection */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Nom</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Catégorie</label>
+                  <div className="grid grid-cols-4 sm:grid-cols-4 gap-2">
+                    {CATEGORIES.map((cat) => {
+                      const IconComp = ICON_MAP[cat.iconName] || ShoppingBag;
+                      const isSelected = editCategoryId === cat.id;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => handleCategoryClick(cat.id)}
+                          className={`flex flex-col items-center gap-1.5 p-2 px-1 rounded-2xl border transition-all ${
+                            isSelected
+                              ? `bg-white ${cat.borderColor} shadow-sm scale-105 border-2`
+                              : "border-transparent bg-transparent hover:bg-slate-50"
+                          }`}
+                        >
+                          <div
+                            className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
+                              isSelected ? cat.bgColor : "bg-slate-50"
+                            } transition-colors`}
+                          >
+                            <IconComp
+                              size={22}
+                              className={isSelected ? cat.color : "text-slate-400"}
+                            />
+                          </div>
+                          <span
+                            className={`text-[9px] font-black uppercase tracking-wider ${
+                              isSelected ? cat.color : "text-slate-400"
+                            }`}
+                          >
+                            {cat.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Predefined Items (Frequent Purchases) */}
+                {editCategoryId && (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">
+                      Articles: {editCategoryId}
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {INITIAL_PREDEFINED_ITEMS.filter((item) => item.category === editCategoryId).slice(0, 8).map((item) => {
+                        const iconName = item.iconName || "Box";
+                        const IconComp = ICON_MAP[iconName] || Box;
+                        const cat = CATEGORIES.find((c) => c.id === item.category) || CATEGORIES[7];
+
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => handleItemClick(item)}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-2xl border transition-all hover:bg-slate-50 ${
+                              editLabel === item.name
+                                ? "border-indigo-300 bg-indigo-50/50"
+                                : "border-slate-100 bg-white"
+                            }`}
+                          >
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${cat.bgColor}`}>
+                              <IconComp size={14} className={cat.color} />
+                            </div>
+                            <div className="flex flex-col items-start">
+                              <span className="text-[11px] font-black text-slate-700">{item.name}</span>
+                              {item.price > 0 && (
+                                <span className="text-[9px] font-bold text-slate-400">
+                                  {item.price} {currency}
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Libellé</label>
                   <input
                     type="text"
                     value={editLabel}
                     onChange={(e) => setEditLabel(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:border-indigo-500 font-medium"
-                    placeholder="Ex: Loyer"
+                    placeholder="Qu'avez-vous acheté ?"
                   />
                 </div>
                 <div>
@@ -155,50 +257,45 @@ export default function ManageUpcomingModal({
                     placeholder="Ex: 2500"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Date / Répétition</label>
-                  <input
-                    type="text"
-                    value={editDateStr}
-                    onChange={(e) => setEditDateStr(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:border-indigo-500 font-medium"
-                    placeholder="Ex: Le 5 du mois"
-                  />
-                </div>
                 
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Icône</label>
-                  <div className="flex gap-2">
-                    {ICONS.map(ic => (
-                      <button
-                        key={ic}
-                        onClick={() => setEditIconName(ic)}
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center border-2 transition-colors ${
-                          editIconName === ic ? "border-indigo-500 bg-indigo-50 text-indigo-500" : "border-slate-100 text-slate-400 bg-white"
-                        }`}
-                      >
-                        {ic === "Home" && <Home size={18} />}
-                        {ic === "Wifi" && <Wifi size={18} />}
-                        {ic === "MonitorPlay" && <MonitorPlay size={18} />}
-                        {ic === "Calendar" && <Calendar size={18} />}
-                      </button>
-                    ))}
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Récurrence (Jour du mois)</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min="1"
+                      max="31"
+                      value={editDayOfMonth}
+                      onChange={(e) => setEditDayOfMonth(parseInt(e.target.value))}
+                      className="flex-1 accent-indigo-600"
+                    />
+                    <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center font-black text-indigo-600">
+                      {editDayOfMonth}
+                    </div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Couleur</label>
-                  <div className="flex gap-2">
-                    {COLORS.map(col => (
-                      <button
-                        key={col}
-                        onClick={() => setEditColorHex(col)}
-                        className={`w-8 h-8 rounded-full border-2 transition-transform ${
-                          editColorHex === col ? "scale-110 border-slate-800" : "border-transparent scale-100"
-                        }`}
-                        style={{ backgroundColor: col }}
-                      />
-                    ))}
+                  <label className="block text-xs font-bold text-slate-500 mb-2">Source de paiement</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => setEditPaidByBank(true)}
+                      className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-colors ${
+                        editPaidByBank ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-200 bg-white text-slate-500 hover:border-indigo-200"
+                      }`}
+                    >
+                      <Landmark size={20} />
+                      <span className="font-bold text-[13px]">Banque</span>
+                    </button>
+                    <button
+                      onClick={() => setEditPaidByBank(false)}
+                      className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-colors ${
+                        !editPaidByBank ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-200 bg-white text-slate-500 hover:border-indigo-200"
+                      }`}
+                    >
+                      <Wallet size={20} />
+                      <span className="font-bold text-[13px]">Poche</span>
+                    </button>
                   </div>
                 </div>
 
@@ -220,28 +317,55 @@ export default function ManageUpcomingModal({
               </div>
             ) : (
               <div className="space-y-3">
-                {localTx.map(tx => (
-                  <div key={tx.id} className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
-                    <div className="flex flex-col">
-                      <span className="font-bold text-slate-800">{tx.label}</span>
-                      <span className="text-xs font-medium text-slate-500">{tx.dateStr} • {tx.amount} {currency}</span>
+                {localTx.map(tx => {
+                  const cat = CATEGORIES.find(c => c.id === tx.categoryId);
+                  
+                  const IconComp = tx.categoryId ? (ICON_MAP[cat?.iconName || "ShoppingBag"] || ShoppingBag) : (
+                    tx.iconName === "Home" ? Home :
+                    tx.iconName === "Wifi" ? Wifi :
+                    tx.iconName === "MonitorPlay" ? MonitorPlay :
+                    Calendar
+                  );
+                  
+                  const bgColor = tx.categoryId && cat ? cat.bgColor : "";
+                  const iconColorClass = tx.categoryId && cat ? cat.color : "";
+                  const inlineBgColor = (!tx.categoryId || !cat) ? `${tx.colorHex}20` : undefined;
+                  const inlineIconColor = (!tx.categoryId || !cat) ? tx.colorHex : undefined;
+
+                  return (
+                    <div key={tx.id} className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center ${bgColor}`}
+                          style={{ backgroundColor: inlineBgColor, color: inlineIconColor }}
+                        >
+                          <IconComp size={18} className={iconColorClass} />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-slate-800">{tx.label}</span>
+                          <span className="text-xs font-medium text-slate-500">Le {tx.dayOfMonth || tx.dateStr.replace(/\D/g, "") || 1} • {tx.amount} {currency}</span>
+                          <span className="text-[10px] font-bold mt-1 text-indigo-600 bg-indigo-50 w-max px-2 py-0.5 rounded">
+                            {tx.paidByBank !== false ? "Banque" : "Poche"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => startEdit(tx)}
+                          className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(tx.id)}
+                          className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-500 hover:text-rose-600 hover:bg-rose-50"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => startEdit(tx)}
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50"
-                      >
-                        <Edit2 size={14} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(tx.id)}
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-500 hover:text-rose-600 hover:bg-rose-50"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 <button
                   onClick={() => startEdit()}

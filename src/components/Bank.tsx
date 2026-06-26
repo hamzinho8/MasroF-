@@ -35,6 +35,10 @@ import {
   Settings,
   Home,
   MonitorPlay,
+  LayoutGrid,
+  List,
+  CheckCircle2,
+  Clock
 } from "lucide-react";
 import {
   motion,
@@ -62,8 +66,17 @@ interface BankProps {
   bankBalance: number;
   transactions?: Transaction[];
   predefinedItems?: PredefinedItem[];
+  creditEntries?: import("../types").CreditEntry[];
   onAddClick?: (type: "INCOME" | "EXPENSE") => void;
   onAddBankBalance?: (amount: number, label: string, category: string) => void;
+  onAddTransaction?: (
+    label: string,
+    amount: number,
+    type: "INCOME" | "EXPENSE",
+    category: string,
+    paidByBank?: boolean,
+    isPureInflow?: boolean
+  ) => void;
   onDelete?: (id: string) => void;
   onUpdate?: (id: string, tx: Partial<Transaction>) => void;
 }
@@ -74,8 +87,10 @@ export default function Bank({
   bankBalance,
   transactions = [],
   predefinedItems = [],
+  creditEntries = [],
   onAddClick,
   onAddBankBalance,
+  onAddTransaction,
   onDelete,
   onUpdate,
 }: BankProps) {
@@ -102,6 +117,9 @@ export default function Bank({
         label: "Loyer",
         amount: 2500,
         dateStr: "Le 1er du mois",
+        dayOfMonth: 1,
+        paidByBank: true,
+        categoryId: "Logement",
         iconName: "Home",
         colorHex: "#6366f1",
       },
@@ -110,6 +128,9 @@ export default function Bank({
         label: "Internet",
         amount: 200,
         dateStr: "Le 5 du mois",
+        dayOfMonth: 5,
+        paidByBank: true,
+        categoryId: "Logement",
         iconName: "Wifi",
         colorHex: "#3b82f6",
       },
@@ -118,11 +139,29 @@ export default function Bank({
         label: "Netflix",
         amount: 95,
         dateStr: "Le 15 du mois",
+        dayOfMonth: 15,
+        paidByBank: false,
+        categoryId: "Loisirs",
         iconName: "MonitorPlay",
         colorHex: "#ef4444",
       }
     ]
   );
+  
+  const [isCompactUpcoming, setIsCompactUpcoming] = useLocalStorage<boolean>("isCompactUpcoming", false);
+
+  const handleValidateUpcoming = (tx: UpcomingTransaction) => {
+    const catId = tx.categoryId || "Autres";
+    if (tx.paidByBank !== false) {
+      if (onAddBankBalance) {
+        onAddBankBalance(-tx.amount, tx.label, CATEGORIES.find(c => c.id === catId)?.id || "Autres");
+      }
+    } else {
+      if (onAddTransaction) {
+        onAddTransaction(tx.label, tx.amount, "EXPENSE", CATEGORIES.find(c => c.id === catId)?.id || "Autres", false, false);
+      }
+    }
+  };
 
   const bankTransactions = useMemo(() => {
     return transactions
@@ -219,6 +258,28 @@ export default function Bank({
       chartData: cData,
     };
   }, [bankTransactions, bankTimeframe, bankBalance]);
+
+  // Calculate Projected Balance
+  const projectedBalance = useMemo(() => {
+    let projected = bankBalance;
+    
+    // Add "Owe me" and subtract "I owe"
+    if (creditEntries) {
+      creditEntries.forEach(entry => {
+        if (entry.type === "OWE_ME") projected += entry.amount;
+        else if (entry.type === "I_OWE") projected -= entry.amount;
+      });
+    }
+
+    // Subtract upcoming transactions that are paid by bank
+    upcomingTransactions.forEach(tx => {
+      if (tx.paidByBank !== false) {
+        projected -= tx.amount;
+      }
+    });
+
+    return projected;
+  }, [bankBalance, creditEntries, upcomingTransactions]);
 
   const getTimeframeLabel = (frame: "day" | "week" | "month") => {
     if (language === "Français")
@@ -415,6 +476,17 @@ export default function Bank({
                     : "****"}
                 </span>
               </div>
+            </div>
+
+            {/* Solde Prévisionnel */}
+            <div className="relative z-10 mb-4 bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/20 flex justify-between items-center">
+              <span className="text-[11px] font-black uppercase tracking-widest text-white/90 flex items-center gap-2">
+                <Calendar size={14} />
+                {language === "Français" ? "Solde Prévisionnel" : "Projected Balance"}
+              </span>
+              <span className={`text-sm font-black ${projectedBalance < 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                {showBalance ? `${projectedBalance.toLocaleString("fr-FR")} ${currency}` : "****"}
+              </span>
             </div>
 
             {/* Savings Goal inside Bank Card */}
@@ -674,47 +746,110 @@ export default function Bank({
                 ? "المعاملات القادمة"
                 : "Upcoming"}
             </h3>
-            <button
-              onClick={() => setIsManageUpcomingModalOpen(true)}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition-colors"
-            >
-              <Settings size={16} />
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsCompactUpcoming(!isCompactUpcoming)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition-colors"
+              >
+                {isCompactUpcoming ? <LayoutGrid size={16} /> : <List size={16} />}
+              </button>
+              <button
+                onClick={() => setIsManageUpcomingModalOpen(true)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition-colors"
+              >
+                <Settings size={16} />
+              </button>
+            </div>
           </div>
           
-          <div className="flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar -mx-1 px-1">
+          <div className={isCompactUpcoming ? "flex flex-col gap-2 px-1" : "flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar -mx-1 px-1"}>
             {upcomingTransactions.map((tx) => {
-              const IconComp =
+              const cat = CATEGORIES.find(c => c.id === tx.categoryId) || CATEGORIES[7];
+              const IconComp = tx.categoryId ? (ICON_MAP[cat.iconName] || ShoppingBag) : (
                 tx.iconName === "Home" ? Home :
                 tx.iconName === "Wifi" ? Wifi :
                 tx.iconName === "MonitorPlay" ? MonitorPlay :
-                Calendar;
+                Calendar
+              );
+              
+              const txColor = tx.categoryId ? cat.colorHex : tx.colorHex;
+
+              // Urgency calculation
+              const today = new Date().getDate();
+              const targetDay = tx.dayOfMonth || parseInt(tx.dateStr.replace(/\D/g, "")) || 1;
+              let diff = targetDay - today;
+              if (diff < 0) diff += 30; // approx days in month to next occurrence
+              
+              const isUrgent = diff <= 3;
+              const isToday = diff === 0 || diff === 30;
+              
+              const urgencyColor = isToday ? "text-rose-500 bg-rose-50" : isUrgent ? "text-orange-500 bg-orange-50" : "text-slate-400 bg-slate-50";
+
+              if (isCompactUpcoming) {
+                return (
+                  <div key={tx.id} className="bg-white border border-slate-100 rounded-[20px] p-3 flex items-center gap-3 shadow-sm relative overflow-hidden group">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ backgroundColor: `${txColor}20`, color: txColor }}
+                    >
+                      <IconComp size={18} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-black text-slate-800 text-[13px] truncate">
+                        {tx.label}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md flex items-center gap-1 ${urgencyColor}`}>
+                          <Clock size={10} />
+                          {isToday ? "Aujourd'hui" : `J-${diff}`}
+                        </span>
+                        <span className="text-rose-600 font-black text-[11px] truncate">
+                          -{tx.amount} {currency}
+                        </span>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => handleValidateUpcoming(tx)}
+                      className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                    >
+                      <CheckCircle2 size={20} />
+                    </button>
+                  </div>
+                );
+              }
 
               return (
                 <div
                   key={tx.id}
-                  className="snap-start shrink-0 w-[120px] bg-white border border-slate-100 rounded-[20px] p-3 flex flex-col shadow-sm relative overflow-hidden group"
+                  className="snap-start shrink-0 w-[140px] bg-white border border-slate-100 rounded-[24px] p-4 flex flex-col shadow-sm relative overflow-hidden group"
                 >
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-3 h-full">
+                    <div className="flex items-start justify-between">
                       <div
-                        className="w-8 h-8 rounded-xl flex items-center justify-center"
-                        style={{ backgroundColor: `${tx.colorHex}20`, color: tx.colorHex }}
+                        className="w-10 h-10 rounded-[14px] flex items-center justify-center"
+                        style={{ backgroundColor: `${txColor}20`, color: txColor }}
                       >
-                        <IconComp size={16} />
+                        <IconComp size={20} />
                       </div>
-                      <span className="text-[9px] font-black uppercase text-slate-400 bg-slate-50 px-2 py-1 rounded-md">
-                        {tx.dateStr.replace("Le ", "").replace(" du mois", "")}
+                      <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-md flex items-center gap-1 ${urgencyColor}`}>
+                        {isToday ? "Auj." : `J-${diff}`}
                       </span>
                     </div>
-                    <div>
-                      <p className="font-black text-slate-800 text-[12px] truncate">
+                    <div className="flex-1">
+                      <p className="font-black text-slate-800 text-[14px] leading-tight line-clamp-2">
                         {tx.label}
                       </p>
-                      <p className="text-rose-600 font-black text-[13px] mt-0.5 truncate">
-                        -{tx.amount} <span className="text-[9px] uppercase">{currency}</span>
+                      <p className="text-rose-600 font-black text-[15px] mt-1 truncate">
+                        -{tx.amount} <span className="text-[10px] uppercase">{currency}</span>
                       </p>
                     </div>
+                    <button 
+                      onClick={() => handleValidateUpcoming(tx)}
+                      className="w-full mt-2 py-2.5 rounded-xl bg-indigo-50 text-indigo-600 font-black text-[11px] uppercase tracking-wider flex items-center justify-center gap-1 active:scale-95 transition-transform"
+                    >
+                      <CheckCircle2 size={14} />
+                      {language === "Français" ? "Payer" : "Pay"}
+                    </button>
                   </div>
                 </div>
               );

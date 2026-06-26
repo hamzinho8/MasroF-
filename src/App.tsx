@@ -1314,8 +1314,10 @@ export default function App() {
             bankBalance={bankBalance}
             transactions={transactions}
             predefinedItems={predefinedItems}
+            creditEntries={creditEntries}
             onAddClick={(type) => openModal(type)}
             onAddBankBalance={handleAddBankBalance}
+            onAddTransaction={addTransaction}
             onDelete={deleteTransaction}
             onUpdate={updateTransaction}
           />
