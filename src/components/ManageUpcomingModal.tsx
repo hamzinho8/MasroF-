@@ -14,6 +14,9 @@ export interface UpcomingTransaction {
   dayOfMonth?: number;
   paidByBank?: boolean;
   lastPaidMonth?: string;
+  frequency?: 'monthly' | 'custom_days';
+  intervalDays?: number;
+  lastPaidDate?: string; // YYYY-MM-DD
 }
 
 interface ManageUpcomingModalProps {
@@ -43,6 +46,8 @@ export default function ManageUpcomingModal({
   const [editCategoryId, setEditCategoryId] = useState<string>("Nourriture");
   const [editIconName, setEditIconName] = useState<string>("");
   const [editColorHex, setEditColorHex] = useState<string>("");
+  const [editFrequency, setEditFrequency] = useState<'monthly' | 'custom_days'>('monthly');
+  const [editIntervalDays, setEditIntervalDays] = useState<number>(6);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -54,7 +59,7 @@ export default function ManageUpcomingModal({
   const handleSaveEdit = () => {
     if (!editLabel || !editAmount) return;
 
-    const dateStr = `Le ${editDayOfMonth} du mois`;
+    const dateStr = editFrequency === 'custom_days' ? `Chaque ${editIntervalDays} jours` : `Le ${editDayOfMonth} du mois`;
     const selectedCat = CATEGORIES.find(c => c.id === editCategoryId) || CATEGORIES[7]; // fallback to Autres
 
     if (editingId === "new") {
@@ -68,6 +73,8 @@ export default function ManageUpcomingModal({
         categoryId: editCategoryId,
         iconName: editIconName || selectedCat.iconName,
         colorHex: editColorHex || selectedCat.colorHex,
+        frequency: editFrequency,
+        intervalDays: editIntervalDays,
       };
       const newLocal = [...localTx, newTx];
       setLocalTx(newLocal);
@@ -83,6 +90,8 @@ export default function ManageUpcomingModal({
         categoryId: editCategoryId,
         iconName: editIconName || selectedCat.iconName,
         colorHex: editColorHex || selectedCat.colorHex,
+        frequency: editFrequency,
+        intervalDays: editIntervalDays,
       } : t);
       setLocalTx(newLocal);
       onSave(newLocal);
@@ -106,6 +115,8 @@ export default function ManageUpcomingModal({
       setEditCategoryId(tx.categoryId || "Nourriture");
       setEditIconName(tx.iconName || "");
       setEditColorHex(tx.colorHex || "");
+      setEditFrequency(tx.frequency || 'monthly');
+      setEditIntervalDays(tx.intervalDays || 6);
     } else {
       setEditingId("new");
       setEditLabel("");
@@ -115,6 +126,8 @@ export default function ManageUpcomingModal({
       setEditCategoryId("Nourriture");
       setEditIconName("");
       setEditColorHex("");
+      setEditFrequency('monthly');
+      setEditIntervalDays(6);
     }
   };
 
@@ -270,20 +283,60 @@ export default function ManageUpcomingModal({
                 </div>
                 
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Récurrence (Jour du mois)</label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="range"
-                      min="1"
-                      max="31"
-                      value={editDayOfMonth}
-                      onChange={(e) => setEditDayOfMonth(parseInt(e.target.value))}
-                      className="flex-1 accent-indigo-600"
-                    />
-                    <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center font-black text-indigo-600">
-                      {editDayOfMonth}
-                    </div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Type de récurrence</label>
+                  <div className="flex gap-2 mb-4">
+                    <button
+                      type="button"
+                      onClick={() => setEditFrequency('monthly')}
+                      className={`flex-1 py-3 rounded-2xl font-bold text-sm transition-all border-2 ${editFrequency === 'monthly' ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100'}`}
+                    >
+                      Chaque mois
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditFrequency('custom_days')}
+                      className={`flex-1 py-3 rounded-2xl font-bold text-sm transition-all border-2 ${editFrequency === 'custom_days' ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100'}`}
+                    >
+                      Périodique
+                    </button>
                   </div>
+
+                  {editFrequency === 'monthly' ? (
+                    <>
+                      <label className="block text-xs font-bold text-slate-500 mb-1">Jour du mois</label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="range"
+                          min="1"
+                          max="31"
+                          value={editDayOfMonth}
+                          onChange={(e) => setEditDayOfMonth(parseInt(e.target.value))}
+                          className="flex-1 accent-indigo-600"
+                        />
+                        <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center font-black text-indigo-600">
+                          {editDayOfMonth}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <label className="block text-xs font-bold text-slate-500 mb-1">Tous les (X) jours</label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="number"
+                          min="1"
+                          max="365"
+                          value={editIntervalDays}
+                          onChange={(e) => setEditIntervalDays(parseInt(e.target.value) || 1)}
+                          className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:border-indigo-500 font-medium"
+                          placeholder="Ex: 6 (pour 6 jours)"
+                        />
+                        <div className="px-4 h-12 rounded-xl bg-slate-100 flex items-center justify-center font-black text-indigo-600 uppercase text-xs">
+                          Jours
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div>

@@ -132,6 +132,18 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
 
     const updatedItems = items.map(i => {
       if (i.id === item.id) {
+        if (i.unitType === 'grams' || i.unitType === 'liters') {
+          const updated = {
+            ...i,
+            usageCount: (i.usageCount || 0) + 1,
+            history: [newAction, ...i.history]
+          };
+          if (selectedItemInfo && selectedItemInfo.id === item.id) {
+            setSelectedItemInfo(updated);
+          }
+          return updated;
+        }
+
         const updated = {
           ...i,
           quantity: i.quantity - 1,
@@ -146,6 +158,23 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
       return i;
     });
 
+    onItemsChange(updatedItems);
+  };
+
+  const handleDeclareEmpty = (item: InventoryItem) => {
+    const updatedItems = items.map(i => {
+      if (i.id === item.id) {
+        const updated = {
+          ...i,
+          quantity: 0
+        };
+        if (selectedItemInfo && selectedItemInfo.id === item.id) {
+          setSelectedItemInfo(updated);
+        }
+        return updated;
+      }
+      return i;
+    });
     onItemsChange(updatedItems);
   };
 
@@ -324,10 +353,23 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
                     </div>
 
                     <div className="flex flex-col items-end shrink-0 pl-2 relative z-10">
-                      <span className="text-xl font-black text-slate-700 leading-none">{item.quantity}</span>
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-                        {language === 'Français' ? 'Qté' : language === 'العربية' ? 'كمية' : 'Qty'}
+                      <span className="text-xl font-black text-slate-700 leading-none">
+                        {item.unitType === 'grams' || item.unitType === 'liters' ? (item.usageCount || 0) : item.quantity}
                       </span>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1 text-right">
+                        {item.unitType === 'grams' || item.unitType === 'liters' ? (language === 'Français' ? 'Utilisations' : 'Usages') : (language === 'Français' ? 'Qté' : language === 'العربية' ? 'كمية' : 'Qty')}
+                      </span>
+                      {(item.unitType === 'grams' || item.unitType === 'liters') && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeclareEmpty(item);
+                          }}
+                          className="mt-2 text-[10px] bg-red-100 text-red-600 font-bold px-2 py-1 rounded-lg uppercase tracking-wider hover:bg-red-200 transition-colors"
+                        >
+                          Épuisé
+                        </button>
+                      )}
                     </div>
                     <div className="absolute -right-4 -bottom-4 opacity-[0.02] transform group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500 pointer-events-none text-slate-900 z-0">
                       <IconComponent size={100} />
@@ -735,13 +777,21 @@ function ItemDetailsModal({ item, onClose, onDecrease, onDelete, t, language }: 
           <div className="flex items-center gap-4">
             <button
               onClick={onDecrease}
-              disabled={item.quantity <= 0}
+              disabled={item.quantity <= 0 && item.unitType !== 'grams' && item.unitType !== 'liters'}
               className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 flex flex-col items-center justify-center text-white shrink-0 shadow-lg shadow-indigo-500/30 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed group border-2 border-indigo-400/20"
             >
-              <span className="text-3xl font-black tracking-tighter leading-none mt-1">{item.quantity}</span>
+              <span className="text-3xl font-black tracking-tighter leading-none mt-1">
+                {item.unitType === 'grams' || item.unitType === 'liters' ? (item.usageCount || 0) : item.quantity}
+              </span>
               <div className="flex items-center gap-0.5 opacity-80 mt-0.5 group-active:text-rose-200 transition-colors">
-                <Minus size={10} strokeWidth={4} />
-                <span className="text-[9px] font-black uppercase tracking-widest leading-none">1</span>
+                {item.unitType === 'grams' || item.unitType === 'liters' ? (
+                  <span className="text-[9px] font-black uppercase tracking-widest leading-none">+1</span>
+                ) : (
+                  <>
+                    <Minus size={10} strokeWidth={4} />
+                    <span className="text-[9px] font-black uppercase tracking-widest leading-none">1</span>
+                  </>
+                )}
               </div>
             </button>
             <div>

@@ -51,7 +51,9 @@ interface AddTransactionModalProps {
       bg: string;
       iconName: string;
       iconSvg?: string;
-    }
+      unitType?: 'unit' | 'grams' | 'liters';
+    },
+    creditData?: { creditorName: string }
   ) => void;
   initialType: "INCOME" | "EXPENSE";
   currency: string;
@@ -94,6 +96,9 @@ export default function AddTransactionModal({
   const [paidByBank, setPaidByBank] = useState(false);
   const [addToInventory, setAddToInventory] = useState(false);
   const [inventoryQty, setInventoryQty] = useState("1");
+  const [inventoryUnit, setInventoryUnit] = useState<'unit' | 'grams' | 'liters'>('unit');
+  const [isCredit, setIsCredit] = useState(false);
+  const [creditorName, setCreditorName] = useState("");
   const [isScanning, setIsScanning] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -626,6 +631,7 @@ export default function AddTransactionModal({
               bg: cat.bgColor,
               iconName,
               iconSvg,
+              unitType: inventoryUnit,
             };
           }
 
@@ -636,7 +642,8 @@ export default function AddTransactionModal({
             type === "EXPENSE" ? mItem.category : undefined,
             paidByBank,
             false,
-            invReq
+            invReq,
+            type === "EXPENSE" && isCredit && creditorName ? { creditorName } : undefined
           );
         });
       } else if (amount) {
@@ -672,6 +679,7 @@ export default function AddTransactionModal({
               bg: cat.bgColor,
               iconName,
               iconSvg,
+              unitType: inventoryUnit,
             };
           }
 
@@ -682,7 +690,8 @@ export default function AddTransactionModal({
             type === "EXPENSE" ? selectedCategory : undefined,
             paidByBank,
             false,
-            invReq
+            invReq,
+            type === "EXPENSE" && isCredit && creditorName ? { creditorName } : undefined
           );
         }
       } else if (isShoppingMode) {
@@ -1241,6 +1250,54 @@ export default function AddTransactionModal({
                         <div className="flex flex-col gap-3">
                           <div
                             className="flex items-center gap-3 bg-slate-50 border border-slate-100 p-4 rounded-2xl cursor-pointer"
+                            onClick={() => setIsCredit(!isCredit)}
+                          >
+                            <div
+                              className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${
+                                isCredit
+                                  ? "bg-amber-500 text-white"
+                                  : "bg-slate-200 text-transparent"
+                              }`}
+                            >
+                              <Check size={16} strokeWidth={3} />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-black text-slate-800 tracking-tight">
+                                Achat à crédit / Paiement différé
+                              </span>
+                              <span className="text-[10px] uppercase font-black text-slate-400 tracking-widest">
+                                Ajouter à "Je dois" sans déduire le solde
+                              </span>
+                            </div>
+                          </div>
+
+                          <AnimatePresence>
+                            {isCredit && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0, marginTop: -12 }}
+                                animate={{ opacity: 1, height: "auto", marginTop: 0 }}
+                                exit={{ opacity: 0, height: 0, marginTop: -12 }}
+                                className="space-y-1.5 overflow-hidden"
+                              >
+                                <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">
+                                  Nom du créancier (Épicier, etc.)
+                                </label>
+                                <input
+                                  type="text"
+                                  placeholder="Ex: Épicier du coin"
+                                  className="w-full h-14 bg-amber-50/50 border border-amber-100 rounded-2xl px-5 font-black text-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all"
+                                  value={creditorName}
+                                  onChange={(e) => setCreditorName(e.target.value)}
+                                  required={isCredit}
+                                />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                          <div
+                            className="flex items-center gap-3 bg-slate-50 border border-slate-100 p-4 rounded-2xl cursor-pointer"
                             onClick={() => setAddToInventory(!addToInventory)}
                           >
                             <div
@@ -1276,21 +1333,46 @@ export default function AddTransactionModal({
                                   marginTop: 0,
                                 }}
                                 exit={{ opacity: 0, height: 0, marginTop: -12 }}
-                                className="space-y-1.5 overflow-hidden"
+                                className="space-y-3 overflow-hidden"
                               >
-                                <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">
-                                  Quantité (Articles)
-                                </label>
-                                <input
-                                  type="number"
-                                  min="1"
-                                  placeholder="1"
-                                  className="w-full h-14 bg-violet-50/50 border border-violet-100 rounded-2xl px-5 font-black text-violet-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 transition-all font-mono"
-                                  value={inventoryQty}
-                                  onChange={(e) =>
-                                    setInventoryQty(e.target.value)
-                                  }
-                                />
+                                <div className="grid grid-cols-3 gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setInventoryUnit('unit')}
+                                    className={`py-2 px-2 rounded-xl text-xs font-bold transition-all border-2 ${inventoryUnit === 'unit' ? 'border-violet-500 bg-violet-50 text-violet-700' : 'border-transparent bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                                  >
+                                    Unités
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setInventoryUnit('grams')}
+                                    className={`py-2 px-2 rounded-xl text-xs font-bold transition-all border-2 ${inventoryUnit === 'grams' ? 'border-violet-500 bg-violet-50 text-violet-700' : 'border-transparent bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                                  >
+                                    Grammes
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setInventoryUnit('liters')}
+                                    className={`py-2 px-2 rounded-xl text-xs font-bold transition-all border-2 ${inventoryUnit === 'liters' ? 'border-violet-500 bg-violet-50 text-violet-700' : 'border-transparent bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                                  >
+                                    Litres
+                                  </button>
+                                </div>
+                                <div className="space-y-1.5">
+                                  <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">
+                                    {inventoryUnit === 'unit' ? 'Quantité (Articles)' : 'Quantité totale (Vrac)'}
+                                  </label>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    placeholder={inventoryUnit === 'unit' ? "1" : "Ex: 250"}
+                                    className="w-full h-14 bg-violet-50/50 border border-violet-100 rounded-2xl px-5 font-black text-violet-800 focus:outline-none focus:ring-2 focus:ring-violet-500/20 transition-all font-mono"
+                                    value={inventoryQty}
+                                    onChange={(e) =>
+                                      setInventoryQty(e.target.value)
+                                    }
+                                  />
+                                </div>
                               </motion.div>
                             )}
                           </AnimatePresence>

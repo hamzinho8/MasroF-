@@ -548,6 +548,13 @@ export default function Home({
 
     const updatedItems = inventoryItems.map((i) => {
       if (i.id === item.id) {
+        if (i.unitType === 'grams' || i.unitType === 'liters') {
+          return {
+            ...i,
+            usageCount: (i.usageCount || 0) + 1,
+            history: [...i.history, newAction],
+          };
+        }
         return {
           ...i,
           quantity: i.quantity - 1,
@@ -557,6 +564,20 @@ export default function Home({
       return i;
     });
 
+    onInventoryItemsChange(updatedItems);
+  };
+
+  const handleDeclareEmpty = (item: import("../types").InventoryItem) => {
+    if (!onInventoryItemsChange) return;
+    const updatedItems = inventoryItems.map((i) => {
+      if (i.id === item.id) {
+        return {
+          ...i,
+          quantity: 0,
+        };
+      }
+      return i;
+    });
     onInventoryItemsChange(updatedItems);
   };
 
@@ -1116,10 +1137,10 @@ export default function Home({
                   const textClass = info.color || item.color || "text-slate-800";
 
                   return (
-                    <button
+                    <div
                       key={`${item.id}-${index}`}
                       onClick={() => handleDecreaseInventory(item)}
-                      className={`w-full h-[86px] rounded-[24px] flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-sm border border-white hover:border-slate-200 active:scale-95 group ${
+                      className={`w-full h-[86px] rounded-[24px] flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-sm border border-white hover:border-slate-200 active:scale-95 group cursor-pointer ${
                         bgClass.replace("100", "50")
                       }`}
                     >
@@ -1132,11 +1153,24 @@ export default function Home({
                         </span>
                       </div>
 
+                      {(item.unitType === 'grams' || item.unitType === 'liters') && (
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeclareEmpty(item);
+                          }}
+                          className={`absolute left-1 top-1 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-red-100 text-red-600 shadow-sm z-20 hover:bg-red-200`}
+                          title="Déclarer épuisé"
+                        >
+                          <span className="text-[10px] font-black leading-none mb-0.5">X</span>
+                        </div>
+                      )}
+
                       <div
                         className={`z-10 relative flex items-center justify-center ${textClass} mb-1 mt-1`}
                       >
                         <span className="absolute -top-1.5 -left-1.5 text-[11px] font-black leading-none">
-                          {item.quantity}
+                          {item.unitType === 'grams' || item.unitType === 'liters' ? (item.usageCount || 0) : item.quantity}
                         </span>
                         {item.iconSvg || info.iconSvg ? (
                           <div
@@ -1152,7 +1186,7 @@ export default function Home({
                       >
                         {item.name}
                       </span>
-                    </button>
+                    </div>
                   );
                 })}
             </div>
@@ -2003,7 +2037,7 @@ function RasSettingsModal({
                       <div>
                         <p className="font-bold text-slate-800">{item.name}</p>
                         <p className="text-xs font-medium text-slate-400">
-                          {item.quantity} en stock
+                          {item.unitType === 'grams' || item.unitType === 'liters' ? `${item.usageCount || 0} utilisations` : `${item.quantity} en stock`}
                         </p>
                       </div>
                     </div>

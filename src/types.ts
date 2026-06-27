@@ -21,6 +21,7 @@ export interface Transaction {
   timestamp: number;
   paidByBank?: boolean;
   isPureInflow?: boolean;
+  isCredit?: boolean;
 }
 
 export interface Reminder {
@@ -63,6 +64,8 @@ export interface InventoryItem {
   bg?: string;
   category?: string;
   isImportant?: boolean;
+  unitType?: 'unit' | 'grams' | 'liters';
+  usageCount?: number;
 }
 
 export interface ShoppingListItem {

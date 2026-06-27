@@ -973,7 +973,9 @@ export default function App() {
       bg: string;
       iconName: string;
       iconSvg?: string;
-    }
+      unitType?: 'unit' | 'grams' | 'liters';
+    },
+    creditData?: { creditorName: string }
   ) => {
     markUnbackedChanges();
     const newTx: Transaction = {
@@ -993,6 +995,7 @@ export default function App() {
       timestamp: Date.now(),
       paidByBank,
       isPureInflow,
+      isCredit: !!creditData,
     };
 
     setTransactions((prev) => [newTx, ...prev]);
@@ -1012,13 +1015,15 @@ export default function App() {
             Math.random().toString(36).substring(2, 9) +
             "_inv", // ensure unique ID
           name: label,
-          quantity: inventoryData.quantity,
+          quantity: inventoryData.unitType && inventoryData.unitType !== 'unit' ? 1 : inventoryData.quantity,
           addedAt: Date.now(),
           history: [],
           color: inventoryData.color,
           bg: inventoryData.bg,
           iconName: inventoryData.iconName,
           iconSvg: inventoryData.iconSvg,
+          unitType: inventoryData.unitType || 'unit',
+          usageCount: 0,
         },
         ...prev,
       ]);
@@ -1036,7 +1041,18 @@ export default function App() {
         setBankBalance((prev) => prev - amount); // Retrait déduit du compte bancaire
       }
     } else {
-      if (paidByBank) {
+      if (creditData) {
+        const creditEntry: CreditEntry = {
+          id: Date.now().toString() + Math.random().toString(36).substring(2, 9) + "_credit",
+          name: creditData.creditorName,
+          amount: amount,
+          type: "I_OWE",
+          date: new Date().toLocaleDateString(language === "Français" ? "fr-FR" : "en-US"),
+          settled: false,
+          showOnWidget: false,
+        };
+        setCreditEntries(prev => [creditEntry, ...prev]);
+      } else if (paidByBank) {
         setBankBalance((prev) => prev - amount);
       } else {
         setBalance((prev) => prev - amount);

@@ -153,8 +153,14 @@ export default function Bank({
 
   const handleValidateUpcoming = (tx: UpcomingTransaction) => {
     const currentMonth = new Date().toISOString().slice(0, 7);
-    // Avoid double payment in the same month if user already clicked
-    if (tx.lastPaidMonth === currentMonth) return;
+    const todayStr = new Date().toISOString().slice(0, 10);
+    
+    // Avoid double payment
+    if (tx.frequency === 'custom_days') {
+      if (tx.lastPaidDate === todayStr) return;
+    } else {
+      if (tx.lastPaidMonth === currentMonth) return;
+    }
 
     const catId = tx.categoryId || "Autres";
     if (tx.paidByBank !== false) {
@@ -168,7 +174,7 @@ export default function Bank({
     }
 
     setUpcomingTransactions(prev => 
-      prev.map(t => t.id === tx.id ? { ...t, lastPaidMonth: currentMonth } : t)
+      prev.map(t => t.id === tx.id ? { ...t, lastPaidMonth: currentMonth, lastPaidDate: todayStr } : t)
     );
   };
 
@@ -743,18 +749,46 @@ export default function Bank({
               const txColor = tx.colorHex || cat.colorHex;
 
               // Urgency calculation
-              const today = new Date().getDate();
-              const targetDay = tx.dayOfMonth || parseInt(tx.dateStr.replace(/\D/g, "")) || 1;
-              let diff = targetDay - today;
-              if (diff < 0) diff += 30; // approx days in month to next occurrence
+              let diff = 0;
+              let isPaidThisPeriod = false;
+
+              if (tx.frequency === 'custom_days') {
+                const interval = tx.intervalDays || 6;
+                const lastPaid = tx.lastPaidDate ? new Date(tx.lastPaidDate) : null;
+                const now = new Date();
+                
+                if (lastPaid) {
+                  // Next payment is lastPaid + interval
+                  const nextPayment = new Date(lastPaid.getTime() + interval * 24 * 60 * 60 * 1000);
+                  // Difference in days between now and next payment
+                  const diffTime = nextPayment.getTime() - now.getTime();
+                  diff = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                  
+                  // If we paid today, it's paid. Or if nextPayment is in the future.
+                  const todayStr = now.toISOString().slice(0, 10);
+                  if (tx.lastPaidDate === todayStr || diff > 0) {
+                    isPaidThisPeriod = true;
+                  }
+                  
+                  if (diff < 0) diff = 0; // Overdue is treated as 0 diff for UI
+                } else {
+                  // Never paid, so it's due today
+                  diff = 0;
+                }
+              } else {
+                const today = new Date().getDate();
+                const targetDay = tx.dayOfMonth || parseInt(tx.dateStr.replace(/\D/g, "")) || 1;
+                diff = targetDay - today;
+                if (diff < 0) diff += 30; // approx days in month to next occurrence
+                
+                const currentMonthStr = new Date().toISOString().slice(0, 7);
+                isPaidThisPeriod = tx.lastPaidMonth === currentMonthStr;
+              }
               
               const isUrgent = diff <= 3;
               const isToday = diff === 0 || diff === 30;
               
               const urgencyColor = isToday ? "text-rose-500 bg-rose-50" : isUrgent ? "text-orange-500 bg-orange-50" : "text-slate-400 bg-slate-50";
-
-              const currentMonthStr = new Date().toISOString().slice(0, 7);
-              const isPaidThisMonth = tx.lastPaidMonth === currentMonthStr;
 
               if (isCompactUpcoming) {
                 return (
@@ -772,7 +806,7 @@ export default function Bank({
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md flex items-center gap-1 ${urgencyColor}`}>
                           <Clock size={10} />
-                          {isToday ? "Aujourd'hui" : `J-${diff}`}
+                          {isToday ? "Aujourd'hui" : (tx.frequency === 'custom_days' && isPaidThisPeriod ? "Payé" : `J-${diff}`)}
                         </span>
                         <span className="text-rose-600 font-black text-[11px] truncate">
                           -{tx.amount} {currency}
@@ -781,8 +815,8 @@ export default function Bank({
                     </div>
                     <button 
                       onClick={() => handleValidateUpcoming(tx)}
-                      disabled={isPaidThisMonth}
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform ${isPaidThisMonth ? 'bg-rose-50 text-rose-500 cursor-not-allowed' : 'bg-indigo-50 text-indigo-600 active:scale-95'}`}
+                      disabled={isPaidThisPeriod}
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform ${isPaidThisPeriod ? 'bg-rose-50 text-rose-500 cursor-not-allowed' : 'bg-indigo-50 text-indigo-600 active:scale-95'}`}
                     >
                       <CheckCircle2 size={20} />
                     </button>
@@ -804,7 +838,7 @@ export default function Bank({
                         <IconComp size={20} />
                       </div>
                       <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-md flex items-center gap-1 ${urgencyColor}`}>
-                        {isToday ? "Auj." : `J-${diff}`}
+                        {isToday ? "Auj." : (tx.frequency === 'custom_days' && isPaidThisPeriod ? "Payé" : `J-${diff}`)}
                       </span>
                     </div>
                     <div className="flex-1">
@@ -817,11 +851,11 @@ export default function Bank({
                     </div>
                     <button 
                       onClick={() => handleValidateUpcoming(tx)}
-                      disabled={isPaidThisMonth}
-                      className={`w-full mt-2 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-wider flex items-center justify-center gap-1 transition-transform ${isPaidThisMonth ? 'bg-rose-50 text-rose-500 cursor-not-allowed' : 'bg-indigo-50 text-indigo-600 active:scale-95'}`}
+                      disabled={isPaidThisPeriod}
+                      className={`w-full mt-2 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-wider flex items-center justify-center gap-1 transition-transform ${isPaidThisPeriod ? 'bg-rose-50 text-rose-500 cursor-not-allowed' : 'bg-indigo-50 text-indigo-600 active:scale-95'}`}
                     >
                       <CheckCircle2 size={14} />
-                      {language === "Français" ? (isPaidThisMonth ? "Payé" : "Payer") : (isPaidThisMonth ? "Paid" : "Pay")}
+                      {language === "Français" ? (isPaidThisPeriod ? "Payé" : "Payer") : (isPaidThisPeriod ? "Paid" : "Pay")}
                     </button>
                   </div>
                 </div>
