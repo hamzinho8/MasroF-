@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { X, Landmark, ArrowDownToLine, Wallet } from 'lucide-react';
+import { X, Landmark, ArrowDownToLine, Wallet, ArrowRightLeft } from 'lucide-react';
 
 interface AddBankBalanceModalProps {
   onClose: () => void;
@@ -10,7 +10,7 @@ interface AddBankBalanceModalProps {
 
 export default function AddBankBalanceModal({ onClose, onAdd, currency }: AddBankBalanceModalProps) {
   const [amount, setAmount] = useState('');
-  const [source, setSource] = useState<'Salaire' | 'Dépôt' | 'Autre'>('Salaire');
+  const [source, setSource] = useState<'Salaire' | 'Dépôt' | 'Autre' | 'Virement'>('Salaire');
   const [customLabel, setCustomLabel] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -21,6 +21,9 @@ export default function AddBankBalanceModal({ onClose, onAdd, currency }: AddBan
       if (source === 'Salaire') {
         finalLabel = "Salaire";
         finalCategory = "Salaire";
+      } else if (source === 'Virement') {
+        finalLabel = "Virement Interne";
+        finalCategory = "Virement";
       } else if (source === 'Dépôt') {
         finalLabel = "Dépôt Bancaire";
         finalCategory = "Dépôt";
@@ -57,7 +60,7 @@ export default function AddBankBalanceModal({ onClose, onAdd, currency }: AddBan
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Type d'ajout</label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setSource('Salaire')}
@@ -73,6 +76,14 @@ export default function AddBankBalanceModal({ onClose, onAdd, currency }: AddBan
               >
                 <ArrowDownToLine size={18} />
                 <span className="text-[9px] font-bold uppercase">Dépôt</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSource('Virement')}
+                className={`py-2 px-1 rounded-xl flex flex-col items-center gap-1 transition-all border-2 ${source === 'Virement' ? 'border-amber-500 bg-amber-50 text-amber-600' : 'border-transparent bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+              >
+                <ArrowRightLeft size={18} />
+                <span className="text-[9px] font-bold uppercase">Virement</span>
               </button>
               <button
                 type="button"
@@ -105,14 +116,14 @@ export default function AddBankBalanceModal({ onClose, onAdd, currency }: AddBan
               step="0.1"
               required
               autoFocus
-              className={`w-full h-14 bg-slate-50 border-2 rounded-2xl px-5 font-black text-slate-800 text-2xl focus:outline-none transition-all text-center ${source === 'Salaire' ? 'border-emerald-100 focus:border-emerald-500' : source === 'Dépôt' ? 'border-sky-100 focus:border-sky-500' : 'border-purple-100 focus:border-purple-500'}`}
+              className={`w-full h-14 bg-slate-50 border-2 rounded-2xl px-5 font-black text-slate-800 text-2xl focus:outline-none transition-all text-center ${source === 'Salaire' ? 'border-emerald-100 focus:border-emerald-500' : source === 'Dépôt' ? 'border-sky-100 focus:border-sky-500' : source === 'Virement' ? 'border-amber-100 focus:border-amber-500' : 'border-purple-100 focus:border-purple-500'}`}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
           </div>
           <button
             type="submit"
-            className={`w-full h-14 rounded-2xl text-white font-black uppercase tracking-widest shadow-lg active:scale-[0.98] transition-all ${source === 'Salaire' ? 'bg-emerald-500 shadow-emerald-500/20 hover:bg-emerald-600' : source === 'Dépôt' ? 'bg-sky-500 shadow-sky-500/20 hover:bg-sky-600' : 'bg-purple-500 shadow-purple-500/20 hover:bg-purple-600'}`}
+            className={`w-full h-14 rounded-2xl text-white font-black uppercase tracking-widest shadow-lg active:scale-[0.98] transition-all ${source === 'Salaire' ? 'bg-emerald-500 shadow-emerald-500/20 hover:bg-emerald-600' : source === 'Dépôt' ? 'bg-sky-500 shadow-sky-500/20 hover:bg-sky-600' : source === 'Virement' ? 'bg-amber-500 shadow-amber-500/20 hover:bg-amber-600' : 'bg-purple-500 shadow-purple-500/20 hover:bg-purple-600'}`}
           >
             Confirmer
           </button>

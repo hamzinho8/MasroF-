@@ -38,7 +38,8 @@ import {
   LayoutGrid,
   List,
   CheckCircle2,
-  Clock
+  Clock,
+  ArrowRightLeft
 } from "lucide-react";
 import {
   motion,
@@ -177,7 +178,8 @@ export default function Bank({
         return (
           (tx.type === "INCOME" && tx.paidByBank) ||
           (tx.type === "EXPENSE" && tx.paidByBank) ||
-          (tx.type === "INCOME" && !tx.paidByBank)
+          (tx.type === "INCOME" && !tx.paidByBank) ||
+          (tx.type === "EXPENSE" && tx.category === "Virement")
         );
       })
       .sort((a, b) => b.timestamp - a.timestamp);
@@ -686,7 +688,7 @@ export default function Bank({
             <Landmark size={18} />
             <span className="text-[11px] font-black uppercase tracking-wider">
               {language === "Français"
-                ? "Salaire"
+                ? "+ Revenu"
                 : language === "العربية"
                 ? "راتب"
                 : "Salary"}
@@ -942,6 +944,12 @@ export default function Bank({
                       border: "border-sky-100",
                       icon: <ArrowDownToLine size={20} />,
                     },
+                    virement: {
+                      bg: "bg-amber-50",
+                      text: "text-amber-600",
+                      border: "border-amber-100",
+                      icon: <ArrowRightLeft size={20} />,
+                    },
                     autreEntree: {
                       bg: "bg-purple-50",
                       text: "text-purple-600",
@@ -979,6 +987,9 @@ export default function Bank({
                     } else if (tx.category === "Dépôt") {
                       style = styleMap.depot;
                       indicatorColor = "bg-sky-500";
+                    } else if (tx.category === "Virement") {
+                      style = styleMap.virement;
+                      indicatorColor = "bg-amber-500";
                     } else if (isOwedToMe) {
                       style = {
                         bg: "bg-indigo-600 shadow-sm shadow-indigo-600/20",
@@ -994,6 +1005,14 @@ export default function Bank({
                   } else if (isRetrait) {
                     style = styleMap.retrait;
                     indicatorColor = "bg-rose-500";
+                  } else if (tx.category === "Virement") {
+                    style = {
+                      bg: "bg-slate-100",
+                      text: "text-slate-600",
+                      border: "border-slate-200",
+                      icon: <ArrowRightLeft size={20} />,
+                    };
+                    indicatorColor = "bg-slate-400";
                   } else {
                     if (isOwedByMe) {
                       style = {

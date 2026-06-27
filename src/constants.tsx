@@ -14,12 +14,12 @@ import {
   Droplet, HandMetal, Smile, Wifi, ShoppingCart, Cuboid, Pill, UtensilsCrossed,
   CarTaxiFront, Footprints, GraduationCap, Cake, Scroll, SprayCan, Trash2,
   Stethoscope, Cross, Dumbbell,
-  Store, Wallet, CreditCard, Banknote, Coins, Receipt, Tag, Gift, Armchair, Bed, Monitor, Printer, Headphones, Radio, Watch, Mic, Music, Thermometer, Syringe, TreePine, Leaf, Cloud, Sun, Moon, Snowflake, Tent, Compass, Map, Navigation, Truck, Bike, BaggageClaim, Sticker, Puzzle, Building, Briefcase, Key, Lock, Unlock, Shield, ShieldCheck, Globe, Mountain, Palmtree, Clipboard, Archive, Inbox, Mail, Send, PhoneCall, Phone, Video, Image, Speaker, Bell, Calendar, Clock, AlarmClock, Timer, Hourglass, Filter, Settings, Sliders, Hammer, Axe, Paintbrush, Palette, Pipette, ThermometerSun, ThermometerSnowflake, Flashlight, Megaphone, Microwave, Refrigerator, ChefHat, Luggage, Sofa, Lamp, ShowerHead, Trees, Clover, Sprout, Citrus, CloudRain, Bone, PartyPopper, Film, Clapperboard, Gamepad, Activity, PiggyBank, BadgePercent, Castle, Church, Rocket, Container
+  Store, Wallet, CreditCard, Banknote, Coins, Receipt, Tag, Gift, Armchair, Bed, Monitor, Printer, Headphones, Radio, Watch, Mic, Music, Thermometer, Syringe, TreePine, Leaf, Cloud, Sun, Moon, Snowflake, Tent, Compass, Map, Navigation, Truck, Bike, BaggageClaim, Sticker, Puzzle, Building, Briefcase, Key, Lock, Unlock, Shield, ShieldCheck, Globe, Mountain, Palmtree, Clipboard, Archive, Inbox, Mail, Send, PhoneCall, Phone, Video, Image, Speaker, Bell, Calendar, Clock, AlarmClock, Timer, Hourglass, Filter, Settings, Sliders, Hammer, Axe, Paintbrush, Palette, Pipette, ThermometerSun, ThermometerSnowflake, Flashlight, Megaphone, Microwave, Refrigerator, ChefHat, Luggage, Sofa, Lamp, ShowerHead, Trees, Clover, Sprout, Citrus, CloudRain, Bone, PartyPopper, Film, Clapperboard, Gamepad, Activity, PiggyBank, BadgePercent, Castle, Church, Rocket, Container, ArrowRightLeft
 } from 'lucide-react';
 import { PredefinedItem } from './types';
 
 export const ICON_MAP: Record<string, React.ElementType> = {
-  Utensils, ShoppingBag, Car, Gamepad2, MoreHorizontal,
+  Utensils, ShoppingBag, Car, Gamepad2, MoreHorizontal, ArrowRightLeft,
   Coffee, Milk, Wheat, PackageOpen, Box: PackageOpen, Cookie, Droplets, CupSoda, Candy, Zap, 
   CircleDot, Soup, TrainFront, Fuel, Flame, Tv, Search, Baby, Bean,
   Cylinder, Cigarette, Home, HeartPulse, Heart, Bath, Lightbulb, Users,
@@ -37,6 +37,7 @@ export const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 export const CATEGORIES = [
+  { id: 'Virement', label: 'Virement Interne', iconName: 'ArrowRightLeft', color: 'text-amber-600', bgColor: 'bg-amber-100', lightBg: 'bg-amber-50/60', borderColor: 'border-amber-200', colorString: 'amber', colorHex: '#d97706' },
   { id: 'Nourriture', label: 'Nourriture', iconName: 'Utensils', color: 'text-teal-700', bgColor: 'bg-teal-100', lightBg: 'bg-teal-50/60', borderColor: 'border-teal-200', colorString: 'teal', colorHex: '#0f766e' },
   { id: 'Logement', label: 'Logement', iconName: 'Home', color: 'text-indigo-600', bgColor: 'bg-indigo-100', lightBg: 'bg-indigo-50/60', borderColor: 'border-indigo-200', colorString: 'indigo', colorHex: '#4f46e5' },
   { id: 'Transport', label: 'Transport', iconName: 'Car', color: 'text-sky-600', bgColor: 'bg-sky-100', lightBg: 'bg-sky-50/60', borderColor: 'border-sky-200', colorString: 'sky', colorHex: '#0284c7' },

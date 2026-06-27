@@ -1259,7 +1259,12 @@ export default function App() {
 
   const handleAddBankBalance = (amount: number, label: string, category: string) => {
     setBankBalance((prev) => prev + amount);
-    const tx = {
+    
+    if (category === "Virement") {
+      setBalance((prev) => prev - amount);
+    }
+    
+    const bankTx = {
       id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
       label: label || (language === "Français" ? "Salaire / Dépôt" : language === "العربية" ? "راتب / إيداع" : "Salary / Deposit"),
       amount,
@@ -1277,7 +1282,19 @@ export default function App() {
       paidByBank: true,
       isPureInflow: true,
     } as Transaction;
-    setTransactions((prev) => [tx, ...prev]);
+
+    const newTxs = [bankTx];
+    if (category === "Virement") {
+      newTxs.push({
+        ...bankTx,
+        id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+        type: "EXPENSE",
+        paidByBank: false,
+        isPureInflow: false,
+      });
+    }
+
+    setTransactions((prev) => [...newTxs, ...prev]);
   };
 
   const renderContent = () => {

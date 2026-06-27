@@ -490,7 +490,9 @@ export default function Home({
             "crédit +",
             "crédit --",
           ].includes(tx.category.toLowerCase());
-        if (!isCredit) {
+        const isVirementExpense = tx.type === "EXPENSE" && tx.category === "Virement";
+
+        if (!isCredit && !isVirementExpense) {
           if (tx.type === "EXPENSE") totalExpense += tx.amount;
           else if (tx.type === "INCOME" && !tx.paidByBank)
             totalIncome += tx.amount;
