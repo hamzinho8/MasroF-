@@ -247,9 +247,10 @@ export default function History({ transactions, predefinedItems, language, curre
     .filter(tx => {
       // Hide bank transactions
       const isBankAddedBalance = tx.type === "INCOME" && tx.paidByBank && ["Salaire", "Dépôt", "Autre", "Banque"].includes(tx.category || "");
+      const isBankExpense = tx.type === "EXPENSE" && tx.paidByBank;
       const isRetrait = tx.type === "INCOME" && !tx.paidByBank && tx.label === "Retrait Banque";
       
-      if (isBankAddedBalance || isRetrait) {
+      if (isBankAddedBalance || isRetrait || isBankExpense) {
         return false;
       }
       

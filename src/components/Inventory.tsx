@@ -87,14 +87,25 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
   const t = translations[language];
 
   const handleAddItem = (name: string, quantity: number) => {
-    const newItem: InventoryItem = {
-      id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
-      name,
-      quantity,
-      addedAt: Date.now(),
-      history: []
-    };
-    onItemsChange([newItem, ...items]);
+    const existingIndex = items.findIndex(i => i.name.toLowerCase() === name.toLowerCase());
+    
+    if (existingIndex >= 0) {
+      const updatedItems = [...items];
+      updatedItems[existingIndex] = {
+        ...updatedItems[existingIndex],
+        quantity: updatedItems[existingIndex].quantity + quantity
+      };
+      onItemsChange(updatedItems);
+    } else {
+      const newItem: InventoryItem = {
+        id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+        name,
+        quantity,
+        addedAt: Date.now(),
+        history: []
+      };
+      onItemsChange([newItem, ...items]);
+    }
     setIsAddItemModalOpen(false);
   };
 

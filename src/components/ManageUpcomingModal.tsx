@@ -13,6 +13,7 @@ export interface UpcomingTransaction {
   categoryId?: string;
   dayOfMonth?: number;
   paidByBank?: boolean;
+  lastPaidMonth?: string;
 }
 
 interface ManageUpcomingModalProps {
@@ -40,6 +41,8 @@ export default function ManageUpcomingModal({
   const [editDayOfMonth, setEditDayOfMonth] = useState<number>(1);
   const [editPaidByBank, setEditPaidByBank] = useState<boolean>(true);
   const [editCategoryId, setEditCategoryId] = useState<string>("Nourriture");
+  const [editIconName, setEditIconName] = useState<string>("");
+  const [editColorHex, setEditColorHex] = useState<string>("");
 
   React.useEffect(() => {
     if (isOpen) {
@@ -63,8 +66,8 @@ export default function ManageUpcomingModal({
         dayOfMonth: editDayOfMonth,
         paidByBank: editPaidByBank,
         categoryId: editCategoryId,
-        iconName: selectedCat.iconName,
-        colorHex: selectedCat.colorHex,
+        iconName: editIconName || selectedCat.iconName,
+        colorHex: editColorHex || selectedCat.colorHex,
       };
       const newLocal = [...localTx, newTx];
       setLocalTx(newLocal);
@@ -78,8 +81,8 @@ export default function ManageUpcomingModal({
         dayOfMonth: editDayOfMonth,
         paidByBank: editPaidByBank,
         categoryId: editCategoryId,
-        iconName: selectedCat.iconName,
-        colorHex: selectedCat.colorHex,
+        iconName: editIconName || selectedCat.iconName,
+        colorHex: editColorHex || selectedCat.colorHex,
       } : t);
       setLocalTx(newLocal);
       onSave(newLocal);
@@ -101,6 +104,8 @@ export default function ManageUpcomingModal({
       setEditDayOfMonth(tx.dayOfMonth || parseInt(tx.dateStr.replace(/\D/g, "")) || 1);
       setEditPaidByBank(tx.paidByBank !== false); // default to true
       setEditCategoryId(tx.categoryId || "Nourriture");
+      setEditIconName(tx.iconName || "");
+      setEditColorHex(tx.colorHex || "");
     } else {
       setEditingId("new");
       setEditLabel("");
@@ -108,16 +113,22 @@ export default function ManageUpcomingModal({
       setEditDayOfMonth(1);
       setEditPaidByBank(true);
       setEditCategoryId("Nourriture");
+      setEditIconName("");
+      setEditColorHex("");
     }
   };
 
   const handleCategoryClick = (catId: string) => {
     setEditCategoryId(catId);
+    setEditIconName("");
+    setEditColorHex("");
   };
 
   const handleItemClick = (item: any) => {
     setEditLabel(item.name);
     setEditAmount(item.price ? item.price.toString() : editAmount);
+    if (item.iconName) setEditIconName(item.iconName);
+    if (item.colorHex) setEditColorHex(item.colorHex);
   };
 
   if (!isOpen) return null;
@@ -320,17 +331,15 @@ export default function ManageUpcomingModal({
                 {localTx.map(tx => {
                   const cat = CATEGORIES.find(c => c.id === tx.categoryId);
                   
-                  const IconComp = tx.categoryId ? (ICON_MAP[cat?.iconName || "ShoppingBag"] || ShoppingBag) : (
-                    tx.iconName === "Home" ? Home :
-                    tx.iconName === "Wifi" ? Wifi :
-                    tx.iconName === "MonitorPlay" ? MonitorPlay :
-                    Calendar
-                  );
+                  let IconComp = ICON_MAP[tx.iconName] || ShoppingBag;
+                  if (!tx.iconName && tx.categoryId && cat) {
+                    IconComp = ICON_MAP[cat.iconName] || ShoppingBag;
+                  }
                   
-                  const bgColor = tx.categoryId && cat ? cat.bgColor : "";
-                  const iconColorClass = tx.categoryId && cat ? cat.color : "";
-                  const inlineBgColor = (!tx.categoryId || !cat) ? `${tx.colorHex}20` : undefined;
-                  const inlineIconColor = (!tx.categoryId || !cat) ? tx.colorHex : undefined;
+                  const bgColor = tx.categoryId && cat && !tx.colorHex ? cat.bgColor : "";
+                  const iconColorClass = tx.categoryId && cat && !tx.colorHex ? cat.color : "";
+                  const inlineBgColor = tx.colorHex ? `${tx.colorHex}20` : undefined;
+                  const inlineIconColor = tx.colorHex ? tx.colorHex : undefined;
 
                   return (
                     <div key={tx.id} className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">

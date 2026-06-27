@@ -99,7 +99,7 @@ export default function Bank({
     "month"
   );
   const [searchQuery, setSearchQuery] = useState("");
-  const [showBalance, setShowBalance] = useState(true);
+  const [showBalance, setShowBalance] = useLocalStorage<boolean>("showBankBalance", false);
   const [filter, setFilter] = useState<"ALL" | "IN" | "OUT">("ALL");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
@@ -151,16 +151,24 @@ export default function Bank({
   const [isCompactUpcoming, setIsCompactUpcoming] = useLocalStorage<boolean>("isCompactUpcoming", false);
 
   const handleValidateUpcoming = (tx: UpcomingTransaction) => {
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    // Avoid double payment in the same month if user already clicked
+    if (tx.lastPaidMonth === currentMonth) return;
+
     const catId = tx.categoryId || "Autres";
     if (tx.paidByBank !== false) {
-      if (onAddBankBalance) {
-        onAddBankBalance(-tx.amount, tx.label, CATEGORIES.find(c => c.id === catId)?.id || "Autres");
+      if (onAddTransaction) {
+        onAddTransaction(tx.label, tx.amount, "EXPENSE", CATEGORIES.find(c => c.id === catId)?.id || "Autres", true, false);
       }
     } else {
       if (onAddTransaction) {
         onAddTransaction(tx.label, tx.amount, "EXPENSE", CATEGORIES.find(c => c.id === catId)?.id || "Autres", false, false);
       }
     }
+
+    setUpcomingTransactions(prev => 
+      prev.map(t => t.id === tx.id ? { ...t, lastPaidMonth: currentMonth } : t)
+    );
   };
 
   const bankTransactions = useMemo(() => {
@@ -414,13 +422,10 @@ export default function Bank({
           )}
         </AnimatePresence>
 
-        {/* Premium Glassmorphic 3D Bank Card */}
-        <div style={{ perspective: 1000 }} className="mb-2">
-          <motion.div
-            style={{ rotateX, rotateY }}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            className="relative overflow-hidden rounded-[32px] shadow-2xl shadow-indigo-500/20 border border-white/60 bg-gradient-to-br from-indigo-900 via-slate-900 to-indigo-950 p-6 text-white min-h-[220px] flex flex-col justify-between transition-shadow hover:shadow-indigo-500/40"
+        {/* Premium Glassmorphic Bank Card (Static) */}
+        <div className="mb-2">
+          <div
+            className="relative overflow-hidden rounded-[32px] shadow-2xl shadow-indigo-500/20 border border-white/60 bg-gradient-to-br from-indigo-900 via-slate-900 to-indigo-950 p-6 text-white min-h-[220px] flex flex-col justify-between"
           >
             {/* Glossy overlay */}
             <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-white/20 pointer-events-none" />
@@ -461,63 +466,48 @@ export default function Bank({
                 )}
               </div>
 
-              {/* Reste */}
-              <div className="mt-2 flex items-center gap-1.5 opacity-80">
-                <span className="text-[10px] font-bold uppercase tracking-widest">
-                  {language === "Français"
-                    ? "Reste mois préc:"
-                    : language === "العربية"
-                    ? "الباقي من الشهر السابق:"
-                    : "Reste prev month:"}
-                </span>
-                <span className="text-[11px] font-black">
-                  {showBalance
-                    ? `${resteBalance.toLocaleString("fr-FR")} ${currency}`
-                    : "****"}
-                </span>
-              </div>
-            </div>
+              {/* Stacked balances: Reste mois préc, Solde Prévisionnel, Obj Mois */}
+              <div className="mt-8 flex flex-col gap-3">
+                {/* Reste */}
+                <div className="flex items-center gap-3 opacity-90">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-200">
+                    {language === "Français"
+                      ? "Reste mois préc:"
+                      : language === "العربية"
+                      ? "الباقي من الشهر السابق:"
+                      : "Reste prev month:"}
+                  </span>
+                  <span className="text-[12px] font-black text-white tracking-wide">
+                    {`${resteBalance.toLocaleString("fr-FR")} ${currency}`}
+                  </span>
+                </div>
 
-            {/* Solde Prévisionnel */}
-            <div className="relative z-10 mb-4 bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/20 flex justify-between items-center">
-              <span className="text-[11px] font-black uppercase tracking-widest text-white/90 flex items-center gap-2">
-                <Calendar size={14} />
-                {language === "Français" ? "Solde Prévisionnel" : "Projected Balance"}
-              </span>
-              <span className={`text-sm font-black ${projectedBalance < 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
-                {showBalance ? `${projectedBalance.toLocaleString("fr-FR")} ${currency}` : "****"}
-              </span>
-            </div>
+                {/* Solde Prévisionnel */}
+                <div className="flex items-center gap-3 opacity-90">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-200">
+                    {language === "Français" ? "Solde Prévisionnel:" : "Projected Balance:"}
+                  </span>
+                  <span className={`text-[12px] font-black tracking-wide ${projectedBalance < 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                    {`${projectedBalance.toLocaleString("fr-FR")} ${currency}`}
+                  </span>
+                </div>
 
-            {/* Savings Goal inside Bank Card */}
-            <div className="relative z-10 bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 mt-auto group">
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-[11px] font-black uppercase tracking-widest text-white/90">
-                  {language === "Français"
-                    ? "Obj Mois"
-                    : language === "العربية"
-                    ? "هدف الشهر"
-                    : "Monthly Goal"}
-                </span>
-                {!isEditingGoal && (
-                  <button
-                    onClick={() => setIsEditingGoal(true)}
-                    className="p-1 hover:bg-white/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <Settings size={14} className="text-white/90" />
-                  </button>
-                )}
-              </div>
-
-              <div className="flex justify-end items-end mb-2">
-                <div className="flex flex-col items-end w-full">
+                {/* Obj Mois */}
+                <div className="flex items-center gap-3 opacity-90 group relative">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-200">
+                    {language === "Français"
+                      ? "Obj Mois:"
+                      : language === "العربية"
+                      ? "هدف الشهر:"
+                      : "Monthly Goal:"}
+                  </span>
                   {isEditingGoal ? (
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2">
                       <input
                         type="number"
                         value={tempGoal}
                         onChange={(e) => setTempGoal(e.target.value)}
-                        className="w-24 text-right bg-white/20 border border-white/30 rounded px-2 py-1 text-[11px] font-black text-white placeholder-white/50 focus:outline-none focus:border-white/50"
+                        className="w-20 bg-white/10 border border-white/20 rounded px-1.5 py-0.5 text-[12px] font-black text-white focus:outline-none focus:border-white/50"
                         autoFocus
                       />
                       <button
@@ -526,47 +516,28 @@ export default function Bank({
                           if (newGoal > 0) setSavingsGoal(newGoal);
                           setIsEditingGoal(false);
                         }}
-                        className="p-1 bg-white/20 text-white rounded hover:bg-white/30 transition-colors"
+                        className="p-1 bg-white/10 text-white rounded hover:bg-white/20 transition-colors"
                       >
-                        <Check size={14} />
+                        <Check size={12} />
                       </button>
                     </div>
                   ) : (
-                    <div className="flex items-baseline gap-1 mb-1">
-                      <span className="text-[11px] font-black text-white/80">
-                        / {savingsGoal.toLocaleString()}
+                    <div className="flex items-center gap-2 relative">
+                      <span className="text-[12px] font-black text-white tracking-wide">
+                        {`/ ${savingsGoal.toLocaleString("fr-FR")} ${currency}`}
                       </span>
-                      <span className="text-[9px] font-bold text-white/60 uppercase tracking-widest">
-                        {currency}
-                      </span>
+                      <button
+                        onClick={() => setIsEditingGoal(true)}
+                        className="p-1 hover:bg-white/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100 absolute -right-6"
+                      >
+                        <Settings size={12} className="text-white/90" />
+                      </button>
                     </div>
                   )}
                 </div>
               </div>
-
-              <div className="h-2 w-full bg-black/20 rounded-full overflow-hidden shadow-inner">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{
-                    width: `${Math.min(
-                      100,
-                      Math.max(0, (bankBalance / savingsGoal) * 100)
-                    )}%`,
-                  }}
-                  transition={{ duration: 1, ease: "easeOut" }}
-                  className="h-full bg-white rounded-full"
-                />
-              </div>
-              <div className="mt-1.5 text-right">
-                <span className="text-[10px] font-bold text-white">
-                  {Math.round(
-                    Math.min(100, Math.max(0, (bankBalance / savingsGoal) * 100))
-                  )}
-                  %
-                </span>
-              </div>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Timeframe Selector */}
@@ -765,14 +736,9 @@ export default function Bank({
           <div className={isCompactUpcoming ? "flex flex-col gap-2 px-1" : "flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar -mx-1 px-1"}>
             {upcomingTransactions.map((tx) => {
               const cat = CATEGORIES.find(c => c.id === tx.categoryId) || CATEGORIES[7];
-              const IconComp = tx.categoryId ? (ICON_MAP[cat.iconName] || ShoppingBag) : (
-                tx.iconName === "Home" ? Home :
-                tx.iconName === "Wifi" ? Wifi :
-                tx.iconName === "MonitorPlay" ? MonitorPlay :
-                Calendar
-              );
+              let IconComp = tx.iconName ? (ICON_MAP[tx.iconName] || ShoppingBag) : (ICON_MAP[cat.iconName] || ShoppingBag);
               
-              const txColor = tx.categoryId ? cat.colorHex : tx.colorHex;
+              const txColor = tx.colorHex || cat.colorHex;
 
               // Urgency calculation
               const today = new Date().getDate();
@@ -784,6 +750,9 @@ export default function Bank({
               const isToday = diff === 0 || diff === 30;
               
               const urgencyColor = isToday ? "text-rose-500 bg-rose-50" : isUrgent ? "text-orange-500 bg-orange-50" : "text-slate-400 bg-slate-50";
+
+              const currentMonthStr = new Date().toISOString().slice(0, 7);
+              const isPaidThisMonth = tx.lastPaidMonth === currentMonthStr;
 
               if (isCompactUpcoming) {
                 return (
@@ -810,7 +779,8 @@ export default function Bank({
                     </div>
                     <button 
                       onClick={() => handleValidateUpcoming(tx)}
-                      className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                      disabled={isPaidThisMonth}
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform ${isPaidThisMonth ? 'bg-rose-50 text-rose-500 cursor-not-allowed' : 'bg-indigo-50 text-indigo-600 active:scale-95'}`}
                     >
                       <CheckCircle2 size={20} />
                     </button>
@@ -845,10 +815,11 @@ export default function Bank({
                     </div>
                     <button 
                       onClick={() => handleValidateUpcoming(tx)}
-                      className="w-full mt-2 py-2.5 rounded-xl bg-indigo-50 text-indigo-600 font-black text-[11px] uppercase tracking-wider flex items-center justify-center gap-1 active:scale-95 transition-transform"
+                      disabled={isPaidThisMonth}
+                      className={`w-full mt-2 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-wider flex items-center justify-center gap-1 transition-transform ${isPaidThisMonth ? 'bg-rose-50 text-rose-500 cursor-not-allowed' : 'bg-indigo-50 text-indigo-600 active:scale-95'}`}
                     >
                       <CheckCircle2 size={14} />
-                      {language === "Français" ? "Payer" : "Pay"}
+                      {language === "Français" ? (isPaidThisMonth ? "Payé" : "Payer") : (isPaidThisMonth ? "Paid" : "Pay")}
                     </button>
                   </div>
                 </div>
@@ -1036,7 +1007,7 @@ export default function Bank({
                       const cat =
                         CATEGORIES.find((c) => c.id === tx.category) ||
                         CATEGORIES[7]; // Autres fallback
-                      const CatIcon = ICON_MAP[cat.iconName] || ShoppingBag;
+                      const CatIcon = IconComp || ICON_MAP[cat.iconName] || ShoppingBag;
                       style = {
                         bg: cat.bgColor,
                         text: cat.color,

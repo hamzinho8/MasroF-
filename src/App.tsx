@@ -627,6 +627,47 @@ export default function App() {
   }, [backupAlertInterval]);
 
   React.useEffect(() => {
+    setShoppingList(prevList => {
+      let newShoppingList = [...prevList];
+      let hasChanges = false;
+
+      // Aggregate inventory items by name
+      const aggregatedInventory = new Map<string, { isImportant: boolean, quantity: number, category: string, iconName?: string, name: string }>();
+      inventoryItems.forEach(item => {
+        const key = item.name.toLowerCase();
+        if (!aggregatedInventory.has(key)) {
+          aggregatedInventory.set(key, { isImportant: !!item.isImportant, quantity: item.quantity, category: item.category || "Autres", iconName: item.iconName, name: item.name });
+        } else {
+          const current = aggregatedInventory.get(key)!;
+          current.quantity += item.quantity;
+          if (item.isImportant) current.isImportant = true;
+        }
+      });
+
+      aggregatedInventory.forEach(item => {
+        if (item.isImportant) {
+          const isInList = newShoppingList.some(s => s.name.toLowerCase() === item.name.toLowerCase());
+          if (item.quantity <= 0 && !isInList) {
+            newShoppingList.push({
+              id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+              name: item.name,
+              category: item.category || "Autres",
+              iconName: item.iconName,
+              addedAt: Date.now()
+            });
+            hasChanges = true;
+          } else if (item.quantity > 0 && isInList) {
+            newShoppingList = newShoppingList.filter(s => s.name.toLowerCase() !== item.name.toLowerCase());
+            hasChanges = true;
+          }
+        }
+      });
+
+      return hasChanges ? newShoppingList : prevList;
+    });
+  }, [inventoryItems, setShoppingList]);
+
+  React.useEffect(() => {
     if (
       balanceThreshold !== null &&
       balance < balanceThreshold &&
@@ -862,8 +903,20 @@ export default function App() {
         }
       });
 
-      inventoryItems.forEach((item) => {
-        if (item.isImportant && item.quantity === 0) {
+      const aggregatedInventoryWidget = new Map<string, { isImportant: boolean, quantity: number, category: string, iconName?: string, name: string }>();
+      inventoryItems.forEach(item => {
+        const key = item.name.toLowerCase();
+        if (!aggregatedInventoryWidget.has(key)) {
+          aggregatedInventoryWidget.set(key, { isImportant: !!item.isImportant, quantity: item.quantity, category: item.category || "Autres", iconName: item.iconName, name: item.name });
+        } else {
+          const current = aggregatedInventoryWidget.get(key)!;
+          current.quantity += item.quantity;
+          if (item.isImportant) current.isImportant = true;
+        }
+      });
+
+      aggregatedInventoryWidget.forEach((item) => {
+        if (item.isImportant && item.quantity <= 0) {
           const info = getArticleInfo(item.name, item.category || "Autres", predefinedItems);
           const colorHex = info.colorHex || "#64748B";
           newsItems.push(`<b><font color="${colorHex}">${item.name} est épuisé .</font></b>`);
