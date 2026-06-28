@@ -60,7 +60,7 @@ export default function ManageUpcomingModal({
     if (!editLabel || !editAmount) return;
 
     const dateStr = editFrequency === 'custom_days' ? `Chaque ${editIntervalDays} jours` : `Le ${editDayOfMonth} du mois`;
-    const selectedCat = CATEGORIES.find(c => c.id === editCategoryId) || CATEGORIES[7]; // fallback to Autres
+    const selectedCat = CATEGORIES.find(c => c.id === editCategoryId) || CATEGORIES.find(c => c.id === 'Autres')!; // fallback to Autres
 
     if (editingId === "new") {
       const newTx: UpcomingTransaction = {
@@ -230,7 +230,7 @@ export default function ManageUpcomingModal({
                       {INITIAL_PREDEFINED_ITEMS.filter((item) => item.category === editCategoryId).slice(0, 8).map((item) => {
                         const iconName = item.iconName || "Box";
                         const IconComp = ICON_MAP[iconName] || Box;
-                        const cat = CATEGORIES.find((c) => c.id === item.category) || CATEGORIES[7];
+                        const cat = CATEGORIES.find((c) => c.id === item.category) || CATEGORIES.find(c => c.id === 'Autres')!;
 
                         return (
                           <button

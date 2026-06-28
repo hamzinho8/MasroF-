@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   TrendingUp,
   TrendingDown,
@@ -60,6 +60,7 @@ import AddBankBalanceModal from "./AddBankBalanceModal";
 import { ICON_MAP, getArticleInfo, CATEGORIES } from "../constants";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import ManageUpcomingModal, { UpcomingTransaction } from "./ManageUpcomingModal";
+import { scheduleUpcomingNotifications } from "../utils/notifications";
 
 interface BankProps {
   language: string;
@@ -151,6 +152,10 @@ export default function Bank({
   
   const [isCompactUpcoming, setIsCompactUpcoming] = useLocalStorage<boolean>("isCompactUpcoming", false);
 
+  useEffect(() => {
+    scheduleUpcomingNotifications(upcomingTransactions, language);
+  }, [upcomingTransactions, language]);
+
   const handleValidateUpcoming = (tx: UpcomingTransaction) => {
     const currentMonth = new Date().toISOString().slice(0, 7);
     const todayStr = new Date().toISOString().slice(0, 10);
@@ -184,8 +189,7 @@ export default function Bank({
         return (
           (tx.type === "INCOME" && tx.paidByBank) ||
           (tx.type === "EXPENSE" && tx.paidByBank) ||
-          (tx.type === "INCOME" && !tx.paidByBank) ||
-          (tx.type === "EXPENSE" && tx.category === "Virement")
+          (tx.type === "INCOME" && !tx.paidByBank)
         );
       })
       .sort((a, b) => b.timestamp - a.timestamp);
@@ -743,7 +747,7 @@ export default function Bank({
           
           <div className={isCompactUpcoming ? "flex flex-col gap-2 px-1" : "flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar -mx-1 px-1"}>
             {upcomingTransactions.map((tx) => {
-              const cat = CATEGORIES.find(c => c.id === tx.categoryId) || CATEGORIES[7];
+              const cat = CATEGORIES.find(c => c.id === tx.categoryId) || CATEGORIES.find(c => c.id === 'Autres')!;
               let IconComp = tx.iconName ? (ICON_MAP[tx.iconName] || ShoppingBag) : (ICON_MAP[cat.iconName] || ShoppingBag);
               
               const txColor = tx.colorHex || cat.colorHex;
@@ -1059,7 +1063,7 @@ export default function Bank({
                     } else {
                       const cat =
                         CATEGORIES.find((c) => c.id === tx.category) ||
-                        CATEGORIES[7]; // Autres fallback
+                        CATEGORIES.find((c) => c.id === "Autres")!; // Autres fallback
                       const CatIcon = IconComp || ICON_MAP[cat.iconName] || ShoppingBag;
                       style = {
                         bg: cat.bgColor,

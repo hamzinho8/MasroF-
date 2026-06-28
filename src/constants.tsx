@@ -37,7 +37,6 @@ export const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 export const CATEGORIES = [
-  { id: 'Virement', label: 'Virement Interne', iconName: 'ArrowRightLeft', color: 'text-amber-600', bgColor: 'bg-amber-100', lightBg: 'bg-amber-50/60', borderColor: 'border-amber-200', colorString: 'amber', colorHex: '#d97706' },
   { id: 'Nourriture', label: 'Nourriture', iconName: 'Utensils', color: 'text-teal-700', bgColor: 'bg-teal-100', lightBg: 'bg-teal-50/60', borderColor: 'border-teal-200', colorString: 'teal', colorHex: '#0f766e' },
   { id: 'Logement', label: 'Logement', iconName: 'Home', color: 'text-indigo-600', bgColor: 'bg-indigo-100', lightBg: 'bg-indigo-50/60', borderColor: 'border-indigo-200', colorString: 'indigo', colorHex: '#4f46e5' },
   { id: 'Transport', label: 'Transport', iconName: 'Car', color: 'text-sky-600', bgColor: 'bg-sky-100', lightBg: 'bg-sky-50/60', borderColor: 'border-sky-200', colorString: 'sky', colorHex: '#0284c7' },

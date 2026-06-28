@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Package, PackageOpen, Plus, Minus, X, Info, Search, History as HistoryIcon, User, ListTodo, ShoppingCart, Tag, ChevronDown, ChevronUp } from 'lucide-react';
+import { Package, PackageOpen, Plus, Minus, X, Info, Search, History as HistoryIcon, User, ListTodo, ShoppingCart, Tag, ChevronDown, ChevronUp, Trash2, PackageX } from 'lucide-react';
 import { InventoryItem, InventoryDecreaseAction, ShoppingListItem, PredefinedItem } from '../types';
 import { ICON_MAP, CATEGORIES } from '../constants';
 
@@ -86,21 +86,23 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
 
   const t = translations[language];
 
-  const handleAddItem = (name: string, quantity: number) => {
+  const handleAddItem = (name: string, quantity: number, _1?: any, _2?: any, unitType?: 'unit' | 'grams' | 'liters') => {
     const existingIndex = items.findIndex(i => i.name.toLowerCase() === name.toLowerCase());
     
     if (existingIndex >= 0) {
       const updatedItems = [...items];
       updatedItems[existingIndex] = {
         ...updatedItems[existingIndex],
-        quantity: updatedItems[existingIndex].quantity + quantity
+        quantity: updatedItems[existingIndex].quantity + (unitType && unitType !== 'unit' ? 1 : quantity)
       };
       onItemsChange(updatedItems);
     } else {
       const newItem: InventoryItem = {
         id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
         name,
-        quantity,
+        quantity: unitType && unitType !== 'unit' ? 1 : quantity,
+        unitType: unitType || 'unit',
+        usageCount: 0,
         addedAt: Date.now(),
         history: []
       };
@@ -357,19 +359,8 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
                         {item.unitType === 'grams' || item.unitType === 'liters' ? (item.usageCount || 0) : item.quantity}
                       </span>
                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1 text-right">
-                        {item.unitType === 'grams' || item.unitType === 'liters' ? (language === 'Français' ? 'Utilisations' : 'Usages') : (language === 'Français' ? 'Qté' : language === 'العربية' ? 'كمية' : 'Qty')}
+                        {item.unitType === 'grams' || item.unitType === 'liters' ? (language === 'Français' ? 'Fois' : 'Times') : (language === 'Français' ? 'Qté' : language === 'العربية' ? 'كمية' : 'Qty')}
                       </span>
-                      {(item.unitType === 'grams' || item.unitType === 'liters') && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeclareEmpty(item);
-                          }}
-                          className="mt-2 text-[10px] bg-red-100 text-red-600 font-bold px-2 py-1 rounded-lg uppercase tracking-wider hover:bg-red-200 transition-colors"
-                        >
-                          Épuisé
-                        </button>
-                      )}
                     </div>
                     <div className="absolute -right-4 -bottom-4 opacity-[0.02] transform group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500 pointer-events-none text-slate-900 z-0">
                       <IconComponent size={100} />
@@ -580,7 +571,14 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
             item={selectedItemInfo} 
             onClose={() => setSelectedItemInfo(null)}
             onDecrease={() => handleDecrease(selectedItemInfo)}
-            onDelete={() => handleDelete(selectedItemInfo.id)}
+            onDelete={() => {
+              handleDelete(selectedItemInfo.id);
+              setSelectedItemInfo(null);
+            }}
+            onDeclareEmpty={() => {
+              handleDeclareEmpty(selectedItemInfo);
+              setSelectedItemInfo(null);
+            }}
             t={t}
             language={language}
           />
@@ -593,13 +591,14 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
 function AddItemModal({ onClose, onAdd, t, language, predefinedItems }: any) {
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('');
+  const [inventoryUnit, setInventoryUnit] = useState<'unit' | 'grams' | 'liters'>('unit');
   const [selectedCategory, setSelectedCategory] = useState<string>('Nourriture');
-  const [showFrequent, setShowFrequent] = useState(false);
+  const [showFrequent, setShowFrequent] = useState(true);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim() && quantity && parseInt(quantity, 10) >= 0) {
-      onAdd(name.trim(), parseInt(quantity, 10)); // We could pass category too if InventoryItem takes it in the future
+      onAdd(name.trim(), parseInt(quantity, 10), undefined, undefined, inventoryUnit); 
     }
   };
 
@@ -692,7 +691,7 @@ function AddItemModal({ onClose, onAdd, t, language, predefinedItems }: any) {
               <AnimatePresence mode="popLayout">
                 {displayedItems.map((item: any, index: number) => {
                   const Icon = ICON_MAP[item.iconName] || Package;
-                  const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES[7];
+                  const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES.find(c => c.id === "Autres")!;
                   return (
                     <motion.button
                       key={`${item.id}-${index}`}
@@ -731,7 +730,33 @@ function AddItemModal({ onClose, onAdd, t, language, predefinedItems }: any) {
             />
           </div>
           <div>
-            <label className="block text-sm font-bold text-slate-600 mb-2">{t.quantity}</label>
+            <label className="block text-sm font-bold text-slate-600 mb-2">Unité de mesure</label>
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              <button
+                type="button"
+                onClick={() => setInventoryUnit('unit')}
+                className={`py-2 px-2 rounded-xl text-xs font-bold transition-all border-2 ${inventoryUnit === 'unit' ? 'border-violet-500 bg-violet-50 text-violet-700' : 'border-transparent bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+              >
+                Unités
+              </button>
+              <button
+                type="button"
+                onClick={() => setInventoryUnit('grams')}
+                className={`py-2 px-2 rounded-xl text-xs font-bold transition-all border-2 ${inventoryUnit === 'grams' ? 'border-violet-500 bg-violet-50 text-violet-700' : 'border-transparent bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+              >
+                Grammes
+              </button>
+              <button
+                type="button"
+                onClick={() => setInventoryUnit('liters')}
+                className={`py-2 px-2 rounded-xl text-xs font-bold transition-all border-2 ${inventoryUnit === 'liters' ? 'border-violet-500 bg-violet-50 text-violet-700' : 'border-transparent bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+              >
+                Litres
+              </button>
+            </div>
+            <label className="block text-sm font-bold text-slate-600 mb-2">
+              {inventoryUnit === 'unit' ? t.quantity : inventoryUnit === 'grams' ? 'Quantité totale (Vrac)' : 'Quantité totale (Vrac)'}
+            </label>
             <input
               type="number"
               min="0"
@@ -756,7 +781,7 @@ function AddItemModal({ onClose, onAdd, t, language, predefinedItems }: any) {
   );
 }
 
-function ItemDetailsModal({ item, onClose, onDecrease, onDelete, t, language }: any) {
+function ItemDetailsModal({ item, onClose, onDecrease, onDelete, onDeclareEmpty, t, language }: any) {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   return (
@@ -821,12 +846,12 @@ function ItemDetailsModal({ item, onClose, onDecrease, onDelete, t, language }: 
               {item.history.map((action: any) => (
                 <div key={action.id} className="flex justify-between items-center p-3 rounded-2xl bg-white border-2 border-slate-50 shadow-sm">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-[14px] bg-rose-50 text-rose-500 flex items-center justify-center">
-                      <Minus size={18} strokeWidth={3} />
+                    <div className={`w-10 h-10 rounded-[14px] ${(item.unitType === 'grams' || item.unitType === 'liters') ? 'bg-violet-50 text-violet-500' : 'bg-rose-50 text-rose-500'} flex items-center justify-center`}>
+                      {(item.unitType === 'grams' || item.unitType === 'liters') ? <Plus size={18} strokeWidth={3} /> : <Minus size={18} strokeWidth={3} />}
                     </div>
                     <div>
-                      <span className="font-black text-slate-700 block">-1</span>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quantité</span>
+                      <span className="font-black text-slate-700 block">{(item.unitType === 'grams' || item.unitType === 'liters') ? '+1' : '-1'}</span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{(item.unitType === 'grams' || item.unitType === 'liters') ? 'Fois' : 'Quantité'}</span>
                     </div>
                   </div>
                   <span className="text-xs font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg">{action.dateStr}</span>
@@ -836,19 +861,35 @@ function ItemDetailsModal({ item, onClose, onDecrease, onDelete, t, language }: 
           )}
         </div>
         
-        <div className="mt-4 pt-4 border-t-2 border-slate-100 flex justify-center shrink-0 overflow-hidden">
+        <div className="mt-4 pt-4 border-t-2 border-slate-100 flex justify-center shrink-0 overflow-hidden gap-2">
             <AnimatePresence mode="wait">
               {!showConfirmDelete ? (
-                <motion.button
-                    key="delete-btn"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    onClick={() => setShowConfirmDelete(true)}
-                    className="text-[10px] font-black text-rose-500 hover:text-rose-600 uppercase tracking-widest py-3 px-6 rounded-xl hover:bg-rose-50 transition-colors w-full"
-                >
-                    {language === 'Français' ? 'Supprimer cet article' : language === 'العربية' ? 'حذف هذا العنصر' : 'Delete this item'}
-                </motion.button>
+                <>
+                  {(item.unitType === 'grams' || item.unitType === 'liters') && item.quantity > 0 && (
+                    <motion.button
+                        key="empty-btn"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        onClick={onDeclareEmpty}
+                        className="flex-1 flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-2xl bg-amber-50/80 text-amber-600 hover:bg-amber-100 transition-colors border border-amber-100/50"
+                    >
+                        <PackageX size={20} strokeWidth={2.5} />
+                        <span className="text-[10px] font-black uppercase tracking-widest">{language === 'Français' ? 'Épuisé' : language === 'العربية' ? 'نفد' : 'Out of stock'}</span>
+                    </motion.button>
+                  )}
+                  <motion.button
+                      key="delete-btn"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      onClick={() => setShowConfirmDelete(true)}
+                      className="flex-1 flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-2xl bg-rose-50/80 text-rose-600 hover:bg-rose-100 transition-colors border border-rose-100/50"
+                  >
+                      <Trash2 size={20} strokeWidth={2.5} />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-center">{language === 'Français' ? 'Supprimer' : language === 'العربية' ? 'حذف' : 'Delete'}</span>
+                  </motion.button>
+                </>
               ) : (
                 <motion.div
                     key="confirm-delete"

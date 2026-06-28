@@ -4,6 +4,16 @@ import App from './App.tsx';
 import './index.css';
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then(registration => {
+      console.log('SW registered: ', registration);
+    }).catch(registrationError => {
+      console.log('SW registration failed: ', registrationError);
+    });
+  });
+}
+
 defineCustomElements(window);
 
 class ErrorBoundary extends React.Component<{children: ReactNode}, {hasError: boolean, error: string}> {

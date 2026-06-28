@@ -550,7 +550,7 @@ export default function AddTransactionModal({
 
       let invReq = undefined;
       const cat =
-        CATEGORIES.find((c) => c.id === item.category) || CATEGORIES[7];
+        CATEGORIES.find((c) => c.id === item.category) || CATEGORIES.find(c => c.id === "Autres")!;
       if (addToInventory || item.addToInventory) {
         const articleInfo = INITIAL_PREDEFINED_ITEMS.find(
           (p) => p.name.toLowerCase() === (item.title || "").toLowerCase()
@@ -573,7 +573,8 @@ export default function AddTransactionModal({
         item.category,
         paidByBank,
         !(addToInventory || item.addToInventory),
-        invReq
+        invReq,
+        type === "EXPENSE" && isCredit && creditorName ? { creditorName } : undefined
       );
     });
 
@@ -607,7 +608,7 @@ export default function AddTransactionModal({
           let invReq = undefined;
           if (type === "EXPENSE" && (addToInventory || isShoppingMode)) {
             const cat =
-              CATEGORIES.find((c) => c.id === mItem.category) || CATEGORIES[4];
+              CATEGORIES.find((c) => c.id === mItem.category) || CATEGORIES.find((c) => c.id === "Shopping")!;
             const matchedItem = predefinedItems.find(
               (p) => p.name.toLowerCase() === mItem.name.toLowerCase()
             );
@@ -655,7 +656,7 @@ export default function AddTransactionModal({
           if (type === "EXPENSE" && (addToInventory || isShoppingMode)) {
             const cat =
               CATEGORIES.find((c) => c.id === selectedCategory) ||
-              CATEGORIES[4];
+              CATEGORIES.find((c) => c.id === "Shopping")!;
             const matchedItem = predefinedItems.find(
               (p) => p.name.toLowerCase() === finalLabel.toLowerCase()
             );
@@ -704,7 +705,8 @@ export default function AddTransactionModal({
           type === "EXPENSE" ? selectedCategory : undefined,
           paidByBank,
           false,
-          undefined
+          undefined,
+          type === "EXPENSE" && isCredit && creditorName ? { creditorName } : undefined
         );
       }
 
@@ -883,7 +885,7 @@ export default function AddTransactionModal({
 
                           const cat =
                             CATEGORIES.find((c) => c.id === item.category) ||
-                            CATEGORIES[7];
+                            CATEGORIES.find((c) => c.id === "Autres")!;
                           const cardBg = cat.lightBg || "bg-slate-50/60";
 
                           return (

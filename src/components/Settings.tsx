@@ -2096,7 +2096,7 @@ function ArticleManagerModal({
               ICON_MAP["Box"]) as React.ElementType;
             const cat =
               APP_CATEGORIES.find((c) => c.id === item.category) ||
-              APP_CATEGORIES[7];
+              APP_CATEGORIES.find((c) => c.id === "Autres")!;
             const isEditing = editingId === item.id;
 
             return (

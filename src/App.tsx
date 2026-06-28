@@ -91,6 +91,34 @@ export default function App() {
   }, []);
 
   const [activeTab, setActiveTab] = useLocalStorage<Tab>("activeTab", "home");
+
+  useEffect(() => {
+    // Check URL parameters for tab navigation
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam && ['home', 'history', 'bank', 'inventory', 'stats', 'settings'].includes(tabParam)) {
+      setActiveTab(tabParam as Tab);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
+    // Listen for messages from the service worker
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'NAVIGATE' && event.data.path) {
+        if (['home', 'history', 'bank', 'inventory', 'stats', 'settings'].includes(event.data.path)) {
+          setActiveTab(event.data.path as Tab);
+        }
+      }
+    };
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', handleMessage);
+    }
+    return () => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.removeEventListener('message', handleMessage);
+      }
+    };
+  }, [setActiveTab]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"INCOME" | "EXPENSE">("EXPENSE");
   const [widgetMode, setWidgetMode] = useLocalStorage<"balance" | "spending">(
@@ -1044,7 +1072,7 @@ export default function App() {
       if (creditData) {
         const creditEntry: CreditEntry = {
           id: Date.now().toString() + Math.random().toString(36).substring(2, 9) + "_credit",
-          name: creditData.creditorName,
+          name: `${creditData.creditorName} (${label})`,
           amount: amount,
           type: "I_OWE",
           date: new Date().toLocaleDateString(language === "Français" ? "fr-FR" : "en-US"),
@@ -1077,10 +1105,12 @@ export default function App() {
         setBankBalance((prev) => prev + tx.amount);
       }
     } else {
-      if (tx.paidByBank) {
-        setBankBalance((prev) => prev + tx.amount);
-      } else {
-        setBalance((prev) => prev + tx.amount);
+      if (!tx.isCredit) {
+        if (tx.paidByBank) {
+          setBankBalance((prev) => prev + tx.amount);
+        } else {
+          setBalance((prev) => prev + tx.amount);
+        }
       }
     }
     setTransactions((prev) => prev.filter((t) => t.id !== id));
@@ -1103,8 +1133,10 @@ export default function App() {
                 setBankBalance((b) => b - diff);
               }
             } else {
-              if (tx.paidByBank) setBankBalance((b) => b - diff);
-              else setBalance((b) => b - diff);
+              if (!tx.isCredit) {
+                if (tx.paidByBank) setBankBalance((b) => b - diff);
+                else setBalance((b) => b - diff);
+              }
             }
           }
           return result;
@@ -1652,7 +1684,8 @@ export default function App() {
           category,
           paidByBank,
           isPureInflow,
-          inventoryData
+          inventoryData,
+          creditData
         ) => {
           if (modalIsShoppingMode) {
             const newItem: ShoppingListItem = {
@@ -1675,7 +1708,8 @@ export default function App() {
               category,
               paidByBank,
               isPureInflow,
-              inventoryData
+              inventoryData,
+              creditData
             );
             if (shoppingItemSelectedId) {
               setShoppingList((prev) =>

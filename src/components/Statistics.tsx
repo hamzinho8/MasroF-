@@ -122,7 +122,7 @@ export default function Statistics({
             "crédit --",
           ].includes(t.category.toLowerCase());
         const isExpense =
-          (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit;
+          (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit && t.category !== "Virement";
         return isExpense && t.timestamp >= startOfMonth.getTime();
       });
 
@@ -221,7 +221,7 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
           "crédit --",
         ].includes(t.category.toLowerCase());
       const isExpense =
-        (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit;
+        (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit && t.category !== "Virement";
       return isExpense && t.timestamp >= start.getTime();
     });
 
@@ -261,7 +261,7 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
     
     const filterExp = (t: Transaction, s: Date, e: Date) => {
       const isCredit = t.category && ["on me doit", "je dois", "مستحقات لي", "ديون علي", "owed to me", "i owe", "loans", "debts", "crédit +", "crédit --"].includes(t.category.toLowerCase());
-      return (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit && t.timestamp >= s.getTime() && t.timestamp <= e.getTime();
+      return (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit && t.category !== "Virement" && t.timestamp >= s.getTime() && t.timestamp <= e.getTime();
     };
 
     const currExp = transactions.filter(t => filterExp(t, start, end));
@@ -291,7 +291,7 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
 
     periodTx.forEach(t => {
       const isCredit = t.category && ["on me doit", "je dois", "مستحقات لي", "ديون علي", "owed to me", "i owe", "loans", "debts", "crédit +", "crédit --"].includes(t.category.toLowerCase());
-      if (isCredit) return;
+      if (isCredit || t.category === "Virement") return;
 
       if (t.type === 'INCOME' || (t.type as any) === 'income') {
         totalIncome += t.amount;
@@ -344,7 +344,7 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
     const { start, end } = timeRange;
     const expenses = transactions.filter((t) => {
       const isCredit = t.category && ["on me doit", "je dois"].some(c => t.category!.toLowerCase().includes(c));
-      return (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit && t.timestamp >= start.getTime() && t.timestamp <= end.getTime();
+      return (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit && t.category !== "Virement" && t.timestamp >= start.getTime() && t.timestamp <= end.getTime();
     });
 
     const map: Record<string, { count: number; total: number; category: string }> = {};
@@ -441,7 +441,7 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
             "crédit --",
           ].includes(t.category.toLowerCase());
         const isExpense =
-          (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit;
+          (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit && t.category !== "Virement";
         if (!isExpense || t.timestamp < start.getTime() || t.timestamp > end.getTime()) return false;
         let category = t.category || "Autres";
         if (category === "Food") category = "Nourriture";
@@ -952,7 +952,7 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
                 ].includes(t.category.toLowerCase());
               const isExpense =
                 (t.type === "EXPENSE" || (t.type as any) === "expense") &&
-                !isCredit;
+                !isCredit && t.category !== "Virement";
               return isExpense && t.timestamp >= startOfPeriod.getTime();
             });
 
