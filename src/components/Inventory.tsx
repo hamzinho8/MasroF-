@@ -93,18 +93,22 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
       const updatedItems = [...items];
       updatedItems[existingIndex] = {
         ...updatedItems[existingIndex],
-        quantity: updatedItems[existingIndex].quantity + (unitType && unitType !== 'unit' ? 1 : quantity)
+        quantity: updatedItems[existingIndex].quantity + (unitType && unitType !== 'unit' ? quantity : quantity)
       };
+      if (unitType && unitType !== 'unit') {
+        updatedItems[existingIndex].initialVolume = (updatedItems[existingIndex].initialVolume || 0) + quantity;
+      }
       onItemsChange(updatedItems);
     } else {
       const newItem: InventoryItem = {
         id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
         name,
-        quantity: unitType && unitType !== 'unit' ? 1 : quantity,
+        quantity: quantity,
         unitType: unitType || 'unit',
         usageCount: 0,
         addedAt: Date.now(),
-        history: []
+        history: [],
+        initialVolume: unitType && unitType !== 'unit' ? quantity : undefined
       };
       onItemsChange([newItem, ...items]);
     }
@@ -146,10 +150,12 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
           return updated;
         }
 
+        const newQuantity = i.quantity - 1;
         const updated = {
           ...i,
-          quantity: i.quantity - 1,
-          history: [newAction, ...i.history]
+          quantity: newQuantity,
+          history: [newAction, ...i.history],
+          consumedAt: newQuantity === 0 ? Date.now() : i.consumedAt
         };
         // Update selected item info live if it's open
         if (selectedItemInfo && selectedItemInfo.id === item.id) {
@@ -168,7 +174,8 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
       if (i.id === item.id) {
         const updated = {
           ...i,
-          quantity: 0
+          quantity: 0,
+          consumedAt: Date.now()
         };
         if (selectedItemInfo && selectedItemInfo.id === item.id) {
           setSelectedItemInfo(updated);
@@ -201,25 +208,55 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
 
   const [expandedConsumedGroups, setExpandedConsumedGroups] = useState<string[]>([]);
 
-  const groupedConsumedItems = React.useMemo(() => {
-    const groups: Record<string, {
-      name: string;
+  const monthlyConsumedGroups = React.useMemo(() => {
+    // 1. Group by Month
+    const monthlyGroups: Record<string, {
+      monthKey: string;
+      monthLabel: string;
       items: InventoryItem[];
     }> = {};
 
     consumedItems.forEach(item => {
-      const key = item.name.toLowerCase().trim();
-      if (!groups[key]) {
-        groups[key] = {
-          name: item.name,
+      const consumedTime = item.consumedAt || (item.history.length > 0 ? item.history[0].timestamp : item.addedAt);
+      const date = new Date(consumedTime);
+      const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+      
+      const monthLabel = date.toLocaleDateString(
+        language === 'Français' ? 'fr-FR' : (language === 'العربية' ? 'ar-MA' : 'en-US'), 
+        { month: 'long', year: 'numeric' }
+      );
+      
+      if (!monthlyGroups[monthKey]) {
+        monthlyGroups[monthKey] = {
+          monthKey,
+          monthLabel,
           items: []
         };
       }
-      groups[key].items.push(item);
+      monthlyGroups[monthKey].items.push(item);
     });
 
-    return Object.values(groups).sort((a, b) => b.items.length - a.items.length);
-  }, [consumedItems]);
+    return Object.values(monthlyGroups).sort((a, b) => {
+      const aParts = a.monthKey.split('-');
+      const bParts = b.monthKey.split('-');
+      return (parseInt(bParts[0]) * 12 + parseInt(bParts[1])) - (parseInt(aParts[0]) * 12 + parseInt(aParts[1]));
+    }).map(monthGroup => {
+      // 2. Group items by name inside the month
+      const itemGroups: Record<string, {
+        name: string;
+        items: InventoryItem[];
+      }> = {};
+      monthGroup.items.forEach(item => {
+        const key = item.name.toLowerCase().trim();
+        if (!itemGroups[key]) itemGroups[key] = { name: item.name, items: [] };
+        itemGroups[key].items.push(item);
+      });
+      return {
+        ...monthGroup,
+        itemGroups: Object.values(itemGroups).sort((a, b) => b.items.length - a.items.length)
+      };
+    });
+  }, [consumedItems, language]);
 
   const toggleConsumedGroup = (groupName: string) => {
     setExpandedConsumedGroups(prev => 
@@ -377,103 +414,153 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
                 <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
                 {t.consumed}
               </h3>
-              <div className="flex flex-col gap-3">
-                {groupedConsumedItems.map((group) => {
-                  const predefinedItem = predefinedItems.find(p => p.name.toLowerCase() === group.name.toLowerCase());
-                  const categoryId = predefinedItem?.category || 'Autres';
-                  const cat = CATEGORIES.find(c => c.id === categoryId) || CATEGORIES.find(c => c.id === 'Autres')!;
-                  const iconName = predefinedItem?.iconName || group.items[0].iconName;
-                  const IconComponent = (iconName && ICON_MAP[iconName]) ? ICON_MAP[iconName] as React.ElementType : PackageOpen;
-                  const isExpanded = expandedConsumedGroups.includes(group.name);
-                  const avgLifespan = getAverageLifespan(group.items);
+              <div className="flex flex-col gap-6">
+                {monthlyConsumedGroups.map((monthGroup) => (
+                  <div key={monthGroup.monthKey} className="flex flex-col gap-3">
+                    <h4 className="text-[11px] font-black uppercase tracking-widest text-indigo-400 pl-2">
+                      {monthGroup.monthLabel}
+                    </h4>
+                    {monthGroup.itemGroups.map((group) => {
+                      const predefinedItem = predefinedItems.find(p => p.name.toLowerCase() === group.name.toLowerCase());
+                      const categoryId = predefinedItem?.category || 'Autres';
+                      const cat = CATEGORIES.find(c => c.id === categoryId) || CATEGORIES.find(c => c.id === 'Autres')!;
+                      const iconName = predefinedItem?.iconName || group.items[0].iconName;
+                      const IconComponent = (iconName && ICON_MAP[iconName]) ? ICON_MAP[iconName] as React.ElementType : PackageOpen;
+                      const isExpanded = expandedConsumedGroups.includes(`${monthGroup.monthKey}-${group.name}`);
+                      const avgLifespan = getAverageLifespan(group.items);
 
-                  return (
-                    <div key={group.name} className="flex flex-col gap-2">
-                      <div
-                        onClick={() => toggleConsumedGroup(group.name)}
-                        className="group flex flex-col gap-3 p-5 rounded-[32px] border transition-all relative shadow-sm bg-slate-50/90 border-slate-100 hover:border-slate-200 hover:shadow-xl hover:shadow-slate-500/10 cursor-pointer overflow-hidden z-0"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 shadow-sm relative z-10 ${cat.bgColor} ${cat.color} opacity-90`}>
-                            {predefinedItem?.iconSvg ? (
-                               <div dangerouslySetInnerHTML={{ __html: predefinedItem.iconSvg }} className="w-6 h-6 text-current" />
-                            ) : (
-                               <IconComponent size={24} />
-                            )}
-                          </div>
+                      return (
+                        <div key={group.name} className="flex flex-col gap-2">
+                          <div
+                            onClick={() => toggleConsumedGroup(`${monthGroup.monthKey}-${group.name}`)}
+                            className="group flex flex-col gap-3 p-5 rounded-[32px] border transition-all relative shadow-sm bg-slate-50/90 border-slate-100 hover:border-slate-200 hover:shadow-xl hover:shadow-slate-500/10 cursor-pointer overflow-hidden z-0"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 shadow-sm relative z-10 ${cat.bgColor} ${cat.color} opacity-90`}>
+                                {predefinedItem?.iconSvg ? (
+                                   <div dangerouslySetInnerHTML={{ __html: predefinedItem.iconSvg }} className="w-6 h-6 text-current" />
+                                ) : (
+                                   <IconComponent size={24} />
+                                )}
+                              </div>
 
-                          <div className="flex-1 min-w-0 flex flex-col justify-center py-1 relative z-10">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="font-black text-slate-800 text-sm tracking-tight truncate italic select-none">
-                                {group.name}
-                              </p>
-                              <span className="px-2 py-0.5 rounded-full bg-slate-200 text-[10px] font-bold text-slate-500">
-                                x{group.items.length}
-                              </span>
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              {avgLifespan !== null && (
-                                <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
-                                  <span className="text-[9px] flex items-center gap-1 font-bold uppercase tracking-wider text-indigo-500 shrink-0">
-                                    <HistoryIcon size={10} className="text-indigo-500" />
-                                    {language === 'Français' ? 'Durée de vie moy. : ' : language === 'العربية' ? 'متوسط العمر : ' : 'Avg lifespan : '}
-                                    {avgLifespan} {language === 'Français' ? 'jours' : language === 'العربية' ? 'أيام' : 'days'}
+                              <div className="flex-1 min-w-0 flex flex-col justify-center py-1 relative z-10">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <p className="font-black text-slate-800 text-sm tracking-tight truncate italic select-none">
+                                    {group.name}
+                                  </p>
+                                  <span className="px-2 py-0.5 rounded-full bg-slate-200 text-[10px] font-bold text-slate-500">
+                                    x{group.items.length}
                                   </span>
                                 </div>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col items-end shrink-0 pl-2 relative z-10">
-                            <div className="text-slate-300 group-hover:text-slate-500 transition-colors">
-                              {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Accordion Content */}
-                        <AnimatePresence>
-                          {isExpanded && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              exit={{ opacity: 0, height: 0 }}
-                              className="border-t border-slate-100 pt-3 mt-1 flex flex-col gap-2"
-                            >
-                              {group.items.map((item, idx) => (
-                                <div key={`${item.id}-${idx}`} className="flex items-center justify-between py-2 px-3 bg-white rounded-2xl shadow-sm border border-slate-50">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
-                                      <span className="text-[10px] font-black">{idx + 1}</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                      <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                                        {new Date(item.addedAt).toLocaleDateString(language === 'Français' ? 'fr-FR' : language === 'العربية' ? 'ar-MA' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                <div className="flex flex-col gap-1">
+                                  {avgLifespan !== null && (
+                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                                      <span className="text-[9px] flex items-center gap-1 font-bold uppercase tracking-wider text-indigo-500 shrink-0">
+                                        <HistoryIcon size={10} className="text-indigo-500" />
+                                        {language === 'Français' ? 'Durée de vie moy. : ' : language === 'العربية' ? 'متوسط العمر : ' : 'Avg lifespan : '}
+                                        {avgLifespan} {language === 'Français' ? 'jours' : language === 'العربية' ? 'أيام' : 'days'}
                                       </span>
-                                      {item.history && item.history.length > 0 && (
-                                        <span className="text-[10px] font-bold text-rose-500 flex items-center gap-1 mt-0.5">
-                                          <div className="w-1.5 h-1.5 rounded-full bg-rose-500"></div>
-                                          {new Date(item.history[0].timestamp).toLocaleDateString(language === 'Français' ? 'fr-FR' : language === 'العربية' ? 'ar-MA' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                        </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex flex-col items-end shrink-0 pl-2 relative z-10">
+                                <div className="text-slate-300 group-hover:text-slate-500 transition-colors">
+                                  {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Accordion Content */}
+                            <AnimatePresence>
+                              {isExpanded && (
+                                <motion.div
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: 'auto' }}
+                                  exit={{ opacity: 0, height: 0 }}
+                                  className="border-t border-slate-100 pt-3 mt-1 flex flex-col gap-2"
+                                >
+                                  {group.items.map((item, idx) => {
+                                    const isBulk = item.unitType === 'grams' || item.unitType === 'liters';
+                                    const initialVol = item.initialVolume || 0;
+                                    const uses = item.usageCount || 0;
+                                    const amountPerUse = uses > 0 ? (initialVol / uses).toFixed(0) : 0;
+                                    const itemConsumedTime = item.consumedAt || (item.history.length > 0 ? item.history[0].timestamp : item.addedAt);
+                                    const durationDays = Math.max(1, Math.round((itemConsumedTime - item.addedAt) / (1000 * 60 * 60 * 24)));
+                                    const amountPerDay = initialVol > 0 ? (initialVol / durationDays).toFixed(0) : 0;
+                                    const unitName = item.unitType === 'grams' ? 'g' : item.unitType === 'liters' ? 'L' : '';
+
+                                    return (
+                                    <div key={`${item.id}-${idx}`} className="flex flex-col py-3 px-3 bg-white rounded-2xl shadow-sm border border-slate-50 gap-3">
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                          <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
+                                            <span className="text-[10px] font-black">{idx + 1}</span>
+                                          </div>
+                                          <div className="flex flex-col">
+                                            <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1">
+                                              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                                              {new Date(item.addedAt).toLocaleDateString(language === 'Français' ? 'fr-FR' : language === 'العربية' ? 'ar-MA' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                            </span>
+                                            {item.history && item.history.length > 0 && (
+                                              <span className="text-[10px] font-bold text-rose-500 flex items-center gap-1 mt-0.5">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-rose-500"></div>
+                                                {new Date(itemConsumedTime).toLocaleDateString(language === 'Français' ? 'fr-FR' : language === 'العربية' ? 'ar-MA' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+                                        <button
+                                          onClick={(e) => { e.stopPropagation(); setSelectedItemInfo(item); }}
+                                          className="text-indigo-400 hover:text-indigo-600 transition-colors p-2 rounded-full hover:bg-indigo-50 active:scale-95"
+                                        >
+                                          <Info size={16} strokeWidth={3} />
+                                        </button>
+                                      </div>
+                                      
+                                      {/* Smart stats for bulk */}
+                                      {isBulk && initialVol > 0 && (
+                                        <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-50">
+                                          <div className="flex-1 bg-violet-50/50 rounded-xl p-2.5 flex flex-col items-center justify-center text-center">
+                                            <span className="text-[9px] font-bold text-violet-400 uppercase tracking-widest mb-0.5">
+                                              {language === 'Français' ? 'Total' : 'Total'}
+                                            </span>
+                                            <span className="text-sm font-black text-violet-600">
+                                              {initialVol}{unitName}
+                                            </span>
+                                          </div>
+                                          <div className="flex-1 bg-sky-50/50 rounded-xl p-2.5 flex flex-col items-center justify-center text-center">
+                                            <span className="text-[9px] font-bold text-sky-400 uppercase tracking-widest mb-0.5">
+                                              {language === 'Français' ? 'Moy/Fois' : 'Avg/Use'}
+                                            </span>
+                                            <span className="text-sm font-black text-sky-600">
+                                              {amountPerUse}{unitName}
+                                            </span>
+                                          </div>
+                                          <div className="flex-1 bg-emerald-50/50 rounded-xl p-2.5 flex flex-col items-center justify-center text-center">
+                                            <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest mb-0.5">
+                                              {language === 'Français' ? 'Moy/Jour' : 'Avg/Day'}
+                                            </span>
+                                            <span className="text-sm font-black text-emerald-600">
+                                              {amountPerDay}{unitName}
+                                            </span>
+                                          </div>
+                                        </div>
                                       )}
                                     </div>
-                                  </div>
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); setSelectedItemInfo(item); }}
-                                    className="px-3 py-1.5 rounded-xl bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-wider hover:bg-slate-100 transition-colors"
-                                  >
-                                    {t.details}
-                                  </button>
-                                </div>
-                              ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    </div>
-                  );
-                })}
+                                    );
+                                  })}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
             </div>
           )}

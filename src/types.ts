@@ -66,6 +66,8 @@ export interface InventoryItem {
   isImportant?: boolean;
   unitType?: 'unit' | 'grams' | 'liters';
   usageCount?: number;
+  consumedAt?: number;
+  initialVolume?: number;
 }
 
 export interface ShoppingListItem {
