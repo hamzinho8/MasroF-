@@ -868,39 +868,39 @@ export default function Home({
 
       {/* Quick Actions - Modern Redesign (Moved up) */}
       {isVisible("quickActions") && (
-      <div className="grid grid-cols-3 gap-3 mb-4" style={{ order: getOrder("quickActions") }}>
+      <div className="grid grid-cols-3 gap-3 mb-6" style={{ order: getOrder("quickActions") }}>
         <button
           onClick={() => onAddClick("EXPENSE")}
-          className="group relative flex flex-col items-center justify-center gap-2 h-24 bg-white border-2 border-slate-50 rounded-[24px] transition-all hover:border-rose-100 hover:bg-rose-50/30 active:scale-95 shadow-sm"
+          className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-rose-50 border border-rose-100 rounded-[28px] transition-all hover:bg-rose-100 hover:shadow-md hover:-translate-y-0.5 active:scale-95 shadow-sm overflow-hidden"
         >
-          <div className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
-            <ShoppingBag size={20} strokeWidth={2.5} />
+          <div className="w-12 h-12 rounded-2xl bg-white/60 text-rose-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-rose-500 group-hover:text-white transition-all duration-300 shadow-sm">
+            <ShoppingBag size={24} strokeWidth={2.5} />
           </div>
-          <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-rose-600 transition-colors text-center leading-tight">
+          <span className="text-[10px] font-black uppercase tracking-widest text-rose-700 transition-colors text-center leading-tight px-1">
             {t.ajouterAchat}
           </span>
         </button>
         <button
           onClick={() => setIsVoiceModalOpen(true)}
-          className="group relative flex flex-col items-center justify-center gap-2 h-24 bg-gradient-to-b from-indigo-50 to-violet-50 border-2 border-indigo-100/50 rounded-[24px] transition-all hover:border-indigo-200 active:scale-95 shadow-sm overflow-hidden"
+          className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-gradient-to-br from-indigo-500 to-violet-600 border border-indigo-400/30 rounded-[28px] transition-all hover:shadow-lg hover:shadow-indigo-500/30 hover:-translate-y-0.5 active:scale-95 shadow-md overflow-hidden"
         >
-          <div className="absolute inset-0 bg-white/40" />
-          <div className="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center group-hover:scale-110 group-hover:bg-indigo-600 transition-all shadow-md shadow-indigo-500/20 relative z-10">
-            <Mic size={20} strokeWidth={2.5} />
+          <div className="absolute top-0 right-0 w-24 h-24 bg-white/20 rounded-full blur-2xl transform translate-x-1/2 -translate-y-1/2" />
+          <div className="w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center group-hover:scale-110 transition-transform backdrop-blur-md relative z-10 shadow-inner">
+            <Mic size={24} strokeWidth={2.5} />
           </div>
-          <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600/70 group-hover:text-indigo-600 transition-colors text-center leading-tight relative z-10">
-            {language === 'Français' ? 'Saisie Vocale' : language === 'العربية' ? 'إدخال صوتي' : 'Voice Input'}
+          <span className="text-[10px] font-black uppercase tracking-widest text-indigo-50 group-hover:text-white transition-colors text-center leading-tight relative z-10 drop-shadow-sm px-1">
+            {language === 'Français' ? 'Vocale' : language === 'العربية' ? 'صوتي' : 'Voice'}
           </span>
         </button>
         <button
           onClick={onOpenShoppingList}
-          className="group relative flex flex-col items-center justify-center gap-2 h-24 bg-white border-2 border-slate-50 rounded-[24px] transition-all hover:border-violet-100 hover:bg-violet-50/30 active:scale-95 shadow-sm"
+          className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-emerald-50 border border-emerald-100 rounded-[28px] transition-all hover:bg-emerald-100 hover:shadow-md hover:-translate-y-0.5 active:scale-95 shadow-sm overflow-hidden"
         >
-          <div className="w-10 h-10 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
-            <ListTodo size={20} strokeWidth={2.5} />
+          <div className="w-12 h-12 rounded-2xl bg-white/60 text-emerald-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300 shadow-sm">
+            <ListTodo size={24} strokeWidth={2.5} />
           </div>
-          <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-violet-600 transition-colors text-center leading-tight">
-            + Liste
+          <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 transition-colors text-center leading-tight px-1">
+            {language === 'Français' ? '+ Liste' : language === 'العربية' ? '+ قائمة' : '+ List'}
           </span>
         </button>
       </div>
