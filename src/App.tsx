@@ -30,6 +30,7 @@ import LockScreen from "./components/LockScreen";
 import Inventory from "./components/Inventory"; // newly added
 import MasrofLogo from "./components/Logo";
 import AddTransactionModal from "./components/AddTransactionModal";
+import ShoppingListModal from "./components/ShoppingListModal";
 import {
   Transaction,
   Reminder,
@@ -120,6 +121,7 @@ export default function App() {
   }, [setActiveTab]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isShoppingListModalOpen, setIsShoppingListModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"INCOME" | "EXPENSE">("EXPENSE");
   const [widgetMode, setWidgetMode] = useLocalStorage<"balance" | "spending">(
     "widgetMode",
@@ -1381,6 +1383,7 @@ export default function App() {
                 )
               )
             }
+            onOpenShoppingList={() => setIsShoppingListModalOpen(true)}
           />
         );
       case "stats":
@@ -1446,10 +1449,6 @@ export default function App() {
             items={inventoryItems}
             onItemsChange={setInventoryItems}
             language={language}
-            shoppingList={shoppingList}
-            onShoppingListChange={setShoppingList}
-            onAddShoppingItem={openShoppingListAddModal}
-            onCheckoutShoppingItem={openShoppingListCheckoutModal}
             currency={currency}
             predefinedItems={predefinedItems}
           />
@@ -1533,6 +1532,7 @@ export default function App() {
                 )
               )
             }
+            onOpenShoppingList={() => setIsShoppingListModalOpen(true)}
           />
         );
     }
@@ -1673,6 +1673,17 @@ export default function App() {
           {renderContent()}
         </div>
       </main>
+
+      <ShoppingListModal
+        isOpen={isShoppingListModalOpen}
+        onClose={() => setIsShoppingListModalOpen(false)}
+        shoppingList={shoppingList}
+        onShoppingListChange={setShoppingList}
+        onAddShoppingItem={openShoppingListAddModal}
+        onCheckoutShoppingItem={openShoppingListCheckoutModal}
+        language={language}
+        currency={currency}
+      />
 
       <AddTransactionModal
         isOpen={isModalOpen}

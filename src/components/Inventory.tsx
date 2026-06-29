@@ -8,16 +8,11 @@ interface InventoryProps {
   items: InventoryItem[];
   onItemsChange: (items: InventoryItem[]) => void;
   language: 'Français' | 'العربية' | 'English';
-  shoppingList: ShoppingListItem[];
-  onShoppingListChange: (list: ShoppingListItem[]) => void;
-  onAddShoppingItem: () => void;
-  onCheckoutShoppingItem: (item: ShoppingListItem) => void;
   currency: string;
   predefinedItems: PredefinedItem[];
 }
 
-export default function Inventory({ items, onItemsChange, language, shoppingList, onShoppingListChange, onAddShoppingItem, onCheckoutShoppingItem, currency, predefinedItems }: InventoryProps) {
-  const [activeTab, setActiveTab] = useState<'inventory' | 'shoppingList'>('inventory');
+export default function Inventory({ items, onItemsChange, language, currency, predefinedItems }: InventoryProps) {
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [selectedItemInfo, setSelectedItemInfo] = useState<InventoryItem | null>(null);
   
@@ -289,61 +284,28 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
       <div className="flex justify-between items-center mb-6 px-1">
         <h2 className="text-2xl font-black text-slate-900 tracking-tight">{t.title}</h2>
         <button
-          onClick={() => activeTab === 'inventory' ? setIsAddItemModalOpen(true) : onAddShoppingItem()}
+          onClick={() => setIsAddItemModalOpen(true)}
           className="flex items-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-5 py-2.5 rounded-2xl text-sm font-bold shadow-md shadow-indigo-500/20 hover:from-violet-500 hover:to-indigo-500 active:scale-95 transition-all"
         >
           <Plus size={18} strokeWidth={3} />
-          {activeTab === 'inventory' ? t.add : t.addShopping}
-        </button>
-      </div>
-
-      <div className="flex bg-slate-100 p-1.5 rounded-2xl mb-6">
-        <button
-          onClick={() => setActiveTab('inventory')}
-          className={`flex-1 py-2.5 text-sm font-black uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 ${
-            activeTab === 'inventory' 
-              ? 'bg-white text-violet-700 shadow-sm' 
-              : 'text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          <Package size={16} />
-          {t.inventory}
-        </button>
-        <button
-          onClick={() => setActiveTab('shoppingList')}
-          className={`flex-1 py-2.5 text-sm font-black uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 ${
-            activeTab === 'shoppingList' 
-              ? 'bg-white text-indigo-700 shadow-sm' 
-              : 'text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          <ListTodo size={16} />
-          {t.shoppingList}
+          {t.add}
         </button>
       </div>
 
       <div className="relative">
-      <AnimatePresence mode="wait">
-        {activeTab === 'inventory' ? (
-          <motion.div 
-            key="inventory-content"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 10 }}
-            className="flex flex-col gap-6"
-          >
-            {items.length === 0 ? (
-              <div className="text-center py-16 px-6 rounded-[40px] border-2 border-dashed border-slate-200 bg-slate-50/50">
-                <div className="w-20 h-20 rounded-full bg-slate-200/50 flex items-center justify-center mx-auto mb-5 text-slate-400">
-                  <PackageOpen size={40} />
-                </div>
-                <p className="text-slate-500 font-bold text-lg">{t.empty}</p>
+        <div className="flex flex-col gap-6">
+          {items.length === 0 ? (
+            <div className="text-center py-16 px-6 rounded-[40px] border-2 border-dashed border-slate-200 bg-slate-50/50">
+              <div className="w-20 h-20 rounded-full bg-slate-200/50 flex items-center justify-center mx-auto mb-5 text-slate-400">
+                <PackageOpen size={40} />
               </div>
-            ) : (
-              <div className="flex flex-col gap-6">
-                {activeItems.length > 0 && (
-            <div className="flex flex-col gap-3">
-              {activeItems.map((item, index) => {
+              <p className="text-slate-500 font-bold text-lg">{t.empty}</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-6">
+              {activeItems.length > 0 && (
+                <div className="flex flex-col gap-3">
+                  {activeItems.map((item, index) => {
                 const predefinedItem = predefinedItems.find(p => p.name.toLowerCase() === item.name.toLowerCase());
                 const categoryId = predefinedItem?.category || 'Autres';
                 const cat = CATEGORIES.find(c => c.id === categoryId) || CATEGORIES.find(c => c.id === 'Autres')!;
@@ -564,81 +526,12 @@ export default function Inventory({ items, onItemsChange, language, shoppingList
               </div>
             </div>
           )}
-          </div>
-        )}
-        </motion.div>
-        ) : (
-          <motion.div 
-            key="shoppingList-content"
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            className="flex flex-col gap-6"
-          >
-            {shoppingList.length === 0 ? (
-              <div className="text-center py-16 px-6 rounded-[40px] border-2 border-dashed border-slate-200 bg-slate-50/50">
-                <div className="w-20 h-20 rounded-full bg-slate-200/50 flex items-center justify-center mx-auto mb-5 text-slate-400">
-                  <ListTodo size={40} />
-                </div>
-                <p className="text-slate-500 font-bold text-lg">{t.emptyShoppingList}</p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {shoppingList.map((item, idx) => {
-                  const IconComp = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : PackageOpen;
-                  const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES.find(c => c.id === 'Autres')!;
-                  
-                  return (
-                    <motion.div
-                      key={`${item.id}-${idx}`}
-                      onClick={() => onCheckoutShoppingItem(item)}
-                      className={`group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm hover:shadow-xl cursor-pointer overflow-hidden ${cat.lightBg} border-slate-100`}
-                    >
-                      <div className={`shrink-0 w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${cat.bgColor} ${cat.color} relative z-10 opacity-90`}>
-                        {item.iconSvg ? (
-                             <div dangerouslySetInnerHTML={{ __html: item.iconSvg }} className="w-6 h-6 text-current" />
-                        ) : (
-                             <IconComp size={24} />
-                        )}
-                      </div>
+        </div>
+      )}
+    </div>
+  </div>
 
-                      <div className="flex-1 min-w-0 flex flex-col justify-center py-1 relative z-10">
-                        <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1 italic select-none">
-                          {item.name}
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{item.category}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col items-end shrink-0 pl-2 relative z-10">
-                        {item.expectedPrice ? (
-                          <span className="text-sm font-black text-slate-700 leading-none">{item.expectedPrice} {currency}</span>
-                        ) : null}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onShoppingListChange(shoppingList.filter((sItem) => sItem.id !== item.id));
-                          }}
-                          className="mt-2 w-8 h-8 rounded-full bg-slate-200 hover:bg-rose-100 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-colors"
-                        >
-                          <X size={14} strokeWidth={3} />
-                        </button>
-                      </div>
-                      <div className="absolute -right-4 -bottom-4 opacity-[0.02] transform group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500 pointer-events-none text-slate-900 z-0">
-                        <ShoppingCart size={100} />
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-      </div>
-
-      {/* Add Item Modal */}
+  {/* Add Item Modal */}
       <AnimatePresence>
         {isAddItemModalOpen && (
           <AddItemModal 

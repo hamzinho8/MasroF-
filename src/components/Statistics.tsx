@@ -391,6 +391,31 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
     return days;
   }, [transactions, timeRange]);
 
+  const monthlyComparisonData = useMemo(() => {
+    const data: any[] = [];
+    const now = new Date();
+    
+    for (let i = 5; i >= 0; i--) {
+      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59, 999);
+      
+      const monthTx = transactions.filter(t => {
+        const isCredit = t.category && ["on me doit", "je dois", "مستحقات لي", "ديون علي", "owed to me", "i owe", "loans", "debts", "crédit +", "crédit --"].includes(t.category.toLowerCase());
+        const isExpense = (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit && t.category !== "Virement";
+        return isExpense && t.timestamp >= monthStart.getTime() && t.timestamp <= monthEnd.getTime();
+      });
+
+      const total = monthTx.reduce((sum, t) => sum + t.amount, 0);
+      
+      data.push({
+        name: monthStart.toLocaleDateString(language === 'Français' ? 'fr-FR' : language === 'العربية' ? 'ar-SA' : 'en-US', { month: 'short' }),
+        amount: total,
+      });
+    }
+    
+    return data;
+  }, [transactions, language]);
+
   const periods = [
     {
       id: "day",
@@ -601,6 +626,44 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
                 </div>
               )
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Monthly Comparison Chart */}
+      {monthlyComparisonData.length > 0 && period === "month" && (
+        <div className="mb-6">
+          <div className="mb-4">
+            <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#1B7C86] ml-1">
+              {language === "Français" ? "Comparaison Mensuelle" : language === 'العربية' ? 'مقارنة شهرية' : "Monthly Comparison"}
+            </h2>
+          </div>
+          <div className={`rounded-[32px] overflow-hidden border p-4 h-[250px] w-full ${isDarkMode ? "bg-slate-800/40 border-slate-700" : "bg-white border-slate-100 shadow-sm"}`}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={monthlyComparisonData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? "#334155" : "#e2e8f0"} />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDarkMode ? "#94a3b8" : "#64748b" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: isDarkMode ? "#94a3b8" : "#64748b" }} axisLine={false} tickLine={false} tickFormatter={(val) => `${val >= 1000 ? (val/1000).toFixed(1) + 'k' : val}`} />
+                <Tooltip
+                  cursor={{ fill: isDarkMode ? '#334155' : '#f1f5f9' }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className={`p-3 rounded-2xl shadow-lg border ${isDarkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-white border-slate-100 text-slate-800"}`}>
+                          <p className="font-bold text-xs mb-1">{data.name}</p>
+                          <p className="font-black text-sm text-rose-500">
+                            {data.amount.toLocaleString()} {currency}
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar dataKey="amount" fill="#1B7C86" radius={[4, 4, 4, 4]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       )}

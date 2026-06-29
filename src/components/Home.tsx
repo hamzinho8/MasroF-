@@ -39,6 +39,8 @@ import {
   Camera,
   Wifi,
   WifiOff,
+  Mic,
+  ListTodo,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Transaction, CreditEntry, Reminder, ShoppingListItem } from "../types";
@@ -53,6 +55,7 @@ import CalendarView from "./CalendarView";
 import ReceiptScannerModal from "./ReceiptScannerModal";
 import InshallahEstimationCard from "./InshallahEstimationCard";
 import AddBankBalanceModal from "./AddBankBalanceModal";
+import VoiceTransactionModal from "./VoiceTransactionModal";
 
 interface HomeProps {
   balance: number;
@@ -98,6 +101,7 @@ interface HomeProps {
     id: string,
     updates: Partial<import("../types").PredefinedItem>
   ) => void;
+  onOpenShoppingList: () => void;
 }
 
 export default function Home({
@@ -124,8 +128,10 @@ export default function Home({
   predefinedItems,
   onAddPredefinedItem,
   onUpdatePredefinedItem,
+  onOpenShoppingList,
 }: HomeProps) {
   const [timeframe, setTimeframe] = useState<"day" | "week" | "month">("week");
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
   const [showCalculator, setShowCalculator] = useState(false);
@@ -852,31 +858,49 @@ export default function Home({
             currency={currency}
           />
         )}
+        <VoiceTransactionModal
+          isOpen={isVoiceModalOpen}
+          onClose={() => setIsVoiceModalOpen(false)}
+          onAddTransaction={onAddTransaction || (() => {})}
+          language={language}
+        />
       </AnimatePresence>
 
       {/* Quick Actions - Modern Redesign (Moved up) */}
       {isVisible("quickActions") && (
-      <div className="grid grid-cols-2 gap-4 mb-4" style={{ order: getOrder("quickActions") }}>
+      <div className="grid grid-cols-3 gap-3 mb-4" style={{ order: getOrder("quickActions") }}>
         <button
           onClick={() => onAddClick("EXPENSE")}
-          className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-rose-100 hover:bg-rose-50/30 active:scale-95 shadow-sm"
+          className="group relative flex flex-col items-center justify-center gap-2 h-24 bg-white border-2 border-slate-50 rounded-[24px] transition-all hover:border-rose-100 hover:bg-rose-50/30 active:scale-95 shadow-sm"
         >
-          <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
-            <ShoppingBag size={24} strokeWidth={2.5} />
+          <div className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+            <ShoppingBag size={20} strokeWidth={2.5} />
           </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-rose-600 transition-colors">
+          <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-rose-600 transition-colors text-center leading-tight">
             {t.ajouterAchat}
           </span>
         </button>
         <button
-          onClick={() => onAddClick("INCOME")}
-          className="group relative flex flex-col items-center justify-center gap-3 h-28 bg-white border-2 border-slate-50 rounded-[28px] transition-all hover:border-teal-100 hover:bg-teal-50/30 active:scale-95 shadow-sm"
+          onClick={() => setIsVoiceModalOpen(true)}
+          className="group relative flex flex-col items-center justify-center gap-2 h-24 bg-gradient-to-b from-indigo-50 to-violet-50 border-2 border-indigo-100/50 rounded-[24px] transition-all hover:border-indigo-200 active:scale-95 shadow-sm overflow-hidden"
         >
-          <div className="w-12 h-12 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
-            <ArrowDownToLine size={24} strokeWidth={2.5} />
+          <div className="absolute inset-0 bg-white/40" />
+          <div className="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center group-hover:scale-110 group-hover:bg-indigo-600 transition-all shadow-md shadow-indigo-500/20 relative z-10">
+            <Mic size={20} strokeWidth={2.5} />
           </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-teal-600 transition-colors">
-            {t.ajouterRetrait}
+          <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600/70 group-hover:text-indigo-600 transition-colors text-center leading-tight relative z-10">
+            {language === 'Français' ? 'Saisie Vocale' : language === 'العربية' ? 'إدخال صوتي' : 'Voice Input'}
+          </span>
+        </button>
+        <button
+          onClick={onOpenShoppingList}
+          className="group relative flex flex-col items-center justify-center gap-2 h-24 bg-white border-2 border-slate-50 rounded-[24px] transition-all hover:border-violet-100 hover:bg-violet-50/30 active:scale-95 shadow-sm"
+        >
+          <div className="w-10 h-10 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+            <ListTodo size={20} strokeWidth={2.5} />
+          </div>
+          <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-violet-600 transition-colors text-center leading-tight">
+            + Liste
           </span>
         </button>
       </div>
