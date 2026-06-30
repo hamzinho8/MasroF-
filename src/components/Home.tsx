@@ -307,17 +307,18 @@ export default function Home({
   const isVisible = (id: string) => homeSectionsOrder.find((s) => s.id === id)?.visible ?? true;
 
   React.useEffect(() => {
-    // Auto-fix: if latestPurchases got stuck at index 0, move it back after quickActions
+    // Auto-fix: if latestPurchases is above quickActions, move it back below
     const latestPurchasesIdx = homeSectionsOrder.findIndex(s => s.id === "latestPurchases");
-    if (latestPurchasesIdx === 0) {
+    const quickActionsIdx = homeSectionsOrder.findIndex(s => s.id === "quickActions");
+    if (latestPurchasesIdx !== -1 && quickActionsIdx !== -1 && latestPurchasesIdx < quickActionsIdx) {
       setHomeSectionsOrder(prev => {
         const arr = [...prev];
-        const item = arr.splice(0, 1)[0];
-        const quickActionsIdx = arr.findIndex(s => s.id === "quickActions");
-        if (quickActionsIdx !== -1) {
-          arr.splice(quickActionsIdx + 1, 0, item);
+        const item = arr.splice(latestPurchasesIdx, 1)[0];
+        const newQuickActionsIdx = arr.findIndex(s => s.id === "quickActions");
+        if (newQuickActionsIdx !== -1) {
+          arr.splice(newQuickActionsIdx + 1, 0, item);
         } else {
-          arr.splice(2, 0, item);
+          arr.push(item);
         }
         return arr;
       });
@@ -991,13 +992,13 @@ export default function Home({
                   Aucun achat récent
                 </div>
               ) : (
-                <div className="flex flex-col gap-0.5 w-full">
+                <div className="flex flex-col w-full">
                   {latestPurchasesList.map((item, index) => {
                     const catColorClass = CATEGORY_MAP.find(c => c.label === item.category)?.text || 'text-slate-700';
                     return (
                       <div 
                         key={item.id}
-                        className="flex justify-between items-center py-1.5 px-1"
+                        className="flex justify-between items-center py-1 px-1"
                       >
                         <span className={`text-base font-bold ${catColorClass} tracking-tight`}>
                           {item.label}

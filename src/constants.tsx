@@ -98,6 +98,7 @@ const RAW_PREDEFINED_ITEMS: Omit<PredefinedItem, 'colorHex' | 'categoryColorHex'
   
   { id: '20', name: 'Abonnement', price: 49, category: 'Loisirs', iconName: 'Tv', frequent: false },
   { id: '21', name: 'Recherche', price: 10, category: 'Loisirs', iconName: 'Search', frequent: false },
+  { id: '22', name: 'Khmira', price: 8, category: 'Nourriture', iconName: 'Wheat', frequent: false },
 ];
 
 import { IconMatcher } from './iconmatcher/IconMatcher';
