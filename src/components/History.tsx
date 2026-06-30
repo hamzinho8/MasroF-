@@ -773,14 +773,17 @@ export default function History({ transactions, predefinedItems, language, curre
                 }}
               >
                 {/* Icon Container */}
-                <div className={`w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${
-                  (!isExpense && !isCreditPlus && !isCreditMinus) 
-                    ? 'bg-emerald-500 text-white shadow-emerald-500/20' 
-                    : `${categoryMatch.bg} ${categoryMatch.text}`
-                }`}>
+                <div 
+                  className={`w-14 h-14 rounded-[22px] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm ${
+                    (!isExpense && !isCreditPlus && !isCreditMinus) 
+                      ? 'bg-emerald-500 text-white shadow-emerald-500/20' 
+                      : (!info.colorHex ? `${categoryMatch.bg} ${categoryMatch.text}` : '')
+                  }`}
+                  style={isExpense && info.colorHex ? { backgroundColor: `${info.colorHex}20`, color: info.colorHex } : undefined}
+                >
                   {(isExpense || isCreditPlus || isCreditMinus) ? (
                     info.iconSvg ? (
-                      <div dangerouslySetInnerHTML={{ __html: info.iconSvg }} className="w-6 h-6 text-current" />
+                      <div dangerouslySetInnerHTML={{ __html: info.iconSvg }} className="w-6 h-6 flex items-center justify-center text-current svg-container" />
                     ) : (CustomIconComp ? <CustomIconComp size={24} /> : categoryMatch.icon)
                   ) : <ArrowDownToLine size={24} />}
                 </div>
@@ -811,8 +814,11 @@ export default function History({ transactions, predefinedItems, language, curre
                       <span className="text-[11px] ml-1 font-bold uppercase text-slate-400">{currency}</span>
                     </p>
                     <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg bg-white/50 border border-slate-100/50">
-                       <Tag size={10} className={isExpense ? categoryMatch.text : 'text-emerald-600'} />
-                       <span className={`text-[9px] font-black uppercase tracking-wider ${isExpense ? categoryMatch.text : 'text-emerald-600'}`}>
+                       <Tag size={10} className={!isExpense ? 'text-emerald-600' : (!info.colorHex ? categoryMatch.text : '')} style={isExpense && info.colorHex ? { color: info.colorHex } : undefined} />
+                       <span 
+                         className={`text-[9px] font-black uppercase tracking-wider ${!isExpense ? 'text-emerald-600' : (!info.colorHex ? categoryMatch.text : '')}`}
+                         style={isExpense && info.colorHex ? { color: info.colorHex } : undefined}
+                       >
                          {(isCreditPlus || isCreditMinus) ? tx.category : (tx.category ? tx.category : (isExpense ? t.autres : t.retraits))}
                        </span>
                     </div>

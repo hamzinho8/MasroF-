@@ -33,6 +33,7 @@ import {
   CATEGORIES,
   INITIAL_PREDEFINED_ITEMS,
   getArticleInfo,
+  SUBCATEGORY_COLORS,
 } from "../constants";
 
 interface AddTransactionModalProps {
@@ -217,7 +218,7 @@ export default function AddTransactionModal({
           },
         },
         {
-          text: `Listen to this voice recording (probably Moroccan Arabic/French) describing bought articles. Extract:\n1. 'items': an array of UNIQUE items mentioned. Group identical items and sum their prices. For each item, give 'amount' (number), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string), and 'isStorable' (boolean).\n2. 'totalReceiptAmount': sum of the items (number).\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "items": [{"title": "Cafe", "amount": 10, "category": "Nourriture", "isStorable": true}]}. Return ONLY valid JSON.${predefinedText}`,
+          text: `Listen to this voice recording (probably Moroccan Arabic/French) describing bought articles. Extract:\n1. 'items': an array of UNIQUE items mentioned. Group identical items and sum their prices. For each item, give 'amount' (number), 'category' (strictly from ['Gourmandises', 'Protéines', 'Essentiel', 'Plantes', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string), and 'isStorable' (boolean).\n2. 'totalReceiptAmount': sum of the items (number).\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "items": [{"title": "Cafe", "amount": 10, "category": "Gourmandises", "isStorable": true}]}. Return ONLY valid JSON.${predefinedText}`,
         },
       ];
 
@@ -445,7 +446,7 @@ export default function AddTransactionModal({
               .map((p) => p.name)
               .join(
                 ", "
-              )}. If they match, use their EXACT price from the predefined items list as 'amount'. Do NOT multiply by quantity. For each item, give 'amount' (number), 'category' (strictly from ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string, use predefined names where possible), and 'isStorable' (boolean, false by default).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "paymentMethod": "CARD", "items": [{"title": "Danone", "amount": 18, "category": "Nourriture", "isStorable": false}]}. Return ONLY valid JSON.`,
+              )}. If they match, use their EXACT price from the predefined items list as 'amount'. Do NOT multiply by quantity. For each item, give 'amount' (number), 'category' (strictly from ['Gourmandises', 'Protéines', 'Essentiel', 'Plantes', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres']), 'title' (string, use predefined names where possible), and 'isStorable' (boolean, false by default).\n2. 'totalReceiptAmount': sum of the receipt (number).\n3. 'paymentMethod': strictly 'CARD', 'CASH', or 'UNKNOWN' if undetermined.\nRespond purely in JSON format like: {"totalReceiptAmount": 100.50, "paymentMethod": "CARD", "items": [{"title": "Danone", "amount": 18, "category": "Gourmandises", "isStorable": false}]}. Return ONLY valid JSON.`,
           },
         ];
 
@@ -599,6 +600,15 @@ export default function AddTransactionModal({
     }
     return predefinedItems.filter((item) => item.category === selectedCategory);
   }, [showFrequent, selectedCategory, predefinedItems]);
+
+  const groupedItems = useMemo(() => {
+    if (showFrequent) {
+      return { 'Fréquents': filteredItems };
+    }
+    const groups: Record<string, typeof filteredItems> = {};
+    groups['Tous'] = filteredItems;
+    return groups;
+  }, [filteredItems, showFrequent]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1085,61 +1095,79 @@ export default function AddTransactionModal({
                               </button>
                             )}
                           </div>
-                          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 w-full">
-                            <AnimatePresence mode="popLayout">
-                              {filteredItems.map((item, index) => {
-                                const info = getArticleInfo(
-                                  item.name,
-                                  item.category,
-                                  predefinedItems
-                                );
-                                const IconComponent = (ICON_MAP[
-                                  info.iconName
-                                ] || ICON_MAP["Box"]) as React.ElementType;
-                                return (
-                                  <motion.button
-                                    key={`${item.id}-${index}`}
-                                    layout
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.8 }}
-                                    type="button"
-                                    onClick={() =>
-                                      handleItemSelect(
-                                        item.name,
-                                        item.price,
-                                        item.category
-                                      )
-                                    }
-                                    className={`flex items-center gap-2 pr-3 pl-1 py-1 rounded-full border border-slate-100 shadow-sm transition-all active:scale-95 bg-white hover:border-teal-500/30 ${
-                                      selectedMultiItems.some(
-                                        (m) => m.name === item.name
-                                      )
-                                        ? "ring-2 ring-teal-500/20 border-teal-500/50 bg-teal-50"
-                                        : ""
-                                    }`}
+                          <div className="flex flex-col gap-4 w-full">
+                            {Object.entries(groupedItems).map(([subCat, items]) => {
+                              const headingColor = SUBCATEGORY_COLORS[subCat]?.colorHex || "";
+                              return (
+                              <div key={subCat} className="w-full flex flex-col gap-2">
+                                {!showFrequent && Object.keys(groupedItems).length > 1 && (
+                                  <h4 
+                                    className={`text-[10px] font-black uppercase tracking-wider pl-1 ${!headingColor ? 'text-slate-500' : ''}`}
+                                    style={headingColor ? { color: headingColor } : undefined}
                                   >
-                                    <div
-                                      className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${info.bgColor} ${info.color}`}
-                                    >
-                                      {info.iconSvg ? (
-                                        <div dangerouslySetInnerHTML={{ __html: info.iconSvg }} className="w-3.5 h-3.5 flex items-center justify-center text-current svg-container" />
-                                      ) : (
-                                        <IconComponent size={14} />
-                                      )}
-                                    </div>
-                                    <div className="flex flex-col items-start justify-center overflow-hidden">
-                                      <span className="text-[10px] font-black text-slate-700 leading-tight truncate w-full flex-1 text-left">
-                                        {item.name}
-                                      </span>
-                                      <span className="text-[9px] font-bold text-slate-400 leading-none">
-                                        {item.price} {currency}
-                                      </span>
-                                    </div>
-                                  </motion.button>
-                                );
-                              })}
-                            </AnimatePresence>
+                                    {subCat}
+                                  </h4>
+                                )}
+                                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 w-full">
+                                  <AnimatePresence mode="popLayout">
+                                    {items.map((item, index) => {
+                                      const info = getArticleInfo(
+                                        item.name,
+                                        item.category,
+                                        predefinedItems
+                                      );
+                                      const IconComponent = (ICON_MAP[
+                                        info.iconName
+                                      ] || ICON_MAP["Box"]) as React.ElementType;
+                                      return (
+                                        <motion.button
+                                          key={`${item.id}-${index}`}
+                                          layout
+                                          initial={{ opacity: 0, scale: 0.8 }}
+                                          animate={{ opacity: 1, scale: 1 }}
+                                          exit={{ opacity: 0, scale: 0.8 }}
+                                          type="button"
+                                          onClick={() =>
+                                            handleItemSelect(
+                                              item.name,
+                                              item.price,
+                                              item.category
+                                            )
+                                          }
+                                          className={`flex items-center gap-2 pr-3 pl-1 py-1 rounded-full border border-slate-100 shadow-sm transition-all active:scale-95 bg-white hover:border-teal-500/30 ${
+                                            selectedMultiItems.some(
+                                              (m) => m.name === item.name
+                                            )
+                                              ? "ring-2 ring-teal-500/20 border-teal-500/50 bg-teal-50"
+                                              : ""
+                                          }`}
+                                        >
+                                          <div
+                                            className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-sm"
+                                            style={{ backgroundColor: info.colorHex ? `${info.colorHex}20` : undefined, color: info.colorHex }}
+                                          >
+                                            {info.iconSvg ? (
+                                              <div dangerouslySetInnerHTML={{ __html: info.iconSvg }} className="w-3.5 h-3.5 flex items-center justify-center text-current svg-container" />
+                                            ) : (
+                                              <IconComponent size={14} />
+                                            )}
+                                          </div>
+                                          <div className="flex flex-col items-start justify-center overflow-hidden">
+                                            <span className="text-[10px] font-black text-slate-700 leading-tight truncate w-full flex-1 text-left">
+                                              {item.name}
+                                            </span>
+                                            <span className="text-[9px] font-bold text-slate-400 leading-none">
+                                              {item.price} {currency}
+                                            </span>
+                                          </div>
+                                        </motion.button>
+                                      );
+                                    })}
+                                  </AnimatePresence>
+                                </div>
+                              </div>
+                              );
+                            })}
                             {filteredItems.length === 0 && (
                               <p className="text-[10px] text-slate-400 italic px-1 py-1">
                                 Mode manuel activé pour cette catégorie

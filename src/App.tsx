@@ -39,7 +39,7 @@ import {
   InventoryItem,
   ShoppingListItem,
 } from "./types";
-import { INITIAL_PREDEFINED_ITEMS, getArticleInfo } from "./constants";
+import { INITIAL_PREDEFINED_ITEMS, getArticleInfo, CATEGORIES } from "./constants";
 import { useSwipeable } from "react-swipeable";
 
 type Tab =
@@ -236,7 +236,7 @@ export default function App() {
         let migrated = false;
 
         // Items to remove completely
-        const itemsToRemove = ["Produits Sanitaires", "Aide Famille"];
+        const itemsToRemove = ["Produits Sanitaires", "Aide Famille", "Thé 1", "Thé 2", "Endomi"];
 
         let newItems = items.filter(
           (item: any) => !itemsToRemove.includes(item.name)
@@ -263,6 +263,14 @@ export default function App() {
             updatedItem.name = "Bampers";
             migrated = true;
           }
+          if (updatedItem.name?.toLowerCase() === "pisquet") {
+            updatedItem.name = "Bisquet";
+            migrated = true;
+          }
+          if (updatedItem.name?.toLowerCase() === "thé 1") {
+            updatedItem.name = "Thé";
+            migrated = true;
+          }
           return updatedItem;
         });
 
@@ -270,7 +278,7 @@ export default function App() {
         const frequentNames = [
           "Taxi",
           "Cafe",
-          "Pisquet",
+          "Bisquet",
           "Danone",
           "Sucette",
           "Farine",
@@ -292,7 +300,7 @@ export default function App() {
 
           // Merge any structural updates from constants
           const constItem = INITIAL_PREDEFINED_ITEMS.find(
-            (p) => p.name === updatedItem.name
+            (p) => p.name.toLowerCase() === updatedItem.name?.toLowerCase()
           );
           if (constItem) {
             if (
@@ -505,6 +513,24 @@ export default function App() {
     "transactions",
     []
   );
+
+  React.useEffect(() => {
+    let migrated = false;
+    const newTransactions = transactions.map(tx => {
+      if (tx.category === 'Nourriture') {
+        const predefined = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === tx.label.toLowerCase());
+        const newCategory = predefined ? predefined.category : 'Autres';
+        migrated = true;
+        return { ...tx, category: newCategory };
+      }
+      return tx;
+    });
+    
+    if (migrated) {
+      setTransactions(newTransactions);
+    }
+  }, [transactions, setTransactions]);
+
   const prevBalanceRef = React.useRef(balance);
 
   const alertedBankRef = React.useRef(false);
@@ -767,32 +793,8 @@ export default function App() {
             const category = prefItem?.category;
 
             if (category) {
-              switch (category) {
-                case "Nourriture":
-                  colorHex = "#0D9488";
-                  break;
-                case "Logement":
-                  colorHex = "#4F46E5";
-                  break;
-                case "Transport":
-                  colorHex = "#0284C7";
-                  break;
-                case "Sanitaire":
-                  colorHex = "#E11D48";
-                  break;
-                case "Shopping":
-                  colorHex = "#9333EA";
-                  break;
-                case "Loisirs":
-                  colorHex = "#D97706";
-                  break;
-                case "Devoir":
-                  colorHex = "#EA580C";
-                  break;
-                default:
-                  colorHex = "#475569";
-                  break;
-              }
+              const cat = CATEGORIES.find(c => c.id === category);
+              if (cat) colorHex = cat.colorHex;
             }
             alarms.push(
               `<b><font color="${colorHex}">🔋 ⬇ ${item.name} (${item.quantity})</font></b>`
@@ -872,32 +874,8 @@ export default function App() {
       (shoppingList || []).forEach((s) => {
         let colorHex = "#64748B"; // slate
 
-        switch (s.category) {
-          case "Nourriture":
-            colorHex = "#0D9488";
-            break;
-          case "Logement":
-            colorHex = "#4F46E5";
-            break;
-          case "Transport":
-            colorHex = "#0284C7";
-            break;
-          case "Sanitaire":
-            colorHex = "#E11D48";
-            break;
-          case "Shopping":
-            colorHex = "#9333EA";
-            break;
-          case "Loisirs":
-            colorHex = "#D97706";
-            break;
-          case "Devoir":
-            colorHex = "#EA580C";
-            break;
-          default:
-            colorHex = "#475569";
-            break;
-        }
+        const cat = CATEGORIES.find(c => c.id === s.category);
+        if (cat) colorHex = cat.colorHex;
 
         const iconStr = s.iconName ? UNICODE_ICONS[s.iconName] || "📦" : "📦";
         newsItems.push(
@@ -1683,6 +1661,7 @@ export default function App() {
         onCheckoutShoppingItem={openShoppingListCheckoutModal}
         language={language}
         currency={currency}
+        predefinedItems={predefinedItems}
       />
 
       <AddTransactionModal

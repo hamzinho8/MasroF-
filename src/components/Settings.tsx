@@ -101,7 +101,10 @@ interface SettingsProps {
 }
 
 const CATEGORIES = [
-  { id: "Nourriture", icon: <Utensils size={18} /> },
+  { id: "Gourmandises", icon: <Utensils size={18} /> },
+  { id: "Protéines", icon: <Utensils size={18} /> },
+  { id: "Essentiel", icon: <Utensils size={18} /> },
+  { id: "Plantes", icon: <Utensils size={18} /> },
   { id: "Logement", icon: <HomeLucide size={18} /> },
   { id: "Transport", icon: <Car size={18} /> },
   { id: "Santé", icon: <HeartPulse size={18} /> },
@@ -1934,7 +1937,7 @@ function ArticleManagerModal({
   }>({
     name: "",
     price: "",
-    category: "Nourriture",
+    category: "Gourmandises",
     frequent: false,
     iconName: "Box",
   });
@@ -1959,7 +1962,7 @@ function ArticleManagerModal({
     setNewItem({
       name: "",
       price: "",
-      category: "Nourriture",
+      category: "Gourmandises",
       frequent: false,
       iconName: "Box",
     });
@@ -2106,12 +2109,13 @@ function ArticleManagerModal({
                 className={`article-item-row bg-white border border-slate-100 rounded-[24px] p-4 flex items-center gap-4 transition-all hover:shadow-md group shadow-sm`}
               >
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${cat.bgColor} ${cat.color} group-active:scale-95 transition-transform shadow-sm`}
+                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 group-active:scale-95 transition-transform shadow-sm"
+                  style={{ backgroundColor: item.colorHex ? `${item.colorHex}20` : cat.bgColor, color: item.colorHex || cat.colorHex }}
                 >
                   {item.iconSvg ? (
                     <div
                       dangerouslySetInnerHTML={{ __html: item.iconSvg }}
-                      className="w-5 h-5 text-current"
+                      className="w-5 h-5 flex items-center justify-center text-current svg-container"
                     />
                   ) : (
                     <IconComp size={18} />

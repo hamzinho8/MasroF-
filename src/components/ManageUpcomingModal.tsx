@@ -43,7 +43,7 @@ export default function ManageUpcomingModal({
   const [editAmount, setEditAmount] = useState("");
   const [editDayOfMonth, setEditDayOfMonth] = useState<number>(1);
   const [editPaidByBank, setEditPaidByBank] = useState<boolean>(true);
-  const [editCategoryId, setEditCategoryId] = useState<string>("Nourriture");
+  const [editCategoryId, setEditCategoryId] = useState<string>("Logement");
   const [editIconName, setEditIconName] = useState<string>("");
   const [editColorHex, setEditColorHex] = useState<string>("");
   const [editFrequency, setEditFrequency] = useState<'monthly' | 'custom_days'>('monthly');
@@ -112,7 +112,7 @@ export default function ManageUpcomingModal({
       setEditAmount(tx.amount.toString());
       setEditDayOfMonth(tx.dayOfMonth || parseInt(tx.dateStr.replace(/\D/g, "")) || 1);
       setEditPaidByBank(tx.paidByBank !== false); // default to true
-      setEditCategoryId(tx.categoryId || "Nourriture");
+      setEditCategoryId(tx.categoryId || "Logement");
       setEditIconName(tx.iconName || "");
       setEditColorHex(tx.colorHex || "");
       setEditFrequency(tx.frequency || 'monthly');
@@ -123,7 +123,7 @@ export default function ManageUpcomingModal({
       setEditAmount("");
       setEditDayOfMonth(1);
       setEditPaidByBank(true);
-      setEditCategoryId("Nourriture");
+      setEditCategoryId("Logement");
       setEditIconName("");
       setEditColorHex("");
       setEditFrequency('monthly');

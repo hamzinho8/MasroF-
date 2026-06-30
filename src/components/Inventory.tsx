@@ -572,7 +572,7 @@ function AddItemModal({ onClose, onAdd, t, language, predefinedItems }: any) {
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('');
   const [inventoryUnit, setInventoryUnit] = useState<'unit' | 'grams' | 'liters'>('unit');
-  const [selectedCategory, setSelectedCategory] = useState<string>('Nourriture');
+  const [selectedCategory, setSelectedCategory] = useState<string>('Gourmandises');
   const [showFrequent, setShowFrequent] = useState(true);
 
   const handleSubmit = (e: React.FormEvent) => {

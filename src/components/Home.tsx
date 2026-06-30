@@ -478,6 +478,7 @@ export default function Home({
     bg: cat.bgColor,
     text: cat.color,
     glow: `bg-${cat.colorString}-400`,
+    colorHex: cat.colorHex,
   }));
 
   const getSummaryTitle = () => {
@@ -994,20 +995,22 @@ export default function Home({
               ) : (
                 <div className="flex flex-col w-full">
                   {latestPurchasesList.map((item, index) => {
-                    const catColorClass = CATEGORY_MAP.find(c => c.label === item.category)?.text || 'text-slate-700';
+                    const info = getArticleInfo(item.label, item.category, predefinedItems);
+                    const color = info.colorHex || CATEGORY_MAP.find(c => c.label === item.category)?.colorHex || '#334155';
                     return (
                       <div 
                         key={item.id}
                         className="flex justify-between items-center py-1 px-1"
+                        style={{ color }}
                       >
-                        <span className={`text-base font-bold ${catColorClass} tracking-tight`}>
+                        <span className="text-base font-bold tracking-tight">
                           {item.label}
                         </span>
                         <div className="flex items-baseline gap-2">
-                          <span className={`text-xl font-black ${catColorClass} tracking-tighter`}>
+                          <span className="text-xl font-black tracking-tighter">
                             {item.amount.toLocaleString("fr-FR", { minimumFractionDigits: 2 })}
                           </span>
-                          <span className={`text-[12px] font-bold ${catColorClass} uppercase`}>
+                          <span className="text-[12px] font-bold uppercase opacity-80">
                             {currency}
                           </span>
                         </div>
@@ -1204,27 +1207,31 @@ export default function Home({
                 <div key={`${item.id}-${index}`} className="relative w-full aspect-square">
                   {/* Layer 2 (Bottom layer shadow effect) */}
                   <div 
-                    className={`absolute inset-0 rounded-full border transition-all duration-300 ease-out pointer-events-none ${isSpecialItem ? `${info.bgColor || "bg-slate-50"} ${info.borderColor || "border-white"} brightness-90` : 'bg-white border-slate-100'} ${hasStackEffect ? 'opacity-100 translate-x-[6px] translate-y-[6px] shadow-sm' : 'opacity-0 translate-x-0 translate-y-0'}`} 
+                    className={`absolute inset-0 rounded-full border transition-all duration-300 ease-out pointer-events-none ${isSpecialItem ? `${!info.colorHex ? (info.bgColor || "bg-slate-50") : ''} ${!info.colorHex ? (info.borderColor || "border-white") : ''} brightness-90` : 'bg-white border-slate-100'} ${hasStackEffect ? 'opacity-100 translate-x-[6px] translate-y-[6px] shadow-sm' : 'opacity-0 translate-x-0 translate-y-0'}`} 
+                    style={isSpecialItem && info.colorHex ? { backgroundColor: `${info.colorHex}30`, borderColor: info.colorHex } : undefined}
                   />
                   {/* Layer 1 (Middle layer shadow effect) */}
                   <div 
-                    className={`absolute inset-0 rounded-full border transition-all duration-300 ease-out delay-75 pointer-events-none ${isSpecialItem ? `${info.bgColor || "bg-slate-50"} ${info.borderColor || "border-white"} brightness-95` : 'bg-white border-slate-100'} ${hasStackEffect ? 'opacity-100 translate-x-[3px] translate-y-[3px] shadow-sm' : 'opacity-0 translate-x-0 translate-y-0'}`} 
+                    className={`absolute inset-0 rounded-full border transition-all duration-300 ease-out delay-75 pointer-events-none ${isSpecialItem ? `${!info.colorHex ? (info.bgColor || "bg-slate-50") : ''} ${!info.colorHex ? (info.borderColor || "border-white") : ''} brightness-95` : 'bg-white border-slate-100'} ${hasStackEffect ? 'opacity-100 translate-x-[3px] translate-y-[3px] shadow-sm' : 'opacity-0 translate-x-0 translate-y-0'}`} 
+                    style={isSpecialItem && info.colorHex ? { backgroundColor: `${info.colorHex}20`, borderColor: info.colorHex } : undefined}
                   />
                   
                   {/* Actual Button */}
                   <button
                     onClick={() => handleFavoriteClick(item)}
                     className={`absolute inset-0 w-full h-full rounded-full p-2 flex flex-col items-center justify-center overflow-hidden transition-all duration-300 shadow-sm border border-white active:scale-95 group ${
-                      info.bgColor || "bg-slate-50"
+                      !info.colorHex ? (info.bgColor || "bg-slate-50") : ''
                     } hover:brightness-95 ${hasStackEffect ? '-translate-x-[2px] -translate-y-[2px]' : 'translate-x-0 translate-y-0 z-10'}`}
+                    style={info.colorHex ? { backgroundColor: `${info.colorHex}15` } : undefined}
                   >
                     <div
-                      className={`z-10 relative flex items-center justify-center ${textClass} mb-0.5`}
+                      className={`z-10 relative flex items-center justify-center ${!info.colorHex ? textClass : ''} mb-0.5`}
+                      style={info.colorHex ? { color: info.colorHex } : undefined}
                     >
                       {info.iconSvg || item.iconSvg ? (
                         <div
                           dangerouslySetInnerHTML={{ __html: (info.iconSvg || item.iconSvg) as string }}
-                          className="w-5 h-5 sm:w-6 sm:h-6 text-current svg-container"
+                          className="w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-current svg-container"
                         />
                       ) : (
                         <IconComponent
@@ -1235,7 +1242,8 @@ export default function Home({
                       )}
                     </div>
                     <span
-                      className={`z-10 text-[8px] sm:text-[9px] font-bold ${textClass} uppercase truncate w-full px-1 text-center mt-0.5`}
+                      className={`z-10 text-[8px] sm:text-[9px] font-bold ${!info.colorHex ? textClass : ''} uppercase truncate w-full px-1 text-center mt-0.5`}
+                      style={info.colorHex ? { color: info.colorHex } : undefined}
                     >
                       {item.name}
                     </span>
@@ -1280,12 +1288,14 @@ export default function Home({
                       key={`${item.id}-${index}`}
                       onClick={() => handleDecreaseInventory(item)}
                       className={`w-full h-[86px] rounded-[24px] flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-sm border border-white hover:border-slate-200 active:scale-95 group cursor-pointer ${
-                        bgClass.replace("100", "50")
+                        !info.colorHex ? bgClass.replace("100", "50") : ''
                       }`}
+                      style={info.colorHex ? { backgroundColor: `${info.colorHex}15` } : undefined}
                     >
                       {/* Plus/minus icon that appears on hover/active (optional visual cue) */}
                       <div
-                        className={`absolute right-1 top-1 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 shadow-sm ${textClass}`}
+                        className={`absolute right-1 top-1 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 shadow-sm ${!info.colorHex ? textClass : ''}`}
+                        style={info.colorHex ? { color: info.colorHex } : undefined}
                       >
                         <span className="text-xs font-black leading-none mb-0.5">
                           -
@@ -1306,7 +1316,8 @@ export default function Home({
                       )}
 
                       <div
-                        className={`z-10 relative flex items-center justify-center ${textClass} mb-1 mt-1`}
+                        className={`z-10 relative flex items-center justify-center ${!info.colorHex ? textClass : ''} mb-1 mt-1`}
+                        style={info.colorHex ? { color: info.colorHex } : undefined}
                       >
                         <span className="absolute -top-1.5 -left-1.5 text-[11px] font-black leading-none">
                           {item.unitType === 'grams' || item.unitType === 'liters' ? (item.usageCount || 0) : item.quantity}
@@ -1314,14 +1325,15 @@ export default function Home({
                         {item.iconSvg || info.iconSvg ? (
                           <div
                             dangerouslySetInnerHTML={{ __html: item.iconSvg || info.iconSvg || "" }}
-                            className="w-6 h-6 text-current"
+                            className="w-6 h-6 flex items-center justify-center text-current svg-container"
                           />
                         ) : (
                           <IconComponent size={26} strokeWidth={2.5} />
                         )}
                       </div>
                       <span
-                        className={`z-10 text-[9px] font-bold ${textClass} uppercase truncate w-full px-2 text-center mt-1`}
+                        className={`z-10 text-[9px] font-bold ${!info.colorHex ? textClass : ''} uppercase truncate w-full px-2 text-center mt-1`}
+                        style={info.colorHex ? { color: info.colorHex } : undefined}
                       >
                         {item.name}
                       </span>

@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ListTodo, PackageOpen, Plus } from 'lucide-react';
-import { ShoppingListItem } from '../types';
-import { ICON_MAP, CATEGORIES } from '../constants';
+import { ShoppingListItem, PredefinedItem } from '../types';
+import { ICON_MAP, CATEGORIES, getArticleInfo } from '../constants';
 
 interface ShoppingListModalProps {
   isOpen: boolean;
@@ -13,6 +13,7 @@ interface ShoppingListModalProps {
   onCheckoutShoppingItem: (item: ShoppingListItem) => void;
   language: 'Français' | 'العربية' | 'English';
   currency: string;
+  predefinedItems: PredefinedItem[];
 }
 
 export default function ShoppingListModal({
@@ -24,6 +25,7 @@ export default function ShoppingListModal({
   onCheckoutShoppingItem,
   language,
   currency,
+  predefinedItems,
 }: ShoppingListModalProps) {
   if (!isOpen) return null;
 
@@ -90,7 +92,8 @@ export default function ShoppingListModal({
             ) : (
               <div className="flex flex-col gap-3">
                 {shoppingList.map((item, idx) => {
-                  const IconComp = (item.iconName && ICON_MAP[item.iconName]) ? ICON_MAP[item.iconName] as React.ElementType : PackageOpen;
+                  const info = getArticleInfo(item.name, item.category, predefinedItems);
+                  const IconComp = (info.iconName && ICON_MAP[info.iconName]) ? ICON_MAP[info.iconName] as React.ElementType : PackageOpen;
                   const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES.find(c => c.id === 'Autres')!;
                   
                   return (
@@ -102,9 +105,12 @@ export default function ShoppingListModal({
                       onClick={() => onCheckoutShoppingItem(item)}
                       className="group flex items-center p-4 rounded-[28px] border-2 border-transparent bg-white shadow-sm hover:border-indigo-100 hover:shadow-md transition-all cursor-pointer"
                     >
-                      <div className={`w-14 h-14 rounded-[20px] flex items-center justify-center shrink-0 shadow-inner ${cat.bgColor} ${cat.color}`}>
-                        {item.iconSvg ? (
-                          <div dangerouslySetInnerHTML={{ __html: item.iconSvg }} className="w-6 h-6 text-current" />
+                      <div 
+                        className={`w-14 h-14 rounded-[20px] flex items-center justify-center shrink-0 shadow-inner ${!info.colorHex ? `${cat.bgColor} ${cat.color}` : ''}`}
+                        style={info.colorHex ? { backgroundColor: `${info.colorHex}20`, color: info.colorHex } : undefined}
+                      >
+                        {info.iconSvg ? (
+                          <div dangerouslySetInnerHTML={{ __html: info.iconSvg }} className="w-6 h-6 flex items-center justify-center text-current svg-container" />
                         ) : (
                           <IconComp size={24} />
                         )}

@@ -1016,7 +1016,7 @@ export default function Bank({
                       tx.category.toLowerCase()
                     );
 
-                  let style;
+                  let style: any;
                   let indicatorColor = "";
                   if (isIncome) {
                     if (tx.category === "Salaire") {
@@ -1070,6 +1070,7 @@ export default function Bank({
                         text: cat.color,
                         border: cat.borderColor,
                         icon: <CatIcon size={20} />,
+                        colorHex: info.colorHex
                       };
                       indicatorColor = `bg-${cat.colorString}-500`;
                     }
@@ -1088,17 +1089,19 @@ export default function Bank({
                     >
                       <div
                         className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-[28px] ${indicatorColor} opacity-0 group-hover:opacity-100 transition-opacity`}
+                        style={style.colorHex ? { backgroundColor: style.colorHex } : undefined}
                       />
 
                       <div
-                        className={`shrink-0 w-12 h-12 rounded-[20px] flex items-center justify-center transition-transform group-hover:scale-110 ${style.bg} ${style.text}`}
+                        className={`shrink-0 w-12 h-12 rounded-[20px] flex items-center justify-center transition-transform group-hover:scale-110 ${(!style.colorHex) ? `${style.bg} ${style.text}` : ''}`}
+                        style={style.colorHex ? { backgroundColor: `${style.colorHex}20`, color: style.colorHex } : undefined}
                       >
                         {isIncome || isRetrait || isOwedToMe || isOwedByMe ? (
                           style.icon
                         ) : info.iconSvg ? (
                           <div
                             dangerouslySetInnerHTML={{ __html: info.iconSvg }}
-                            className="w-5 h-5 text-current"
+                            className="w-5 h-5 flex items-center justify-center text-current svg-container"
                           />
                         ) : IconComp ? (
                           <IconComp size={20} />

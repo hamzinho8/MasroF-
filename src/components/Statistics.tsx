@@ -925,18 +925,20 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
                                   <div className="flex items-center gap-3">
                                     {info.iconSvg ? (
                                       <div
-                                        className={`w-6 h-6 rounded-md flex items-center justify-center ${info.bgColor} ${info.color}`}
+                                        className={`w-6 h-6 rounded-md flex items-center justify-center ${!info.colorHex ? `${info.bgColor} ${info.color}` : ''}`}
+                                        style={info.colorHex ? { backgroundColor: `${info.colorHex}20`, color: info.colorHex } : undefined}
                                       >
                                         <div
                                           dangerouslySetInnerHTML={{
                                             __html: info.iconSvg,
                                           }}
-                                          className="w-3 h-3 text-current"
+                                          className="w-3 h-3 flex items-center justify-center text-current svg-container"
                                         />
                                       </div>
                                     ) : IconComp ? (
                                       <div
-                                        className={`w-6 h-6 rounded-md flex items-center justify-center ${info.bgColor} ${info.color}`}
+                                        className={`w-6 h-6 rounded-md flex items-center justify-center ${!info.colorHex ? `${info.bgColor} ${info.color}` : ''}`}
+                                        style={info.colorHex ? { backgroundColor: `${info.colorHex}20`, color: info.colorHex } : undefined}
                                       >
                                         <IconComp size={12} />
                                       </div>
@@ -1079,17 +1081,19 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
                         </span>
                         {info.iconSvg ? (
                           <div
-                            className={`w-8 h-8 rounded-xl flex items-center justify-center ${info.bgColor} ${info.color}`}
+                            className={`w-8 h-8 rounded-xl flex items-center justify-center ${!info.colorHex ? `${info.bgColor} ${info.color}` : ''}`}
+                            style={info.colorHex ? { backgroundColor: `${info.colorHex}20`, color: info.colorHex } : undefined}
                           >
                             <div
                               dangerouslySetInnerHTML={{ __html: info.iconSvg }}
-                              className="w-4 h-4 text-current"
+                              className="w-4 h-4 flex items-center justify-center text-current svg-container"
                             />
                           </div>
                         ) : (
                           IconComp && (
                             <div
-                              className={`w-8 h-8 rounded-xl flex items-center justify-center ${info.bgColor} ${info.color}`}
+                              className={`w-8 h-8 rounded-xl flex items-center justify-center ${!info.colorHex ? `${info.bgColor} ${info.color}` : ''}`}
+                              style={info.colorHex ? { backgroundColor: `${info.colorHex}20`, color: info.colorHex } : undefined}
                             >
                               <IconComp size={16} />
                             </div>
