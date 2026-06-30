@@ -2470,6 +2470,7 @@ function HomeSectionsManagerModal({ onClose }: { onClose: () => void }) {
   const DEFAULT_HOME_SECTIONS = [
     { id: "mainWidget", label: "Widget Principal", visible: true },
     { id: "quickActions", label: "Actions Rapides", visible: true },
+    { id: "latestPurchases", label: "Derniers Achats", visible: true },
     { id: "credits", label: "Mes Crédits", visible: true },
     { id: "summary", label: "Sommaire", visible: true },
     { id: "favorites", label: "Favoris", visible: true },
@@ -2489,12 +2490,37 @@ function HomeSectionsManagerModal({ onClose }: { onClose: () => void }) {
     const defaultIds = DEFAULT_HOME_SECTIONS.map((s) => s.id);
     const localIds = localSections.map((s) => s.id);
 
-    // Add missing
+    // Add missing sections in their correct relative positions based on DEFAULT_HOME_SECTIONS
     const missing = DEFAULT_HOME_SECTIONS.filter(
       (s) => !localIds.includes(s.id)
     );
     if (missing.length > 0) {
-      setLocalSections((prev) => [...prev, ...missing]);
+      setLocalSections((prev) => {
+        let updated = [...prev];
+        missing.forEach(missingSection => {
+           const defaultIdx = DEFAULT_HOME_SECTIONS.findIndex(s => s.id === missingSection.id);
+           if (defaultIdx === -1) {
+             updated.push(missingSection);
+           } else {
+             // Find the section that comes just before it in default
+             let insertAfterIdx = -1;
+             for (let i = defaultIdx - 1; i >= 0; i--) {
+                const predecessorId = DEFAULT_HOME_SECTIONS[i].id;
+                const currentIdx = updated.findIndex(s => s.id === predecessorId);
+                if (currentIdx !== -1) {
+                  insertAfterIdx = currentIdx;
+                  break;
+                }
+             }
+             if (insertAfterIdx !== -1) {
+               updated.splice(insertAfterIdx + 1, 0, missingSection);
+             } else {
+               updated.push(missingSection);
+             }
+           }
+        });
+        return updated;
+      });
     }
   }, []);
 

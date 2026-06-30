@@ -211,6 +211,11 @@ export default function Home({
   const [favoriteUsage, setFavoriteUsage] = useLocalStorage<
     Record<string, { count: number; resetsAt: number }>
   >("favoriteUsage", {});
+  const [latestPurchasesCount, setLatestPurchasesCount] = useLocalStorage<number>(
+    "latestPurchasesCount",
+    4
+  );
+  const [showLatestPurchasesSettingModal, setShowLatestPurchasesSettingModal] = useState(false);
 
   const getNext230AM = () => {
     const now = new Date();
@@ -267,6 +272,7 @@ export default function Home({
   const DEFAULT_HOME_SECTIONS = [
     { id: "mainWidget", label: "Widget Principal", visible: true },
     { id: "quickActions", label: "Actions Rapides", visible: true },
+    { id: "latestPurchases", label: "Derniers Achats", visible: true },
     { id: "credits", label: "Mes Crédits", visible: true },
     { id: "summary", label: "Sommaire", visible: true },
     { id: "favorites", label: "Favoris", visible: true },
@@ -274,9 +280,49 @@ export default function Home({
     { id: "budgets", label: "Budgets par Catégorie", visible: true },
     { id: "inshallah", label: "Estimation du Jour", visible: true },
   ];
-  const [homeSectionsOrder] = useLocalStorage<any[]>("homeSectionsOrder", DEFAULT_HOME_SECTIONS);
-  const getOrder = (id: string) => homeSectionsOrder.findIndex((s) => s.id === id);
+  const [homeSectionsOrder, setHomeSectionsOrder] = useLocalStorage<any[]>("homeSectionsOrder", DEFAULT_HOME_SECTIONS);
+  
+  // Ensure missing sections are added in their default position, not at the top
+  const getOrder = (id: string) => {
+    let idx = homeSectionsOrder.findIndex((s) => s.id === id);
+    
+    if (idx !== -1) {
+      // If latestPurchases was wrongly placed at the very start, push it down safely
+      if (id === "latestPurchases" && idx === 0) {
+         return 100; // Just throw it at the end to be safe if it was corrupted
+      }
+      return idx * 10;
+    }
+    
+    // If missing, calculate an order that falls right after quickActions
+    if (id === "latestPurchases") {
+      const quickActionsIdx = homeSectionsOrder.findIndex(s => s.id === "quickActions");
+      if (quickActionsIdx !== -1) {
+        return quickActionsIdx * 10 + 5; // Valid integer between quickActions and the next item
+      }
+    }
+    
+    return DEFAULT_HOME_SECTIONS.findIndex((s) => s.id === id) * 10;
+  };
   const isVisible = (id: string) => homeSectionsOrder.find((s) => s.id === id)?.visible ?? true;
+
+  React.useEffect(() => {
+    // Auto-fix: if latestPurchases got stuck at index 0, move it back after quickActions
+    const latestPurchasesIdx = homeSectionsOrder.findIndex(s => s.id === "latestPurchases");
+    if (latestPurchasesIdx === 0) {
+      setHomeSectionsOrder(prev => {
+        const arr = [...prev];
+        const item = arr.splice(0, 1)[0];
+        const quickActionsIdx = arr.findIndex(s => s.id === "quickActions");
+        if (quickActionsIdx !== -1) {
+          arr.splice(quickActionsIdx + 1, 0, item);
+        } else {
+          arr.splice(2, 0, item);
+        }
+        return arr;
+      });
+    }
+  }, [homeSectionsOrder, setHomeSectionsOrder]);
 
   React.useEffect(() => {
     let unmounted = false;
@@ -335,6 +381,7 @@ export default function Home({
       tirageBanque: "Tirage Banque",
       ajouterAchat: "Ajouter Achat",
       ajouterRetrait: "Ajouter Retrait",
+      derniersAchats: "Derniers Achats",
       analyses: "Analyses de Trésorerie",
       grandLivre: "Historique",
       voirTout: "Voir tout",
@@ -366,6 +413,7 @@ export default function Home({
       tirageBanque: "سحب بنكي",
       ajouterAchat: "إضافة شراء",
       ajouterRetrait: "إضافة سحب",
+      derniersAchats: "أحدث المشتريات",
       analyses: "تحليلات الخزينة",
       grandLivre: "سجل المعاملات",
       voirTout: "عرض الكل",
@@ -396,6 +444,7 @@ export default function Home({
       tirageBanque: "Bank Withdrawal",
       ajouterAchat: "Add Purchase",
       ajouterRetrait: "Add Withdrawal",
+      derniersAchats: "Latest Purchases",
       analyses: "Treasury Analytics",
       grandLivre: "History",
       voirTout: "View all",
@@ -524,6 +573,17 @@ export default function Home({
 
     return spends;
   }, [transactions]);
+
+  const latestPurchasesList = React.useMemo(() => {
+    return transactions
+      .filter((t) => {
+        const isCredit = t.category && ["on me doit", "je dois", "مستحقات لي", "ديون علي", "owed to me", "i owe", "loans", "debts", "crédit +", "crédit --"].includes(t.category.toLowerCase());
+        const isVirementExpense = t.type === "EXPENSE" && t.category === "Virement";
+        return t.type === "EXPENSE" && !isCredit && !isVirementExpense;
+      })
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, latestPurchasesCount);
+  }, [transactions, latestPurchasesCount]);
 
   const handleDecreaseInventory = (item: import("../types").InventoryItem) => {
     if (item.quantity <= 0 || !onInventoryItemsChange) return;
@@ -904,6 +964,60 @@ export default function Home({
           </span>
         </button>
       </div>
+      )}
+
+      {/* Derniers Achats */}
+      {isVisible("latestPurchases") && (
+        <div className="mb-8 relative" style={{ order: getOrder("latestPurchases") }}>
+          <div className="flex justify-between items-center mb-4 px-1 relative z-10">
+            <h3 className="text-slate-900 font-black tracking-tight">
+              {t.derniersAchats}
+            </h3>
+            <button
+              onClick={() => setShowLatestPurchasesSettingModal(true)}
+              className="w-8 h-8 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:bg-slate-50 transition-colors shadow-sm"
+            >
+              <Settings size={16} />
+            </button>
+          </div>
+          <div className="rounded-[24px] shadow-lg p-5 relative overflow-hidden transition-all hover:scale-[1.01] bg-gradient-to-br from-indigo-50/80 to-purple-50/80 border border-indigo-100/50">
+            <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-[0.07] transform scale-150 text-indigo-900 pointer-events-none">
+              <ShoppingBag size={100} />
+            </div>
+            
+            <div className="relative z-10 w-full flex flex-col justify-center">
+              {latestPurchasesList.length === 0 ? (
+                <div className="text-center py-6 text-indigo-900/40 text-sm font-bold uppercase tracking-tight">
+                  Aucun achat récent
+                </div>
+              ) : (
+                <div className="flex flex-col gap-0.5 w-full">
+                  {latestPurchasesList.map((item, index) => {
+                    const catColorClass = CATEGORY_MAP.find(c => c.label === item.category)?.text || 'text-slate-700';
+                    return (
+                      <div 
+                        key={item.id}
+                        className="flex justify-between items-center py-1.5 px-1"
+                      >
+                        <span className={`text-base font-bold ${catColorClass} tracking-tight`}>
+                          {item.label}
+                        </span>
+                        <div className="flex items-baseline gap-2">
+                          <span className={`text-xl font-black ${catColorClass} tracking-tighter`}>
+                            {item.amount.toLocaleString("fr-FR", { minimumFractionDigits: 2 })}
+                          </span>
+                          <span className={`text-[12px] font-bold ${catColorClass} uppercase`}>
+                            {currency}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Credits Buttons - Matching summary card style exactly */}
@@ -1438,6 +1552,13 @@ export default function Home({
       </AnimatePresence>
 
       <AnimatePresence>
+        {showLatestPurchasesSettingModal && (
+          <LatestPurchasesSettingsModal
+            onClose={() => setShowLatestPurchasesSettingModal(false)}
+            latestPurchasesCount={latestPurchasesCount}
+            setLatestPurchasesCount={setLatestPurchasesCount}
+          />
+        )}
         {showRasSettingModal && inventoryItems && (
           <RasSettingsModal
             onClose={() => setShowRasSettingModal(false)}
@@ -1497,6 +1618,80 @@ export default function Home({
         )}
       </AnimatePresence>
     </motion.div>
+  );
+}
+
+function LatestPurchasesSettingsModal({
+  onClose,
+  latestPurchasesCount,
+  setLatestPurchasesCount,
+}: {
+  onClose: () => void;
+  latestPurchasesCount: number;
+  setLatestPurchasesCount: (value: number) => void;
+}) {
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center p-4 sm:p-6"
+      >
+        <motion.div
+          initial={{ y: "100%", opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: "100%", opacity: 0 }}
+          transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          className="bg-white rounded-[32px] w-full max-w-sm p-6 shadow-2xl relative"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 shrink-0" />
+          
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+              <Settings size={20} className="text-slate-600" />
+              Réglage d'affichage
+            </h3>
+            <button
+              onClick={onClose}
+              className="p-2 bg-slate-50 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className="space-y-4 mb-6">
+            <p className="text-sm font-medium text-slate-600">
+              Nombre de derniers achats à afficher :
+            </p>
+            <div className="flex gap-2">
+              {[3, 4, 5, 10].map((num) => (
+                <button
+                  key={num}
+                  onClick={() => setLatestPurchasesCount(num)}
+                  className={`flex-1 py-3 rounded-2xl text-base font-bold transition-all ${
+                    latestPurchasesCount === num
+                      ? "bg-slate-900 text-white shadow-md"
+                      : "bg-slate-50 text-slate-500 hover:bg-slate-100"
+                  }`}
+                >
+                  {num}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          <button
+            onClick={onClose}
+            className="w-full py-4 rounded-2xl font-bold bg-slate-900 text-white hover:opacity-90 active:scale-[0.98] transition-all"
+          >
+            Terminer
+          </button>
+        </motion.div>
+      </motion.div>
+    </>
   );
 }
 

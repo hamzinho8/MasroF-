@@ -64,6 +64,26 @@ export default function ReceiptScannerModal({
     () => localStorage.getItem("ai_provider") || "gemini"
   );
 
+  const formatAiError = (err: any): string => {
+    if (!err) return "Problème de connexion. Veuillez réessayer.";
+    const msg = typeof err === 'string' ? err : (err.message || "");
+    
+    if (msg.includes("503") || msg.includes("high demand") || msg.includes("UNAVAILABLE")) {
+      return "Le serveur de l'IA est surchargé. Veuillez réessayer dans quelques instants.";
+    }
+    if (msg.includes("429") || msg.includes("quota") || msg.includes("limit") || msg.includes("RESOURCE_EXHAUSTED")) {
+      return "Limite de requêtes atteinte. Veuillez patienter un peu.";
+    }
+    if (msg.includes("API key not valid") || msg.includes("401") || msg.includes("API_KEY_INVALID")) {
+      return "Clé API invalide. Veuillez vérifier vos paramètres.";
+    }
+    if (msg.includes("{") && msg.includes("}")) {
+       return "Une erreur technique s'est produite avec l'IA. Veuillez réessayer.";
+    }
+    
+    return msg || "Erreur inconnue";
+  };
+
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
@@ -167,7 +187,7 @@ Return ONLY valid JSON, no markdown formatting blocks.${predefinedText}`,
       }
     } catch (err: any) {
       console.debug("Barcode scanning error", err);
-      setError(err.message || "Erreur de numérisation");
+      setError(formatAiError(err));
       setScannedItem({
         name: `Article (${code})`,
         price: 0,
@@ -298,7 +318,7 @@ Return ONLY valid JSON, no markdown formatting blocks.${predefinedText}`,
           }
         } catch (err: any) {
           console.debug("Scanning error", err);
-          setError(err.message || "Problème de connexion. Veuillez réessayer.");
+          setError(formatAiError(err));
         }
         setIsScanning(false);
       };
@@ -413,7 +433,7 @@ Génère UNIQUEMENT le code SVG brut. AUCUNE explication. AUCUN texte markdown (
       }
     } catch (e: any) {
       console.debug(e);
-      setError(e.message || "Erreur lors de la génération de l'icône");
+      setError(formatAiError(e));
     }
     setIsRegeneratingIcon(false);
   };
