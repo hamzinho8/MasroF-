@@ -324,9 +324,23 @@ export default function App() {
           return updatedItem;
         });
 
+        // Deduplicate existing items by name (case-insensitive)
+        const uniqueItems: any[] = [];
+        const seenNames = new Set<string>();
+        newItems.forEach((item: any) => {
+          const nameLower = item.name?.toLowerCase();
+          if (!seenNames.has(nameLower)) {
+            seenNames.add(nameLower);
+            uniqueItems.push(item);
+          } else {
+            migrated = true;
+          }
+        });
+        newItems = uniqueItems;
+
         // Ensure missing items
         INITIAL_PREDEFINED_ITEMS.forEach((targetItem) => {
-          if (!newItems.some((i: any) => i.name === targetItem.name)) {
+          if (!newItems.some((i: any) => i.name?.toLowerCase() === targetItem.name?.toLowerCase())) {
             newItems.push(targetItem);
             migrated = true;
           }
@@ -359,13 +373,13 @@ export default function App() {
   );
   const categoryBudgets = React.useMemo(() => {
     if (!categoryBudgetsRaw) return {};
+    let parsed: Record<string, number> = {};
     if (Array.isArray(categoryBudgetsRaw)) {
-      return categoryBudgetsRaw.reduce(
+      parsed = categoryBudgetsRaw.reduce(
         (acc: any, b: any) => ({ ...acc, [b.category]: b.limit }),
         {}
       );
-    }
-    if (typeof categoryBudgetsRaw === "object") {
+    } else if (typeof categoryBudgetsRaw === "object") {
       const clean: Record<string, number> = {};
       Object.entries(categoryBudgetsRaw).forEach(([k, v]) => {
         if (typeof v === "number") {
@@ -379,9 +393,18 @@ export default function App() {
           clean[(v as any).category] = (v as any).limit;
         }
       });
-      return clean;
+      parsed = clean;
     }
-    return {};
+    
+    // Migrate Nourriture to Gourmandises
+    if ('Nourriture' in parsed) {
+      if (!('Gourmandises' in parsed)) {
+        parsed['Gourmandises'] = parsed['Nourriture'];
+      }
+      delete parsed['Nourriture'];
+    }
+    
+    return parsed;
   }, [categoryBudgetsRaw]);
 
   const setCategoryBudgets = (
@@ -408,6 +431,15 @@ export default function App() {
           }
         });
       }
+      
+      // Migrate Nourriture to Gourmandises here too
+      if ('Nourriture' in currentClean) {
+        if (!('Gourmandises' in currentClean)) {
+          currentClean['Gourmandises'] = currentClean['Nourriture'];
+        }
+        delete currentClean['Nourriture'];
+      }
+      
       return typeof updater === "function" ? updater(currentClean) : updater;
     });
   };
@@ -517,9 +549,9 @@ export default function App() {
   React.useEffect(() => {
     let migrated = false;
     const newTransactions = transactions.map(tx => {
-      if (tx.category === 'Nourriture') {
+      if (tx.category === 'Nourriture' || tx.category === 'Food') {
         const predefined = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === tx.label.toLowerCase());
-        const newCategory = predefined ? predefined.category : 'Autres';
+        const newCategory = predefined ? predefined.category : 'Gourmandises';
         migrated = true;
         return { ...tx, category: newCategory };
       }
@@ -629,7 +661,10 @@ export default function App() {
     const categoryTotals: Record<string, number> = {};
     expenses.forEach((t) => {
       let category = t.category || "Autres";
-      if (category === "Food") category = "Nourriture";
+      if (category === "Food" || category === "Nourriture") {
+        const pref = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === (t.label || '').toLowerCase());
+        category = pref ? pref.category : "Gourmandises";
+      }
       else if (category === "Leisure") category = "Loisirs";
       else if (category === "Others") category = "Autres";
       categoryTotals[category] = (categoryTotals[category] || 0) + t.amount;
@@ -983,7 +1018,8 @@ export default function App() {
       iconSvg?: string;
       unitType?: 'unit' | 'grams' | 'liters';
     },
-    creditData?: { creditorName: string }
+    creditData?: { creditorName: string },
+    tags?: string[]
   ) => {
     markUnbackedChanges();
     const newTx: Transaction = {
@@ -1004,6 +1040,7 @@ export default function App() {
       paidByBank,
       isPureInflow,
       isCredit: !!creditData,
+      tags,
     };
 
     setTransactions((prev) => [newTx, ...prev]);

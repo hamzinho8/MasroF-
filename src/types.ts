@@ -22,6 +22,7 @@ export interface Transaction {
   paidByBank?: boolean;
   isPureInflow?: boolean;
   isCredit?: boolean;
+  tags?: string[];
 }
 
 export interface Reminder {

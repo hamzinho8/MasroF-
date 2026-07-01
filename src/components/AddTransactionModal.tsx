@@ -54,7 +54,8 @@ interface AddTransactionModalProps {
       iconSvg?: string;
       unitType?: 'unit' | 'grams' | 'liters';
     },
-    creditData?: { creditorName: string }
+    creditData?: { creditorName: string },
+    tags?: string[]
   ) => void;
   initialType: "INCOME" | "EXPENSE";
   currency: string;
@@ -100,6 +101,8 @@ export default function AddTransactionModal({
   const [inventoryUnit, setInventoryUnit] = useState<'unit' | 'grams' | 'liters'>('unit');
   const [isCredit, setIsCredit] = useState(false);
   const [creditorName, setCreditorName] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
   const [isScanning, setIsScanning] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -135,6 +138,8 @@ export default function AddTransactionModal({
       setDetectedPaymentGroup(null);
       setIsListening(false);
       setSelectedMultiItems([]);
+      setTags([]);
+      setTagInput("");
     }
   }, [isOpen, initialType]);
 
@@ -575,7 +580,8 @@ export default function AddTransactionModal({
         paidByBank,
         !(addToInventory || item.addToInventory),
         invReq,
-        type === "EXPENSE" && isCredit && creditorName ? { creditorName } : undefined
+        type === "EXPENSE" && isCredit && creditorName ? { creditorName } : undefined,
+        tags
       );
     });
 
@@ -629,11 +635,7 @@ export default function AddTransactionModal({
               iconName = matchedItem.iconName || "Box";
               iconSvg = matchedItem.iconSvg;
             } else {
-              if (cat.id === "Nourriture") iconName = "Utensils";
-              else if (cat.id === "Shopping") iconName = "ShoppingBag";
-              else if (cat.id === "Transport") iconName = "Car";
-              else if (cat.id === "Loisirs") iconName = "Gamepad2";
-              else if (cat.id === "Autres") iconName = "MoreHorizontal";
+              iconName = cat.iconName || "MoreHorizontal";
             }
 
             invReq = {
@@ -654,7 +656,8 @@ export default function AddTransactionModal({
             paidByBank,
             false,
             invReq,
-            type === "EXPENSE" && isCredit && creditorName ? { creditorName } : undefined
+            type === "EXPENSE" && isCredit && creditorName ? { creditorName } : undefined,
+            tags
           );
         });
       } else if (amount) {
@@ -677,11 +680,7 @@ export default function AddTransactionModal({
               iconName = matchedItem.iconName || "Box";
               iconSvg = matchedItem.iconSvg;
             } else {
-              if (cat.id === "Nourriture") iconName = "Utensils";
-              else if (cat.id === "Shopping") iconName = "ShoppingBag";
-              else if (cat.id === "Transport") iconName = "Car";
-              else if (cat.id === "Loisirs") iconName = "Gamepad2";
-              else if (cat.id === "Autres") iconName = "MoreHorizontal";
+              iconName = cat.iconName || "MoreHorizontal";
             }
 
             invReq = {
@@ -702,7 +701,8 @@ export default function AddTransactionModal({
             paidByBank,
             false,
             invReq,
-            type === "EXPENSE" && isCredit && creditorName ? { creditorName } : undefined
+            type === "EXPENSE" && isCredit && creditorName ? { creditorName } : undefined,
+            tags
           );
         }
       } else if (isShoppingMode) {
@@ -716,7 +716,8 @@ export default function AddTransactionModal({
           paidByBank,
           false,
           undefined,
-          type === "EXPENSE" && isCredit && creditorName ? { creditorName } : undefined
+          type === "EXPENSE" && isCredit && creditorName ? { creditorName } : undefined,
+          tags
         );
       }
 
@@ -1025,17 +1026,7 @@ export default function AddTransactionModal({
                                 onClick={() => handleCategoryClick(cat.id)}
                                 className={`flex flex-col items-center gap-1.5 p-2 px-1 rounded-2xl border transition-all ${
                                   selectedCategory === cat.id && !showFrequent
-                                    ? `bg-white shadow-md scale-105 border-transparent ring-2 ${
-                                        cat.id === "Nourriture"
-                                          ? "ring-teal-500/20"
-                                          : cat.id === "Shopping"
-                                          ? "ring-rose-500/20"
-                                          : cat.id === "Transport"
-                                          ? "ring-sky-500/20"
-                                          : cat.id === "Loisirs"
-                                          ? "ring-purple-500/20"
-                                          : "ring-slate-400/20"
-                                      }`
+                                    ? `bg-white shadow-md scale-105 border-transparent ring-2 ${cat.borderColor.replace('border-', 'ring-')}`
                                     : "border-slate-100 bg-slate-50 opacity-60"
                                 }`}
                               >
@@ -1058,15 +1049,7 @@ export default function AddTransactionModal({
                                 <span
                                   className={`text-[8px] font-black uppercase tracking-tight text-center truncate w-full ${
                                     selectedCategory === cat.id && !showFrequent
-                                      ? cat.id === "Nourriture"
-                                        ? "text-teal-600"
-                                        : cat.id === "Shopping"
-                                        ? "text-rose-600"
-                                        : cat.id === "Transport"
-                                        ? "text-sky-600"
-                                        : cat.id === "Loisirs"
-                                        ? "text-purple-600"
-                                        : "text-slate-800"
+                                      ? cat.color
                                       : "text-slate-400"
                                   }`}
                                 >
@@ -1409,6 +1392,46 @@ export default function AddTransactionModal({
                         </div>
                       </>
                     )}
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-black text-slate-800 uppercase tracking-widest ml-1">
+                      Tags (Optionnel)
+                    </label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {tags.map((tag) => (
+                        <div
+                          key={tag}
+                          className="flex items-center gap-1 bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold border border-indigo-100"
+                        >
+                          <span>{tag}</span>
+                          <button
+                            type="button"
+                            onClick={() => setTags(tags.filter((t) => t !== tag))}
+                            className="hover:text-indigo-900 focus:outline-none"
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Ajouter un tag et appuyer sur Entrée..."
+                      className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-5 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:font-medium placeholder:text-slate-400"
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const newTag = tagInput.trim();
+                          if (newTag && !tags.includes(newTag)) {
+                            setTags([...tags, newTag]);
+                          }
+                          setTagInput("");
+                        }
+                      }}
+                    />
                   </div>
 
                   <button

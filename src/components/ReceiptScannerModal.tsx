@@ -148,7 +148,7 @@ Respond purely in JSON format like:
 {
   "name": "Danone",
   "price": 2.50,
-  "category": "Nourriture",
+  "category": "Gourmandises",
   "generic_description": "pot de yaourt",
   "iconSvg": "<svg ...>...</svg>",
   "iconName": "Milk",
@@ -277,7 +277,7 @@ Respond purely in JSON format like:
 {
   "name": "Danone",
   "price": 2.50,
-  "category": "Nourriture",
+  "category": "Gourmandises",
   "generic_description": "pot de yaourt",
   "iconSvg": "<svg ...>...</svg>",
   "iconName": "Milk",

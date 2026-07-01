@@ -320,15 +320,15 @@ export default function Credits({
     {
       label:
         language === "Français"
-          ? "Nourriture"
+          ? "Gourmandises"
           : language === "العربية"
-            ? "طعام"
-            : "Food",
+            ? "حلويات"
+            : "Goodies",
       icon: <Utensils size={24} />,
-      color: "teal",
-      bg: "bg-teal-100",
-      text: "text-teal-600",
-      glow: "bg-teal-400",
+      color: "purple",
+      bg: "bg-purple-100",
+      text: "text-purple-700",
+      glow: "bg-purple-400",
     },
     {
       label:
@@ -340,7 +340,7 @@ export default function Credits({
       icon: <ShoppingBag size={24} />,
       color: "rose",
       bg: "bg-rose-100",
-      text: "text-rose-600",
+      text: "text-rose-700",
       glow: "bg-rose-400",
     },
     {
@@ -351,10 +351,10 @@ export default function Credits({
             ? "نقل"
             : "Transport",
       icon: <Car size={24} />,
-      color: "sky",
-      bg: "bg-sky-100",
-      text: "text-sky-600",
-      glow: "bg-sky-400",
+      color: "blue",
+      bg: "bg-blue-100",
+      text: "text-blue-700",
+      glow: "bg-blue-400",
     },
     {
       label:
@@ -364,10 +364,10 @@ export default function Credits({
             ? "ترفيه"
             : "Entertainment",
       icon: <Gamepad2 size={24} />,
-      color: "purple",
-      bg: "bg-purple-100",
-      text: "text-purple-600",
-      glow: "bg-purple-400",
+      color: "orange",
+      bg: "bg-orange-100",
+      text: "text-orange-700",
+      glow: "bg-orange-400",
     },
     {
       label:
@@ -377,10 +377,10 @@ export default function Credits({
             ? "أخرى"
             : "Other",
       icon: <MoreHorizontal size={24} />,
-      color: "slate",
-      bg: "bg-slate-100",
-      text: "text-slate-600",
-      glow: "bg-slate-400",
+      color: "gray",
+      bg: "bg-gray-100",
+      text: "text-gray-700",
+      glow: "bg-gray-400",
     },
   ];
 

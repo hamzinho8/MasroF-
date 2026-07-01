@@ -229,20 +229,17 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
       string,
       { total: number; articles: Record<string, number> }
     > = {};
-    const mainCategories = [
-      "Nourriture",
-      "Shopping",
-      "Transport",
-      "Loisirs",
-      "Autres",
-    ];
+    const mainCategories = APP_CATEGORIES.map(c => c.id);
     mainCategories.forEach(
       (cat) => (grouped[cat] = { total: 0, articles: {} })
     );
 
     expenses.forEach((t) => {
       let category = t.category || "Autres";
-      if (category === "Food") category = "Nourriture";
+      if (category === "Food" || category === "Nourriture") {
+         const pref = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === (t.label || '').toLowerCase());
+         category = pref ? pref.category : "Autres";
+      }
       else if (category === "Leisure") category = "Loisirs";
       else if (category === "Others") category = "Autres";
 
@@ -297,7 +294,10 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
         totalIncome += t.amount;
       } else if (t.type === 'EXPENSE' || (t.type as any) === 'expense') {
         let cat = t.category || "Autres";
-        if (cat === "Food") cat = "Nourriture";
+        if (cat === "Food" || cat === "Nourriture") {
+           const pref = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === (t.label || '').toLowerCase());
+           cat = pref ? pref.category : "Autres";
+        }
         else if (cat === "Leisure") cat = "Loisirs";
         else if (cat === "Others") cat = "Autres";
         categoryExpenses[cat] = (categoryExpenses[cat] || 0) + t.amount;
@@ -469,7 +469,10 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
           (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit && t.category !== "Virement";
         if (!isExpense || t.timestamp < start.getTime() || t.timestamp > end.getTime()) return false;
         let category = t.category || "Autres";
-        if (category === "Food") category = "Nourriture";
+        if (category === "Food" || category === "Nourriture") {
+           const pref = INITIAL_PREDEFINED_ITEMS.find(p => p.name.toLowerCase() === (t.label || '').toLowerCase());
+           category = pref ? pref.category : "Autres";
+        }
         else if (category === "Leisure") category = "Loisirs";
         else if (category === "Others") category = "Autres";
         return category === selectedPieCategory;

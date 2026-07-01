@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Trash2, Edit2, Wallet, Landmark, ShoppingBag, Box, Home, Wifi, MonitorPlay, Calendar } from "lucide-react";
-import { ICON_MAP, CATEGORIES, INITIAL_PREDEFINED_ITEMS } from "../constants";
+import { ICON_MAP, CATEGORIES, INITIAL_PREDEFINED_ITEMS, getArticleInfo } from "../constants";
 
 export interface UpcomingTransaction {
   id: string;
@@ -382,26 +382,26 @@ export default function ManageUpcomingModal({
             ) : (
               <div className="space-y-3">
                 {localTx.map(tx => {
-                  const cat = CATEGORIES.find(c => c.id === tx.categoryId);
+                  const info = getArticleInfo(tx.label, tx.categoryId, INITIAL_PREDEFINED_ITEMS);
+                  const cat = CATEGORIES.find(c => c.id === tx.categoryId) || CATEGORIES.find(c => c.id === 'Autres')!;
                   
                   let IconComp = ICON_MAP[tx.iconName] || ShoppingBag;
                   if (!tx.iconName && tx.categoryId && cat) {
                     IconComp = ICON_MAP[cat.iconName] || ShoppingBag;
                   }
                   
-                  const bgColor = tx.categoryId && cat && !tx.colorHex ? cat.bgColor : "";
-                  const iconColorClass = tx.categoryId && cat && !tx.colorHex ? cat.color : "";
-                  const inlineBgColor = tx.colorHex ? `${tx.colorHex}20` : undefined;
-                  const inlineIconColor = tx.colorHex ? tx.colorHex : undefined;
+                  const txColor = info.colorHex || cat.colorHex;
+                  const inlineBgColor = `${txColor}20`;
+                  const inlineIconColor = txColor;
 
                   return (
                     <div key={tx.id} className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
                       <div className="flex items-center gap-3">
                         <div 
-                          className={`w-10 h-10 rounded-xl flex items-center justify-center ${bgColor}`}
+                          className="w-10 h-10 rounded-xl flex items-center justify-center"
                           style={{ backgroundColor: inlineBgColor, color: inlineIconColor }}
                         >
-                          <IconComp size={18} className={iconColorClass} />
+                          <IconComp size={18} />
                         </div>
                         <div className="flex flex-col">
                           <span className="font-bold text-slate-800">{tx.label}</span>

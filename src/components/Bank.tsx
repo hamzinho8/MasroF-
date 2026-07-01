@@ -747,10 +747,11 @@ export default function Bank({
           
           <div className={isCompactUpcoming ? "flex flex-col gap-2 px-1" : "flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar -mx-1 px-1"}>
             {upcomingTransactions.map((tx) => {
+              const info = getArticleInfo(tx.label, tx.categoryId, predefinedItems);
               const cat = CATEGORIES.find(c => c.id === tx.categoryId) || CATEGORIES.find(c => c.id === 'Autres')!;
               let IconComp = tx.iconName ? (ICON_MAP[tx.iconName] || ShoppingBag) : (ICON_MAP[cat.iconName] || ShoppingBag);
               
-              const txColor = tx.colorHex || cat.colorHex;
+              const txColor = info.colorHex || cat.colorHex;
 
               // Urgency calculation
               let diff = 0;

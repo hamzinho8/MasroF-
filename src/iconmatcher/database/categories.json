@@ -1,10 +1,13 @@
 {
-  "Nourriture": "#5FAE9F",
-  "Logement": "#7C6EEB",
-  "Transport": "#69BCEB",
-  "Sanitaire": "#E85C8E",
-  "Shopping": "#B86BEA",
-  "Loisirs": "#E7B24A",
-  "Devoir": "#E79A62",
-  "Autres": "#9CA3AF"
+  "Gourmandises": "#8E44AD",
+  "Protéines": "#E53935",
+  "Essentiel": "#F4B400",
+  "Plantes": "#22C55E",
+  "Logement": "#B0B7C3",
+  "Transport": "#1E90FF",
+  "Sanitaire": "#3D5AFE",
+  "Shopping": "#D81B60",
+  "Loisirs": "#FB8C00",
+  "Devoir": "#8B5E3C",
+  "Autres": "#E5E7EB"
 }

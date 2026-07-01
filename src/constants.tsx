@@ -37,17 +37,17 @@ export const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 export const CATEGORIES = [
-  { id: 'Gourmandises', label: 'Gourmandises', iconName: 'Cookie', color: 'text-fuchsia-700', bgColor: 'bg-fuchsia-100', lightBg: 'bg-fuchsia-50/60', borderColor: 'border-fuchsia-200', colorString: 'fuchsia', colorHex: '#c026d3' },
-  { id: 'Protéines', label: 'Protéines', iconName: 'Beef', color: 'text-red-700', bgColor: 'bg-red-100', lightBg: 'bg-red-50/60', borderColor: 'border-red-200', colorString: 'red', colorHex: '#b91c1c' },
-  { id: 'Essentiel', label: 'Essentiel', iconName: 'Wheat', color: 'text-amber-700', bgColor: 'bg-amber-100', lightBg: 'bg-amber-50/60', borderColor: 'border-amber-200', colorString: 'amber', colorHex: '#d97706' },
-  { id: 'Plantes', label: 'Plantes', iconName: 'Carrot', color: 'text-emerald-700', bgColor: 'bg-emerald-100', lightBg: 'bg-emerald-50/60', borderColor: 'border-emerald-200', colorString: 'emerald', colorHex: '#059669' },
-  { id: 'Logement', label: 'Logement', iconName: 'Home', color: 'text-indigo-600', bgColor: 'bg-indigo-100', lightBg: 'bg-indigo-50/60', borderColor: 'border-indigo-200', colorString: 'indigo', colorHex: '#4f46e5' },
-  { id: 'Transport', label: 'Transport', iconName: 'Car', color: 'text-sky-600', bgColor: 'bg-sky-100', lightBg: 'bg-sky-50/60', borderColor: 'border-sky-200', colorString: 'sky', colorHex: '#0284c7' },
-  { id: 'Sanitaire', label: 'Sanitaire', iconName: 'WashingMachine', color: 'text-cyan-600', bgColor: 'bg-cyan-100', lightBg: 'bg-cyan-50/60', borderColor: 'border-cyan-200', colorString: 'cyan', colorHex: '#0891b2' },
-  { id: 'Shopping', label: 'Shopping', iconName: 'ShoppingBag', color: 'text-purple-600', bgColor: 'bg-purple-100', lightBg: 'bg-purple-50/60', borderColor: 'border-purple-200', colorString: 'purple', colorHex: '#9333ea' },
-  { id: 'Loisirs', label: 'Loisirs', iconName: 'Gamepad2', color: 'text-amber-600', bgColor: 'bg-amber-100', lightBg: 'bg-amber-50/60', borderColor: 'border-amber-200', colorString: 'amber', colorHex: '#d97706' },
-  { id: 'Devoir', label: 'Devoir', iconName: 'Heart', color: 'text-orange-600', bgColor: 'bg-orange-100', lightBg: 'bg-orange-50/60', borderColor: 'border-orange-200', colorString: 'orange', colorHex: '#ea580c' },
-  { id: 'Autres', label: 'Autres', iconName: 'MoreHorizontal', color: 'text-slate-600', bgColor: 'bg-slate-100', lightBg: 'bg-slate-50/60', borderColor: 'border-slate-200', colorString: 'slate', colorHex: '#475569' },
+  { id: 'Gourmandises', label: 'Gourmandises', iconName: 'Cookie', color: 'text-purple-700', bgColor: 'bg-purple-100', lightBg: 'bg-purple-50/60', borderColor: 'border-purple-200', colorString: 'purple', colorHex: '#8E44AD' },
+  { id: 'Protéines', label: 'Protéines', iconName: 'Beef', color: 'text-red-700', bgColor: 'bg-red-100', lightBg: 'bg-red-50/60', borderColor: 'border-red-200', colorString: 'red', colorHex: '#E53935' },
+  { id: 'Essentiel', label: 'Essentiel', iconName: 'Wheat', color: 'text-amber-700', bgColor: 'bg-amber-100', lightBg: 'bg-amber-50/60', borderColor: 'border-amber-200', colorString: 'amber', colorHex: '#F4B400' },
+  { id: 'Plantes', label: 'Plantes', iconName: 'Carrot', color: 'text-green-700', bgColor: 'bg-green-100', lightBg: 'bg-green-50/60', borderColor: 'border-green-200', colorString: 'green', colorHex: '#22C55E' },
+  { id: 'Logement', label: 'Logement', iconName: 'Home', color: 'text-slate-700', bgColor: 'bg-slate-100', lightBg: 'bg-slate-50/60', borderColor: 'border-slate-200', colorString: 'slate', colorHex: '#B0B7C3' },
+  { id: 'Transport', label: 'Transport', iconName: 'Car', color: 'text-blue-700', bgColor: 'bg-blue-100', lightBg: 'bg-blue-50/60', borderColor: 'border-blue-200', colorString: 'blue', colorHex: '#1E90FF' },
+  { id: 'Sanitaire', label: 'Sanitaire', iconName: 'WashingMachine', color: 'text-indigo-700', bgColor: 'bg-indigo-100', lightBg: 'bg-indigo-50/60', borderColor: 'border-indigo-200', colorString: 'indigo', colorHex: '#3D5AFE' },
+  { id: 'Shopping', label: 'Shopping', iconName: 'ShoppingBag', color: 'text-rose-700', bgColor: 'bg-rose-100', lightBg: 'bg-rose-50/60', borderColor: 'border-rose-200', colorString: 'rose', colorHex: '#D81B60' },
+  { id: 'Loisirs', label: 'Loisirs', iconName: 'Gamepad2', color: 'text-orange-700', bgColor: 'bg-orange-100', lightBg: 'bg-orange-50/60', borderColor: 'border-orange-200', colorString: 'orange', colorHex: '#FB8C00' },
+  { id: 'Devoir', label: 'Devoir', iconName: 'Heart', color: 'text-stone-700', bgColor: 'bg-stone-100', lightBg: 'bg-stone-50/60', borderColor: 'border-stone-200', colorString: 'stone', colorHex: '#8B5E3C' },
+  { id: 'Autres', label: 'Autres', iconName: 'MoreHorizontal', color: 'text-gray-700', bgColor: 'bg-gray-100', lightBg: 'bg-gray-50/60', borderColor: 'border-gray-200', colorString: 'gray', colorHex: '#E5E7EB' },
 ];
 
 const RAW_PREDEFINED_ITEMS: Omit<PredefinedItem, 'colorHex' | 'categoryColorHex'>[] = [
@@ -113,10 +113,10 @@ const RAW_PREDEFINED_ITEMS: Omit<PredefinedItem, 'colorHex' | 'categoryColorHex'
 ];
 
 export const SUBCATEGORY_COLORS: Record<string, { colorHex: string; }> = {
-  'Essentiel': { colorHex: '#d97706' }, // amber
-  'Protéines': { colorHex: '#b91c1c' }, // red
-  'Plantes': { colorHex: '#059669' },   // emerald
-  'Gourmandises': { colorHex: '#c026d3' }, // fuchsia
+  'Essentiel': { colorHex: '#F4B400' },
+  'Protéines': { colorHex: '#E53935' },
+  'Plantes': { colorHex: '#22C55E' },
+  'Gourmandises': { colorHex: '#8E44AD' },
 };
 
 import { IconMatcher } from './iconmatcher/IconMatcher';

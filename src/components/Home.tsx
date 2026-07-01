@@ -146,10 +146,17 @@ export default function Home({
   const categoryBudgets = React.useMemo(() => {
     if (!categoryBudgetsRaw) return {};
     if (Array.isArray(categoryBudgetsRaw)) {
-      return categoryBudgetsRaw.reduce(
+      const parsed = categoryBudgetsRaw.reduce(
         (acc: any, b: any) => ({ ...acc, [b.category]: b.limit }),
         {}
       );
+      if ('Nourriture' in parsed) {
+        if (!('Gourmandises' in parsed)) {
+          parsed['Gourmandises'] = parsed['Nourriture'];
+        }
+        delete parsed['Nourriture'];
+      }
+      return parsed;
     }
     if (typeof categoryBudgetsRaw === "object") {
       const clean: Record<string, number> = {};
@@ -165,6 +172,14 @@ export default function Home({
           clean[(v as any).category] = (v as any).limit;
         }
       });
+      
+      if ('Nourriture' in clean) {
+        if (!('Gourmandises' in clean)) {
+          clean['Gourmandises'] = clean['Nourriture'];
+        }
+        delete clean['Nourriture'];
+      }
+      
       return clean;
     }
     return {};
@@ -194,6 +209,14 @@ export default function Home({
           }
         });
       }
+      
+      if ('Nourriture' in currentClean) {
+        if (!('Gourmandises' in currentClean)) {
+          currentClean['Gourmandises'] = currentClean['Nourriture'];
+        }
+        delete currentClean['Nourriture'];
+      }
+      
       return typeof updater === "function" ? updater(currentClean) : updater;
     });
   };
@@ -389,7 +412,7 @@ export default function Home({
       retraits: "Retraits",
       depenses: "Dépenses",
       achats: "Achats",
-      nourriture: "Nourriture",
+      gourmandises: "Gourmandises",
       shopping: "Shopping",
       transport: "Transport",
       loisirs: "Loisirs",
@@ -421,7 +444,7 @@ export default function Home({
       retraits: "السحوبات",
       depenses: "المصاريف",
       achats: "المشتريات",
-      nourriture: "طعام",
+      gourmandises: "حلويات",
       shopping: "تسوق",
       transport: "نقل",
       loisirs: "ترفيه",
@@ -452,7 +475,7 @@ export default function Home({
       retraits: "Withdrawals",
       depenses: "Expenses",
       achats: "Purchases",
-      nourriture: "Food",
+      gourmandises: "Goodies",
       shopping: "Shopping",
       transport: "Transport",
       loisirs: "Leisure",
@@ -1003,9 +1026,20 @@ export default function Home({
                         className="flex justify-between items-center py-1 px-1"
                         style={{ color }}
                       >
-                        <span className="text-base font-bold tracking-tight">
-                          {item.label}
-                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-base font-bold tracking-tight">
+                            {item.label}
+                          </span>
+                          {item.tags && item.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-0.5">
+                              {item.tags.map(tag => (
+                                <span key={tag} className="text-[8px] font-black uppercase opacity-70 tracking-widest border border-current rounded-full px-1.5 py-0.5" style={{ color }}>
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                         <div className="flex items-baseline gap-2">
                           <span className="text-xl font-black tracking-tighter">
                             {item.amount.toLocaleString("fr-FR", { minimumFractionDigits: 2 })}

@@ -77,7 +77,10 @@ export async function scheduleUpcomingNotifications(upcomingTransactions: any[],
         
         // Emojis mapping for categories
         const emojis: Record<string, string> = {
-           "Nourriture": "🍔",
+           "Gourmandises": "🍔",
+           "Essentiel": "🌾",
+           "Protéines": "🥩",
+           "Plantes": "🥕",
            "Transport": "🚌",
            "Logement": "🏠",
            "Loisirs": "🎬",

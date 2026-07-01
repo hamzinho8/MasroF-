@@ -155,21 +155,25 @@ export default function History({ transactions, predefinedItems, language, curre
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>(t.tous);
-  const [activeInlineMenu, setActiveInlineMenu] = useState<'DATE' | 'TYPE' | 'CATEGORY' | 'SEARCH' | null>(null);
+  const [activeInlineMenu, setActiveInlineMenu] = useState<'DATE' | 'TYPE' | 'CATEGORY' | 'SEARCH' | 'TAGS' | null>(null);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
+  const [editingTagInput, setEditingTagInput] = useState("");
   const [visibleCount, setVisibleCount] = useState(30);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const handleEdit = (tx: Transaction) => {
     setActiveMenuId(null);
     setEditingTx(tx);
+    setEditingTagInput("");
   };
 
   const handleSaveEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingTx) {
-      onUpdate(editingTx.id, { label: editingTx.label, amount: editingTx.amount });
+      onUpdate(editingTx.id, { label: editingTx.label, amount: editingTx.amount, tags: editingTx.tags });
       setEditingTx(null);
+      setEditingTagInput("");
     }
   };
 
@@ -276,7 +280,9 @@ export default function History({ transactions, predefinedItems, language, curre
         }
       }
 
-      return matchesFilter && matchesSearch && matchesRange && matchesCategory;
+      const matchesTags = selectedTags.length === 0 || (tx.tags && selectedTags.some(tag => tx.tags!.includes(tag)));
+
+      return matchesFilter && matchesSearch && matchesRange && matchesCategory && matchesTags;
     })
     .sort((a, b) => {
       switch (sortBy) {
@@ -292,6 +298,16 @@ export default function History({ transactions, predefinedItems, language, curre
     setStartDate('');
     setEndDate('');
   };
+
+  const allAvailableTags = React.useMemo(() => {
+    const tags = new Set<string>();
+    transactions.forEach(tx => {
+      if (tx.tags) {
+        tx.tags.forEach(tag => tags.add(tag));
+      }
+    });
+    return Array.from(tags).sort();
+  }, [transactions]);
 
   return (
     <motion.div 
@@ -457,6 +473,22 @@ export default function History({ transactions, predefinedItems, language, curre
             </span>
           </div>
         </button>
+
+        {/* Tags Filter Pill */}
+        <button 
+          onClick={() => setActiveInlineMenu(activeInlineMenu === 'TAGS' ? null : 'TAGS')}
+          className={`flex items-center gap-2 px-2 py-2.5 rounded-[28px] transition-all active:scale-95 shadow-sm border ${activeInlineMenu === 'TAGS' ? 'bg-purple-900 border-purple-900 text-white' : 'bg-purple-50/40 border-purple-100/50 hover:bg-purple-100/40'}`}
+        >
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border transition-colors ${activeInlineMenu === 'TAGS' ? 'bg-white/20 border-white/20 text-white' : 'bg-white border-purple-50 text-purple-600'}`}>
+            <Tag size={16} strokeWidth={2.5} />
+          </div>
+          <div className="flex flex-col items-start leading-none min-w-0 text-left">
+            <span className={`text-[8px] font-bold uppercase tracking-tighter shrink-0 ${activeInlineMenu === 'TAGS' ? 'text-purple-100/60' : 'text-slate-400'}`}>{language === 'العربية' ? 'علامات' : 'Tags'}</span>
+            <span className={`text-[10px] font-black truncate w-full ${activeInlineMenu === 'TAGS' ? 'text-white' : 'text-purple-800'}`}>
+              {selectedTags.length > 0 ? `${selectedTags.length} ${language === 'العربية' ? 'علامات' : 'tags'}` : (language === 'العربية' ? 'الكل' : 'Tous')}
+            </span>
+          </div>
+        </button>
       </div>
 
       {/* Unified Inline Expansion Menu */}
@@ -579,6 +611,43 @@ export default function History({ transactions, predefinedItems, language, curre
                   </div>
                 </div>
               )}
+
+              {activeInlineMenu === 'TAGS' && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center px-1">
+                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{language === 'العربية' ? 'تصفية حسب العلامات' : 'Filtrer par tags'}</span>
+                    {selectedTags.length > 0 && (
+                      <button onClick={() => setSelectedTags([])} className="px-3 py-1.5 rounded-lg bg-rose-50 text-[9px] font-black uppercase text-rose-500 flex items-center gap-2 transition-all hover:bg-rose-100">
+                        <X size={12} />
+                        Effacer
+                      </button>
+                    )}
+                  </div>
+                  {allAvailableTags.length === 0 ? (
+                    <div className="text-center py-4 text-sm font-bold text-slate-400">
+                      {language === 'العربية' ? 'لا توجد علامات متاحة' : 'Aucun tag disponible'}
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2 max-h-[300px] overflow-y-auto p-1">
+                      {allAvailableTags.map(tag => (
+                        <button
+                          key={tag}
+                          onClick={() => {
+                            if (selectedTags.includes(tag)) {
+                              setSelectedTags(selectedTags.filter(t => t !== tag));
+                            } else {
+                              setSelectedTags([...selectedTags, tag]);
+                            }
+                          }}
+                          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border-2 ${selectedTags.includes(tag) ? 'border-purple-600 bg-purple-600 text-white shadow-md' : 'border-slate-100 bg-slate-50 text-slate-500 hover:border-purple-200'}`}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </motion.div>
         )}
@@ -618,13 +687,17 @@ export default function History({ transactions, predefinedItems, language, curre
 
             const getHoverColor = (color: string) => {
               const colors: Record<string, string> = {
-                'amber': 'hover:border-amber-200 hover:shadow-amber-500/10',
-                'rose': 'hover:border-rose-200 hover:shadow-rose-500/10',
-                'sky': 'hover:border-sky-200 hover:shadow-sky-500/10',
                 'purple': 'hover:border-purple-200 hover:shadow-purple-500/10',
+                'red': 'hover:border-red-200 hover:shadow-red-500/10',
+                'amber': 'hover:border-amber-200 hover:shadow-amber-500/10',
+                'green': 'hover:border-green-200 hover:shadow-green-500/10',
                 'slate': 'hover:border-slate-200 hover:shadow-slate-500/10',
-                'emerald': 'hover:border-emerald-200 hover:shadow-emerald-500/10',
-                'teal': 'hover:border-teal-200 hover:shadow-teal-500/10'
+                'blue': 'hover:border-blue-200 hover:shadow-blue-500/10',
+                'indigo': 'hover:border-indigo-200 hover:shadow-indigo-500/10',
+                'rose': 'hover:border-rose-200 hover:shadow-rose-500/10',
+                'orange': 'hover:border-orange-200 hover:shadow-orange-500/10',
+                'stone': 'hover:border-stone-200 hover:shadow-stone-500/10',
+                'gray': 'hover:border-gray-200 hover:shadow-gray-500/10'
               };
               return colors[color] || 'hover:border-slate-200';
             };
@@ -682,6 +755,15 @@ export default function History({ transactions, predefinedItems, language, curre
                         {isReceive ? t.owedToMe : t.owedByMe}
                       </span>
                     </div>
+                    {tx.tags && tx.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {tx.tags.map(tag => (
+                          <span key={tag} className="text-[8px] font-black uppercase bg-white/50 text-slate-500 px-1.5 py-0.5 rounded-full tracking-widest border border-slate-200">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div className="shrink-0 flex items-center gap-2 pl-2 border-l border-slate-100">
@@ -799,10 +881,19 @@ export default function History({ transactions, predefinedItems, language, curre
                     <p className="font-black text-slate-800 text-sm tracking-tight truncate leading-tight">
                       {tx.label}
                     </p>
-                    <span className="text-[10px] flex items-center gap-1 font-bold text-slate-400">
+                    <span className="text-[10px] flex items-center gap-1 font-bold text-slate-400 mb-1">
                       <Calendar size={10} className="text-slate-300" />
                       {tx.date}
                     </span>
+                    {tx.tags && tx.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-0.5">
+                        {tx.tags.map(tag => (
+                          <span key={tag} className="text-[9px] font-black uppercase bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full tracking-widest">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -932,6 +1023,44 @@ export default function History({ transactions, predefinedItems, language, curre
                         setEditingTx({...editingTx, amount: isNaN(val) ? NaN : val});
                       }}
                       className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-teal-brand/20 transition-all font-mono"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Tags</label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {(editingTx.tags || []).map((tag) => (
+                        <div
+                          key={tag}
+                          className="flex items-center gap-1 bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold border border-indigo-100"
+                        >
+                          <span>{tag}</span>
+                          <button
+                            type="button"
+                            onClick={() => setEditingTx({ ...editingTx, tags: (editingTx.tags || []).filter(t => t !== tag) })}
+                            className="hover:text-indigo-900 focus:outline-none"
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Ajouter un tag..."
+                      className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-teal-brand/20 transition-all"
+                      value={editingTagInput}
+                      onChange={(e) => setEditingTagInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const newTag = editingTagInput.trim();
+                          if (newTag && !(editingTx.tags || []).includes(newTag)) {
+                            setEditingTx({ ...editingTx, tags: [...(editingTx.tags || []), newTag] });
+                          }
+                          setEditingTagInput("");
+                        }
+                      }}
                     />
                   </div>
                   
