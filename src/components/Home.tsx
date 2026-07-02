@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
   Plus,
+  Minus,
   ShoppingCart,
   TrendingDown,
   TrendingUp,
@@ -104,6 +105,105 @@ interface HomeProps {
   onOpenShoppingList: () => void;
 }
 
+
+function BudgetCategoryDetailsModal({
+  category,
+  onClose,
+  transactions,
+  language
+}: {
+  category: string;
+  onClose: () => void;
+  transactions: any[];
+  language: string;
+}) {
+  const categoryMatch = CATEGORY_MAP.find((c) => c.label.toLowerCase() === category.toLowerCase()) || CATEGORY_MAP[0];
+  
+  const categoryTransactions = transactions.filter(t => {
+    const isCredit =
+        t.category &&
+        [
+          "on me doit",
+          "je dois",
+          "مستحقات لي",
+          "ديون علي",
+          "owed to me",
+          "i owe",
+          "loans",
+          "debts",
+          "crédit +",
+          "crédit --",
+        ].includes(t.category.toLowerCase());
+    return (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit && (t.category || "Autres").toLowerCase() === category.toLowerCase();
+  }).sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 100 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 100 }}
+        className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-xl"
+      >
+        <div className="p-6 border-b border-slate-100 flex justify-between items-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+          <div className="flex items-center gap-3 relative z-10">
+            <div
+              className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
+                !categoryMatch.colorHex ? `${categoryMatch.bg} ${categoryMatch.text}` : ''
+              }`}
+              style={categoryMatch.colorHex ? { backgroundColor: `${categoryMatch.colorHex}20`, color: categoryMatch.colorHex } : undefined}
+            >
+              {categoryMatch.icon}
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-800 tracking-tight leading-none mb-1">
+                {category}
+              </h3>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Dernières dépenses
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200 transition-colors relative z-10"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="p-4 max-h-[60vh] overflow-y-auto">
+          {categoryTransactions.length > 0 ? (
+            <div className="space-y-3">
+              {categoryTransactions.map((tx) => {
+                const date = new Date(tx.timestamp);
+                return (
+                  <div key={tx.id} className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                    <div>
+                      <p className="text-sm font-bold text-slate-700">{tx.label || category}</p>
+                      <p className="text-[10px] font-medium text-slate-400">
+                        {date.toLocaleDateString(language === 'Français' ? 'fr-FR' : language === 'العربية' ? 'ar-MA' : 'en-US', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                    <span className="text-sm font-black text-slate-800">
+                      {tx.amount.toLocaleString("fr-FR")} DH
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-slate-400 text-sm font-medium">Aucune dépense récente.</p>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 export default function Home({
   balance,
   bankBalance,
@@ -137,6 +237,7 @@ export default function Home({
   const [showCalculator, setShowCalculator] = useState(false);
   const [showBankModal, setShowBankModal] = useState(false);
   const [showBudgetModal, setShowBudgetModal] = useState(false);
+  const [selectedBudgetCategory, setSelectedBudgetCategory] = useState<string | null>(null);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [showReceiptScannerModal, setShowReceiptScannerModal] = useState(false);
   const [categoryBudgetsRaw, setCategoryBudgetsRaw] = useLocalStorage<any>(
@@ -504,6 +605,29 @@ export default function Home({
     colorHex: cat.colorHex,
   }));
 
+  const generateSparklinePath = (data: number[], width = 100, height = 30) => {
+    if (!data || data.length < 2) return `M 0,${height} L ${width},${height}`;
+    const max = Math.max(...data, 1); // Avoid div by 0
+    const stepX = width / (data.length - 1);
+    
+    // Smooth bezier curve generator
+    const points = data.map((d, i) => {
+      const x = i * stepX;
+      // y goes from 2 to height-2 for padding
+      const y = (height - 4) - (d / max) * (height - 4) + 2; 
+      return { x, y };
+    });
+    
+    let path = `M ${points[0].x},${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const cx = (p1.x + p2.x) / 2;
+      path += ` C ${cx},${p1.y} ${cx},${p2.y} ${p2.x},${p2.y}`;
+    }
+    return path;
+  };
+
   const getSummaryTitle = () => {
     if (timeframe === "day") return t.sommaireJour;
     if (timeframe === "month") return t.sommaireMois;
@@ -553,6 +677,11 @@ export default function Home({
 
     let totalExpense = 0;
     let totalIncome = 0;
+    
+    // For sparklines (7 buckets)
+    const expenseBuckets = [0, 0, 0, 0, 0, 0, 0];
+    const incomeBuckets = [0, 0, 0, 0, 0, 0, 0];
+    const timeRange = now.getTime() - startOfPeriod.getTime();
 
     transactions.forEach((tx) => {
       if (tx.timestamp >= startOfPeriod.getTime()) {
@@ -573,14 +702,20 @@ export default function Home({
         const isVirementExpense = tx.type === "EXPENSE" && tx.category === "Virement";
 
         if (!isCredit && !isVirementExpense) {
-          if (tx.type === "EXPENSE") totalExpense += tx.amount;
-          else if (tx.type === "INCOME" && !tx.paidByBank)
+          // Calculate bucket index (0-6)
+          const bucketIndex = Math.min(6, Math.max(0, Math.floor(((tx.timestamp - startOfPeriod.getTime()) / timeRange) * 7)));
+          if (tx.type === "EXPENSE") {
+            totalExpense += tx.amount;
+            expenseBuckets[bucketIndex] += tx.amount;
+          } else if (tx.type === "INCOME" && !tx.paidByBank) {
             totalIncome += tx.amount;
+            incomeBuckets[bucketIndex] += tx.amount;
+          }
         }
       }
     });
 
-    return { totalExpense, totalIncome };
+    return { totalExpense, totalIncome, expenseBuckets, incomeBuckets };
   }, [transactions, timeframe]);
 
   const currentMonthExpenses = React.useMemo(() => {
@@ -598,6 +733,24 @@ export default function Home({
 
     return spends;
   }, [transactions]);
+
+  const previousMonthExpenses = React.useMemo(() => {
+    const now = new Date();
+    const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+
+    const spends = new Map<string, number>();
+
+    transactions.forEach((tx) => {
+      if (tx.type === "EXPENSE" && tx.timestamp >= startOfPrevMonth && tx.timestamp < startOfCurrentMonth) {
+        const cat = (tx.category || "Autres").toLowerCase();
+        spends.set(cat, (spends.get(cat) || 0) + tx.amount);
+      }
+    });
+
+    return spends;
+  }, [transactions]);
+
 
   const latestPurchasesList = React.useMemo(() => {
     return transactions
@@ -1019,32 +1172,61 @@ export default function Home({
                 <div className="flex flex-col w-full">
                   {latestPurchasesList.map((item, index) => {
                     const info = getArticleInfo(item.label, item.category, predefinedItems);
-                    const color = info.colorHex || CATEGORY_MAP.find(c => c.label === item.category)?.colorHex || '#334155';
+                    const categoryMatch = CATEGORY_MAP.find(c => c.label.toLowerCase() === (item.category || "Autres").toLowerCase()) || CATEGORY_MAP[0];
+                    const color = info.colorHex || categoryMatch.colorHex || '#334155';
+                    
+                    const time = new Date(item.timestamp).toLocaleTimeString(language === 'Français' ? 'fr-FR' : language === 'العربية' ? 'ar-MA' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+
+                    const now = new Date();
+                    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+                    const boughtThisMonth = transactions.filter(tx => 
+                      tx.type === "EXPENSE" && 
+                      tx.timestamp >= startOfCurrentMonth && 
+                      tx.label.toLowerCase() === item.label.toLowerCase()
+                    ).length;
+
                     return (
                       <div 
                         key={item.id}
-                        className="flex justify-between items-center py-1 px-1"
+                        className="flex items-center gap-3 py-2.5 px-1 border-b border-indigo-100/30 last:border-0"
                         style={{ color }}
                       >
-                        <div className="flex flex-col">
-                          <span className="text-base font-bold tracking-tight">
-                            {item.label}
-                          </span>
-                          {item.tags && item.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-0.5">
-                              {item.tags.map(tag => (
-                                <span key={tag} className="text-[8px] font-black uppercase opacity-70 tracking-widest border border-current rounded-full px-1.5 py-0.5" style={{ color }}>
-                                  {tag}
-                                </span>
-                              ))}
+                        <span className="text-[11px] font-bold opacity-50 w-9 shrink-0 text-left">
+                          {time}
+                        </span>
+                        
+                        <span className="text-sm font-bold tracking-tight truncate flex-1 opacity-90">
+                          {item.label}
+                        </span>
+                        
+                        <div className="flex items-center gap-2.5 shrink-0 opacity-75">
+                          {info.icon && (
+                            <div className="flex items-center justify-center">
+                              {React.isValidElement(info.icon) ? React.cloneElement(info.icon as React.ReactElement, { size: 14, strokeWidth: 2.5 } as any) : info.icon}
                             </div>
                           )}
+                          
+                          <div className="flex items-center gap-1">
+                            {boughtThisMonth > 0 && (
+                              <span className="text-[10px] font-bold opacity-60 whitespace-nowrap">
+                                x{boughtThisMonth}
+                              </span>
+                            )}
+                            <div className="flex items-center justify-center">
+                              {React.isValidElement(categoryMatch.icon) ? React.cloneElement(categoryMatch.icon as React.ReactElement, { size: 14, strokeWidth: 2.5 } as any) : categoryMatch.icon}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-center">
+                            {item.paidByBank ? <Landmark size={14} strokeWidth={2.5} /> : <Wallet size={14} strokeWidth={2.5} />}
+                          </div>
                         </div>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-xl font-black tracking-tighter">
+                        
+                        <div className="flex items-baseline justify-end shrink-0 min-w-[4rem] ml-1">
+                          <span className="text-base font-black tracking-tighter opacity-100">
                             {item.amount.toLocaleString("fr-FR", { minimumFractionDigits: 2 })}
                           </span>
-                          <span className="text-[12px] font-bold uppercase opacity-80">
+                          <span className="text-[10px] font-bold uppercase opacity-60 ml-0.5">
                             {currency}
                           </span>
                         </div>
@@ -1059,12 +1241,13 @@ export default function Home({
       )}
 
       {/* Credits Buttons - Matching summary card style exactly */}
-      {isVisible("credits") && (
+      {isVisible("credits") && (totalOweMe > 0 || totalIOwe > 0) && (
       <div className="mb-8" style={{ order: getOrder("credits") }}>
         <h3 className="text-slate-900 font-black tracking-tight mb-4 px-1">
           Mes Crédits
         </h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className={`grid ${totalOweMe > 0 && totalIOwe > 0 ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
+          {totalOweMe > 0 && (
           <div
             onClick={onNavigateToCredits}
             className="p-4 rounded-2xl border-2 border-indigo-100 bg-indigo-50/30 relative overflow-hidden group cursor-pointer transition-all hover:border-indigo-200 hover:shadow-sm active:scale-[0.98]"
@@ -1087,7 +1270,8 @@ export default function Home({
               size={48}
             />
           </div>
-
+          )}
+          {totalIOwe > 0 && (
           <div
             onClick={onNavigateToCredits}
             className="p-4 rounded-2xl border-2 border-amber-100 bg-amber-50/30 relative overflow-hidden group cursor-pointer transition-all hover:border-amber-200 hover:shadow-sm active:scale-[0.98]"
@@ -1110,6 +1294,7 @@ export default function Home({
               size={48}
             />
           </div>
+          )}
         </div>
       </div>
       )}
@@ -1163,9 +1348,33 @@ export default function Home({
               <p className="text-xs text-slate-500 mb-1 font-medium">
                 {t.achatTotal}
               </p>
-              <p className="text-xl font-black text-danger-red leading-none">
+              <p className="text-xl font-black text-danger-red leading-none mb-3">
                 {filteredTotals.totalExpense.toLocaleString("fr-FR")} {currency}
               </p>
+              <div className="h-8 w-full opacity-60">
+                <svg viewBox="0 0 100 30" className="w-full h-full overflow-visible" preserveAspectRatio="none">
+                  <path 
+                    d={generateSparklinePath(filteredTotals.expenseBuckets)} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2.5" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    className="text-danger-red" 
+                  />
+                  <path 
+                    d={`${generateSparklinePath(filteredTotals.expenseBuckets)} L 100,30 L 0,30 Z`} 
+                    fill="url(#gradient-expense)" 
+                    stroke="none"
+                  />
+                  <defs>
+                    <linearGradient id="gradient-expense" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0%" stopColor="currentColor" stopOpacity="0.2" className="text-danger-red" />
+                      <stop offset="100%" stopColor="currentColor" stopOpacity="0" className="text-danger-red" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
             </div>
             <ShoppingCart
               className="absolute -right-2 -bottom-2 text-danger-red/10 rotate-12 group-hover:scale-110 transition-transform"
@@ -1180,9 +1389,33 @@ export default function Home({
               <p className="text-xs text-slate-500 mb-1 font-medium">
                 {t.retraits}
               </p>
-              <p className="text-xl font-black text-bank-blue leading-none">
+              <p className="text-xl font-black text-bank-blue leading-none mb-3">
                 {filteredTotals.totalIncome.toLocaleString("fr-FR")} {currency}
               </p>
+              <div className="h-8 w-full opacity-60">
+                <svg viewBox="0 0 100 30" className="w-full h-full overflow-visible" preserveAspectRatio="none">
+                  <path 
+                    d={generateSparklinePath(filteredTotals.incomeBuckets)} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2.5" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    className="text-bank-blue" 
+                  />
+                  <path 
+                    d={`${generateSparklinePath(filteredTotals.incomeBuckets)} L 100,30 L 0,30 Z`} 
+                    fill="url(#gradient-income)" 
+                    stroke="none"
+                  />
+                  <defs>
+                    <linearGradient id="gradient-income" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0%" stopColor="currentColor" stopOpacity="0.2" className="text-bank-blue" />
+                      <stop offset="100%" stopColor="currentColor" stopOpacity="0" className="text-bank-blue" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
             </div>
             <Plus
               className="absolute -right-2 -bottom-2 text-bank-blue/10 rotate-12 group-hover:scale-110 transition-transform"
@@ -1393,9 +1626,9 @@ export default function Home({
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="grid grid-cols-4 gap-2 pb-4 px-1">
           {Object.keys(categoryBudgets).length === 0 ? (
-            <div className="text-center bg-white border border-dashed border-slate-200 rounded-3xl p-8 flex flex-col items-center">
+            <div className="col-span-4 text-center bg-white border border-dashed border-slate-200 rounded-3xl p-8 flex flex-col items-center">
               <Target size={32} className="text-slate-200 mb-3" />
               <p className="text-xs text-slate-400 font-medium">
                 {t.noBudgetsYet}
@@ -1416,71 +1649,67 @@ export default function Home({
                     (c) => c.label.toLowerCase() === category.toLowerCase()
                   ) || CATEGORY_MAP[0];
 
+                const prevSpent = previousMonthExpenses.get(category.toLowerCase()) || 0;
+                const TrendIcon = spent > prevSpent ? TrendingUp : spent < prevSpent ? TrendingDown : Minus;
+                const trendColor = spent > prevSpent ? "text-rose-500" : spent < prevSpent ? "text-emerald-500" : "text-slate-400";
+
+
                 return (
                   <div
                     key={`${category}-${index}`}
-                    className={`bg-white rounded-3xl p-5 border shadow-sm ${
+                    onClick={() => setSelectedBudgetCategory(category)}
+                    className={`w-full h-[86px] rounded-[24px] flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-sm border hover:border-slate-200 active:scale-95 cursor-pointer ${
                       isOver
-                        ? "border-rose-200 shadow-rose-100"
+                        ? "border-rose-200 shadow-rose-100 bg-rose-50"
                         : isClose
-                        ? "border-amber-200 shadow-amber-100"
-                        : "border-slate-100"
+                        ? "border-amber-200 shadow-amber-100 bg-amber-50"
+                        : "border-white"
+                    } ${
+                      (!isOver && !isClose && !categoryMatch.colorHex) ? categoryMatch.bg.replace("100", "50") : ""
                     }`}
+                    style={(!isOver && !isClose && categoryMatch.colorHex) ? { backgroundColor: `${categoryMatch.colorHex}15` } : undefined}
                   >
-                    <div className="flex items-center gap-4 mb-1">
-                      <div
-                        className={`w-10 h-10 rounded-2xl flex items-center justify-center border border-white shadow-sm ${!categoryMatch.colorHex ? `${categoryMatch.bg} ${categoryMatch.text}` : ''}`}
-                        style={categoryMatch.colorHex ? { backgroundColor: `${categoryMatch.colorHex}20`, color: categoryMatch.colorHex } : undefined}
+                    <div className={`absolute top-2 right-2 flex items-center justify-center ${trendColor}`}>
+                      <TrendIcon size={12} strokeWidth={3} />
+                    </div>
+                    <div
+                      className={`z-10 relative flex items-center justify-center mb-1 mt-1 ${
+                        isOver ? "text-rose-500" : isClose ? "text-amber-500" : (!categoryMatch.colorHex ? categoryMatch.text : "")
+                      }`}
+                      style={(!isOver && !isClose && categoryMatch.colorHex) ? { color: categoryMatch.colorHex } : undefined}
+                    >
+                      <span className={`absolute -top-1.5 -left-3 text-[9px] font-black leading-none ${
+                        isOver ? "text-rose-500" : isClose ? "text-amber-500" : (!categoryMatch.colorHex ? categoryMatch.text : "")
+                      }`}
+                      style={(!isOver && !isClose && categoryMatch.colorHex) ? { color: categoryMatch.colorHex } : undefined}
                       >
-                        {categoryMatch.icon}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-center">
-                          <h4 className="font-bold text-slate-800 tracking-tight text-sm">
-                            {category}
-                          </h4>
-                          <span
-                            className={`text-xs font-black tracking-tighter ${
-                              isOver ? "text-rose-600" : "text-slate-500"
-                            }`}
-                          >
-                            {spent.toLocaleString("fr-FR")} /{" "}
-                            <span className="text-slate-400">
-                              {limit.toLocaleString("fr-FR")} {currency}
-                            </span>
-                          </span>
-                        </div>
-                        <div className="w-full h-2 bg-slate-100 rounded-full mt-2 overflow-hidden shadow-inner">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${percent}%` }}
-                            transition={{ duration: 0.8, ease: "easeOut" }}
-                            className={`h-full rounded-full ${
-                              isOver
-                                ? "bg-rose-500"
-                                : isClose
-                                ? "bg-amber-500"
-                                : (!categoryMatch.colorHex ? "bg-teal-500" : "")
-                            }`}
-                            style={(!isOver && !isClose && categoryMatch.colorHex) ? { backgroundColor: categoryMatch.colorHex } : undefined}
-                          />
-                        </div>
+                        {Math.round(percent)}%
+                      </span>
+                      {categoryMatch.icon}
+                    </div>
+                    
+                    <div className="flex flex-col items-center w-full px-2 mt-0.5">
+                      <span className={`text-[10px] font-black leading-none truncate w-full text-center ${
+                        isOver ? "text-rose-600" : isClose ? "text-amber-600" : "text-slate-700"
+                      }`}>
+                        {spent.toLocaleString("fr-FR")}
+                      </span>
+                      <div className="w-full h-1 bg-black/5 rounded-full mt-1.5 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${
+                            isOver
+                              ? "bg-rose-500"
+                              : isClose
+                              ? "bg-amber-500"
+                              : (!categoryMatch.colorHex ? "bg-teal-500" : "")
+                          }`}
+                          style={{
+                            width: `${percent}%`,
+                            ...((!isOver && !isClose && categoryMatch.colorHex) ? { backgroundColor: categoryMatch.colorHex } : {})
+                          }}
+                        />
                       </div>
                     </div>
-                    {isOver && (
-                      <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-rose-500 mt-3 bg-rose-50 px-2 py-1.5 rounded-lg w-fit border border-rose-100/50">
-                        <AlertTriangle size={10} />
-                        Dépassement de{" "}
-                        {Math.abs(limit - spent).toLocaleString("fr-FR")}{" "}
-                        {currency}
-                      </div>
-                    )}
-                    {isClose && (
-                      <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-amber-500 mt-3 bg-amber-50 px-2 py-1.5 rounded-lg w-fit border border-amber-100/50">
-                        Reste {Math.abs(limit - spent).toLocaleString("fr-FR")}{" "}
-                        {currency}
-                      </div>
-                    )}
                   </div>
                 );
               }
