@@ -1032,12 +1032,13 @@ export default function AddTransactionModal({
                               >
                                 <div
                                   className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                                    cat.bgColor
-                                  } ${cat.color} ${
+                                    !cat.colorHex ? `${cat.bgColor} ${cat.color}` : ''
+                                  } ${
                                     selectedCategory === cat.id && !showFrequent
                                       ? "scale-110"
                                       : ""
                                   } transition-transform`}
+                                  style={cat.colorHex ? { backgroundColor: `${cat.colorHex}20`, color: cat.colorHex } : undefined}
                                 >
                                   {(() => {
                                     const CatIcon =
@@ -1523,9 +1524,10 @@ export default function AddTransactionModal({
                       );
                       setEditingCategoryItemId(null);
                     }}
-                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all hover:scale-[1.03] active:scale-95 ${cat.bgColor} border-transparent shadow-sm`}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all hover:scale-[1.03] active:scale-95 ${!cat.colorHex ? cat.bgColor : ''} border-transparent shadow-sm`}
+                    style={cat.colorHex ? { backgroundColor: `${cat.colorHex}20` } : undefined}
                   >
-                    <div className={`${cat.color}`}>
+                    <div className={`${!cat.colorHex ? cat.color : ''}`} style={cat.colorHex ? { color: cat.colorHex } : undefined}>
                       {(() => {
                         const CatIcon =
                           ICON_MAP[cat.iconName] || ICON_MAP["MoreHorizontal"];
@@ -1533,7 +1535,8 @@ export default function AddTransactionModal({
                       })()}
                     </div>
                     <span
-                      className={`text-[10px] font-black uppercase tracking-tight text-center ${cat.color}`}
+                      className={`text-[10px] font-black uppercase tracking-tight text-center ${!cat.colorHex ? cat.color : ''}`}
+                      style={cat.colorHex ? { color: cat.colorHex } : undefined}
                     >
                       {cat.label}
                     </span>

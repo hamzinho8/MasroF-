@@ -212,7 +212,15 @@ export default function Inventory({ items, onItemsChange, language, currency, pr
     }> = {};
 
     consumedItems.forEach(item => {
-      const consumedTime = item.consumedAt || (item.history.length > 0 ? item.history[0].timestamp : item.addedAt);
+      let consumedTime = item.consumedAt;
+      if (!consumedTime) {
+        if (item.history && item.history.length > 0) {
+          consumedTime = Math.max(...item.history.map(h => h.timestamp));
+        } else {
+          consumedTime = item.addedAt;
+        }
+      }
+
       const date = new Date(consumedTime);
       const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
       
@@ -260,18 +268,24 @@ export default function Inventory({ items, onItemsChange, language, currency, pr
   };
 
   const getAverageLifespan = (groupItems: InventoryItem[]) => {
-    let totalMs = 0;
+    let totalDays = 0;
     let count = 0;
     groupItems.forEach(item => {
       if (item.history && item.history.length > 0) {
-        const lastAction = item.history[0].timestamp; // most recent
-        totalMs += (lastAction - item.addedAt);
+        const timestamps = item.history.map(h => h.timestamp);
+        const startTime = Math.min(...timestamps);
+        const endTime = item.consumedAt || Math.max(...timestamps);
+        const days = (endTime - startTime) / (1000 * 60 * 60 * 24);
+        totalDays += Math.max(1, Math.round(days));
+        count++;
+      } else if (item.consumedAt) {
+        const days = (item.consumedAt - item.addedAt) / (1000 * 60 * 60 * 24);
+        totalDays += Math.max(1, Math.round(days));
         count++;
       }
     });
     if (count === 0) return null;
-    const days = Math.round((totalMs / count) / (1000 * 60 * 60 * 24));
-    return Math.max(1, days);
+    return Math.max(1, Math.round(totalDays / count));
   };
 
   return (
@@ -449,8 +463,16 @@ export default function Inventory({ items, onItemsChange, language, currency, pr
                                     const initialVol = item.initialVolume || 0;
                                     const uses = item.usageCount || 0;
                                     const amountPerUse = uses > 0 ? (initialVol / uses).toFixed(0) : 0;
-                                    const itemConsumedTime = item.consumedAt || (item.history.length > 0 ? item.history[0].timestamp : item.addedAt);
-                                    const durationDays = Math.max(1, Math.round((itemConsumedTime - item.addedAt) / (1000 * 60 * 60 * 24)));
+                                    let actualStartTime = item.addedAt;
+                                    let actualEndTime = item.consumedAt || item.addedAt;
+
+                                    if (item.history && item.history.length > 0) {
+                                      const timestamps = item.history.map(h => h.timestamp);
+                                      actualStartTime = Math.min(...timestamps);
+                                      actualEndTime = item.consumedAt || Math.max(...timestamps);
+                                    }
+
+                                    const durationDays = Math.max(1, Math.round((actualEndTime - actualStartTime) / (1000 * 60 * 60 * 24)));
                                     const amountPerDay = initialVol > 0 ? (initialVol / durationDays).toFixed(0) : 0;
                                     const unitName = item.unitType === 'grams' ? 'g' : item.unitType === 'liters' ? 'L' : '';
 
@@ -464,12 +486,12 @@ export default function Inventory({ items, onItemsChange, language, currency, pr
                                           <div className="flex flex-col">
                                             <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1">
                                               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                                              {new Date(item.addedAt).toLocaleDateString(language === 'Français' ? 'fr-FR' : language === 'العربية' ? 'ar-MA' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                              {new Date(actualStartTime).toLocaleDateString(language === 'Français' ? 'fr-FR' : language === 'العربية' ? 'ar-MA' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
                                             </span>
-                                            {item.history && item.history.length > 0 && (
+                                            {(item.consumedAt || (item.history && item.history.length > 0)) && (
                                               <span className="text-[10px] font-bold text-rose-500 flex items-center gap-1 mt-0.5">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-rose-500"></div>
-                                                {new Date(itemConsumedTime).toLocaleDateString(language === 'Français' ? 'fr-FR' : language === 'العربية' ? 'ar-MA' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                {new Date(actualEndTime).toLocaleDateString(language === 'Français' ? 'fr-FR' : language === 'العربية' ? 'ar-MA' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
                                               </span>
                                             )}
                                           </div>

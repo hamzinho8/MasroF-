@@ -806,8 +806,8 @@ Analyse ces données, identifie les plus grandes dépenses, donne ton avis sur l
                   >
                     <div className="flex items-center gap-4">
                       <div
-                        className={`w-12 h-12 rounded-2xl ${style.bg} flex items-center justify-center`}
-                        style={{ color: style.color }}
+                        className={`w-12 h-12 rounded-2xl ${!style.color ? style.bg : ''} flex items-center justify-center`}
+                        style={style.color ? { color: style.color, backgroundColor: `${style.color}20` } : undefined}
                       >
                         {style.icon}
                       </div>

@@ -1429,7 +1429,8 @@ export default function Home({
                   >
                     <div className="flex items-center gap-4 mb-1">
                       <div
-                        className={`w-10 h-10 rounded-2xl flex items-center justify-center border border-white shadow-sm ${categoryMatch.bg} ${categoryMatch.text}`}
+                        className={`w-10 h-10 rounded-2xl flex items-center justify-center border border-white shadow-sm ${!categoryMatch.colorHex ? `${categoryMatch.bg} ${categoryMatch.text}` : ''}`}
+                        style={categoryMatch.colorHex ? { backgroundColor: `${categoryMatch.colorHex}20`, color: categoryMatch.colorHex } : undefined}
                       >
                         {categoryMatch.icon}
                       </div>
@@ -1459,8 +1460,9 @@ export default function Home({
                                 ? "bg-rose-500"
                                 : isClose
                                 ? "bg-amber-500"
-                                : "bg-teal-500"
+                                : (!categoryMatch.colorHex ? "bg-teal-500" : "")
                             }`}
+                            style={(!isOver && !isClose && categoryMatch.colorHex) ? { backgroundColor: categoryMatch.colorHex } : undefined}
                           />
                         </div>
                       </div>

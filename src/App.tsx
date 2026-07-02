@@ -840,16 +840,50 @@ export default function App() {
 
       if (budgetAlertThreshold !== null) {
         const categoryTotals: Record<string, number> = {};
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999).getTime();
+
         transactions.forEach((t) => {
-          if (t.type === "EXPENSE" && t.category) {
-            categoryTotals[t.category] =
-              (categoryTotals[t.category] || 0) + t.amount;
+          const isCredit =
+            t.category &&
+            [
+              "on me doit",
+              "je dois",
+              "مستحقات لي",
+              "ديون علي",
+              "owed to me",
+              "i owe",
+              "loans",
+              "debts",
+              "crédit +",
+              "crédit --",
+            ].includes(t.category.toLowerCase());
+            
+          if (
+            (t.type === "EXPENSE" || (t.type as any) === "expense") &&
+            !isCredit &&
+            t.category &&
+            t.timestamp >= startOfMonth &&
+            t.timestamp <= endOfMonth
+          ) {
+            let cat = t.category;
+            if (cat === "Food" || cat === "Nourriture") {
+               const pref = predefinedItems.find((p: any) => p.name.toLowerCase() === (t.label || '').toLowerCase());
+               cat = pref ? pref.category : "Gourmandises";
+            } else if (cat === "Leisure") {
+               cat = "Loisirs";
+            } else if (cat === "Others") {
+               cat = "Autres";
+            }
+            categoryTotals[cat] = (categoryTotals[cat] || 0) + t.amount;
           }
         });
+        
         Object.entries(categoryBudgets).forEach(([cat, limit]) => {
           const limitNum = typeof limit === "number" ? limit : 0;
           const total = categoryTotals[cat] || 0;
-          if (total >= limitNum * (budgetAlertThreshold / 100)) {
+          if (limitNum > 0 && total >= limitNum * (budgetAlertThreshold / 100)) {
             alarms.push(
               `<b><font color="${alarmColor}">📊 Budget dépassé: ${cat}</font></b>`
             );
