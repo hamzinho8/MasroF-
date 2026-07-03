@@ -1339,7 +1339,7 @@ export default function Home({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3">
           <button
             onClick={() => setShowCalendarModal(true)}
             className="text-left p-4 rounded-2xl border-2 border-danger-red/20 bg-danger-red/5 relative overflow-hidden group hover:border-danger-red/40 transition-all cursor-pointer"
@@ -1381,47 +1381,7 @@ export default function Home({
               size={48}
             />
           </button>
-          <button
-            onClick={() => setShowCalendarModal(true)}
-            className="text-left p-4 rounded-2xl border-2 border-bank-blue/20 bg-bank-blue/5 relative overflow-hidden group hover:border-bank-blue/40 transition-all cursor-pointer"
-          >
-            <div className="relative z-10">
-              <p className="text-xs text-slate-500 mb-1 font-medium">
-                {t.retraits}
-              </p>
-              <p className="text-xl font-black text-bank-blue leading-none mb-3">
-                {filteredTotals.totalIncome.toLocaleString("fr-FR")} {currency}
-              </p>
-              <div className="h-8 w-full opacity-60">
-                <svg viewBox="0 0 100 30" className="w-full h-full overflow-visible" preserveAspectRatio="none">
-                  <path 
-                    d={generateSparklinePath(filteredTotals.incomeBuckets)} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2.5" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    className="text-bank-blue" 
-                  />
-                  <path 
-                    d={`${generateSparklinePath(filteredTotals.incomeBuckets)} L 100,30 L 0,30 Z`} 
-                    fill="url(#gradient-income)" 
-                    stroke="none"
-                  />
-                  <defs>
-                    <linearGradient id="gradient-income" x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0%" stopColor="currentColor" stopOpacity="0.2" className="text-bank-blue" />
-                      <stop offset="100%" stopColor="currentColor" stopOpacity="0" className="text-bank-blue" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </div>
-            </div>
-            <Plus
-              className="absolute -right-2 -bottom-2 text-bank-blue/10 rotate-12 group-hover:scale-110 transition-transform"
-              size={48}
-            />
-          </button>
+          
         </div>
       </div>
       )}
