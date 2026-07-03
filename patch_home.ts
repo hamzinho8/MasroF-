@@ -1,43 +1,44 @@
 import fs from 'fs';
-const content = fs.readFileSync('src/components/Home.tsx', 'utf-8');
+let content = fs.readFileSync('src/components/Home.tsx', 'utf-8');
 
-const importRegex = /import React, { useState, useEffect } from "react";/;
-const newImport = `import React, { useState, useEffect } from "react";\nimport { TrendingUp, TrendingDown, Minus } from "lucide-react";`;
-let newContent = content.replace(importRegex, newImport);
+// Move CATEGORY_MAP outside of Home function
+const categoryMapStart = `  const CATEGORY_MAP = APP_CATEGORIES.map((cat) => ({`;
+const categoryMapEnd = `  }));`;
+const categoryMapFull = `const CATEGORY_MAP = APP_CATEGORIES.map((cat) => ({
+    label: cat.label,
+    icon: (() => {
+      const IconComp = ICON_MAP[cat.iconName] || MoreHorizontal;
+      return <IconComp size={24} />;
+    })(),
+    color: cat.colorString,
+    bg: cat.bgColor,
+    text: cat.color,
+    glow: \`bg-\${cat.colorString}-400\`,
+    colorHex: cat.colorHex,
+  }));`;
 
-// Add previousMonthExpenses
-const currentMonthRegex = /const currentMonthExpenses = React\.useMemo\(\(\) => \{[\s\S]*?\}, \[transactions\]\);/;
-const currentMonthMatch = newContent.match(currentMonthRegex);
-if (currentMonthMatch) {
-  const previousMonthStr = `
-  const previousMonthExpenses = React.useMemo(() => {
-    const now = new Date();
-    const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
-    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+content = content.replace(/  const CATEGORY_MAP = APP_CATEGORIES\.map\(\(cat\) => \(\{[\s\S]*?  \}\)\);\n/m, '');
 
-    const spends = new Map<string, number>();
+// Insert after imports
+content = content.replace('import VoiceTransactionModal from "./VoiceTransactionModal";', 'import VoiceTransactionModal from "./VoiceTransactionModal";\n\n' + categoryMapFull);
 
-    transactions.forEach((tx) => {
-      if (tx.type === "EXPENSE" && tx.timestamp >= startOfPrevMonth && tx.timestamp < startOfCurrentMonth) {
-        const cat = (tx.category || "Autres").toLowerCase();
-        spends.set(cat, (spends.get(cat) || 0) + tx.amount);
-      }
-    });
+// Replace info.icon logic
+const oldIconLogic = `                        <div className="flex items-center gap-2.5 shrink-0 opacity-75">
+                          {info.icon && (
+                            <div className="flex items-center justify-center">
+                              {React.isValidElement(info.icon) ? React.cloneElement(info.icon as React.ReactElement, { size: 14, strokeWidth: 2.5 } as any) : info.icon}
+                            </div>
+                          )}`;
 
-    return spends;
-  }, [transactions]);
-`;
-  newContent = newContent.replace(currentMonthRegex, currentMonthMatch[0] + "\n" + previousMonthStr);
-}
+const newIconLogic = `                        <div className="flex items-center gap-2.5 shrink-0 opacity-75">
+                            <div className="flex items-center justify-center">
+                              {(() => {
+                                if (info.iconSvg) return <div dangerouslySetInnerHTML={{__html: info.iconSvg}} className="w-3.5 h-3.5" />;
+                                const IconComp = ICON_MAP[info.iconName] || ShoppingBag;
+                                return <IconComp size={14} strokeWidth={2.5} />;
+                              })()}
+                            </div>`;
 
-// Add state
-const stateRegex = /const \[showBudgetModal, setShowBudgetModal\] = useState\(false\);/;
-newContent = newContent.replace(stateRegex, `const [showBudgetModal, setShowBudgetModal] = useState(false);\n  const [selectedBudgetCategory, setSelectedBudgetCategory] = useState<string | null>(null);`);
+content = content.replace(oldIconLogic, newIconLogic);
 
-// Update the rendering of budget cards
-const budgetCardRegex = /<div\s+key=\{\`\$\{category\}\-\$\{index\}\`\}[\s\S]*?className=\{\`w-full h-\[86px\] rounded-\[24px\] flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-sm border hover:border-slate-200 active:scale-95[\s\S]*?\}\s*style=\{[\s\S]*?\}\s*>/;
-newContent = newContent.replace(budgetCardRegex, (match) => {
-  return match + "\n                    onClick={() => setSelectedBudgetCategory(category)}";
-});
-
-fs.writeFileSync('src/components/Home.tsx', newContent);
+fs.writeFileSync('src/components/Home.tsx', content);

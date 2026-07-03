@@ -58,6 +58,19 @@ import InshallahEstimationCard from "./InshallahEstimationCard";
 import AddBankBalanceModal from "./AddBankBalanceModal";
 import VoiceTransactionModal from "./VoiceTransactionModal";
 
+const CATEGORY_MAP = APP_CATEGORIES.map((cat) => ({
+    label: cat.label,
+    icon: (() => {
+      const IconComp = ICON_MAP[cat.iconName] || MoreHorizontal;
+      return <IconComp size={24} />;
+    })(),
+    color: cat.colorString,
+    bg: cat.bgColor,
+    text: cat.color,
+    glow: `bg-${cat.colorString}-400`,
+    colorHex: cat.colorHex,
+  }));
+
 interface HomeProps {
   balance: number;
   bankBalance: number;
@@ -592,18 +605,6 @@ export default function Home({
     translations[language as keyof typeof translations] ||
     translations["Français"];
 
-  const CATEGORY_MAP = APP_CATEGORIES.map((cat) => ({
-    label: cat.label,
-    icon: (() => {
-      const IconComp = ICON_MAP[cat.iconName] || MoreHorizontal;
-      return <IconComp size={24} />;
-    })(),
-    color: cat.colorString,
-    bg: cat.bgColor,
-    text: cat.color,
-    glow: `bg-${cat.colorString}-400`,
-    colorHex: cat.colorHex,
-  }));
 
   const generateSparklinePath = (data: number[], width = 100, height = 30) => {
     if (!data || data.length < 2) return `M 0,${height} L ${width},${height}`;
@@ -1200,11 +1201,13 @@ export default function Home({
                         </span>
                         
                         <div className="flex items-center gap-2.5 shrink-0 opacity-75">
-                          {info.icon && (
                             <div className="flex items-center justify-center">
-                              {React.isValidElement(info.icon) ? React.cloneElement(info.icon as React.ReactElement, { size: 14, strokeWidth: 2.5 } as any) : info.icon}
+                              {(() => {
+                                if (info.iconSvg) return <div dangerouslySetInnerHTML={{__html: info.iconSvg}} className="w-3.5 h-3.5" />;
+                                const IconComp = ICON_MAP[info.iconName] || ShoppingBag;
+                                return <IconComp size={14} strokeWidth={2.5} />;
+                              })()}
                             </div>
-                          )}
                           
                           <div className="flex items-center gap-1">
                             {boughtThisMonth > 0 && (

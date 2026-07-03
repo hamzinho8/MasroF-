@@ -605,10 +605,12 @@ export default function App() {
 
     // 3. Inventory Item == 3
     inventoryItems.forEach((item: any) => {
+      const isVrac = item.unitType === 'grams' || item.unitType === 'liters';
       if (
         inventoryAlertThreshold !== null &&
         item.quantity === inventoryAlertThreshold &&
-        !alertedInventoryRef.current[item.id]
+        !alertedInventoryRef.current[item.id] &&
+        !isVrac
       ) {
         console.warn(
           `Alarme Stock: La quantité de l'article "${item.name}" est ${inventoryAlertThreshold}.`
@@ -820,7 +822,8 @@ export default function App() {
 
       if (inventoryAlertThreshold !== null) {
         inventoryItems.forEach((item) => {
-          if (item.quantity > 0 && item.quantity <= inventoryAlertThreshold) {
+          const isVrac = item.unitType === 'grams' || item.unitType === 'liters';
+          if (item.quantity > 0 && item.quantity <= inventoryAlertThreshold && !isVrac) {
             let colorHex = warnColor;
             const prefItem = predefinedItems.find(
               (p: any) => p.name === item.name
@@ -1206,6 +1209,7 @@ export default function App() {
   const [modalIsShoppingMode, setModalIsShoppingMode] = useState(false);
   const [modalInitialLabel, setModalInitialLabel] = useState("");
   const [modalInitialCategory, setModalInitialCategory] = useState("");
+  const [modalInitialMode, setModalInitialMode] = useState<"manual" | "scanner" | "vocal">("manual");
   const [modalInitialAmount, setModalInitialAmount] = useState<
     number | undefined
   >(undefined);
@@ -1215,13 +1219,15 @@ export default function App() {
 
   const openModal = (
     type: "INCOME" | "EXPENSE",
-    prefill?: { name: string; category: string; price: number }
+    prefill?: { name: string; category: string; price: number },
+    mode?: "manual" | "scanner" | "vocal"
   ) => {
     setModalType(type);
     setModalIsShoppingMode(false);
     setModalInitialLabel(prefill?.name || "");
     setModalInitialCategory(prefill?.category || "");
     setModalInitialAmount(prefill?.price);
+    setModalInitialMode(mode || "manual");
     setShoppingItemSelectedId(null);
     setIsModalOpen(true);
   };
@@ -1473,7 +1479,7 @@ export default function App() {
             currency={currency}
             onDelete={deleteTransaction}
             onUpdate={updateTransaction}
-            onAddClick={openModal}
+            onAddClick={(type, mode) => openModal(type, undefined, mode as any)}
           />
         );
       case "bank":
@@ -1738,6 +1744,7 @@ export default function App() {
       <AddTransactionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        initialMode={modalInitialMode}
         onAdd={(
           label,
           amount,
