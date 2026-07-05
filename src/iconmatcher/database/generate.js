@@ -1291,4 +1291,141 @@ const additionalObjects = [
   }
 ];
 
-fs.writeFileSync(path.join(process.cwd() + '/src/iconmatcher/database', 'objects.json'), JSON.stringify([...objects, ...additionalObjects], null, 2));
+
+const moroccanObjects = [
+  // Fast Food & Snacks
+  { id: "tacos_ma", name_fr: "Tacos", name_ar: "طاكو", name_en: "Tacos", keywords: ["tacos", "takos", "طاكوس"], category: "Nourriture", icon: "Utensils" },
+  { id: "chwarma_ma", name_fr: "Chawarma", name_ar: "شوارما", name_en: "Shawarma", keywords: ["chwarma", "chawarma", "chouarma", "شوارما", "شاورما"], category: "Nourriture", icon: "Utensils" },
+  { id: "bocadillos_ma", name_fr: "Bocadillos", name_ar: "بوكاديوس", name_en: "Sandwich", keywords: ["bocadillos", "bocadio", "sandwich", "sandouich", "بوكاديوس"], category: "Nourriture", icon: "Sandwich" },
+  { id: "za3za3_ma", name_fr: "Za3za3", name_ar: "زعزع", name_en: "Zaaza", keywords: ["za3za3", "zaaza", "زعزع"], category: "Gourmandises", icon: "CupSoda" },
+  { id: "panache_ma", name_fr: "Jus Panaché", name_ar: "عصير باناشي", name_en: "Mixed juice", keywords: ["panache", "panachi", "jus", "3assir", "عصير", "باناشي"], category: "Nourriture", icon: "CupSoda" },
+  { id: "rayb_ma", name_fr: "Rayb", name_ar: "رايب", name_en: "Yogurt", keywords: ["rayb", "raib", "mahlaba", "رايب"], category: "Nourriture", icon: "Milk" },
+  
+  // Bakery & Sweets
+  { id: "millefeuille_ma", name_fr: "Millefeuille", name_ar: "ميلفاي", name_en: "Millefeuille", keywords: ["millefeuille", "milfay", "milfai", "ميلفاي"], category: "Gourmandises", icon: "Cake" },
+  { id: "krwassa_ma", name_fr: "Croissant / Krwassa", name_ar: "كرواصة", name_en: "Croissant", keywords: ["krwassa", "croissant", "krouassa", "كرواصة"], category: "Gourmandises", icon: "Croissant" },
+  { id: "shnek_ma", name_fr: "Shnek / Petit pain", name_ar: "شنيك", name_en: "Pain au chocolat", keywords: ["shnek", "chnek", "petit pain", "شنيك", "بتي بان"], category: "Gourmandises", icon: "Croissant" },
+  { id: "pipas_ma", name_fr: "Pipas", name_ar: "بيبا", name_en: "Sunflower seeds", keywords: ["pipas", "zri3a", "zeri3a", "زريعة", "بيبا"], category: "Gourmandises", icon: "Nut" },
+  { id: "chbakia_ma", name_fr: "Chebakia", name_ar: "شباكية", name_en: "Chebakia", keywords: ["chbakia", "chebakia", "mkhar9a", "شباكية"], category: "Gourmandises", icon: "ChebakiaIcon" },
+
+  // Vegetables & Fruits
+  { id: "khizou_ma", name_fr: "Carottes (Khizou)", name_ar: "خيزو", name_en: "Carrots", keywords: ["khizou", "carotte", "carottes", "خيزو", "جزر"], category: "Plantes", icon: "Carrot" },
+  { id: "lleft_ma", name_fr: "Navet (Lleft)", name_ar: "لفت", name_en: "Turnip", keywords: ["lleft", "left", "navet", "لفت"], category: "Plantes", icon: "Carrot" },
+  { id: "gra3a_ma", name_fr: "Courgette (Gra3a)", name_ar: "گرعة", name_en: "Zucchini", keywords: ["gra3a", "gar3a", "courgette", "citrouille", "گرعة", "قرعة"], category: "Plantes", icon: "Carrot" },
+  { id: "dnjale_ma", name_fr: "Aubergine (Dnjale)", name_ar: "دنجال", name_en: "Eggplant", keywords: ["dnjale", "danjal", "za3louk", "aubergine", "دنجال", "باذنجان"], category: "Plantes", icon: "Carrot" },
+  { id: "felfla_ma", name_fr: "Poivron (Felfla)", name_ar: "فلفلة", name_en: "Pepper", keywords: ["felfla", "poivron", "فلفلة", "فلفل"], category: "Plantes", icon: "Carrot" },
+  { id: "jalbana_ma", name_fr: "Petits pois (Jalbana)", name_ar: "جلبانة", name_en: "Peas", keywords: ["jalbana", "jelbana", "petits pois", "جلبانة"], category: "Plantes", icon: "Carrot" },
+  { id: "barba_ma", name_fr: "Betterave (Barba)", name_ar: "باربا", name_en: "Beetroot", keywords: ["barba", "betterave", "باربا", "شمندر"], category: "Plantes", icon: "Carrot" },
+  { id: "lymoun_ma", name_fr: "Orange (Lymoun)", name_ar: "ليمون", name_en: "Orange", keywords: ["lymoun", "limoun", "limon", "orange", "ليمون", "برتقال"], category: "Plantes", icon: "Apple" },
+  { id: "tefah_ma", name_fr: "Pomme (Tefah)", name_ar: "تفاح", name_en: "Apple", keywords: ["tefah", "tfah", "pomme", "تفاح"], category: "Plantes", icon: "Apple" },
+  { id: "banan_ma", name_fr: "Banane (Banan)", name_ar: "بنان", name_en: "Banana", keywords: ["banan", "banane", "بنان", "موز"], category: "Plantes", icon: "Banana" },
+  { id: "dellah_ma", name_fr: "Pastèque (Dellah)", name_ar: "دلاح", name_en: "Watermelon", keywords: ["dellah", "dela7", "pastèque", "دلاح", "بطيخ"], category: "Plantes", icon: "Apple" },
+  { id: "hendia_ma", name_fr: "Figue de barbarie", name_ar: "هندية", name_en: "Prickly pear", keywords: ["hendia", "karmous", "figue", "هندية", "كرموس"], category: "Plantes", icon: "Apple" },
+
+  // Groceries, Spices, Staples
+  { id: "sardin_ma", name_fr: "Sardines", name_ar: "سردين", name_en: "Sardines", keywords: ["sardin", "sardine", "hout", "حوت", "سردين"], category: "Protéines", icon: "Fish" },
+  { id: "sanida_ma", name_fr: "Sucre (Sanida)", name_ar: "سنيدة", name_en: "Sugar", keywords: ["sanida", "sucre", "sokar", "سكر", "سنيدة"], category: "Essentiel", icon: "Salt" },
+  { id: "loubia_ma", name_fr: "Haricots blancs", name_ar: "لوبيا", name_en: "White beans", keywords: ["loubia", "haricots", "لوبيا"], category: "Essentiel", icon: "Bean" },
+  { id: "aads_ma", name_fr: "Lentilles (3dess)", name_ar: "عدس", name_en: "Lentils", keywords: ["aads", "3dess", "3des", "lentilles", "عدس"], category: "Essentiel", icon: "Bean" },
+  { id: "homos_ma", name_fr: "Pois chiches (Homos)", name_ar: "حمص", name_en: "Chickpeas", keywords: ["homos", "7omos", "pois chiches", "حمص"], category: "Essentiel", icon: "Bean" },
+  { id: "foul_ma", name_fr: "Fèves (Foul)", name_ar: "فول", name_en: "Fava beans", keywords: ["foul", "fèves", "فول"], category: "Essentiel", icon: "Bean" },
+  { id: "tahmira_ma", name_fr: "Paprika (Tahmira)", name_ar: "تحميرة", name_en: "Paprika", keywords: ["tahmira", "ta7mira", "paprika", "تحميرة"], category: "Essentiel", icon: "Salt" },
+  { id: "ras_lhanout_ma", name_fr: "Ras lhanout", name_ar: "راس الحانوت", name_en: "Ras el hanout", keywords: ["ras lhanout", "msakhen", "راس الحانوت"], category: "Essentiel", icon: "Salt" },
+  { id: "9arfa_ma", name_fr: "Cannelle (9arfa)", name_ar: "قرفة", name_en: "Cinnamon", keywords: ["9arfa", "qarfa", "cannelle", "قرفة"], category: "Essentiel", icon: "Salt" },
+  { id: "na3na3_ma", name_fr: "Menthe (Na3na3)", name_ar: "نعناع", name_en: "Mint", keywords: ["na3na3", "ne3ne3", "menthe", "نعناع"], category: "Plantes", icon: "Leaf" },
+  { id: "chiba_ma", name_fr: "Absinthe (Chiba)", name_ar: "شيبة", name_en: "Wormwood", keywords: ["chiba", "absinthe", "شيبة"], category: "Plantes", icon: "Leaf" },
+  { id: "louiza_ma", name_fr: "Verveine (Louiza)", name_ar: "لويزة", name_en: "Verbena", keywords: ["louiza", "verveine", "لويزة"], category: "Plantes", icon: "Leaf" },
+
+  // Household & Cleaning
+  { id: "javel_ma", name_fr: "Javel", name_ar: "جافيل", name_en: "Bleach", keywords: ["javel", "eau de javel", "جافيل"], category: "Sanitaire", icon: "SprayCan" },
+  { id: "omo_ma", name_fr: "Lessive (Omo/Tide)", name_ar: "أومو/تيد", name_en: "Detergent", keywords: ["omo", "tide", "ariel", "lessive", "مسحوق", "تيد", "اومو"], category: "Sanitaire", icon: "WashingMachine" },
+  { id: "saboun_beldi_ma", name_fr: "Savon Beldi", name_ar: "صابون بلدي", name_en: "Beldi soap", keywords: ["saboun beldi", "savon noir", "صابون بلدي"], category: "Sanitaire", icon: "Droplets" },
+  { id: "taous_ma", name_fr: "Savon Taous", name_ar: "صابون الطاووس", name_en: "Taous soap", keywords: ["taous", "savon taous", "صابون الطاووس"], category: "Sanitaire", icon: "Droplets" },
+  { id: "hammam_kis", name_fr: "Gant Hammam", name_ar: "كيس الحمام", name_en: "Hammam glove", keywords: ["kis", "kess", "hammam", "كيس", "حمام"], category: "Sanitaire", icon: "Bath" },
+  
+  // Utilities & Services
+  { id: "ta3bia_ma", name_fr: "Recharge (Ta3bia)", name_ar: "تعبئة", name_en: "Recharge", keywords: ["ta3bia", "recharge", "carte", "تعبئة", "شارژ"], category: "Autres", icon: "Smartphone" },
+  { id: "inwi_ma", name_fr: "Inwi", name_ar: "إنوي", name_en: "Inwi", keywords: ["inwi", "إنوي"], category: "Autres", icon: "Smartphone" },
+  { id: "iam_ma", name_fr: "Maroc Telecom (IAM)", name_ar: "اتصالات المغرب", name_en: "Maroc Telecom", keywords: ["iam", "maroc telecom", "tisalat", "اتصالات"], category: "Autres", icon: "Smartphone" },
+  { id: "orange_ma", name_fr: "Orange Maroc", name_ar: "أورنج", name_en: "Orange", keywords: ["orange", "meditel", "أورنج", "ميديتيل"], category: "Autres", icon: "Smartphone" },
+  { id: "lydec_ma", name_fr: "Lydec / Eau & Elec", name_ar: "ليدك", name_en: "Water/Elec Bill", keywords: ["lydec", "redal", "amendis", "radeema", "ma ou do", "الما و الضو", "ليدك"], category: "Logement", icon: "Lightbulb" },
+  { id: "coiffeur_ma", name_fr: "Coiffeur / Hella9", name_ar: "حلاق", name_en: "Barber", keywords: ["coiffeur", "hella9", "hila9a", "حلاق", "صالون"], category: "Autres", icon: "Scissors" },
+  
+  // Clothing
+  { id: "jellaba_ma", name_fr: "Jellaba", name_ar: "جلابة", name_en: "Djellaba", keywords: ["jellaba", "djellaba", "جلابة"], category: "Shopping", icon: "JellabaIcon" },
+  { id: "balgha_ma", name_fr: "Balgha", name_ar: "بلغة", name_en: "Slippers", keywords: ["balgha", "belgha", "بلغة"], category: "Shopping", icon: "BalghaIcon" },
+  { id: "hwayj_ma", name_fr: "Vêtements (Hwayj)", name_ar: "حوايج", name_en: "Clothes", keywords: ["hwayj", "hwayej", "vetements", "حوايج", "ملابس"], category: "Shopping", icon: "Shirt" },
+  { id: "sbat_ma", name_fr: "Chaussures (Sbat)", name_ar: "صباط", name_en: "Shoes", keywords: ["sbat", "sebbat", "chaussures", "صباط", "حذاء"], category: "Shopping", icon: "Footprints" },
+  { id: "serwal_ma", name_fr: "Pantalon (Serwal)", name_ar: "سروال", name_en: "Pants", keywords: ["serwal", "pantalon", "سروال"], category: "Shopping", icon: "Shirt" },
+
+  // Transportation
+  { id: "tobis_ma", name_fr: "Bus (Tobis)", name_ar: "طوبيس", name_en: "Bus", keywords: ["tobis", "bus", "طوبيس", "حافلة"], category: "Transport", icon: "Bus" },
+  { id: "taxi_ma", name_fr: "Taxi", name_ar: "طاكسي", name_en: "Taxi", keywords: ["taxi", "petit taxi", "grand taxi", "طاكسي"], category: "Transport", icon: "Car" }
+];
+
+
+const moroccanObjects2 = [
+  // Bread & Breakfast
+  { id: "khobz_ma", name_fr: "Pain (Khobz)", name_ar: "خبز", name_en: "Bread", keywords: ["khobz", "pain", "خبز"], category: "Essentiel", icon: "Croissant" },
+  { id: "harcha_ma", name_fr: "Harcha", name_ar: "حرشة", name_en: "Harcha", keywords: ["harcha", "7archa", "حرشة"], category: "Essentiel", icon: "GhoribaIcon" },
+  { id: "batbout_ma", name_fr: "Batbout", name_ar: "بطبوط", name_en: "Batbout", keywords: ["batbout", "mkhamer", "بطبوط", "مخمار"], category: "Essentiel", icon: "MsemenIcon" },
+  { id: "msemen_ma", name_fr: "Msemen", name_ar: "مسمن", name_en: "Msemen", keywords: ["msemen", "rghayef", "مسمن", "رغايف"], category: "Essentiel", icon: "MsemenIcon" },
+  { id: "baghrir_ma", name_fr: "Baghrir", name_ar: "بغرير", name_en: "Baghrir", keywords: ["baghrir", "بغرير"], category: "Essentiel", icon: "Circle" },
+  { id: "atay_ma", name_fr: "Thé (Atay)", name_ar: "أتاي", name_en: "Tea", keywords: ["atay", "ataye", "the", "thé", "أتاي", "شاي"], category: "Essentiel", icon: "BerradIcon" },
+  
+  // Drinks & Snacks
+  { id: "sidi_ali_ma", name_fr: "Eau Sidi Ali", name_ar: "سيدي علي", name_en: "Water", keywords: ["sidi ali", "ain atlas", "sidi harazem", "ماء", "سيدي علي", "سيدي حرازم", "عين اطلس"], category: "Essentiel", icon: "GlassWater" },
+  { id: "oulmes_ma", name_fr: "Oulmes", name_ar: "والماس", name_en: "Sparkling water", keywords: ["oulmes", "oulmass", "والماس"], category: "Nourriture", icon: "CupSoda" },
+  { id: "hawai_ma", name_fr: "Hawai", name_ar: "هاواي", name_en: "Hawai soda", keywords: ["hawai", "haway", "هاواي"], category: "Gourmandises", icon: "CupSoda" },
+  { id: "poms_ma", name_fr: "Poms", name_ar: "بومس", name_en: "Poms soda", keywords: ["poms", "pom's", "بومس"], category: "Gourmandises", icon: "CupSoda" },
+  { id: "bimo_ma", name_fr: "Bimo", name_ar: "بيمو", name_en: "Biscuit", keywords: ["bimo", "biscuit", "بيمو", "بسكويت"], category: "Gourmandises", icon: "Cookie" },
+  { id: "tango_ma", name_fr: "Tango", name_ar: "تانكو", name_en: "Tango", keywords: ["tango", "تانغو", "تانكو"], category: "Gourmandises", icon: "Cookie" },
+  { id: "merendina_ma", name_fr: "Merendina", name_ar: "ميريندينا", name_en: "Merendina", keywords: ["merendina", "ميريندينا", "ميرندينا"], category: "Gourmandises", icon: "Cake" },
+  
+  // Extra Moroccan
+  { id: "couscous_ma", name_fr: "Couscous / Ksksou", name_ar: "كسكس", name_en: "Couscous", keywords: ["couscous", "ksksou", "seksou", "كسكس", "كسكسو"], category: "Essentiel", icon: "TajineIcon" },
+  { id: "hrira_ma", name_fr: "Harira", name_ar: "حريرة", name_en: "Harira soup", keywords: ["hrira", "harira", "حريرة"], category: "Nourriture", icon: "Soup" },
+  { id: "zite_zitoune_ma", name_fr: "Huile d'olive (Zit)", name_ar: "زيت العود", name_en: "Olive oil", keywords: ["zit", "zite", "zit zitoun", "huile d'olive", "زيت", "زيت العود", "زيت الزيتون"], category: "Essentiel", icon: "Droplet" }
+];
+
+
+const moroccanObjects3 = [
+  { id: "l7am_ma", name_fr: "Viande (L7am)", name_ar: "لحم", name_en: "Meat", keywords: ["l7am", "lham", "viande", "لحم", "gzar", "gazar"], category: "Protéines", icon: "Beef" },
+  { id: "djaj_ma", name_fr: "Poulet (Djaj)", name_ar: "دجاج", name_en: "Chicken", keywords: ["djaj", "poulet", "دجاج"], category: "Protéines", icon: "Drumstick" },
+  { id: "kfta_ma", name_fr: "Viande hachée (Kfta)", name_ar: "كفتة", name_en: "Minced meat", keywords: ["kfta", "kefta", "viande hachée", "كفتة"], category: "Protéines", icon: "Beef" },
+  { id: "bid_ma", name_fr: "Oeufs (Bid)", name_ar: "بيض", name_en: "Eggs", keywords: ["bid", "oeufs", "oeuf", "بيض"], category: "Protéines", icon: "Egg" },
+  { id: "smida_ma", name_fr: "Semoule (Smida)", name_ar: "سميدة", name_en: "Semolina", keywords: ["smida", "semoule", "سميدة"], category: "Essentiel", icon: "Wheat" },
+  { id: "bssla_ma", name_fr: "Oignon (Bssla)", name_ar: "بصلة", name_en: "Onion", keywords: ["bssla", "bsla", "oignon", "بصل", "بصلة"], category: "Plantes", icon: "Carrot" },
+  { id: "btata_ma", name_fr: "Pomme de terre (Btata)", name_ar: "بطاطا", name_en: "Potato", keywords: ["btata", "batata", "pomme de terre", "بطاطا"], category: "Plantes", icon: "Carrot" },
+  { id: "maticha_ma", name_fr: "Tomate (Maticha)", name_ar: "مطيشة", name_en: "Tomato", keywords: ["maticha", "tomate", "tomat", "مطيشة", "طماطم"], category: "Plantes", icon: "Apple" },
+  { id: "bzar_ma", name_fr: "Poivre (Bzar)", name_ar: "ابزار", name_en: "Black pepper", keywords: ["bzar", "ibzar", "poivre", "ابزار", "إبزار", "فلفل أسود"], category: "Essentiel", icon: "Salt" },
+  { id: "kamoun_ma", name_fr: "Cumin (Kamoun)", name_ar: "كامون", name_en: "Cumin", keywords: ["kamoun", "cumin", "كامون", "كمون"], category: "Essentiel", icon: "Salt" },
+  { id: "skenjbir_ma", name_fr: "Gingembre (Skenjbir)", name_ar: "سكنجبير", name_en: "Ginger", keywords: ["skenjbir", "gingembre", "سكنجبير", "زنجبيل"], category: "Essentiel", icon: "Salt" },
+  { id: "zaafaran_ma", name_fr: "Safran (Za3faran)", name_ar: "زعفران", name_en: "Saffron", keywords: ["zaafaran", "za3faran", "safran", "زعفران"], category: "Essentiel", icon: "Salt" },
+  { id: "kasbour_ma", name_fr: "Coriandre (Kasbour)", name_ar: "قزبر", name_en: "Coriander", keywords: ["kasbour", "9asbour", "qasbour", "coriandre", "قزبر"], category: "Plantes", icon: "Leaf" },
+  { id: "m3adnous_ma", name_fr: "Persil (M3adnous)", name_ar: "معدنوس", name_en: "Parsley", keywords: ["m3adnous", "m3ednous", "persil", "معدنوس"], category: "Plantes", icon: "Leaf" }
+];
+
+
+const moroccanObjects4 = [
+  // Street food & Traditional
+  { id: "sfenj_ma", name_fr: "Sfenj", name_ar: "سفنج", name_en: "Sfenj", keywords: ["sfenj", "sfinj", "سفنج"], category: "Gourmandises", icon: "Circle" },
+  { id: "taktouka_ma", name_fr: "Taktouka", name_ar: "تكتوكة", name_en: "Taktouka", keywords: ["taktouka", "تكتوكة"], category: "Nourriture", icon: "Salad" },
+  { id: "zaalouk_ma", name_fr: "Zaalouk", name_ar: "زعلوك", name_en: "Zaalouk", keywords: ["zaalouk", "za3louk", "زعلوك"], category: "Nourriture", icon: "Salad" },
+  { id: "fakia_ma", name_fr: "Fakia / Fruits secs", name_ar: "فاكية", name_en: "Dried fruits", keywords: ["fakia", "fruits secs", "fawakih", "فاكية"], category: "Gourmandises", icon: "Nut" },
+  { id: "qrachel_ma", name_fr: "Krachel", name_ar: "قراشل", name_en: "Krachel", keywords: ["qrachel", "krachel", "grachel", "قراشل"], category: "Gourmandises", icon: "Croissant" },
+
+  // Supermarkets & Shops
+  { id: "marjane_ma", name_fr: "Marjane", name_ar: "مرجان", name_en: "Marjane", keywords: ["marjane", "marjan", "مرجان"], category: "Shopping", icon: "ShoppingCart" },
+  { id: "bim_ma", name_fr: "BIM", name_ar: "بيم", name_en: "BIM", keywords: ["bim", "بيم"], category: "Shopping", icon: "ShoppingCart" },
+  { id: "aswak_ma", name_fr: "Aswak Assalam", name_ar: "أسواق السلام", name_en: "Aswak", keywords: ["aswak", "aswaq", "أسواق"], category: "Shopping", icon: "ShoppingCart" },
+  { id: "hanout_ma", name_fr: "Hanout / Epicerie", name_ar: "حانوت", name_en: "Grocery", keywords: ["hanout", "hanot", "moul lhanout", "حانوت", "بقالة"], category: "Essentiel", icon: "HanoutIcon" },
+  { id: "souq_ma", name_fr: "Souq / Marché", name_ar: "سوق", name_en: "Market", keywords: ["souq", "souk", "marche", "سوق"], category: "Shopping", icon: "Store" },
+  { id: "gzar_ma", name_fr: "Boucherie (Gzar)", name_ar: "گزار", name_en: "Butcher",keywords: ["gzar", "boucherie", "gazar", "گزار", "جزار"], category: "Protéines", icon: "Store" },
+
+  // Misc
+  { id: "qahwa_ma", name_fr: "Café (Qahwa)", name_ar: "قهوة", name_en: "Coffee", keywords: ["qahwa", "9ahwa", "qhiwa", "قهوة"], category: "Nourriture", icon: "Coffee" },
+  { id: "tbib_ma", name_fr: "Médecin (Tbib)", name_ar: "طبيب", name_en: "Doctor", keywords: ["tbib", "medecin", "طبيب", "فرماسيان", "pharmacie"], category: "Sanitaire", icon: "Cross" }
+];
+
+fs.writeFileSync(path.join(process.cwd() + '/src/iconmatcher/database', 'objects.json'), JSON.stringify([...objects, ...additionalObjects, ...moroccanObjects, ...moroccanObjects2, ...moroccanObjects3, ...moroccanObjects4], null, 2));

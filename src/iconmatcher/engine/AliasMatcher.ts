@@ -8,7 +8,9 @@ export function findAliasObject(normalizedInput: string): string | null {
   }
   
   for (const [alias, objectId] of Object.entries(aliases)) {
-    if (normalizedInput.includes(alias)) {
+    
+    if (new RegExp(`(?:^|\\s)${alias}(?:\\s|$)`, 'i').test(normalizedInput)) {
+    
       return objectId;
     }
   }

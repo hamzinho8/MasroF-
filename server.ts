@@ -438,6 +438,7 @@ Respond purely in JSON format like:
 Notes:
 - The category MUST be strictly one of: ['Nourriture', 'Logement', 'Transport', 'Sanitaire', 'Shopping', 'Loisirs', 'Devoir', 'Autres'].
 - The icon MUST be a valid PascalCase Lucide React icon name (e.g., 'Coffee', 'Car', 'Shirt', 'Package').
+- You can ALSO use these special Moroccan icons if they fit better: 'TajineIcon' (for tajine, couscous, rfissa), 'BerradIcon' (for tea), 'MsemenIcon' (for square flatbread), 'GhoribaIcon' (for round cookies/bread like harcha), 'ChebakiaIcon' (for chebakia), 'SfenjIcon' (for doughnut/sfenj), 'BalghaIcon' (for traditional slippers), 'JellabaIcon' (for traditional clothes), 'HanoutIcon' (for small grocery stores).
 - Provide a fitting hex color based on the category.
 Return ONLY valid JSON, no markdown formatting.`,
         },

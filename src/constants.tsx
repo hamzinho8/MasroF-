@@ -17,8 +17,12 @@ import {
   Store, Wallet, CreditCard, Banknote, Coins, Receipt, Tag, Gift, Armchair, Bed, Monitor, Printer, Headphones, Radio, Watch, Mic, Music, Thermometer, Syringe, TreePine, Leaf, Cloud, Sun, Moon, Snowflake, Tent, Compass, Map, Navigation, Truck, Bike, BaggageClaim, Sticker, Puzzle, Building, Briefcase, Key, Lock, Unlock, Shield, ShieldCheck, Globe, Mountain, Palmtree, Clipboard, Archive, Inbox, Mail, Send, PhoneCall, Phone, Video, Image, Speaker, Bell, Calendar, Clock, AlarmClock, Timer, Hourglass, Filter, Settings, Sliders, Hammer, Axe, Paintbrush, Palette, Pipette, ThermometerSun, ThermometerSnowflake, Flashlight, Megaphone, Microwave, Refrigerator, ChefHat, Luggage, Sofa, Lamp, ShowerHead, Trees, Clover, Sprout, Citrus, CloudRain, Bone, PartyPopper, Film, Clapperboard, Gamepad, Activity, PiggyBank, BadgePercent, Castle, Church, Rocket, Container, ArrowRightLeft
 } from 'lucide-react';
 import { PredefinedItem } from './types';
+import * as MoroccanIcons from './components/icons/MoroccanIcons';
+
 
 export const ICON_MAP: Record<string, React.ElementType> = {
+  ...MoroccanIcons,
+
   Utensils, ShoppingBag, Car, Gamepad2, MoreHorizontal, ArrowRightLeft,
   Coffee, Milk, Wheat, PackageOpen, Box: PackageOpen, Cookie, Droplets, CupSoda, Candy, Zap, 
   CircleDot, Soup, TrainFront, Fuel, Flame, Tv, Search, Baby, Bean,

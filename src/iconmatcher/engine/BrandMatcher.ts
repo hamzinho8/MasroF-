@@ -11,7 +11,10 @@ const brands: Brand[] = brandsData;
 
 export function findBrandObject(normalizedInput: string): string | null {
   for (const brand of brands) {
-    if (brand.aliases.some(alias => normalizedInput.includes(alias))) {
+    if (brand.aliases.some(alias => {
+      const regex = new RegExp(`(?:^|\\s)${alias}(?:\\s|$)`, 'i');
+      return regex.test(normalizedInput);
+    })) {
       return brand.default_object;
     }
   }

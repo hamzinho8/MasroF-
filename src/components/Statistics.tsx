@@ -64,7 +64,7 @@ export default function Statistics({
   categoryBudgets = {},
   onUpdateBudget,
 }: StatisticsProps) {
-  const [period, setPeriod] = useState<"day" | "week" | "month">("week");
+  const [period, setPeriod] = useState<"day" | "week" | "month">("month");
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [selectedPieCategory, setSelectedPieCategory] = useState<string | null>(
     null

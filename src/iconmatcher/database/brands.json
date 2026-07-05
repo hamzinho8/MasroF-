@@ -2,91 +2,142 @@
   {
     "id": "danone",
     "name": "Danone",
-    "aliases": ["danoon", "danon", "danone", "دانون"],
+    "aliases": [
+      "danoon",
+      "danon",
+      "danone",
+      "دانون"
+    ],
     "default_object": "yogurt_cup"
   },
   {
     "id": "centrale",
     "name": "Centrale",
-    "aliases": ["centrale", "سنترال"],
+    "aliases": [
+      "centrale",
+      "سنترال"
+    ],
     "default_object": "milk_carton"
   },
   {
     "id": "jaouda",
     "name": "Jaouda",
-    "aliases": ["jaouda", "جودة"],
+    "aliases": [
+      "jaouda",
+      "جودة"
+    ],
     "default_object": "milk_carton"
   },
   {
     "id": "sidi_ali",
     "name": "Sidi Ali",
-    "aliases": ["sidi ali", "sidy ali", "سيدي علي"],
+    "aliases": [
+      "sidi ali",
+      "sidy ali",
+      "سيدي علي"
+    ],
     "default_object": "water_bottle"
   },
   {
     "id": "ain_saiss",
     "name": "Ain Saiss",
-    "aliases": ["ain saiss", "عين سايس"],
+    "aliases": [
+      "ain saiss",
+      "عين سايس"
+    ],
     "default_object": "water_bottle"
   },
   {
     "id": "lesieur",
     "name": "Lesieur",
-    "aliases": ["lesieur", "لوسيور"],
+    "aliases": [
+      "lesieur",
+      "لوسيور"
+    ],
     "default_object": "oil_bottle"
   },
   {
     "id": "cosumar",
     "name": "Cosumar",
-    "aliases": ["cosumar", "كوزومار"],
+    "aliases": [
+      "cosumar",
+      "كوزومار"
+    ],
     "default_object": "sugar"
   },
   {
     "id": "omo",
     "name": "OMO",
-    "aliases": ["omo", "اومو"],
+    "aliases": [
+      "omo",
+      "اومو"
+    ],
     "default_object": "detergent"
   },
   {
     "id": "fairy",
     "name": "Fairy",
-    "aliases": ["fairy", "فييري"],
+    "aliases": [
+      "fairy",
+      "فييري"
+    ],
     "default_object": "dish_soap"
   },
   {
     "id": "tide",
     "name": "Tide",
-    "aliases": ["tide", "تيد"],
+    "aliases": [
+      "tide",
+      "تيد"
+    ],
     "default_object": "detergent"
   },
   {
     "id": "gillette",
     "name": "Gillette",
-    "aliases": ["gillette", "جيليت"],
+    "aliases": [
+      "gillette",
+      "جيليت"
+    ],
     "default_object": "shampoo"
   },
   {
     "id": "bimo",
     "name": "Bimo",
-    "aliases": ["bimo", "بيمو"],
-    "default_object": "cookie"
+    "aliases": [
+      "bimo",
+      "بيمو"
+    ],
+    "default_object": "cookie_pack"
   },
   {
     "id": "excelo",
     "name": "Excelo",
-    "aliases": ["excelo", "اكسيلو"],
-    "default_object": "cookie"
+    "aliases": [
+      "excelo",
+      "اكسيلو"
+    ],
+    "default_object": "cookie_pack"
   },
   {
     "id": "la_vache_qui_rit",
     "name": "La Vache Qui Rit",
-    "aliases": ["la vache qui rit", "lvqr", "البقرة الضاحكة", "فرماج"],
+    "aliases": [
+      "la vache qui rit",
+      "lvqr",
+      "البقرة الضاحكة",
+      "فرماج"
+    ],
     "default_object": "cheese"
   },
   {
     "id": "pampers",
     "name": "Pampers",
-    "aliases": ["pampers", "bampers", "بامبرز"],
+    "aliases": [
+      "pampers",
+      "bampers",
+      "بامبرز"
+    ],
     "default_object": "diaper"
   }
 ]
