@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ListTodo, PackageOpen, Plus } from 'lucide-react';
+import { X, ListTodo, PackageOpen, Plus, Banknote, Check } from 'lucide-react';
 import { ShoppingListItem, PredefinedItem } from '../types';
 import { ICON_MAP, CATEGORIES, getArticleInfo } from '../constants';
 
@@ -47,6 +47,20 @@ export default function ShoppingListModal({
     }
   }[language];
 
+
+  const selectedForWithdrawal = shoppingList.filter(item => item.isSelectedForWithdrawal);
+  const totalWithdrawal = selectedForWithdrawal.reduce((sum, item) => sum + (item.expectedPrice || 0), 0);
+
+  const toggleSelection = (e: React.MouseEvent, clickedItem: ShoppingListItem) => {
+    e.stopPropagation();
+    const updatedList = shoppingList.map(item => 
+      item.id === clickedItem.id 
+        ? { ...item, isSelectedForWithdrawal: !item.isSelectedForWithdrawal } 
+        : item
+    );
+    onShoppingListChange(updatedList);
+  };
+
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
@@ -64,6 +78,7 @@ export default function ShoppingListModal({
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           className="relative w-full sm:w-[500px] bg-white rounded-t-[40px] sm:rounded-[40px] shadow-2xl flex flex-col h-[85vh] sm:h-[80vh] overflow-hidden"
         >
+          
           {/* Header */}
           <div className="flex-none p-6 pb-4 border-b border-slate-100 flex items-center justify-between bg-white z-10">
             <h2 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
@@ -79,6 +94,32 @@ export default function ShoppingListModal({
               <X size={20} />
             </button>
           </div>
+          
+          <AnimatePresence>
+            {selectedForWithdrawal.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="px-6 pt-4 pb-2 bg-slate-50/50"
+              >
+                <div className="bg-emerald-50 border border-emerald-200 rounded-[20px] p-4 flex items-center justify-between shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                      <Banknote size={20} strokeWidth={2.5} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-emerald-800">Retrait à prévoir</p>
+                      <p className="text-xs font-medium text-emerald-600/80">{selectedForWithdrawal.length} article(s) sélectionné(s)</p>
+                    </div>
+                  </div>
+                  <div className="text-xl font-black text-emerald-600">
+                    {totalWithdrawal} <span className="text-sm">{currency}</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Body */}
           <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
@@ -102,9 +143,14 @@ export default function ShoppingListModal({
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05 }}
-                      onClick={() => onCheckoutShoppingItem(item)}
+                      onClick={(e) => toggleSelection(e, item)}
                       className="group flex items-center p-4 rounded-[28px] border-2 border-transparent bg-white shadow-sm hover:border-indigo-100 hover:shadow-md transition-all cursor-pointer"
                     >
+                                            <div className="shrink-0 flex items-center justify-center w-8 mr-2">
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${item.isSelectedForWithdrawal ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 bg-slate-50'}`}>
+                          {item.isSelectedForWithdrawal && <Check size={14} strokeWidth={3} />}
+                        </div>
+                      </div>
                       <div 
                         className={`w-14 h-14 rounded-[20px] flex items-center justify-center shrink-0 shadow-inner ${!info.colorHex ? `${cat.bgColor} ${cat.color}` : ''}`}
                         style={info.colorHex ? { backgroundColor: `${info.colorHex}20`, color: info.colorHex } : undefined}
@@ -129,15 +175,26 @@ export default function ShoppingListModal({
                         {item.expectedPrice ? (
                           <span className="text-sm font-black text-slate-700 leading-none">{item.expectedPrice} {currency}</span>
                         ) : null}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onShoppingListChange(shoppingList.filter((sItem) => sItem.id !== item.id));
-                          }}
-                          className="mt-2 w-8 h-8 rounded-full bg-slate-100 hover:bg-rose-100 text-slate-400 hover:text-rose-500 flex items-center justify-center transition-colors"
-                        >
-                          <X size={14} strokeWidth={3} />
-                        </button>
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onCheckoutShoppingItem(item);
+                            }}
+                            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-indigo-100 text-slate-400 hover:text-indigo-500 flex items-center justify-center transition-colors"
+                          >
+                            <Check size={14} strokeWidth={3} />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onShoppingListChange(shoppingList.filter((sItem) => sItem.id !== item.id));
+                            }}
+                            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-rose-100 text-slate-400 hover:text-rose-500 flex items-center justify-center transition-colors"
+                          >
+                            <X size={14} strokeWidth={3} />
+                          </button>
+                        </div>
                       </div>
                     </motion.div>
                   );

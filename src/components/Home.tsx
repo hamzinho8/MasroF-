@@ -42,6 +42,7 @@ import {
   WifiOff,
   Mic,
   ListTodo,
+  Banknote,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Transaction, CreditEntry, Reminder, ShoppingListItem } from "../types";
@@ -147,7 +148,9 @@ function BudgetCategoryDetailsModal({
           "crédit +",
           "crédit --",
         ].includes(t.category.toLowerCase());
-    return (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit && (t.category || "Autres").toLowerCase() === category.toLowerCase();
+  
+
+  return (t.type === "EXPENSE" || (t.type as any) === "expense") && !isCredit && (t.category || "Autres").toLowerCase() === category.toLowerCase();
   }).sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
 
   return (
@@ -845,6 +848,8 @@ export default function Home({
     widgetMode === "balance"
       ? gradients[widgetColor] || gradients["default"]
       : "linear-gradient(90deg, #F9B29B 0%, #C8E6C9 100%)";
+  const selectedForWithdrawal = shoppingList.filter(item => item.isSelectedForWithdrawal);
+  const totalWithdrawal = selectedForWithdrawal.reduce((sum, item) => sum + (item.expectedPrice || 0), 0);
 
   return (
     <motion.div
@@ -914,6 +919,18 @@ export default function Home({
                     <span className="text-xl font-bold text-slate-900/40 uppercase">
                       {currency}
                     </span>
+
+                {totalWithdrawal > 0 && (
+                  <div className="mt-4 flex items-center justify-between w-full bg-emerald-50 rounded-xl p-3 border border-emerald-100">
+                    <div className="flex items-center gap-2 text-emerald-600">
+                      <Banknote size={18} strokeWidth={2.5} />
+                      <span className="text-xs font-black uppercase tracking-wider">Retrait à prévoir</span>
+                    </div>
+                    <div className="text-sm font-black text-emerald-700">
+                      {totalWithdrawal} {currency}
+                    </div>
+                  </div>
+                )}
                   </div>
                 </div>
               </div>

@@ -19,15 +19,16 @@ import {
   Landmark,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import Home from "./components/Home";
-import Statistics from "./components/Statistics";
-import Credits from "./components/Credits";
-import Bank from "./components/Bank";
-import HistoryView from "./components/History";
-import SettingsView from "./components/Settings";
+import { lazy, Suspense } from "react";
+const Home = lazy(() => import("./components/Home"));
+const Statistics = lazy(() => import("./components/Statistics"));
+const Credits = lazy(() => import("./components/Credits"));
+const Bank = lazy(() => import("./components/Bank"));
+const HistoryView = lazy(() => import("./components/History"));
+const SettingsView = lazy(() => import("./components/Settings"));
+const Inventory = lazy(() => import("./components/Inventory"));
 import { scheduleBackupReminder } from "./utils/notifications";
-import LockScreen from "./components/LockScreen";
-import Inventory from "./components/Inventory"; // newly added
+import LockScreen from "./components/LockScreen"; // newly added
 import MasrofLogo from "./components/Logo";
 import AddTransactionModal from "./components/AddTransactionModal";
 import ShoppingListModal from "./components/ShoppingListModal";
@@ -445,7 +446,8 @@ export default function App() {
   };
 
   useEffect(() => {
-    async function syncNotifications() {
+    const timer = setTimeout(() => {
+      async function syncNotifications() {
       if (!Capacitor.isNativePlatform()) {
         console.log(
           "Local notifications skipped: not running on native platform."
@@ -532,11 +534,9 @@ export default function App() {
           // Do anything else needed
         }
       );
-      return () => {
-        listenerRemoved = true;
-        listener.then((l) => l.remove()).catch(() => {});
-      };
     }
+    }, 2000);
+    return () => clearTimeout(timer);
   }, [reminders]);
 
   const [balance, setBalance] = useLocalStorage("balance", 0);
@@ -547,6 +547,7 @@ export default function App() {
   );
 
   React.useEffect(() => {
+    const timer = setTimeout(() => {
     let migrated = false;
     const newTransactions = transactions.map(tx => {
       if (tx.category === 'Nourriture' || tx.category === 'Food') {
@@ -561,6 +562,8 @@ export default function App() {
     if (migrated) {
       setTransactions(newTransactions);
     }
+    }, 3000);
+    return () => clearTimeout(timer);
   }, [transactions, setTransactions]);
 
   const prevBalanceRef = React.useRef(balance);
@@ -634,6 +637,7 @@ export default function App() {
   ]);
 
   React.useEffect(() => {
+    const timer = setTimeout(() => {
     // 4. Category Budget >= 90%
     const now = new Date();
     const startOfPeriod = new Date();
@@ -695,6 +699,8 @@ export default function App() {
         alertedCategoriesRef.current[cat] = false;
       }
     });
+    }, 1500);
+    return () => clearTimeout(timer);
   }, [transactions, categoryBudgets, currency, budgetAlertThreshold]);
 
   React.useEffect(() => {
@@ -720,6 +726,7 @@ export default function App() {
   }, [backupAlertInterval]);
 
   React.useEffect(() => {
+    const timer = setTimeout(() => {
     setShoppingList(prevList => {
       let newShoppingList = [...prevList];
       let hasChanges = false;
@@ -758,9 +765,12 @@ export default function App() {
 
       return hasChanges ? newShoppingList : prevList;
     });
+    }, 1500);
+    return () => clearTimeout(timer);
   }, [inventoryItems, setShoppingList]);
 
   React.useEffect(() => {
+    const timer = setTimeout(() => {
     if (
       balanceThreshold !== null &&
       balance < balanceThreshold &&
@@ -1001,6 +1011,8 @@ export default function App() {
       }
     }
     updateWidget();
+    }, 2000);
+    return () => clearTimeout(timer);
   }, [
     balance,
     balanceThreshold,
@@ -1709,7 +1721,9 @@ export default function App() {
         <div className="pb-32">
           {" "}
           {/* Increased padding for the 3-dots menu space at the end of lists */}
-          {renderContent()}
+          <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>}>
+            {renderContent()}
+          </Suspense>
         </div>
       </main>
 

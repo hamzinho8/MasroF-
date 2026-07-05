@@ -2,72 +2,66 @@ import fs from 'fs';
 
 let content = fs.readFileSync('src/components/Home.tsx', 'utf-8');
 
-const summarySectionOld = `<div className="grid grid-cols-1 gap-3">
-          <button
-            onClick={() => setShowCalendarModal(true)}
-            className="text-left p-4 rounded-2xl border-2 border-danger-red/20 bg-danger-red/5 relative overflow-hidden group hover:border-danger-red/40 transition-all cursor-pointer"
-          >
-            <div className="relative z-10">
-              <p className="text-xs text-slate-500 mb-1 font-medium">
-                {t.achatTotal}
-              </p>
-              <p className="text-xl font-black text-danger-red leading-none mb-3">
-                {filteredTotals.totalExpense.toLocaleString("fr-FR")} {currency}
-              </p>
-              <div className="h-8 w-full opacity-60">
-                <svg viewBox="0 0 100 30" className="w-full h-full overflow-visible" preserveAspectRatio="none">
-                  <path 
-                    d={generateSparklinePath(filteredTotals.expenseBuckets)} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2.5" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    className="text-danger-red" 
-                  />
-                  <path 
-                    d={\`\${generateSparklinePath(filteredTotals.expenseBuckets)} L 100,30 L 0,30 Z\`} 
-                    fill="url(#gradient-expense)" 
-                    stroke="none"
-                  />
-                  <defs>
-                    <linearGradient id="gradient-expense" x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0%" stopColor="currentColor" stopOpacity="0.2" className="text-danger-red" />
-                      <stop offset="100%" stopColor="currentColor" stopOpacity="0" className="text-danger-red" />
-                    </linearGradient>
-                  </defs>
-                </svg>
+// The `extraUI` we want to add
+const extraUI = `
+                {totalWithdrawal > 0 && (
+                  <div className="mt-4 flex items-center justify-between w-full bg-emerald-50 rounded-xl p-3 border border-emerald-100">
+                    <div className="flex items-center gap-2 text-emerald-600">
+                      <Banknote size={18} strokeWidth={2.5} />
+                      <span className="text-xs font-black uppercase tracking-wider">Retrait à prévoir</span>
+                    </div>
+                    <div className="text-sm font-black text-emerald-700">
+                      {totalWithdrawal} {currency}
+                    </div>
+                  </div>
+                )}
+`;
+
+// Insert after the first "bankBalance" div
+const targetStr = `                  </div>
+                </div>
               </div>
-            </div>
-            <ShoppingCart
-              className="absolute -right-2 -bottom-2 text-danger-red/10 rotate-12 group-hover:scale-110 transition-transform"
-              size={48}
-            />
-          </button>
-          
-        </div>`;
+            )}`;
 
-const summarySectionNew = `<div className="grid grid-cols-1 gap-3">
-          <button
-            onClick={() => setShowCalendarModal(true)}
-            className="text-left p-4 rounded-2xl border-2 border-danger-red/20 bg-danger-red/5 relative overflow-hidden group hover:border-danger-red/40 transition-all cursor-pointer"
-          >
-            <div className="relative z-10">
-              <p className="text-xs text-slate-500 mb-1 font-medium">
-                {t.achatTotal}
-              </p>
-              <p className="text-xl font-black text-danger-red leading-none mb-3">
-                {filteredTotals.totalExpense.toLocaleString("fr-FR")} {currency}
-              </p>
-              <div className="h-0.5 w-full bg-danger-red/30 mt-4 rounded-full" />
-            </div>
-            <ShoppingCart
-              className="absolute -right-2 -bottom-2 text-danger-red/10 rotate-12"
-              size={48}
-            />
-          </button>
-        </div>`;
+// Wait, that string exists twice because there's a "bank" view and a "cash" view that shows bank balance too?
+// Let's replace the first instance
+const idx1 = content.indexOf(targetStr);
+if (idx1 !== -1) {
+  const before = content.substring(0, idx1);
+  const after = content.substring(idx1);
+  content = before + extraUI + after;
+}
 
-content = content.replace(summarySectionOld, summarySectionNew);
+// And also replace the second instance if it's there
+const targetStr2 = `                    </div>
+                  </div>
+                </div>
+                {/* Cash Balance Display */}`;
+
+const idx2 = content.indexOf(targetStr2);
+if (idx2 !== -1) {
+  const before2 = content.substring(0, idx2);
+  const after2 = content.substring(idx2);
+  content = before2 + extraUI + after2;
+}
+
+// Add totalWithdrawal calculation
+const calcCode = `
+  const selectedForWithdrawal = shoppingList.filter(item => item.isSelectedForWithdrawal);
+  const totalWithdrawal = selectedForWithdrawal.reduce((sum, item) => sum + (item.expectedPrice || 0), 0);
+`;
+const returnIdx = content.indexOf('  return (');
+if (returnIdx !== -1 && !content.includes('const totalWithdrawal =')) {
+  const before = content.substring(0, returnIdx);
+  const after = content.substring(returnIdx);
+  content = before + calcCode + '\n' + after;
+}
+
+// Ensure Banknote is imported
+if (!content.includes('Banknote')) {
+  content = content.replace("import { Eye, EyeOff, Plus, ChevronRight, TrendingUp, TrendingDown, Clock, Search, Send, FileText, CheckCircle2 } from 'lucide-react';", "import { Eye, EyeOff, Plus, ChevronRight, TrendingUp, TrendingDown, Clock, Search, Send, FileText, CheckCircle2, Banknote } from 'lucide-react';");
+}
+
 
 fs.writeFileSync('src/components/Home.tsx', content);
+

@@ -58,6 +58,7 @@ export interface InventoryItem {
   name: string;
   quantity: number;
   addedAt: number;
+  isSelectedForWithdrawal?: boolean;
   history: InventoryDecreaseAction[];
   iconName?: string;
   iconSvg?: string;
@@ -79,6 +80,7 @@ export interface ShoppingListItem {
   iconName?: string;
   iconSvg?: string;
   addedAt: number;
+  isSelectedForWithdrawal?: boolean;
 }
 
 export interface CategoryBudget {
