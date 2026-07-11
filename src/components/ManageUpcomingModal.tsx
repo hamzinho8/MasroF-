@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { X, Plus, Trash2, Edit2, Wallet, Landmark, ShoppingBag, Box, Home, Wifi, MonitorPlay, Calendar } from "lucide-react";
 import { ICON_MAP, CATEGORIES, INITIAL_PREDEFINED_ITEMS, getArticleInfo } from "../constants";
 

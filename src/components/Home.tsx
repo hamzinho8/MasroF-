@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   Plus,
   Minus,
@@ -260,7 +260,7 @@ export default function Home({
     "categoryBudgets",
     {}
   );
-  const categoryBudgets = React.useMemo(() => {
+  const categoryBudgets = useMemo(() => {
     if (!categoryBudgetsRaw) return {};
     if (Array.isArray(categoryBudgetsRaw)) {
       const parsed = categoryBudgetsRaw.reduce(
@@ -407,7 +407,7 @@ export default function Home({
     true
   );
   const [showScannerFab] = useLocalStorage<boolean>("showScannerFab", true);
-  const [isOnline, setIsOnline] = React.useState(true);
+  const [isOnline, setIsOnline] = useState(true);
 
   const DEFAULT_HOME_SECTIONS = [
     { id: "mainWidget", label: "Widget Principal", visible: true },
@@ -446,7 +446,7 @@ export default function Home({
   };
   const isVisible = (id: string) => homeSectionsOrder.find((s) => s.id === id)?.visible ?? true;
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Auto-fix: if latestPurchases is above quickActions, move it back below
     const latestPurchasesIdx = homeSectionsOrder.findIndex(s => s.id === "latestPurchases");
     const quickActionsIdx = homeSectionsOrder.findIndex(s => s.id === "quickActions");
@@ -465,7 +465,7 @@ export default function Home({
     }
   }, [homeSectionsOrder, setHomeSectionsOrder]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let unmounted = false;
 
     const initNetwork = async () => {
@@ -663,7 +663,7 @@ export default function Home({
     creditTranslations[language as keyof typeof creditTranslations] ||
     creditTranslations["Français"];
 
-  const filteredTotals = React.useMemo(() => {
+  const filteredTotals = useMemo(() => {
     const now = new Date();
     const startOfPeriod = new Date();
 
@@ -722,7 +722,7 @@ export default function Home({
     return { totalExpense, totalIncome, expenseBuckets, incomeBuckets };
   }, [transactions, timeframe]);
 
-  const currentMonthExpenses = React.useMemo(() => {
+  const currentMonthExpenses = useMemo(() => {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -738,7 +738,7 @@ export default function Home({
     return spends;
   }, [transactions]);
 
-  const previousMonthExpenses = React.useMemo(() => {
+  const previousMonthExpenses = useMemo(() => {
     const now = new Date();
     const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
     const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
@@ -756,7 +756,21 @@ export default function Home({
   }, [transactions]);
 
 
-  const latestPurchasesList = React.useMemo(() => {
+  
+  const monthlyPurchaseCounts = useMemo(() => {
+    const now = new Date();
+    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    const counts: Record<string, number> = {};
+    transactions.forEach(tx => {
+      if (tx.type === "EXPENSE" && tx.timestamp >= startOfCurrentMonth) {
+        const label = tx.label.toLowerCase();
+        counts[label] = (counts[label] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [transactions]);
+
+  const latestPurchasesList = useMemo(() => {
     return transactions
       .filter((t) => {
         const isCredit = t.category && ["on me doit", "je dois", "مستحقات لي", "ديون علي", "owed to me", "i owe", "loans", "debts", "crédit +", "crédit --"].includes(t.category.toLowerCase());
@@ -1195,13 +1209,7 @@ export default function Home({
                     
                     const time = new Date(item.timestamp).toLocaleTimeString(language === 'Français' ? 'fr-FR' : language === 'العربية' ? 'ar-MA' : 'en-US', { hour: '2-digit', minute: '2-digit' });
 
-                    const now = new Date();
-                    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-                    const boughtThisMonth = transactions.filter(tx => 
-                      tx.type === "EXPENSE" && 
-                      tx.timestamp >= startOfCurrentMonth && 
-                      tx.label.toLowerCase() === item.label.toLowerCase()
-                    ).length;
+                    const boughtThisMonth = monthlyPurchaseCounts[item.label.toLowerCase()] || 0;
 
                     return (
                       <div 

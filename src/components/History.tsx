@@ -322,7 +322,7 @@ export default function History({ transactions, predefinedItems, language, curre
     return '';
   };
 
-  const filteredTransactions = transactions
+  const filteredTransactions = React.useMemo(() => { return transactions
     .filter(tx => {
       // Hide bank transactions
       const isBankAddedBalance = tx.type === "INCOME" && tx.paidByBank && ["Salaire", "Dépôt", "Autre", "Banque", "Virement"].includes(tx.category || "");
@@ -367,6 +367,7 @@ export default function History({ transactions, predefinedItems, language, curre
         default: return 0;
       }
     });
+  }, [transactions, filter, searchQuery, selectedCategory, startDate, endDate, selectedTags, sortBy, t.tous]);
 
     // Group transactions by date
   const groupedData = React.useMemo(() => {

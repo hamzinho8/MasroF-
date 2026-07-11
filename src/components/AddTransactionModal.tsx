@@ -1102,7 +1102,7 @@ export default function AddTransactionModal({
                                   </h4>
                                 )}
                                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 w-full">
-                                  <AnimatePresence mode="popLayout">
+                                  <AnimatePresence >
                                     {items.map((item, index) => {
                                       const info = getArticleInfo(
                                         item.name,

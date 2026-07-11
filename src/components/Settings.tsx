@@ -29,6 +29,7 @@ import {
   Palette,
   Smartphone,
   Upload,
+  Save,
   Search,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
@@ -37,7 +38,7 @@ import { Reminder, PredefinedItem } from "../types";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { ICON_MAP, CATEGORIES as APP_CATEGORIES } from "../constants";
-import { importDataFromFile, exportDataToFile } from "../utils/backup";
+import { importDataFromFile, exportDataToFile, quickLocalBackup } from "../utils/backup";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import {
   Utensils,
@@ -203,6 +204,17 @@ export default function Settings({
   const [backupReminder, setBackupReminder] = useState(
     () => localStorage.getItem("backupReminderEnabled") === "true"
   );
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+
+  const handleQuickBackup = async () => {
+    const success = await quickLocalBackup();
+    if (success) {
+      setShowSaveSuccess(true);
+      setTimeout(() => setShowSaveSuccess(false), 3000);
+    } else {
+      alert("Aucun emplacement précédent trouvé ou permission refusée. Veuillez utiliser 'Sauvegarder sous...'.");
+    }
+  };
   const [iconMatcherVersion, setIconMatcherVersion] = useLocalStorage(
     "iconMatcherVersion",
     "1.0.0"
@@ -343,6 +355,19 @@ export default function Settings({
       animate={{ opacity: 1 }}
       className="relative min-h-screen bg-slate-50 text-slate-800 font-sans pb-24"
     >
+      <AnimatePresence>
+        {showSaveSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-teal-500 text-white px-6 py-3 rounded-full shadow-xl z-50 flex items-center gap-2"
+          >
+            <Save size={18} />
+            <span className="text-sm font-medium">Sauvegarde réussie !</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Background Holographic Motif */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-30">
         <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-b from-indigo-50 to-transparent opacity-80" />
@@ -583,9 +608,15 @@ export default function Settings({
               onClick={exportToPDF}
             />
             <SettingsItem
+              icon={<Save />}
+              title="Sauvegarde locale rapide"
+              subtitle="Sauvegarder sur le même emplacement"
+              onClick={handleQuickBackup}
+            />
+            <SettingsItem
               icon={<Download />}
-              title="Sauvegarder"
-              subtitle="Créer un fichier de sauvegarde"
+              title="Sauvegarder sous..."
+              subtitle="Créer ou partager une sauvegarde"
               onClick={async () => await exportDataToFile()}
             />
             <SettingsItem

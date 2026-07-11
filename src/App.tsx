@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { Preferences } from "@capacitor/preferences";
@@ -18,15 +18,15 @@ import {
   PackageOpen,
   Landmark,
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+
 import { lazy, Suspense } from "react";
-const Home = lazy(() => import("./components/Home"));
-const Statistics = lazy(() => import("./components/Statistics"));
-const Credits = lazy(() => import("./components/Credits"));
-const Bank = lazy(() => import("./components/Bank"));
-const HistoryView = lazy(() => import("./components/History"));
-const SettingsView = lazy(() => import("./components/Settings"));
-const Inventory = lazy(() => import("./components/Inventory"));
+import Home from "./components/Home";
+import Statistics from "./components/Statistics";
+import Credits from "./components/Credits";
+import Bank from "./components/Bank";
+import HistoryView from "./components/History";
+import SettingsView from "./components/Settings";
+import Inventory from "./components/Inventory";
 import { scheduleBackupReminder } from "./utils/notifications";
 import LockScreen from "./components/LockScreen"; // newly added
 import MasrofLogo from "./components/Logo";
@@ -51,6 +51,14 @@ type Tab =
   | "bank"
   | "inventory"
   | "settings";
+
+const MemoHome = React.memo(Home);
+const MemoStatistics = React.memo(Statistics);
+const MemoCredits = React.memo(Credits);
+const MemoBank = React.memo(Bank);
+const MemoHistoryView = React.memo(HistoryView);
+const MemoSettingsView = React.memo(SettingsView);
+const MemoInventory = React.memo(Inventory);
 
 export default function App() {
   const [isInitializing, setIsInitializing] = useState(true);
@@ -356,7 +364,7 @@ export default function App() {
     }
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     localStorage.setItem("predefinedItems", JSON.stringify(predefinedItems));
   }, [predefinedItems]);
 
@@ -364,6 +372,12 @@ export default function App() {
     translations[language as keyof typeof translations] ||
     translations["Français"];
   const isRtl = language === "العربية";
+
+  const [smartDebtReminderEnabled, setSmartDebtReminderEnabled] = useLocalStorage<boolean>(
+    "smartDebtReminderEnabled",
+    false
+  );
+
   const [reminders, setReminders] = useLocalStorage<Reminder[]>(
     "reminders",
     []
@@ -372,7 +386,7 @@ export default function App() {
     "categoryBudgets",
     {}
   );
-  const categoryBudgets = React.useMemo(() => {
+  const categoryBudgets = useMemo(() => {
     if (!categoryBudgetsRaw) return {};
     let parsed: Record<string, number> = {};
     if (Array.isArray(categoryBudgetsRaw)) {
@@ -517,6 +531,34 @@ export default function App() {
             };
           });
 
+
+        if (smartDebtReminderEnabled) {
+          const now = Date.now();
+          const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+          const channelId = `reminders_default_v1`;
+          creditEntries.forEach((entry, i) => {
+            if (!entry.settled && entry.type === "I_OWE") {
+              const entryDate = new Date(entry.date).getTime();
+              if (now - entryDate > thirtyDaysMs) {
+                toSchedule.push({
+                  title: "Dette de " + entry.name,
+                  body: "Cette dette de " + entry.amount + " dépasse 30 jours !",
+                  id: 1000 + i,
+                  channelId: channelId,
+                  smallIcon: "ic_notification",
+                  iconColor: "#e11d48",
+                  largeIcon: "ic_launcher",
+                  schedule: {
+                    repeats: true,
+                    on: { hour: 10, minute: 0 },
+                    allowWhileIdle: true,
+                  },
+                });
+              }
+            }
+          });
+        }
+
         if (toSchedule.length > 0) {
           await LocalNotifications.schedule({ notifications: toSchedule });
         }
@@ -537,7 +579,7 @@ export default function App() {
     }
     }, 2000);
     return () => clearTimeout(timer);
-  }, [reminders]);
+  }, [reminders, smartDebtReminderEnabled, creditEntries]);
 
   const [balance, setBalance] = useLocalStorage("balance", 0);
   const [bankBalance, setBankBalance] = useLocalStorage("bankBalance", 0);
@@ -546,7 +588,7 @@ export default function App() {
     []
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
     let migrated = false;
     const newTransactions = transactions.map(tx => {
@@ -566,15 +608,15 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [transactions, setTransactions]);
 
-  const prevBalanceRef = React.useRef(balance);
+  const prevBalanceRef = useRef(balance);
 
-  const alertedBankRef = React.useRef(false);
-  const alertedPocketRef = React.useRef(false);
-  const alertedInventoryRef = React.useRef<Record<string, boolean>>({});
-  const alertedCategoriesRef = React.useRef<Record<string, boolean>>({});
-  const lastBackupAlertRef = React.useRef(Date.now());
+  const alertedBankRef = useRef(false);
+  const alertedPocketRef = useRef(false);
+  const alertedInventoryRef = useRef<Record<string, boolean>>({});
+  const alertedCategoriesRef = useRef<Record<string, boolean>>({});
+  const lastBackupAlertRef = useRef(Date.now());
 
-  React.useEffect(() => {
+  useEffect(() => {
     // 1. Bank Balance == 500 DH
     if (
       bankBalanceThreshold !== null &&
@@ -636,7 +678,7 @@ export default function App() {
     inventoryAlertThreshold,
   ]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
     // 4. Category Budget >= 90%
     const now = new Date();
@@ -703,7 +745,7 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [transactions, categoryBudgets, currency, budgetAlertThreshold]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // 5. Backup Alarm
     if (!backupAlertInterval) return;
 
@@ -725,7 +767,7 @@ export default function App() {
     return () => clearInterval(checkBackupInterval);
   }, [backupAlertInterval]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
     setShoppingList(prevList => {
       let newShoppingList = [...prevList];
@@ -769,7 +811,7 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [inventoryItems, setShoppingList]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
     if (
       balanceThreshold !== null &&
@@ -1402,7 +1444,7 @@ export default function App() {
     switch (activeTab) {
       case "home":
         return (
-          <Home
+          <MemoHome
             balance={balance}
             bankBalance={bankBalance}
             onAddBankBalance={handleAddBankBalance}
@@ -1439,7 +1481,7 @@ export default function App() {
         );
       case "stats":
         return (
-          <Statistics
+          <MemoStatistics
             transactions={transactions}
             predefinedItems={predefinedItems}
             currency={currency}
@@ -1453,10 +1495,12 @@ export default function App() {
         );
       case "credits":
         return (
-          <Credits
+          <MemoCredits
             language={language}
             currency={currency}
             entries={creditEntries}
+            smartDebtReminderEnabled={smartDebtReminderEnabled}
+            setSmartDebtReminderEnabled={setSmartDebtReminderEnabled}
             setEntries={setCreditEntries}
             onSettle={handleCreditSettlement}
             onPartialSettle={handlePartialCreditSettlement}
@@ -1468,7 +1512,7 @@ export default function App() {
         );
       case "history":
         return (
-          <HistoryView
+          <MemoHistoryView
             transactions={transactions}
             predefinedItems={predefinedItems}
             language={language}
@@ -1480,7 +1524,7 @@ export default function App() {
         );
       case "bank":
         return (
-          <Bank
+          <MemoBank
             language={language}
             currency={currency}
             bankBalance={bankBalance}
@@ -1496,7 +1540,7 @@ export default function App() {
         );
       case "inventory":
         return (
-          <Inventory
+          <MemoInventory
             items={inventoryItems}
             onItemsChange={setInventoryItems}
             language={language}
@@ -1506,7 +1550,7 @@ export default function App() {
         );
       case "settings":
         return (
-          <SettingsView
+          <MemoSettingsView
             widgetMode={widgetMode}
             onWidgetModeChange={setWidgetMode}
             widgetBalanceType={widgetBalanceType}
@@ -1551,7 +1595,7 @@ export default function App() {
         );
       default:
         return (
-          <Home
+          <MemoHome
             balance={balance}
             bankBalance={bankBalance}
             onAddBankBalance={handleAddBankBalance}
@@ -1619,9 +1663,9 @@ export default function App() {
             : "bg-slate-50 text-slate-500"
         } flex items-center justify-center`}
       >
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1 }}
+        <div
+          
+          
           className="w-8 h-8 border-4 border-t-transparent border-[#2D8B96] rounded-full"
         />
       </div>
@@ -1721,9 +1765,9 @@ export default function App() {
         <div className="pb-32">
           {" "}
           {/* Increased padding for the 3-dots menu space at the end of lists */}
-          <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>}>
+          
             {renderContent()}
-          </Suspense>
+          
         </div>
       </main>
 
@@ -1871,11 +1915,11 @@ function TabButton({
       }`}
     >
       {active && (
-        <motion.div
-          layoutId="activeTabBg"
+        <div
+          
           className={`absolute inset-0 ${colors.bg} rounded-2xl -z-10 shadow-sm`}
-          initial={false}
-          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+          
+          
         />
       )}
       <div
@@ -1890,8 +1934,8 @@ function TabButton({
         )}
       </div>
       {active && (
-        <motion.div
-          layoutId="activeTabDot"
+        <div
+          
           className={`w-1.5 h-1.5 ${colors.dot} rounded-full absolute -bottom-1 shadow-sm`}
         />
       )}

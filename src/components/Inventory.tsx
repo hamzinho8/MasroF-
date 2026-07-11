@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, useMemo } from 'react';
+
 import { Package, PackageOpen, Plus, Minus, X, Info, Search, History as HistoryIcon, User, ListTodo, ShoppingCart, Tag, ChevronDown, ChevronUp, Trash2, PackageX } from 'lucide-react';
 import { InventoryItem, InventoryDecreaseAction, ShoppingListItem, PredefinedItem } from '../types';
 import { ICON_MAP, CATEGORIES } from '../constants';
@@ -12,9 +12,11 @@ interface InventoryProps {
   predefinedItems: PredefinedItem[];
 }
 
+
 export default function Inventory({ items, onItemsChange, language, currency, predefinedItems }: InventoryProps) {
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [selectedItemInfo, setSelectedItemInfo] = useState<InventoryItem | null>(null);
+  const [expandedConsumedGroups, setExpandedConsumedGroups] = useState<string[]>([]);
   
   const translations = {
     Français: {
@@ -201,9 +203,9 @@ export default function Inventory({ items, onItemsChange, language, currency, pr
   const activeItems = items.filter(item => item.quantity > 0);
   const consumedItems = items.filter(item => item.quantity === 0);
 
-  const [expandedConsumedGroups, setExpandedConsumedGroups] = useState<string[]>([]);
 
-  const monthlyConsumedGroups = React.useMemo(() => {
+
+  const monthlyConsumedGroups = useMemo(() => {
     // 1. Group by Month
     const monthlyGroups: Record<string, {
       monthKey: string;
@@ -289,10 +291,10 @@ export default function Inventory({ items, onItemsChange, language, currency, pr
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
+    <div
+      
+      
+      
       className="max-w-md mx-auto"
     >
       <div className="flex justify-between items-center mb-6 px-1">
@@ -330,9 +332,9 @@ export default function Inventory({ items, onItemsChange, language, currency, pr
                 const bgClass = cat.bgColor;
                 
                 return (
-                  <motion.div
+                  <div
                     key={`${item.id}-${index}`}
-                    layoutId={`card-${item.id}-${index}`}
+                    
                     onClick={() => setSelectedItemInfo(item)}
                     className="group flex items-center gap-4 p-5 rounded-[32px] border transition-transform relative shadow-sm bg-slate-50/90 border-slate-100 hover:border-slate-200 hover:shadow-xl hover:shadow-slate-500/10 cursor-pointer overflow-hidden"
                   >
@@ -378,7 +380,7 @@ export default function Inventory({ items, onItemsChange, language, currency, pr
                     <div className="absolute -right-4 -bottom-4 opacity-[0.02] transform group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500 pointer-events-none text-slate-900 z-0">
                       <IconComponent size={100} />
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>
@@ -450,12 +452,12 @@ export default function Inventory({ items, onItemsChange, language, currency, pr
                             </div>
 
                             {/* Accordion Content */}
-                            <AnimatePresence>
+                            
                               {isExpanded && (
-                                <motion.div
-                                  initial={{ opacity: 0, height: 0 }}
-                                  animate={{ opacity: 1, height: 'auto' }}
-                                  exit={{ opacity: 0, height: 0 }}
+                                <div
+                                  
+                                  
+                                  
                                   className="border-t border-slate-100 pt-3 mt-1 flex flex-col gap-2"
                                 >
                                   {group.items.map((item, idx) => {
@@ -536,9 +538,9 @@ export default function Inventory({ items, onItemsChange, language, currency, pr
                                     </div>
                                     );
                                   })}
-                                </motion.div>
+                                </div>
                               )}
-                            </AnimatePresence>
+                            
                           </div>
                         </div>
                       );
@@ -554,7 +556,7 @@ export default function Inventory({ items, onItemsChange, language, currency, pr
   </div>
 
   {/* Add Item Modal */}
-      <AnimatePresence>
+      
         {isAddItemModalOpen && (
           <AddItemModal 
             onClose={() => setIsAddItemModalOpen(false)} 
@@ -564,10 +566,10 @@ export default function Inventory({ items, onItemsChange, language, currency, pr
             predefinedItems={predefinedItems}
           />
         )}
-      </AnimatePresence>
+      
 
       {/* Item Details Modal */}
-      <AnimatePresence>
+      
         {selectedItemInfo && (
           <ItemDetailsModal 
             item={selectedItemInfo} 
@@ -585,8 +587,8 @@ export default function Inventory({ items, onItemsChange, language, currency, pr
             language={language}
           />
         )}
-      </AnimatePresence>
-    </motion.div>
+      
+    </div>
   );
 }
 
@@ -619,18 +621,18 @@ function AddItemModal({ onClose, onAdd, t, language, predefinedItems }: any) {
     : (predefinedItems || []).filter((item: any) => item.category === selectedCategory);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+    <div
+      
+      
+      
       className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-slate-900/60"
       onClick={onClose}
     >
-      <motion.div
-        initial={{ y: '100%' }}
-        animate={{ y: 0 }}
-        exit={{ y: '100%' }}
-        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+      <div
+        
+        
+        
+        
         className="bg-white w-full max-w-md rounded-[32px] p-6 shadow-2xl overflow-y-auto max-h-[90vh]"
         onClick={e => e.stopPropagation()}
         dir={language === 'العربية' ? 'rtl' : 'ltr'}
@@ -690,18 +692,18 @@ function AddItemModal({ onClose, onAdd, t, language, predefinedItems }: any) {
               )}
             </div>
             <div className="grid grid-cols-3 gap-2 w-full">
-              <AnimatePresence mode="popLayout">
+              
                 {displayedItems.map((item: any, index: number) => {
                   const Icon = ICON_MAP[item.iconName] || Package;
                   const cat = CATEGORIES.find(c => c.id === item.category) || CATEGORIES.find(c => c.id === "Autres")!;
                   return (
-                    <motion.button
+                    <button
                       key={`${item.id}-${index}`}
                       type="button"
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      transition={{ duration: 0.15, delay: index * 0.02 }}
+                      
+                      
+                      
+                      
                       className={`flex items-center gap-2 p-2 bg-white rounded-full border border-slate-100 shadow-sm active:scale-95 transition-all text-left group hover:border-${cat.color ? cat.color.replace('text-', '') : 'violet-200'}`}
                       onClick={() => handleItemClick(item)}
                     >
@@ -711,10 +713,10 @@ function AddItemModal({ onClose, onAdd, t, language, predefinedItems }: any) {
                       <div className="flex flex-col min-w-0 pr-1">
                         <span className="text-[11px] font-bold text-slate-700 truncate">{item.name}</span>
                       </div>
-                    </motion.button>
+                    </button>
                   );
                 })}
-              </AnimatePresence>
+              
             </div>
           </div>
         </div>
@@ -778,8 +780,8 @@ function AddItemModal({ onClose, onAdd, t, language, predefinedItems }: any) {
             </button>
           </div>
         </form>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
 
@@ -787,15 +789,15 @@ function ItemDetailsModal({ item, onClose, onDecrease, onDelete, onDeclareEmpty,
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+    <div
+      
+      
+      
       className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 bg-slate-900/60"
       onClick={onClose}
     >
-      <motion.div
-        layoutId={`card-${item.id}`}
+      <div
+        
         className="bg-white w-full max-w-md rounded-[32px] p-6 shadow-2xl max-h-[85vh] flex flex-col"
         onClick={e => e.stopPropagation()}
         dir={language === 'العربية' ? 'rtl' : 'ltr'}
@@ -864,40 +866,40 @@ function ItemDetailsModal({ item, onClose, onDecrease, onDelete, onDeclareEmpty,
         </div>
         
         <div className="mt-4 pt-4 border-t-2 border-slate-100 flex justify-center shrink-0 overflow-hidden gap-2">
-            <AnimatePresence mode="wait">
+            
               {!showConfirmDelete ? (
                 <>
                   {(item.unitType === 'grams' || item.unitType === 'liters') && item.quantity > 0 && (
-                    <motion.button
+                    <button
                         key="empty-btn"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
+                        
+                        
+                        
                         onClick={onDeclareEmpty}
                         className="flex-1 flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-2xl bg-amber-50/80 text-amber-600 hover:bg-amber-100 transition-colors border border-amber-100/50"
                     >
                         <PackageX size={20} strokeWidth={2.5} />
                         <span className="text-[10px] font-black uppercase tracking-widest">{language === 'Français' ? 'Épuisé' : language === 'العربية' ? 'نفد' : 'Out of stock'}</span>
-                    </motion.button>
+                    </button>
                   )}
-                  <motion.button
+                  <button
                       key="delete-btn"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
+                      
+                      
+                      
                       onClick={() => setShowConfirmDelete(true)}
                       className="flex-1 flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-2xl bg-rose-50/80 text-rose-600 hover:bg-rose-100 transition-colors border border-rose-100/50"
                   >
                       <Trash2 size={20} strokeWidth={2.5} />
                       <span className="text-[10px] font-black uppercase tracking-widest text-center">{language === 'Français' ? 'Supprimer' : language === 'العربية' ? 'حذف' : 'Delete'}</span>
-                  </motion.button>
+                  </button>
                 </>
               ) : (
-                <motion.div
+                <div
                     key="confirm-delete"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
+                    
+                    
+                    
                     className="flex items-center gap-2 w-full"
                 >
                   <button
@@ -912,11 +914,11 @@ function ItemDetailsModal({ item, onClose, onDecrease, onDelete, onDeclareEmpty,
                   >
                       {language === 'Français' ? 'Confirmer' : language === 'العربية' ? 'تأكيد' : 'Confirm'}
                   </button>
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
+            
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }

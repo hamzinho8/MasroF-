@@ -29,7 +29,7 @@ import {
   Bell,
   BellOff,
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+
 import { CreditEntry, Transaction } from "../types";
 import AddBankBalanceModal from "./AddBankBalanceModal";
 
@@ -44,6 +44,8 @@ interface CreditsProps {
   onAddClick?: (type: "INCOME" | "EXPENSE") => void;
   onAddTransaction?: (label: string, amount: number, type: "INCOME" | "EXPENSE", category?: string, paidByBank?: boolean, isPureInflow?: boolean) => void;
   onAddBankBalance?: (amount: number, label: string, category: string) => void;
+  smartDebtReminderEnabled?: boolean;
+  setSmartDebtReminderEnabled?: (v: boolean) => void;
 }
 
 // decorative backgrounds removed
@@ -59,6 +61,8 @@ export default function Credits({
   onAddClick,
   onAddTransaction,
   onAddBankBalance,
+  smartDebtReminderEnabled,
+  setSmartDebtReminderEnabled,
 }: CreditsProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [newName, setNewName] = useState("");
@@ -385,10 +389,10 @@ export default function Credits({
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
+    <div
+      
+      
+      
       className="space-y-6 pb-12"
       onClick={() => setActiveMenuId(null)}
     >
@@ -413,9 +417,9 @@ export default function Credits({
 
         {/* Central Plus Button - Fully Transparent Background */}
         <div className="absolute inset-0 flex items-center justify-center z-30">
-          <motion.button
-            whileHover={{ scale: 1.2, rotate: 90 }}
-            whileTap={{ scale: 0.9 }}
+          <button
+            
+            
             onClick={(e) => {
               e.stopPropagation();
               setIsAdding(true);
@@ -427,7 +431,7 @@ export default function Credits({
               strokeWidth={2.5}
               className="drop-shadow-lg opacity-80 hover:opacity-100 transition-opacity"
             />
-          </motion.button>
+          </button>
         </div>
 
         <div className="relative z-10 p-7 h-full flex flex-col justify-between">
@@ -472,12 +476,12 @@ export default function Credits({
       </div>
 
       {/* Add Form Modal-like */}
-      <AnimatePresence>
+      
         {isAdding && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
+          <div
+            
+            
+            
             className="p-6 bg-white rounded-[32px] border-2 border-slate-100 shadow-xl space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
@@ -603,9 +607,9 @@ export default function Credits({
                 {t.confirm}
               </button>
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      
 
       {/* List */}
       <div className="space-y-4 pt-6">
@@ -623,10 +627,10 @@ export default function Credits({
             {activeEntries.map((entry, index) => {
               const isReceive = entry.type === "OWE_ME";
               return (
-                <motion.div
-                  layout
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
+                <div
+                  
+                  
+                  
                   key={entry.id}
                   className={`group flex items-center gap-4 p-5 rounded-[32px] border transition-all relative backdrop-blur-sm shadow-sm ${
                     isReceive
@@ -699,7 +703,7 @@ export default function Credits({
                       >
                         <MoreVertical size={20} />
                       </button>
-                      <AnimatePresence>
+                      
                         {activeMenuId === entry.id && (
                           <>
                             <div
@@ -710,10 +714,10 @@ export default function Credits({
                                 setActiveMenuId(null);
                               }}
                             />
-                            <motion.div
-                              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                              animate={{ opacity: 1, scale: 1, y: 0 }}
-                              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                            <div
+                              
+                              
+                              
                               className="absolute right-0 top-12 bg-white border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-2xl py-2 w-48 z-[150] overflow-hidden"
                               onClick={(e) => e.stopPropagation()}
                             >
@@ -757,13 +761,13 @@ export default function Credits({
                                 <CircleDollarSign size={15} />
                                 {t.settle}
                               </button>
-                            </motion.div>
+                            </div>
                           </>
                         )}
-                      </AnimatePresence>
+                      
                     </div>
                   </div>
-                </motion.div>
+                </div>
               );
             })}
           </div>
@@ -841,19 +845,19 @@ export default function Credits({
         </div>
       )}
 
-      <AnimatePresence>
+      
         {settlingId && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+          <div
+            
+            
+            
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
             onClick={() => setSettlingId(null)}
           >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 10 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+            <div
+              
+              
+              
               onClick={(e) => e.stopPropagation()}
               className="bg-white rounded-[32px] p-6 w-full max-w-sm shadow-2xl border border-slate-100 flex flex-col gap-6"
             >
@@ -882,25 +886,25 @@ export default function Credits({
                   {language === "Français" ? "Mon compte" : language === "العربية" ? "حسابي" : "Bank Account"}
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
+      
 
       {/* Partial Settlement Modal */}
-      <AnimatePresence>
+      
         {partialSettlingId && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+          <div
+            
+            
+            
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
             onClick={() => { setPartialSettlingId(null); setPartialAmount(""); }}
           >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 10 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+            <div
+              
+              
+              
               onClick={(e) => e.stopPropagation()}
               className="bg-white rounded-[32px] p-6 w-full max-w-sm shadow-2xl border border-slate-100 flex flex-col gap-6"
             >
@@ -950,10 +954,10 @@ export default function Credits({
                   {language === "Français" ? "Mon compte" : language === "العربية" ? "حسابي" : "Bank Account"}
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
-    </motion.div>
+      
+    </div>
   );
 }
