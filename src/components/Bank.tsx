@@ -105,10 +105,7 @@ export default function Bank({
   const [filter, setFilter] = useState<"ALL" | "IN" | "OUT">("ALL");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
-  const [savingsGoal, setSavingsGoal] = useLocalStorage<number>("bankSavingsGoal", 10000); // Target
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null); // For bottom sheet
-  const [isEditingGoal, setIsEditingGoal] = useState(false);
-  const [tempGoal, setTempGoal] = useState(savingsGoal.toString());
   const [isManageUpcomingModalOpen, setIsManageUpcomingModalOpen] = useState(false);
 
   const [upcomingTransactions, setUpcomingTransactions] = useLocalStorage<UpcomingTransaction[]>(
@@ -299,6 +296,22 @@ export default function Bank({
     });
 
     return projected;
+  }, [bankBalance, creditEntries, upcomingTransactions]);
+
+  // Calculate Safe-to-Spend (Vrai Reste à Vivre)
+  const safeToSpend = useMemo(() => {
+    let safe = bankBalance;
+    if (creditEntries) {
+      creditEntries.forEach(entry => {
+        if (entry.type === "I_OWE") safe -= entry.amount;
+      });
+    }
+    upcomingTransactions.forEach(tx => {
+      if (tx.paidByBank !== false) {
+        safe -= tx.amount;
+      }
+    });
+    return safe;
   }, [bankBalance, creditEntries, upcomingTransactions]);
 
   const getTimeframeLabel = (frame: "day" | "week" | "month") => {
@@ -504,50 +517,25 @@ export default function Bank({
                   </span>
                 </div>
 
-                {/* Obj Mois */}
+                {/* Vrai Reste à Vivre */}
                 <div className="flex items-center gap-3 opacity-90 group relative">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-200">
                     {language === "Français"
-                      ? "Obj Mois:"
+                      ? "Vrai Reste à Vivre:"
                       : language === "العربية"
-                      ? "هدف الشهر:"
-                      : "Monthly Goal:"}
+                      ? "المتبقي الحقيقي:"
+                      : "Safe-to-Spend:"}
                   </span>
-                  {isEditingGoal ? (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        value={tempGoal}
-                        onChange={(e) => setTempGoal(e.target.value)}
-                        className="w-20 bg-white/10 border border-white/20 rounded px-1.5 py-0.5 text-[12px] font-black text-white focus:outline-none focus:border-white/50"
-                        autoFocus
-                      />
-                      <button
-                        onClick={() => {
-                          const newGoal = Number(tempGoal);
-                          if (newGoal > 0) setSavingsGoal(newGoal);
-                          setIsEditingGoal(false);
-                        }}
-                        className="p-1 bg-white/10 text-white rounded hover:bg-white/20 transition-colors"
-                      >
-                        <Check size={12} />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 relative">
-                      <span className="text-[12px] font-black text-white tracking-wide">
-                        {`/ ${savingsGoal.toLocaleString("fr-FR")} ${currency}`}
-                      </span>
-                      <button
-                        onClick={() => setIsEditingGoal(true)}
-                        className="p-1 hover:bg-white/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100 absolute -right-6"
-                      >
-                        <Settings size={12} className="text-white/90" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
+                  <span className={`text-[12px] font-black tracking-wide ${
+                      safeToSpend < 0 
+                        ? 'text-rose-400' 
+                        : safeToSpend < bankBalance * 0.2 
+                        ? 'text-amber-400' 
+                        : 'text-emerald-400'
+                    }`}>
+                    {`${safeToSpend.toLocaleString("fr-FR")} ${currency}`}
+                  </span>
+                </div>              </div>
             </div>
           </div>
         </div>
