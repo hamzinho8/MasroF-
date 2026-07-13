@@ -793,7 +793,7 @@ export default function Bank({
                       <IconComp size={18} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-black text-slate-800 text-[13px] truncate">
+                      <p className="font-black text-slate-800 text-[13px] scroll-text">
                         {tx.label}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
@@ -801,7 +801,7 @@ export default function Bank({
                           <Clock size={10} />
                           {isToday ? "Aujourd'hui" : (tx.frequency === 'custom_days' && isPaidThisPeriod ? "Payé" : `J-${diff}`)}
                         </span>
-                        <span className="text-rose-600 font-black text-[11px] truncate">
+                        <span className="text-rose-600 font-black text-[11px] scroll-text">
                           -{tx.amount} {currency}
                         </span>
                       </div>
@@ -838,7 +838,7 @@ export default function Bank({
                       <p className="font-black text-slate-800 text-[14px] leading-tight line-clamp-2">
                         {tx.label}
                       </p>
-                      <p className="text-rose-600 font-black text-[15px] mt-1 truncate">
+                      <p className="text-rose-600 font-black text-[15px] mt-1 scroll-text">
                         -{tx.amount} <span className="text-[10px] uppercase">{currency}</span>
                       </p>
                     </div>
@@ -1101,7 +1101,7 @@ export default function Bank({
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <p className="font-black text-slate-800 text-sm tracking-tight truncate">
+                          <p className="font-black text-slate-800 text-sm tracking-tight scroll-text">
                             {isIncome && tx.category === "Salaire"
                               ? "Salaire"
                               : isIncome && tx.category === "Dépôt"

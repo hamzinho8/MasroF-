@@ -950,7 +950,7 @@ export default function History({ transactions, predefinedItems, language, curre
                   </div>
 
                   <div className="flex-1 min-w-0 flex flex-col justify-center py-1">
-                    <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1 italic select-none">
+                    <p className="font-black text-slate-800 text-sm tracking-tight scroll-text mb-1 italic select-none">
                       {tx.label.replace(/Prêt à |Emprunt de /i, '')}
                     </p>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
@@ -964,7 +964,7 @@ export default function History({ transactions, predefinedItems, language, curre
                         {tx.date}
                       </span>
                       <span
-                        className={`text-[9px] font-black uppercase tracking-[0.1em] truncate max-w-[100px] ${isReceive ? "text-indigo-600" : "text-amber-600"}`}
+                        className={`text-[9px] font-black uppercase tracking-[0.1em] scroll-text max-w-[100px] ${isReceive ? "text-indigo-600" : "text-amber-600"}`}
                       >
                         {isReceive ? t.owedToMe : t.owedByMe}
                       </span>
@@ -1101,7 +1101,7 @@ export default function History({ transactions, predefinedItems, language, curre
                         {t.important}
                       </span>
                     )}
-                    <p className="font-black text-slate-800 text-sm tracking-tight truncate leading-tight">
+                    <p className="font-black text-slate-800 text-sm tracking-tight scroll-text">
                       {tx.label}
                     </p>
                     <span className="text-[10px] flex items-center gap-1 font-bold text-slate-400 mb-1">

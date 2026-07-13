@@ -348,7 +348,7 @@ export default function Inventory({ items, onItemsChange, language, currency, pr
 
                     <div className="flex-1 min-w-0 flex flex-col justify-center py-1 relative z-10">
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="font-black text-slate-800 text-sm tracking-tight truncate italic select-none">
+                        <p className="font-black text-slate-800 text-sm tracking-tight scroll-text italic select-none">
                           {item.name}
                         </p>
                         <button 
@@ -424,7 +424,7 @@ export default function Inventory({ items, onItemsChange, language, currency, pr
 
                               <div className="flex-1 min-w-0 flex flex-col justify-center py-1 relative z-10">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <p className="font-black text-slate-800 text-sm tracking-tight truncate italic select-none">
+                                  <p className="font-black text-slate-800 text-sm tracking-tight scroll-text italic select-none">
                                     {group.name}
                                   </p>
                                   <span className="px-2 py-0.5 rounded-full bg-slate-200 text-[10px] font-bold text-slate-500">
@@ -665,7 +665,7 @@ function AddItemModal({ onClose, onAdd, t, language, predefinedItems }: any) {
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${cat.bgColor} ${cat.color} ${(selectedCategory === cat.id && !showFrequent) ? 'scale-110' : ''} transition-transform`}>
                     {(() => { const CatIcon = ICON_MAP[cat.iconName] || ICON_MAP['MoreHorizontal']; return <CatIcon size={20} />; })()}
                   </div>
-                  <span className={`text-[8px] font-black uppercase tracking-tight text-center truncate w-full ${
+                  <span className={`text-[8px] font-black uppercase tracking-tight text-center scroll-text w-full ${
                     (selectedCategory === cat.id && !showFrequent) ? 'text-violet-600' : 'text-slate-400'
                   }`}>
                     {cat.label}
@@ -711,7 +711,7 @@ function AddItemModal({ onClose, onAdd, t, language, predefinedItems }: any) {
                         <Icon size={16} />
                       </div>
                       <div className="flex flex-col min-w-0 pr-1">
-                        <span className="text-[11px] font-bold text-slate-700 truncate">{item.name}</span>
+                        <span className="text-[11px] font-bold text-slate-700 scroll-text">{item.name}</span>
                       </div>
                     </button>
                   );

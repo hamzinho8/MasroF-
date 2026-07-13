@@ -18,3 +18,14 @@ body {
   @apply bg-teal-light text-slate-900 antialiased;
   font-family: var(--font-sans);
 }
+
+.scroll-text {
+  white-space: nowrap;
+  overflow-x: auto;
+  min-width: 0;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scroll-text::-webkit-scrollbar {
+  display: none;
+}

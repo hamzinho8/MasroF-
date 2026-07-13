@@ -59,12 +59,13 @@ export const quickLocalBackup = async (): Promise<boolean> => {
             return true;
         } else {
             const handle = await getHandle();
-            if (handle) {
+            if (handle && 'showSaveFilePicker' in window) {
                 const options = { mode: 'readwrite' };
                 if ((await handle.queryPermission(options)) !== 'granted') {
                     const permission = await handle.requestPermission(options);
                     if (permission !== 'granted') {
-                        return false;
+                        await exportDataToFile();
+                        return true;
                     }
                 }
                 const writable = await handle.createWritable();
@@ -74,7 +75,8 @@ export const quickLocalBackup = async (): Promise<boolean> => {
                 localStorage.setItem('hasUnbackedChanges', 'false');
                 return true;
             }
-            return false;
+            await exportDataToFile();
+            return true;
         }
     } catch (e) {
         console.error('Quick backup failed', e);

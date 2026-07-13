@@ -946,7 +946,7 @@ export default function AddTransactionModal({
                                       onClick={() =>
                                         setEditingCategoryItemId(item.id)
                                       }
-                                      className={`text-[9px] font-bold uppercase tracking-widest bg-white/60 hover:bg-white px-2 py-0.5 rounded shadow-sm cursor-pointer w-fit transition-colors truncate border border-slate-100 ${cat.color}`}
+                                      className={`text-[9px] font-bold uppercase tracking-widest bg-white/60 hover:bg-white px-2 py-0.5 rounded shadow-sm cursor-pointer w-fit transition-colors scroll-text border border-slate-100 ${cat.color}`}
                                     >
                                       {cat.label} ▾
                                     </button>
@@ -1057,7 +1057,7 @@ export default function AddTransactionModal({
                                   })()}
                                 </div>
                                 <span
-                                  className={`text-[8px] font-black uppercase tracking-tight text-center truncate w-full ${
+                                  className={`text-[8px] font-black uppercase tracking-tight text-center scroll-text w-full ${
                                     selectedCategory === cat.id && !showFrequent
                                       ? cat.color
                                       : "text-slate-400"
@@ -1146,7 +1146,7 @@ export default function AddTransactionModal({
                                             )}
                                           </div>
                                           <div className="flex flex-col items-start justify-center overflow-hidden">
-                                            <span className="text-[10px] font-black text-slate-700 leading-tight truncate w-full flex-1 text-left">
+                                            <span className="text-[10px] font-black text-slate-700 leading-tight scroll-text w-full flex-1 text-left">
                                               {item.name}
                                             </span>
                                             <span className="text-[9px] font-bold text-slate-400 leading-none">

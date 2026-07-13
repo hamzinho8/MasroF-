@@ -657,7 +657,7 @@ export default function Credits({
                   </div>
 
                   <div className="flex-1 min-w-0 flex flex-col justify-center py-1">
-                    <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1 italic select-none">
+                    <p className="font-black text-slate-800 text-sm tracking-tight scroll-text mb-1 italic select-none">
                       {entry.name}
                     </p>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
@@ -671,7 +671,7 @@ export default function Credits({
                         {entry.date}
                       </span>
                       <span
-                        className={`text-[9px] font-black uppercase tracking-[0.1em] truncate max-w-[100px] ${isReceive ? "text-indigo-600" : "text-amber-600"}`}
+                        className={`text-[9px] font-black uppercase tracking-[0.1em] scroll-text max-w-[100px] ${isReceive ? "text-indigo-600" : "text-amber-600"}`}
                       >
                         {isReceive ? t.owedToMe : t.owedByMe}
                       </span>
@@ -804,7 +804,7 @@ export default function Credits({
                   </div>
 
                   <div className="flex-1 min-w-0 py-1">
-                    <p className="font-black text-slate-800 text-sm tracking-tight truncate mb-1 italic select-none">
+                    <p className="font-black text-slate-800 text-sm tracking-tight scroll-text mb-1 italic select-none">
                       {entry.name}
                     </p>
                     <div className="flex flex-col gap-1 mt-1">
@@ -813,7 +813,7 @@ export default function Credits({
                           <Calendar size={10} className="text-slate-400" />
                           {entry.date}
                         </span>
-                        <span className="text-[9px] font-black uppercase tracking-[0.1em] truncate max-w-[100px] text-slate-400">
+                        <span className="text-[9px] font-black uppercase tracking-[0.1em] scroll-text max-w-[100px] text-slate-400">
                           {isReceive ? t.owedToMe : t.owedByMe}
                         </span>
                       </div>

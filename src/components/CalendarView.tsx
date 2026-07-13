@@ -83,8 +83,8 @@ export default function CalendarView({ transactions, currency }: CalendarViewPro
             {d}
           </span>
           <div className="flex flex-col gap-0.5 mt-auto pb-1">
-             {income > 0 && <span className="text-[8px] font-black leading-none text-bank-blue/80 truncate">+{Math.round(income)}</span>}
-             {expense > 0 && <span className="text-[8px] font-black leading-none text-danger-red/80 truncate">-{Math.round(expense)}</span>}
+             {income > 0 && <span className="text-[8px] font-black leading-none text-bank-blue/80 scroll-text">+{Math.round(income)}</span>}
+             {expense > 0 && <span className="text-[8px] font-black leading-none text-danger-red/80 scroll-text">-{Math.round(expense)}</span>}
           </div>
         </div>
       );

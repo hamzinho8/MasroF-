@@ -163,7 +163,7 @@ export default function ShoppingListModal({
                       </div>
                       
                       <div className="ml-4 flex-1 min-w-0">
-                        <h4 className="font-black text-slate-800 text-[15px] truncate">{item.name}</h4>
+                        <h4 className="font-black text-slate-800 text-[15px] scroll-text">{item.name}</h4>
                         {item.expectedPrice ? (
                           <p className="text-xs font-bold text-slate-400 mt-1">Est. {item.expectedPrice} {currency}</p>
                         ) : (

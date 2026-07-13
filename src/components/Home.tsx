@@ -1221,7 +1221,7 @@ export default function Home({
                           {time}
                         </span>
                         
-                        <span className="text-sm font-bold tracking-tight truncate flex-1 opacity-90">
+                        <span className="text-sm font-bold tracking-tight scroll-text flex-1 leading-tight opacity-90">
                           {item.label}
                         </span>
                         
@@ -1376,7 +1376,7 @@ export default function Home({
               <p className="text-xs text-slate-500 mb-1 font-medium">
                 {t.achatTotal}
               </p>
-              <p className="text-xl font-black text-danger-red leading-none mb-3 truncate">
+              <p className="text-xl font-black text-danger-red leading-none mb-3 scroll-text">
                 {filteredTotals.totalExpense.toLocaleString("fr-FR")} <span className="text-sm">{currency}</span>
               </p>
               <div className="h-8 w-full opacity-60">
@@ -1418,7 +1418,7 @@ export default function Home({
               <p className="text-xs text-slate-500 mb-1 font-medium">
                 {t.retraits}
               </p>
-              <p className="text-xl font-black text-blue-500 leading-none mb-3 truncate">
+              <p className="text-xl font-black text-blue-500 leading-none mb-3 scroll-text">
                 {filteredTotals.totalIncome.toLocaleString("fr-FR")} <span className="text-sm">{currency}</span>
               </p>
               <div className="h-8 w-full opacity-60">
@@ -1538,7 +1538,7 @@ export default function Home({
                       )}
                     </div>
                     <span
-                      className={`z-10 text-[8px] sm:text-[9px] font-bold ${!info.colorHex ? textClass : ''} uppercase truncate w-full px-1 text-center mt-0.5`}
+                      className={`z-10 text-[8px] sm:text-[9px] font-bold ${!info.colorHex ? textClass : ''} uppercase scroll-text w-full px-1 leading-tight text-center mt-0.5`}
                       style={info.colorHex ? { color: info.colorHex } : undefined}
                     >
                       {item.name}
@@ -1628,7 +1628,7 @@ export default function Home({
                         )}
                       </div>
                       <span
-                        className={`z-10 text-[9px] font-bold ${!info.colorHex ? textClass : ''} uppercase truncate w-full px-2 text-center mt-1`}
+                        className={`z-10 text-[9px] font-bold ${!info.colorHex ? textClass : ''} uppercase scroll-text w-full px-2 leading-tight text-center mt-1`}
                         style={info.colorHex ? { color: info.colorHex } : undefined}
                       >
                         {item.name}
@@ -1718,7 +1718,7 @@ export default function Home({
                     </div>
                     
                     <div className="flex flex-col items-center w-full px-2 mt-0.5">
-                      <span className={`text-[10px] font-black leading-none truncate w-full text-center ${
+                      <span className={`text-[10px] font-black leading-none scroll-text w-full text-center ${
                         isOver ? "text-rose-600" : isClose ? "text-amber-600" : "text-slate-700"
                       }`}>
                         {spent.toLocaleString("fr-FR")}
@@ -2210,7 +2210,7 @@ function CalculatorModal({ onClose }: { onClose: () => void }) {
               ? `${prevValue} ${operator || ""}`
               : "Masrof Calc"}
           </div>
-          <div className="text-2xl font-black text-white tracking-tighter truncate">
+          <div className="text-2xl font-black text-white tracking-tighter scroll-text">
             {display}
           </div>
         </div>
